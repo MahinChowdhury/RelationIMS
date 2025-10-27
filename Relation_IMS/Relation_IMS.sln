@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36203.30
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Relation_IMS", "Relation_IMS.csproj", "{DD6F8276-5370-4DA3-9260-9006296D846A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD6F8276-5370-4DA3-9260-9006296D846A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD6F8276-5370-4DA3-9260-9006296D846A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD6F8276-5370-4DA3-9260-9006296D846A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD6F8276-5370-4DA3-9260-9006296D846A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F8B35077-7723-49B1-B879-549BD8D4BF25}
+	EndGlobalSection
+EndGlobal

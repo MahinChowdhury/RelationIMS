@@ -1,0 +1,6 @@
+@Relation_IMS_HostAddress = http://localhost:5051
+
+GET {{Relation_IMS_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
