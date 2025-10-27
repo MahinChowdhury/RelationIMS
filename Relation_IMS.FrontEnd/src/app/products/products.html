@@ -1,0 +1,776 @@
+<div class="px-40 flex flex-1 justify-center py-5">
+  <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+    <div class="flex flex-wrap justify-between gap-3 p-4">
+      <p class="text-[#0e1b12] tracking-light text-[32px] font-bold leading-tight min-w-72">Product List</p>
+      <button
+        class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#e7f3eb] hover:bg-[#c6d0c9] text-[#0e1b12] text-sm font-medium leading-normal"
+        (click)="openCreateModal()"
+        >
+        <span class="truncate">Add Product</span>
+      </button>
+    </div>
+    <div class="px-4 py-3">
+      <label class="flex flex-col min-w-40 h-12 w-full">
+        <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+          <div
+            class="text-[#4e9767] flex border-none bg-[#e7f3eb] items-center justify-center pl-4 rounded-l-lg border-r-0"
+            data-icon="MagnifyingGlass"
+            data-size="24px"
+            data-weight="regular"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
+              <path
+                d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"
+              ></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Search products"
+            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e1b12] focus:outline-0 focus:ring-0 border-none bg-[#e7f3eb] focus:border-none h-full placeholder:text-[#4e9767] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
+            value=""
+          />
+        </div>
+      </label>
+    </div>
+    <div class="flex gap-3 p-3 flex-wrap pr-4">
+      <!-- Sort By -->
+      <div class="relative">
+        <button
+          class="flex h-8 items-center justify-center gap-x-2 rounded-lg bg-[#e7f3eb] hover:bg-[#c6d0c9] pl-4 pr-2 text-[#0e1b12] text-sm font-medium"
+        >
+          Sort by
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256">
+            <path
+              d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"
+            ></path>
+          </svg>
+        </button>
+        <select
+          [(ngModel)]="sortBy"
+          (change)="onFilterChange()"
+          class="absolute inset-0 opacity-0 cursor-pointer"
+        >
+          <option value="">Sort by</option>
+          <option value="SKU">SKU</option>
+          <option value="Brand">Brand</option>
+          <option value="Priceasc">Price Ascending</option>
+          <option value="Pricedesc">Price Descending</option>
+        </select>
+      </div>
+
+      <!-- Category -->
+      <div class="relative">
+        <button
+          class="flex h-8 items-center justify-center gap-x-2 rounded-lg bg-[#e7f3eb] hover:bg-[#c6d0c9] pl-4 pr-2 text-[#0e1b12] text-sm font-medium"
+        >
+          Category
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256">
+            <path
+              d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"
+            ></path>
+          </svg>
+        </button>
+        <select
+          [(ngModel)]="selectedCategory"
+          (change)="onFilterChange()"
+          class="absolute inset-0 opacity-0 cursor-pointer"
+        >
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">
+            {{ cat.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Stock Status -->
+      <div class="relative">
+        <button
+          class="flex h-8 items-center justify-center gap-x-2 rounded-lg bg-[#e7f3eb] hover:bg-[#c6d0c9] pl-4 pr-2 text-[#0e1b12] text-sm font-medium"
+        >
+          Stock Status
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256">
+            <path
+              d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"
+            ></path>
+          </svg>
+        </button>
+        <select
+          [(ngModel)]="stockOrder"
+          (change)="onFilterChange()"
+          class="absolute inset-0 opacity-0 cursor-pointer"
+        >
+          <option value="">Default</option>
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex px-4 py-3 justify-end">
+      <button
+        class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#e7f3eb] hover:bg-[#c6d0c9] text-[#0e1b12] gap-2 pl-4 text-sm font-bold leading-normal tracking-[0.015em]"
+      >
+        <div class="text-[#0e1b12] flex" data-icon="Upload" data-size="20px" data-weight="regular">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
+            <path
+              d="M240,136v64a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V136a16,16,0,0,1,16-16H80a8,8,0,0,1,0,16H32v64H224V136H176a8,8,0,0,1,0-16h48A16,16,0,0,1,240,136ZM85.66,77.66,120,43.31V128a8,8,0,0,0,16,0V43.31l34.34,34.35a8,8,0,0,0,11.32-11.32l-48-48a8,8,0,0,0-11.32,0l-48,48A8,8,0,0,0,85.66,77.66ZM200,168a12,12,0,1,0-12,12A12,12,0,0,0,200,168Z"
+            ></path>
+          </svg>
+          <span class="text-sm ml-1 mt-0.5">CSV</span>
+        </div>
+      </button>
+    </div>
+    
+    <!-- Table  -->
+
+    <div class="px-4 py-3">
+        <!-- Responsive wrapper -->
+        <div class="overflow-x-auto rounded-lg border border-[#d0e7d7] bg-[#f8fcf9]">
+
+            <!-- Table (visible on md and above) -->
+            <table class="hidden md:table min-w-full border-collapse">
+            <thead>
+                <tr class="bg-[#f8fcf9] text-left text-[#0e1b12] text-sm font-medium leading-normal">
+                <th class="px-4 py-3">Product</th>
+                <th class="px-4 py-3">SKU</th>
+                <th class="px-4 py-3">Brand</th>
+                <th class="px-4 py-3">Category</th>
+                <th class="px-4 py-3">Description</th>
+                <th class="px-4 py-3">Stock</th>
+                <th class="px-4 py-3">Price</th>
+                <th class="px-4 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-[#4e9767] text-sm">
+                <tr *ngFor="let product of products" class="border-t border-[#d0e7d7] hover:bg-[#e7f3eb] transition-colors">
+                <td class="px-4 py-3 flex items-center gap-2">
+                  <div
+                    class="bg-center bg-no-repeat bg-cover rounded-full w-10 h-10"
+                    [style.background-image]="'url(' + (product.ImageUrls[0] || placeholderImage) + ')'"
+                  ></div>
+                  {{ product.Name }}
+                </td>
+                <td class="px-4 py-3">{{ product.Id}}</td>
+                <td class="px-4 py-3">{{ product.BrandName }}</td>
+                <td class="px-4 py-3">{{ getCategoryNameById(product.CategoryId) }}</td>
+                <td class="px-4 py-3">{{ product.Description }}</td>
+                <td class="px-4 py-3">{{ product.TotalQuantity }}</td>
+                <td class="px-4 py-3">{{ product.BasePrice }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex justify-around">
+                    <i class="text-base text-blue-600 bx  bx-edit cursor-pointer" (click)="openEditModal(product)" ></i>
+                    <i class="text-base text-red-400 bx  bx-trash cursor-pointer" (click)="confirmDelete(product.Id)" ></i>
+                  </div>
+                </td>
+                </tr>
+            </tbody>
+            </table>
+
+            <!-- Mobile cards (visible below md) -->
+            <div class="md:hidden divide-y divide-[#d0e7d7]">
+              <div *ngFor="let product of products" class="p-4 flex flex-col gap-3 hover:bg-[#e7f3eb] transition-colors">
+                <!-- Header -->
+                <div class="flex items-center gap-3">
+                  <div
+                    class="bg-center bg-no-repeat bg-cover rounded-full w-12 h-12"
+                    [style.background-image]="'url(' + (product.ImageUrls?.[0] || placeholderImage) + ')'"
+                  ></div>
+                  <div>
+                    <h3 class="text-[#0e1b12] font-semibold">{{ product.Name }}</h3>
+                    <p class="text-[#4e9767] text-sm">{{ product.BrandName }}</p>
+                  </div>
+                </div>
+
+                <!-- Details -->
+                <div class="grid grid-cols-2 gap-y-1 text-sm text-[#4e9767]">
+                  <p class="font-medium text-[#0e1b12]">SKU:</p>
+                  <p>{{ product.Id }}</p>
+
+                  <p class="font-medium text-[#0e1b12]">Category:</p>
+                  <p>{{ product.Category?.Name }}</p>
+
+                  <p class="font-medium text-[#0e1b12]">Description:</p>
+                  <p>{{ product.Description || '—' }}</p>
+
+                  <p class="font-medium text-[#0e1b12]">Stock:</p>
+                  <p>{{ product.TotalQuantity }}</p>
+
+                  <p class="font-medium text-[#0e1b12]">Price:</p>
+                  <p>${{ product.BasePrice }}</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-2 text-[#4e9767] font-semibold">
+                  <div class="flex justify-evenly">
+                    <i class="text-base text-blue-600 bx bx-edit cursor-pointer" (click)="openEditModal(product)" ></i>
+                    <i class="text-base text-red-400 bx bx-trash cursor-pointer" (click)="confirmDelete(product.Id)" ></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Infinite Scroll Anchor + Loading Spinner -->
+            <div #anchor class="flex flex-col items-center justify-center py-6">
+              <div *ngIf="loading" class="flex flex-col items-center gap-3">
+                <!-- Spinner -->
+                <div class="w-8 h-8 border-4 border-[#e7f3eb] border-t-[#4e9767] rounded-full animate-spin"></div>
+                <p class="text-[#4e9767] text-sm font-medium">Loading more products...</p>
+              </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div
+  *ngIf="showDeleteModal"
+  class="fixed inset-0 flex items-center justify-center bg-black/40 z-50 animate-fadeIn"
+>
+  <div
+    class="bg-[#f8fcf9] rounded-2xl shadow-xl p-6 w-[90%] max-w-sm border border-[#d0e7d7]"
+  >
+    <h2 class="text-[#0e1b12] text-lg font-bold mb-2">Confirm Deletion</h2>
+    <p class="text-[#4e9767] text-sm mb-5">
+      Are you sure you want to delete this product? This action cannot be undone.
+    </p>
+
+    <div class="flex justify-end gap-3">
+      <button
+        (click)="cancelDelete()"
+        class="px-4 py-2 rounded-lg text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#c6d0c9] font-medium"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="deleteProduct()"
+        class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div
+  *ngIf="showEditModal"
+  class="fixed inset-0 flex items-center justify-center bg-black/40 z-50 animate-fadeIn"
+>
+  <div
+    class="bg-[#f8fcf9] rounded-2xl shadow-xl p-6 w-[90%] max-w-xl border border-[#d0e7d7] max-h-[90vh] overflow-y-auto relative"
+  >
+    <!-- ✖ Close Button -->
+    <button
+      type="button"
+      (click)="cancelEdit()"
+      class="absolute top-3 right-3 text-[#0e1b12] hover:text-[#e74c3c] transition-colors text-xl font-bold"
+      aria-label="Close"
+    >
+      ×
+    </button>
+
+    <h2 class="text-[#0e1b12] text-lg font-bold mb-2 text-center">Edit Product</h2>
+
+    <form class="flex flex-col gap-2">
+      <!-- Images -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium mb-1 block">Product Images</label>
+
+        <div
+          class="border-2 border-dashed border-[#d0e7d7] rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#4e9767] transition-colors"
+          (click)="editImageInput.click()"
+        >
+          <svg class="w-6 h-6 text-[#4e9767] mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16v4h10v-4M7 12l5-5 5 5M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="text-[#0e1b12] text-sm">Click or drag images here</span>
+        </div>
+
+        <input
+          #editImageInput
+          type="file"
+          (change)="onEditImagesSelected($event)"
+          multiple
+          accept="image/*"
+          class="hidden"
+        />
+
+        <!-- Preview selected images -->
+        <div class="flex flex-wrap gap-3 mt-3">
+          <div *ngFor="let img of editSelectedImages" class="relative w-24 h-24 border border-[#d0e7d7] rounded-lg overflow-hidden">
+            <img [src]="img" class="w-full h-full object-cover" />
+            <button
+              type="button"
+              (click)="removeEditImage(img)"
+              class="absolute top-1 right-1 bg-[#e74c3c] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-[#c0392b]"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Category</label>
+        <select
+          [(ngModel)]="editProduct.CategoryId"
+          (change)="onCategoryChange(editProduct.CategoryId)"
+          name="category"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        >
+          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+      </div>
+
+      <!-- Brand -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Brand</label>
+        <input
+          type="text"
+          [(ngModel)]="editProduct.BrandName"
+          name="brandName"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        />
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Name</label>
+        <input
+          type="text"
+          [(ngModel)]="editProduct.Name"
+          name="name"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        />
+      </div>
+      <!-- Description -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Description</label>
+        <textarea
+          [(ngModel)]="editProduct.Description"
+          name="description"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        ></textarea>
+      </div>
+
+      <!-- Base Price -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Base Price</label>
+        <input
+          type="number"
+          step="0.01"
+          [(ngModel)]="editProduct.BasePrice"
+          name="price"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        />
+      </div>
+
+      <!-- Stock Section -->
+      <div>
+        <h3 class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em] px-1 pb-2 pt-2">
+          Stock Levels
+        </h3>
+
+        <!-- Input Row -->
+        <div class="flex gap-3 items-end mb-4">
+          <!-- Color dropdown with preview circle beside -->
+        <div class="flex-1">
+          <label class="text-[#0e1b12] text-sm font-medium block">Color</label>
+          <div class="flex items-center gap-2">
+            <select
+              [(ngModel)]="newStock.color"
+              name="stockColor"
+              class="flex-1 px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                    text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767] appearance-none"
+            >
+              <option value="" disabled selected hidden>Select color</option>
+              <option *ngFor="let c of colors" [value]="c.name">
+                {{ c.name }}
+              </option>
+            </select>
+
+            <!-- live color preview -->
+            <span
+              *ngIf="getColorHex(newStock.color)"
+              class="inline-block w-5 h-5 rounded-full border border-[#c5d8cc]"
+              [style.background-color]="getColorHex(newStock.color)"
+            ></span>
+          </div>
+        </div>
+
+          <div class="flex-1">
+            <label class="text-[#0e1b12] text-sm font-medium block">Size</label>
+              <select
+                [(ngModel)]="newStock.size"
+                name="stockSize"
+                class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                      text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+              >
+                <option value="" disabled selected hidden>
+                  Select size
+                </option>
+                <option *ngFor="let s of availableSizes" [value]="s.name">
+                  {{ s.name }}
+                </option>
+              </select>
+          </div>
+
+          <div class="flex-1">
+            <label class="text-[#0e1b12] text-sm font-medium block">Quantity</label>
+            <input
+              type="number"
+              [(ngModel)]="newStock.quantity"
+              name="stockQuantity"
+              min="0"
+              class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                    text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+            />
+          </div>
+
+          <button
+            type="button"
+            (click)="addStock()"
+            class="px-4 py-2 bg-[#4e9767] hover:bg-[#3c7c55] text-white rounded-lg font-medium"
+          >
+            + Add
+          </button>
+        </div>
+
+        <!-- Stock Table -->
+        <div class="overflow-hidden rounded-lg border border-[#d0e7d7] bg-[#f8fcf9]">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-[#e7f3eb] text-[#0e1b12] text-sm font-medium">
+                <th class="px-4 py-2 text-left">Color</th>
+                <th class="px-4 py-2 text-left">Size</th>
+                <th class="px-4 py-2 text-left">Quantity</th>
+                <th class="px-4 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of stockItems; let i = index" class="border-t border-[#d0e7d7]">
+                <td class="px-4 py-2 text-sm text-[#0e1b12]">
+                  <div class="flex items-center gap-2">
+                    <span
+                      *ngIf="getColorHex(s.color)"
+                      class="inline-block w-4 h-4 rounded-full border border-[#c5d8cc]"
+                      [style.background-color]="getColorHex(s.color)"
+                    ></span>
+                    <span>{{ s.color }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-2 text-sm text-[#0e1b12]">{{ s.size }}</td>
+                <td class="px-4 py-2 text-sm text-[#4e9767]">{{ s.quantity }}</td>
+                <td class="px-4 py-2 text-right flex justify-end gap-2">
+                  <button
+                    type="button"
+                    (click)="editStock(i)"
+                    class="text-[#4e9767] hover:text-[#3c7c55] text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    (click)="removeStock(i)"
+                    class="text-[#e74c3c] hover:text-[#c0392b] text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="stockItems.length === 0">
+                <td colspan="4" class="px-4 py-3 text-center text-[#8c9a91] text-sm">No stock added yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-3">
+        <button
+          type="button"
+          (click)="cancelEdit()"
+          class="px-4 py-2 rounded-lg text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#c6d0c9] font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="saveEdit()"
+          class="px-4 py-2 rounded-lg bg-[#4e9767] hover:bg-[#3c7c55] text-white font-medium"
+        >
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Create Product Modal -->
+
+<div
+  *ngIf="showCreateModal"
+  class="fixed inset-0 flex items-center justify-center bg-black/40 z-50 animate-fadeIn"
+>
+  <div
+    class="bg-[#f8fcf9] rounded-2xl shadow-xl p-6 w-[90%] max-w-xl border border-[#d0e7d7] max-h-[90vh] overflow-y-auto relative"
+  >
+    <!-- ✖ Close Button -->
+    <button
+      type="button"
+      (click)="cancelCreate()"
+      class="absolute top-3 right-3 text-[#0e1b12] hover:text-[#e74c3c] transition-colors text-xl font-bold"
+      aria-label="Close"
+    >x</button>
+
+    <h2 class="text-[#0e1b12] text-lg font-bold mb-2 text-center">Add New Product</h2>
+
+    <form class="flex flex-col gap-2">
+
+      <!-- Images -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium mb-1 block">Product Images</label>
+        <!-- Dropzone / Input -->
+        <div
+          class="border-2 border-dashed border-[#d0e7d7] rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#4e9767] transition-colors"
+          (click)="imageInput.click()"
+        >
+          <svg class="w-6 h-6 text-[#4e9767] mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16v4h10v-4M7 12l5-5 5 5M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span class="text-[#0e1b12] text-sm">Click or drag images here</span>
+        </div>
+
+        <input
+          #imageInput
+          type="file"
+          (change)="onImagesSelected($event)"
+          multiple
+          accept="image/*"
+          class="hidden"
+        />
+
+        <!-- Preview selected images -->
+        <div class="flex flex-wrap gap-3 mt-3">
+          <div *ngFor="let img of selectedImages" class="relative w-24 h-24 border border-[#d0e7d7] rounded-lg overflow-hidden">
+            <img [src]="img" class="w-full h-full object-cover" />
+            <button
+              type="button"
+              (click)="removeImage(img)"
+              class="absolute top-1 right-1 bg-[#e74c3c] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-[#c0392b]"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category -->
+     
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Category</label>
+        <select
+          [(ngModel)]="addableProduct.CategoryId"
+          name="category"
+          (change)="onCategoryChange(addableProduct.CategoryId)"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        >
+          <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div> 
+
+      <!-- Brand -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Brand</label>
+        <input
+          type="text"
+          [(ngModel)]="addableProduct.BrandName"
+          name="brandName"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        />
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Name</label>
+        <input
+          type="text"
+          [(ngModel)]="addableProduct.Name"
+          name="name"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Description</label>
+        <textarea
+          [(ngModel)]="addableProduct.Description"
+          name="description"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        ></textarea>
+      </div>
+
+      <!-- Base Price -->
+      <div>
+        <label class="text-[#0e1b12] text-sm font-medium">Base Price</label>
+        <input
+          type="number"
+          step="0.01"
+          [(ngModel)]="addableProduct.BasePrice"
+          name="price"
+          class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+        />
+      </div>
+
+      <!-- Stock Section -->
+      <div>
+        <h3 class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em] px-1 pb-2 pt-2">
+          Stock Levels
+        </h3>
+
+        <!-- Input Row -->
+        <div class="flex gap-3 items-end mb-4">
+          <!-- Color dropdown with preview circle beside -->
+        <div class="flex-1">
+          <label class="text-[#0e1b12] text-sm font-medium block">Color</label>
+          <div class="flex items-center gap-2">
+            <select
+              [(ngModel)]="newStock.color"
+              name="stockColor"
+              class="flex-1 px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                    text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767] appearance-none"
+            >
+              <option value="" disabled selected hidden>Select color</option>
+              <option *ngFor="let c of colors" [value]="c.name">
+                {{ c.name }}
+              </option>
+            </select>
+
+            <!-- live color preview -->
+            <span
+              *ngIf="getColorHex(newStock.color)"
+              class="inline-block w-5 h-5 rounded-full border border-[#c5d8cc]"
+              [style.background-color]="getColorHex(newStock.color)"
+            ></span>
+          </div>
+        </div>
+
+          <div class="flex-1">
+            <label class="text-[#0e1b12] text-sm font-medium block">Size</label>
+              <select
+                [(ngModel)]="newStock.size"
+                name="stockSize"
+                class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                      text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+              >
+                <option value="" disabled selected hidden>
+                  Select size
+                </option>
+                <option *ngFor="let s of availableSizes" [value]="s.name">
+                  {{ s.name }}
+                </option>
+              </select>
+          </div>
+
+          <div class="flex-1">
+            <label class="text-[#0e1b12] text-sm font-medium block">Quantity</label>
+            <input
+              type="number"
+              [(ngModel)]="newStock.quantity"
+              name="stockQuantity"
+              min="0"
+              class="w-full px-4 py-2 rounded-lg bg-[#e7f3eb] border border-[#d0e7d7] 
+                    text-[#0e1b12] focus:outline-none focus:ring-1 focus:ring-[#4e9767]"
+            />
+          </div>
+
+          <button
+            type="button"
+            (click)="addStock()"
+            class="px-4 py-2 bg-[#4e9767] hover:bg-[#3c7c55] text-white rounded-lg font-medium"
+          >
+            + Add
+          </button>
+        </div>
+
+        <!-- Stock Table -->
+        <div class="overflow-hidden rounded-lg border border-[#d0e7d7] bg-[#f8fcf9]">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-[#e7f3eb] text-[#0e1b12] text-sm font-medium">
+                <th class="px-4 py-2 text-left">Color</th>
+                <th class="px-4 py-2 text-left">Size</th>
+                <th class="px-4 py-2 text-left">Quantity</th>
+                <th class="px-4 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of stockItems; let i = index" class="border-t border-[#d0e7d7]">
+                <td class="px-4 py-2 text-sm text-[#0e1b12]">
+                  <div class="flex items-center gap-2">
+                    <span
+                      *ngIf="getColorHex(s.color)"
+                      class="inline-block w-4 h-4 rounded-full border border-[#c5d8cc]"
+                      [style.background-color]="getColorHex(s.color)"
+                    ></span>
+                    <span>{{ s.color }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-2 text-sm text-[#0e1b12]">{{ s.size }}</td>
+                <td class="px-4 py-2 text-sm text-[#4e9767]">{{ s.quantity }}</td>
+                <td class="px-4 py-2 text-right flex justify-end gap-2">
+                  <button
+                    type="button"
+                    (click)="editStock(i)"
+                    class="text-[#4e9767] hover:text-[#3c7c55] text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    (click)="removeStock(i)"
+                    class="text-[#e74c3c] hover:text-[#c0392b] text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="stockItems.length === 0">
+                <td colspan="4" class="px-4 py-3 text-center text-[#8c9a91] text-sm">No stock added yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 pt-3">
+        <button
+          type="button"
+          (click)="cancelCreate()"
+          class="px-4 py-2 rounded-lg text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#c6d0c9] font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="addProductConfirm()"
+          class="px-4 py-2 rounded-lg bg-[#4e9767] hover:bg-[#3c7c55] text-white font-medium"
+        >
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
