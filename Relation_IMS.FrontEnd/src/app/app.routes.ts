@@ -4,10 +4,12 @@ import { Orders } from './orders/orders';
 import { Customers } from './customers/customers';
 import { Reports } from './reports/reports';
 import { Inventory } from './inventory/inventory';
+import { ProductDetails } from './product-details/product-details';
 
 export const routes: Routes = [
 
     {path:"products",component:Products},
+    {path:"products/:id",component:ProductDetails},
     {path:"orders",component:Orders},
     {path:"customers",component:Customers},
     {path:"reports",component:Reports},

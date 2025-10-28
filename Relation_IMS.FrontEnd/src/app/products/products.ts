@@ -1,7 +1,9 @@
 import { Component, OnInit , ElementRef, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import axios from 'axios';
 import { NgFor, NgIf} from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-products',
@@ -20,6 +22,7 @@ export class Products implements OnInit {
 
   searchTerm: string = '';
   private searchTimeout: any;
+  constructor(private router: Router) {}
 
   page = 1;
   loading = false;
@@ -559,9 +562,21 @@ export class Products implements OnInit {
     this.stockItems.splice(index, 1); // temporarily remove to re-add after editing
   }
 
+  onStockInlineChange(index: number) {
+    const stock = this.stockItems[index];
+    if (!stock.color || !stock.size || stock.quantity < 0) return;
+
+    console.log(`🟢 Updated stock row ${index}:`, stock);
+    // You could also debounce and auto-save later if you want.
+  }
+
   getColorHex(colorName: string): string | null {
     const color = this.colors.find(c => c.name === colorName);
     return color ? color.hex : null;
+  }
+
+  NavigateToProductDetail(id:number){
+    this.router.navigate(['/products', id]);
   }
 
 }

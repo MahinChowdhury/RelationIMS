@@ -1,0 +1,146 @@
+<div class="px-40 flex flex-1 justify-center py-5">
+  <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+    <!-- Breadcrumb -->
+    <div class="flex flex-wrap gap-2 p-4">
+      <a class="text-[#4e9767] text-base font-medium leading-normal cursor-pointer" routerLink="/products">Products</a>
+      <span class="text-[#4e9767] text-base font-medium leading-normal">/</span>
+      <span class="text-[#0e1b12] text-base font-medium leading-normal">{{ productDetail?.Name }}</span>
+    </div>
+
+    <!-- Title -->
+    <div class="flex flex-wrap justify-between gap-3 p-4">
+      <div class="flex min-w-72 flex-col gap-3">
+        <p class="text-[#0e1b12] tracking-light text-[32px] font-bold leading-tight">
+          {{ productDetail?.Name }}
+        </p>
+        <p class="text-[#4e9767] text-sm font-normal leading-normal">
+          SKU: {{ productDetail?.Id }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Product Images -->
+    <h3 class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+      Product Images
+    </h3>
+    <div class="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div class="flex items-stretch p-4 gap-3">
+        <div
+          *ngFor="let image of productDetail?.ImageUrls"
+          class="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-40"
+        >
+          <div
+            class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg flex flex-col"
+            [style.background-image]="'url(' + image + ')'"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="p-4 grid grid-cols-[20%_1fr] gap-x-6">
+      <div class="col-span-2 grid grid-cols-subgrid border-t border-t-[#d0e7d7] py-5">
+        <p class="text-[#4e9767] text-sm font-normal leading-normal">Description</p>
+        <p class="text-[#0e1b12] text-sm font-normal leading-normal">
+          {{ productDetail?.Description }}
+        </p>
+      </div>
+
+      <!-- ✅ FIXED Category Section -->
+      <div class="col-span-2 grid grid-cols-subgrid border-t border-t-[#d0e7d7] py-5">
+        <p class="text-[#4e9767] text-sm font-normal leading-normal">Category</p>
+        <p class="text-[#0e1b12] text-sm font-normal leading-normal">
+          {{ productDetail?.CategoryId }}
+        </p>
+      </div>
+
+      <div class="col-span-2 grid grid-cols-subgrid border-t border-t-[#d0e7d7] py-5">
+        <p class="text-[#4e9767] text-sm font-normal leading-normal">Price</p>
+        <p class="text-[#0e1b12] text-sm font-normal leading-normal">
+          ${{ productDetail?.BasePrice }}
+        </p>
+      </div>
+      <div class="col-span-2 grid grid-cols-subgrid border-t border-t-[#d0e7d7] py-5">
+        <p class="text-[#4e9767] text-sm font-normal leading-normal">Brand</p>
+        <p class="text-[#0e1b12] text-sm font-normal leading-normal">
+          {{ productDetail?.BrandName }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Stock Details -->
+    <h3 class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+      Stock Details
+    </h3>
+    <div class="px-4 py-3 @container">
+      <div class="flex overflow-hidden rounded-lg border border-[#d0e7d7] bg-[#f8fcf9]">
+        <table class="flex-1 w-full">
+          <thead>
+            <tr class="bg-[#f8fcf9]">
+              <th class="px-4 py-3 text-left text-[#0e1b12] text-sm font-medium leading-normal">Color</th>
+              <th class="px-4 py-3 text-left text-[#0e1b12] text-sm font-medium leading-normal">Size</th>
+              <th class="px-4 py-3 text-left text-[#0e1b12] text-sm font-medium leading-normal">Variant Price</th>
+              <th class="px-4 py-3 text-left text-[#0e1b12] text-sm font-medium leading-normal">Stock Quantity</th>
+              <th class="px-4 py-3 text-left text-[#0e1b12] text-sm font-medium leading-normal"></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let variant of productDetail?.Variants; let i = index" class="border-t border-t-[#d0e7d7]">
+              <!-- ✅ Safe Color Binding -->
+              <td class="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-normal leading-normal">
+                <span
+                  class="inline-block w-4 h-4 rounded-full border border-[#ccc] mr-2"
+                  [style.background-color]="variant.Color?.HexCode || '#fff'"
+                ></span>
+                {{ variant.Color?.Name || 'N/A' }}
+              </td>
+
+              <!-- ✅ Safe Size Binding -->
+              <td class="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-normal leading-normal">
+                {{ variant.Size?.Name || 'N/A' }}
+              </td>
+
+              <!-- Variant Price -->
+              <td class="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-normal leading-normal">
+                ${{ variant.VariantPrice }}
+              </td>
+
+              <!-- Quantity (editable) -->
+              <td class="h-[72px] px-4 py-2 text-[#4e9767] text-sm font-normal leading-normal">
+                <ng-container *ngIf="editingStockIndex === i; else viewMode">
+                  <input
+                    type="number"
+                    min="0"
+                    [(ngModel)]="editedStock.quantity"
+                    class="border border-[#d0e7d7] rounded-md px-2 py-1 w-20"
+                  />
+                </ng-container>
+                <ng-template #viewMode>
+                  {{ variant.Quantity }}
+                </ng-template>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-4 py-2 text-right">
+                <ng-container *ngIf="editingStockIndex === i; else editButton">
+                  <button (click)="saveEditedStock(i)" class="text-[#4e9767] font-medium text-sm mr-3">
+                    Save
+                  </button>
+                  <button (click)="cancelStockEdit()" class="text-[#e25b45] font-medium text-sm">
+                    Cancel
+                  </button>
+                </ng-container>
+                <ng-template #editButton>
+                  <button (click)="editStockRow(i, variant)" class="text-[#4e9767] font-medium text-sm">
+                    Edit
+                  </button>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

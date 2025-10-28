@@ -77,6 +77,7 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Product?> GetProductByIdAsync(int id)
         {
             var product = await _context.Products
+                .Include(p => p.Category)
                 .Include(p => p.Variants!)
                 .ThenInclude(v => v.Color)
                 .Include(p => p.Variants!)
