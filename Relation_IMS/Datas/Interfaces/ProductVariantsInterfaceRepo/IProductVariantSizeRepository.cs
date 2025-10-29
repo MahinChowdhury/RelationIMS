@@ -8,5 +8,6 @@ namespace Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo
         Task<ProductSize?> AddSizeForProductAsync(CreateNewProductSizeDTO productSize);
         Task<ProductSize?> GetProductSizeByIdAsync(int id);
         Task<List<ProductSize>?> GetAllProductSizeByCategoryIdAsync(int categoryId);
+        Task<ProductSize?> DeleteProductSizeByIdAsync(int id);
     }
 }

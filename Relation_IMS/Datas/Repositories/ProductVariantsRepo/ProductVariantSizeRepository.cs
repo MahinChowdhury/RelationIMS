@@ -46,5 +46,13 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
             var sizes = await _context.ProductSizes.Where(s => s.CategoryId == categoryId).ToListAsync();
             return sizes;
         }
+
+        public async Task<ProductSize?> DeleteProductSizeByIdAsync(int id)
+        {
+            var size = await _context.ProductSizes.FindAsync(id);
+            if (size == null) return null;
+
+            return size;
+        }
     }
 }

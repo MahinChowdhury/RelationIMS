@@ -44,5 +44,16 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
 
             return Ok(sizes);
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<ProductSize?>> DeleteProductSizeByIdAsync([FromRoute] int id) {
+            var deleted = await _repo.DeleteProductSizeByIdAsync(id);
+
+            if (deleted == null) {
+                return NotFound(ModelState);
+            }
+
+            return Ok(deleted);
+        }
     }
 }

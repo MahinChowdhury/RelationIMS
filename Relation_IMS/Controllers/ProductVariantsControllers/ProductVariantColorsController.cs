@@ -44,5 +44,16 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
 
             return Ok(colors);
         }
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<ProductColor?>> DeleteProductColorById([FromRoute] int id)
+        {
+            var deleted = await _repo.DeleteProductColorByIdAsync(id);
+
+            if (deleted == null) {
+                return NotFound(ModelState);
+            }
+
+            return Ok(deleted);
+        }
     }
 }

@@ -130,8 +130,7 @@ namespace Relation_IMS.Migrations
                     BasePrice = table.Column<double>(type: "numeric(18,2)", nullable: false),
                     TotalQuantity = table.Column<int>(type: "integer", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    BrandName = table.Column<string>(type: "text", nullable: false),
-                    BrandId = table.Column<int>(type: "integer", nullable: true)
+                    BrandId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -140,7 +139,8 @@ namespace Relation_IMS.Migrations
                         name: "FK_Products_Brands_BrandId",
                         column: x => x.BrandId,
                         principalTable: "Brands",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,

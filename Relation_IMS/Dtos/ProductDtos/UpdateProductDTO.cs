@@ -12,7 +12,7 @@ namespace Relation_IMS.Dtos.ProductDtos
         [Range(0, double.MaxValue)]
         public double BasePrice { get; set; }
         public int CategoryId { get; set; }
-        public string BrandName { get; set; } = string.Empty;
+        public int BrandId { get; set; }
         public List<string>? ImageUrls { get; set; }
         public List<ProductVariant>? Variants { get; set; }
     }

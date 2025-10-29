@@ -16,6 +16,7 @@ export class Products implements OnInit {
   products: any[] = [];
   colors: any[] = [];
   categories: any[] = [];
+  brands:any[] = [];
 
   placeholderImage: string =
     'https://via.placeholder.com/80x80.png?text=No+Image';
@@ -42,7 +43,7 @@ export class Products implements OnInit {
     Description: '',
     BasePrice: 0,
     CategoryId: 0,
-    BrandName: ''
+    BrandId : 0,
   };
 
   editProduct: any = {
@@ -51,13 +52,14 @@ export class Products implements OnInit {
     Description: '',
     BasePrice: 0,
     CategoryId: 0,
-    BrandName: ''
+    BrandId : 0,
   };
 
   
 
   sortBy: string = '';
   selectedCategory: string = '';
+  selectedBrand : string = '';
   stockOrder: string = '';
 
     // --- image handling (edit modal) ---
@@ -67,7 +69,7 @@ export class Products implements OnInit {
   
 
   async ngOnInit() {
-    await Promise.all([this.loadProducts(), this.loadCategories(),this.loadColors()]);
+    await Promise.all([this.loadProducts(), this.loadCategories(),this.loadColors(),this.loadBrands()]);
   }
 
   ngAfterViewInit() {
@@ -115,6 +117,7 @@ export class Products implements OnInit {
         sortBy: this.sortBy || '',
         stockOrder: this.stockOrder || '',
         categoryId: this.selectedCategory ? this.selectedCategory.toString() : '-1',
+        BrandId : this.selectedBrand ? this.selectedBrand.toString() : '-1',
         pageNumber: this.page.toString(),
         pageSize: '10',
       });
@@ -139,6 +142,19 @@ export class Products implements OnInit {
       }));
     } catch (err) {
       console.error('❌ Failed to load categories:', err);
+    }
+  }
+
+  async loadBrands(){
+    try {
+      const res = await axios.get('https://localhost:7062/api/v1/Brand');
+      this.brands = res.data.map((b: any) => ({
+        Id: b.Id,
+        Name: b.Name,
+      }));
+      console.log('Brands',this.brands);
+    } catch (err) {
+      console.error('❌ Failed to load brands:', err);
     }
   }
 
@@ -168,7 +184,7 @@ export class Products implements OnInit {
       Description: product.Description,
       BasePrice: product.BasePrice,
       CategoryId: product.CategoryId ?? product.Category?.Id ?? 0,
-      BrandName: product.BrandName
+      BrandId: product.BrandId
     };
     this.editSelectedImages = product.ImageUrls ? [...product.ImageUrls] : [];
     this.editImageFiles = [];
@@ -243,7 +259,7 @@ export class Products implements OnInit {
       Description: '',
       BasePrice: 0,
       CategoryId: 0,
-      BrandName: ''
+      BrandId : 0,
     };
     this.editSelectedImages = [];
     this.editImageFiles = [];
@@ -259,7 +275,7 @@ export class Products implements OnInit {
       Description: '',
       BasePrice: 0,
       CategoryId: 0,
-      BrandName: ''
+      BrandId: 0
     }
 
     this.selectedImages = [];
@@ -339,7 +355,7 @@ export class Products implements OnInit {
         Description: this.editProduct.Description,
         BasePrice: this.editProduct.BasePrice,
         CategoryId: this.editProduct.CategoryId,
-        BrandName: this.editProduct.BrandName,
+        BrandId: this.editProduct.BrandId,
         ImageUrls: finalImageUrls,
         // ← DO NOT send Variants here
       };
@@ -399,7 +415,7 @@ export class Products implements OnInit {
         Description: this.addableProduct.Description?.trim(),
         BasePrice: this.addableProduct.BasePrice ?? 0,
         CategoryId: this.addableProduct.CategoryId,
-        BrandName: this.addableProduct.BrandName?.trim(),
+        BrandId: this.addableProduct.BrandId,
         ImageUrls: imageUrls,
       };
 
@@ -443,7 +459,7 @@ export class Products implements OnInit {
         Description: '',
         BasePrice: 0,
         CategoryId: '',
-        BrandName: '',
+        BrandId : 0,
       };
       this.selectedImages = [];
       this.imageFiles = [];
@@ -610,6 +626,11 @@ export class Products implements OnInit {
   getStockStatus(productId: number) {
     const product = this.products.find(p => p.Id === productId);
     return product.TotalQuantity > 0;
+  }
+
+  getBrandName(brandId:number){
+    const brand = this.brands.find(b => b.Id == brandId);
+    return brand.Name;
   }
 
 }

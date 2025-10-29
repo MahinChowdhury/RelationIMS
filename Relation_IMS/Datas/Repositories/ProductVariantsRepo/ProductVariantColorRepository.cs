@@ -47,5 +47,16 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
             return colors;
         }
+
+        public async Task<ProductColor?> DeleteProductColorByIdAsync(int id)
+        {
+            var color = await _context.ProductColors.FirstOrDefaultAsync(c => c.Id == id);
+            if(color == null) return null;
+
+            _context.ProductColors.Remove(color);
+            await _context.SaveChangesAsync();
+
+            return color;
+        }
     }
 }

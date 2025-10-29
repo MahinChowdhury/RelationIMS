@@ -15,7 +15,8 @@ namespace Relation_IMS.Models.ProductModels
         public int TotalQuantity { get; set; } = 0;
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
-        public string BrandName {  get; set; } = string.Empty;
+        public int BrandId { get; set; }
+        public Brand? Brand { get; set; }
         public List<ProductVariant>? Variants { get; set; } = new();
     }
 }

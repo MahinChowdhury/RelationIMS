@@ -15,6 +15,10 @@ interface Size {
   Name: string;
   CategoryId: number;
 }
+interface Brand {
+  Id : number;
+  Name : string;
+}
 interface Variant {
   Id: number;
   ProductId: number;
@@ -38,7 +42,8 @@ interface Product {
   CategoryId: number;
   Category : Category;
   TotalQuantity:number;
-  BrandName: string;
+  BrandId : number;
+  Brand : Brand; 
   ImageUrls: string[];
   Variants: Variant[];
 }
@@ -107,7 +112,7 @@ export class ProductDetails {
         Description: this.productDetail.Description,
         BasePrice: this.productDetail.BasePrice,
         CategoryId: this.productDetail.CategoryId,
-        BrandName: this.productDetail.BrandName,
+        BrandId: this.productDetail.BrandId,
         ImageUrls: finalImageUrls,
         Variants: variantsPayload,
       };

@@ -18,8 +18,8 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Product>>> GetAllProductsAsync(string? search,string? sortBy,string? stockOrder, int categoryId = -1 ,int pageNumber = 1, int pageSize = 10) {
-            var products = await _repo.GetAllProductsAsync(search,sortBy, stockOrder, categoryId, pageNumber, pageSize);
+        public async Task<ActionResult<List<Product>>> GetAllProductsAsync(string? search,string? sortBy,string? stockOrder, int brandId = -1, int categoryId = -1 ,int pageNumber = 1, int pageSize = 10) {
+            var products = await _repo.GetAllProductsAsync(search,sortBy, stockOrder, brandId, categoryId, pageNumber, pageSize);
 
             return Ok(products);
         }
@@ -51,7 +51,7 @@ namespace Relation_IMS.Controllers
 
             if (created == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new {Message = "Product couldn't be created."});
             }
 
             return CreatedAtAction(nameof(GetProductById), new { id = created.Id }, created);

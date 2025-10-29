@@ -41,24 +41,28 @@ namespace Relation_IMS.Datas.Repositories
             return product;
         }
 
-        public async Task<List<Product>> GetAllProductsAsync(string? search, string? sortBy, string? stockOrder, int categoryId, int pageNumber, int pageSize)
+        public async Task<List<Product>> GetAllProductsAsync(string? search, string? sortBy, string? stockOrder, int brandId, int categoryId, int pageNumber, int pageSize)
         {
             var query = _context.Products.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.Name.Contains(search,StringComparison.OrdinalIgnoreCase) || p.BrandName.Contains(search, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.Name.Contains(search,StringComparison.OrdinalIgnoreCase) || p.Brand!.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(sortBy))
             {
                 if (sortBy.Equals("SKU")) query = query.OrderBy(p => p.Id);
-                if (sortBy.Equals("Brand")) query = query.OrderBy(p => p.BrandName);
-                if (sortBy.Equals("Priceasc")) query = query.OrderBy(p => p.BasePrice);
-                if (sortBy.Equals("Pricedesc")) query = query.OrderByDescending(p => p.BasePrice);
+                if (sortBy.Equals("Brand")) query = query.OrderBy(p => p.BrandId);
+                if (sortBy.Equals("Price Ascending")) query = query.OrderBy(p => p.BasePrice);
+                if (sortBy.Equals("Price Descending")) query = query.OrderByDescending(p => p.BasePrice);
             }
             else {
                 query = query.OrderBy(p => p.Id);
+            }
+
+            if (brandId != -1) {
+                query = query.Where(p => p.BrandId == brandId);
             }
 
             if (categoryId != -1)
@@ -67,8 +71,8 @@ namespace Relation_IMS.Datas.Repositories
             }
 
             if (!string.IsNullOrEmpty(stockOrder)){
-                if (stockOrder.Equals("asc")) query = query.OrderBy(p => p.TotalQuantity);
-                if (stockOrder.Equals("desc")) query = query.OrderByDescending(p => p.TotalQuantity);
+                if (stockOrder.Equals("Ascending")) query = query.OrderBy(p => p.TotalQuantity);
+                if (stockOrder.Equals("Descending")) query = query.OrderByDescending(p => p.TotalQuantity);
             }
 
             var products = await query
@@ -83,6 +87,7 @@ namespace Relation_IMS.Datas.Repositories
         {
             var product = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Brand)
                 .Include(p => p.Variants!)
                 .ThenInclude(v => v.Color)
                 .Include(p => p.Variants!)
@@ -107,7 +112,7 @@ namespace Relation_IMS.Datas.Repositories
             product.Name = updateDto.Name;
             product.Description = updateDto.Description;
             product.BasePrice = updateDto.BasePrice;
-            product.BrandName = updateDto.BrandName;
+            product.BrandId = updateDto.BrandId;
             product.CategoryId = updateDto.CategoryId;
 
             // Handle ImageUrls (replace all)

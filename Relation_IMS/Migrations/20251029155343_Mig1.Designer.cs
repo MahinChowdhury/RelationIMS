@@ -13,7 +13,7 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251027052655_Mig1")]
+    [Migration("20251029155343_Mig1")]
     partial class Mig1
     {
         /// <inheritdoc />
@@ -242,12 +242,8 @@ namespace Relation_IMS.Migrations
                     b.Property<double>("BasePrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("BrandId")
+                    b.Property<int>("BrandId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("BrandName")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -426,15 +422,19 @@ namespace Relation_IMS.Migrations
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Product", b =>
                 {
-                    b.HasOne("Relation_IMS.Models.Brand", null)
+                    b.HasOne("Relation_IMS.Models.Brand", "Brand")
                         .WithMany("Products")
-                        .HasForeignKey("BrandId");
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Relation_IMS.Models.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Brand");
 
                     b.Navigation("Category");
                 });
