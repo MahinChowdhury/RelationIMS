@@ -219,11 +219,15 @@ export class Products implements OnInit {
   }
 
   removeEditImage(img: string) {
-    const index = this.editSelectedImages.indexOf(img);
-    if (index > -1) {
-      this.editSelectedImages.splice(index, 1);
-      this.editImageFiles.splice(index, 1);
+    const idx = this.editSelectedImages.indexOf(img);
+    if (idx === -1) return;
+
+    // If it was a preview (data URL) → also drop the File
+    if (!img.startsWith('http')) {
+      this.editImageFiles.splice(idx, 1);
     }
+
+    this.editSelectedImages.splice(idx, 1);
     if (this.editImageInput) this.editImageInput.nativeElement.value = '';
   }
 
@@ -271,80 +275,99 @@ export class Products implements OnInit {
     if (!this.editProduct.Id) return;
 
     try {
-      const imageUrls: string[] = [];
-
-      // 🖼 Upload newly added images
+      // ── 1. Upload NEW images only ─────────────────────────────────────
+      const newImageUrls: string[] = [];
       if (this.editImageFiles.length > 0) {
         for (const file of this.editImageFiles) {
           const formData = new FormData();
           formData.append('file', file);
-          const uploadRes = await axios.post(
-            `https://localhost:7062/api/v1/Blob/upload`,
+          const res = await axios.post(
+            'https://localhost:7062/api/v1/Blob/upload',
             formData,
             { headers: { 'Content-Type': 'multipart/form-data' } }
           );
-          imageUrls.push(uploadRes.data);
+          newImageUrls.push(res.data); // ← real URL
         }
       }
 
-      const finalImageUrls = [
-        ...this.editSelectedImages.filter(img => img.startsWith('http')),
-        ...imageUrls,
-      ];
+      // ── 2. Build final ImageUrls (existing + new) ─────────────────────
+      const existingUrls = this.editSelectedImages.filter(img => img.startsWith('http'));
+      const finalImageUrls = [...existingUrls, ...newImageUrls];
 
-      // 🗑️ Delete removed variants before updating
+      // ── 3. DELETE removed variants first ─────────────────────────────
       for (const variantId of this.deletedVariantIds) {
         try {
           await axios.delete(`https://localhost:7062/api/v1/ProductVariants/${variantId}`);
-          console.log(`🗑️ Deleted variant ID: ${variantId}`);
+          console.log(`Deleted variant ${variantId}`);
         } catch (err) {
-          console.error(`❌ Failed to delete variant ID ${variantId}:`, err);
+          console.error(`Failed to delete variant ${variantId}`, err);
         }
       }
       this.deletedVariantIds = [];
 
-      // 🧩 Build variants payload
-      const variantsPayload = this.stockItems.map((item: any) => {
-        const colorObj = this.colors.find(c => c.name === item.color);
-        const sizeObj = this.availableSizes.find(s => s.name === item.size);
+      // ── 4. UPDATE / CREATE variants one by one ───────────────────────
+      for (const item of this.stockItems) {
+        const color = this.colors.find(c => c.name === item.color);
+        const size = this.availableSizes.find(s => s.name === item.size);
 
-        return {
-          Id: item.id ?? 0,
+        if (!color || !size) continue;
+
+        const variantPayload = {
+          Id: item.id ?? 0, // 0 = create new
           ProductId: this.editProduct.Id,
-          ProductColorId: colorObj?.id ?? 0,
-          ProductSizeId: sizeObj?.id ?? 0,
+          ProductColorId: color.id,
+          ProductSizeId: size.id,
+          VariantPrice: this.editProduct.BasePrice, // ← REQUIRED
           Quantity: item.quantity,
-          VariantPrice: this.editProduct.BasePrice,
         };
-      });
 
-      // 🟣 Update product
-      await axios.put(`https://localhost:7062/api/v1/Product/${this.editProduct.Id}`, {
+        if (item.id) {
+          // UPDATE existing
+          await axios.put(
+            `https://localhost:7062/api/v1/ProductVariants/${item.id}`,
+            variantPayload
+          );
+        } else {
+          // CREATE new
+          await axios.post('https://localhost:7062/api/v1/ProductVariants', variantPayload);
+        }
+      }
+
+      // ── 5. UPDATE only the product (NO Variants in payload) ───────────
+      const productUpdatePayload = {
         Name: this.editProduct.Name,
         Description: this.editProduct.Description,
         BasePrice: this.editProduct.BasePrice,
         CategoryId: this.editProduct.CategoryId,
         BrandName: this.editProduct.BrandName,
         ImageUrls: finalImageUrls,
-        Variants: variantsPayload,
-      });
+        // ← DO NOT send Variants here
+      };
 
-      // ✅ Update local UI
-      const index = this.products.findIndex(p => p.Id === this.editProduct.Id);
-      if (index !== -1) {
-        this.products[index] = {
-          ...this.products[index],
+      await axios.put(
+        `https://localhost:7062/api/v1/Product/${this.editProduct.Id}`,
+        productUpdatePayload
+      );
+
+      // ── 6. Refresh local UI ───────────────────────────────────────────
+      const idx = this.products.findIndex(p => p.Id === this.editProduct.Id);
+      if (idx !== -1) {
+        this.products[idx] = {
+          ...this.products[idx],
           ...this.editProduct,
           ImageUrls: finalImageUrls,
-          Variants: variantsPayload,
         };
       }
-      
+
+      // ── 7. Cleanup & close ───────────────────────────────────────────
       this.stockItems = [];
+      this.editSelectedImages = [];
+      this.editImageFiles = [];
       this.showEditModal = false;
-    } catch (err) {
-      console.error('❌ Failed to update product:', err);
-      alert('❌ Failed to update product.');
+
+    } catch (err: any) {
+      console.error('Failed to update product:', err.response?.data || err);
+      alert('Failed to update product: ' + (err.response?.data?.message || err.message));
     }
   }
 
@@ -506,7 +529,12 @@ export class Products implements OnInit {
 
   // ---------------- STOCK MANAGEMENT ----------------
   
-  stockItems: { color: string; size: string; quantity: number }[] = []; 
+  stockItems: { 
+    id?: number;        // ← Add this (optional for new items)
+    color: string; 
+    size: string; 
+    quantity: number 
+  }[] = [];
   newStock = { color: '', size: '', quantity: 0 };
   availableSizes: any[] = [];
   deletedVariantIds: number[] = [];

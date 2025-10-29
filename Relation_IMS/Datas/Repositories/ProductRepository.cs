@@ -50,14 +50,19 @@ namespace Relation_IMS.Datas.Repositories
                 query = query.Where(p => p.Name.Contains(search) || p.BrandName.Contains(search));
             }
 
-            if (!string.IsNullOrEmpty(sortBy)) {
+            if (!string.IsNullOrEmpty(sortBy))
+            {
                 if (sortBy.Equals("SKU")) query = query.OrderBy(p => p.Id);
                 if (sortBy.Equals("Brand")) query = query.OrderBy(p => p.BrandName);
                 if (sortBy.Equals("Priceasc")) query = query.OrderBy(p => p.BasePrice);
                 if (sortBy.Equals("Pricedesc")) query = query.OrderByDescending(p => p.BasePrice);
             }
+            else {
+                query = query.OrderBy(p => p.Id);
+            }
 
-            if (categoryId != -1) {
+            if (categoryId != -1)
+            {
                 query = query.Where(p => p.CategoryId == categoryId);
             }
 
@@ -90,25 +95,59 @@ namespace Relation_IMS.Datas.Repositories
             return product;
         }
 
-        public async Task<Product?> UpdateProductByIdAsync(int id, UpdateProductDTO updateDto) {
+        public async Task<Product?> UpdateProductByIdAsync(int id, UpdateProductDTO updateDto)
+        {
+            var product = await _context.Products
+                .Include(p => p.Variants)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-            if (product == null) {
-                return null;
-            }
+            if (product == null) return null;
 
+            // Update scalar fields
             product.Name = updateDto.Name;
             product.Description = updateDto.Description;
             product.BasePrice = updateDto.BasePrice;
             product.BrandName = updateDto.BrandName;
             product.CategoryId = updateDto.CategoryId;
-            product.Variants = updateDto.Variants;
 
-            int totalQuantity = updateDto.Variants!.Select(p => p.Quantity).Sum();
-            product.TotalQuantity = totalQuantity;
+            // Handle ImageUrls (replace all)
+            product.ImageUrls = updateDto.ImageUrls ?? new List<string>();
 
+            // ── ONLY if you want to sync variants via DTO ─────────────────────
+            if (updateDto.Variants != null)
+            {
+                // Remove old variants not in the new list
+                var newIds = updateDto.Variants.Where(v => v.Id > 0).Select(v => v.Id).ToList();
+                var toRemove = product.Variants.Where(v => !newIds.Contains(v.Id)).ToList();
+                _context.ProductVariants.RemoveRange(toRemove);
+
+                // Add / Update
+                foreach (var dtoVar in updateDto.Variants)
+                {
+                    var existing = product.Variants.FirstOrDefault(v => v.Id == dtoVar.Id);
+                    if (existing != null)
+                    {
+                        existing.ProductColorId = dtoVar.ProductColorId;
+                        existing.ProductSizeId = dtoVar.ProductSizeId;
+                        existing.VariantPrice = dtoVar.VariantPrice;
+                        existing.Quantity = dtoVar.Quantity;
+                    }
+                    else
+                    {
+                        product.Variants.Add(new ProductVariant
+                        {
+                            ProductId = product.Id,
+                            ProductColorId = dtoVar.ProductColorId,
+                            ProductSizeId = dtoVar.ProductSizeId,
+                            VariantPrice = dtoVar.VariantPrice,
+                            Quantity = dtoVar.Quantity
+                        });
+                    }
+                }
+            }
+
+            product.TotalQuantity = product.Variants.Sum(v => v.Quantity);
             await _context.SaveChangesAsync();
-
             return product;
         }
     }

@@ -36,6 +36,7 @@ interface Product {
   Description: string;
   BasePrice: number;
   CategoryId: number;
+  TotalQuantity:number;
   BrandName: string;
   ImageUrls: string[];
   Variants: Variant[];
@@ -125,5 +126,9 @@ export class ProductDetails {
 
   cancelStockEdit() {
     this.editingStockIndex = null;
+  }
+
+  getStockStatus(){
+    return this.productDetail!.TotalQuantity > 0;
   }
 }

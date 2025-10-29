@@ -1,164 +1,249 @@
-<div class="px-4 md:px-8 lg:px-40 flex flex-1 justify-center py-5">
-  <div class="layout-content-container flex flex-col w-full max-w-[960px]">
+<div class="px-4 md:px-8 lg:px-16 xl:px-32 flex flex-1 justify-center py-5 bg-gradient-to-br from-[#f8fcf9] to-white min-h-screen">
+  <div class="layout-content-container flex flex-col w-full max-w-[1600px]">
 
     <!-- Breadcrumb -->
     <div class="flex flex-wrap gap-2 p-4 text-sm md:text-base">
-      <a class="text-[#4e9767] font-medium cursor-pointer" routerLink="/products">Products</a>
+      <a class="text-[#4e9767] font-semibold cursor-pointer hover:text-[#3d7a52] transition-colors" routerLink="/products">Products</a>
       <span class="text-[#4e9767] font-medium">/</span>
-      <span class="text-[#0e1b12] font-medium">{{ productDetail?.Name }}</span>
+      <span class="text-[#0e1b12] font-semibold">{{ productDetail?.Name }}</span>
     </div>
 
-    <!-- Title -->
-    <div class="flex flex-col md:flex-row md:justify-between gap-3 p-4">
-      <div class="flex flex-col gap-1">
-        <p class="text-[#0e1b12] text-2xl md:text-[32px] font-bold leading-tight">
-          {{ productDetail?.Name }}
-        </p>
-        <p class="text-[#4e9767] text-sm font-normal">
-          SKU: {{ productDetail?.Id }}
-        </p>
-      </div>
-    </div>
+    <!-- MAIN LAYOUT: Images (Left 70%) + Info (Right 30%) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 p-4">
+      
+      <!-- ========== LEFT: PRODUCT IMAGES (70% width) ========== -->
+      <div class="lg:col-span-8 space-y-6">
+        
 
-    <!-- Product Images -->
-    <h3 class="text-[#0e1b12] text-lg font-bold px-4 pb-2 pt-4">
-      Product Images
-    </h3>
-    <div class="overflow-x-auto hide-scrollbar px-4">
-      <div class="flex gap-3 pb-2">
-        <div
-          *ngFor="let image of productDetail?.ImageUrls"
-          class="flex-shrink-0 w-[120px] h-[120px] md:w-[160px] md:h-[160px] rounded-lg bg-center bg-cover bg-no-repeat"
-          [style.background-image]="'url(' + image + ')'"
-        ></div>
-      </div>
-    </div>
-
-    <!-- Product Info -->
-    <div class="p-4 space-y-5 border-t border-[#d0e7d7]">
-      <!-- Description -->
-      <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-x-6">
-        <p class="text-[#4e9767] text-sm font-normal">Description</p>
-        <p class="text-[#0e1b12] text-sm font-normal">{{ productDetail?.Description }}</p>
-      </div>
-
-      <!-- Category -->
-      <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-x-6 border-t border-[#d0e7d7] pt-5">
-        <p class="text-[#4e9767] text-sm font-normal">Category</p>
-        <p class="text-[#0e1b12] text-sm font-normal">{{ productDetail?.CategoryId }}</p>
-      </div>
-
-      <!-- Price -->
-      <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-x-6 border-t border-[#d0e7d7] pt-5">
-        <p class="text-[#4e9767] text-sm font-normal">Price</p>
-        <p class="text-[#0e1b12] text-sm font-normal">${{ productDetail?.BasePrice }}</p>
-      </div>
-
-      <!-- Brand -->
-      <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-x-6 border-t border-[#d0e7d7] pt-5">
-        <p class="text-[#4e9767] text-sm font-normal">Brand</p>
-        <p class="text-[#0e1b12] text-sm font-normal">{{ productDetail?.BrandName }}</p>
-      </div>
-    </div>
-
-    <!-- Stock Details -->
-    <h3 class="text-[#0e1b12] text-lg font-bold px-4 pb-2 pt-6">
-      Stock Details
-    </h3>
-
-    <div class="px-4 pb-4">
-      <!-- Mobile cards (hidden on md+) -->
-      <div class="space-y-3 md:hidden">
-        <div *ngFor="let variant of productDetail?.Variants; let i = index"
-            class="rounded-lg border border-[#d0e7d7] bg-[#f8fcf9] p-3 text-sm">
-
-          <!-- Color -->
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-medium text-[#4e9767]">Color:</span>
-            <span class="inline-block w-4 h-4 rounded-full border border-[#ccc]"
-                  [style.background-color]="variant.Color?.HexCode || '#fff'"></span>
-            <span class="text-[#0e1b12]">{{ variant.Color?.Name || 'N/A' }}</span>
-          </div>
-
-          <!-- Size -->
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-medium text-[#4e9767]">Size:</span>
-            <span class="text-[#0e1b12]">{{ variant.Size?.Name || 'N/A' }}</span>
-          </div>
-
-          <!-- Price -->
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-medium text-[#4e9767]">Price:</span>
-            <span class="text-[#0e1b12]">${{ variant.VariantPrice }}</span>
-          </div>
-
-          <!-- Quantity + actions -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="font-medium text-[#4e9767]">Qty:</span>
-
-              <ng-container *ngIf="editingStockIndex === i; else qtyView">
-                <input type="number" min="0" [(ngModel)]="editedStock.quantity"
-                      class="w-16 border border-[#d0e7d7] rounded px-1 py-0.5 text-sm">
-              </ng-container>
-              <ng-template #qtyView>
-                <span class="text-[#0e1b12]">{{ variant.Quantity }}</span>
-              </ng-template>
-            </div>
-
-            <div class="flex gap-2">
-              <ng-container *ngIf="editingStockIndex === i; else editBtn">
-                <button (click)="saveEditedStock(i)" class="text-[#4e9767] font-medium text-xs">Save</button>
-                <button (click)="cancelStockEdit()" class="text-[#e25b45] font-medium text-xs">Cancel</button>
-              </ng-container>
-              <ng-template #editBtn>
-                <button (click)="editStockRow(i, variant)" class="text-[#4e9767] font-medium text-xs">Edit</button>
-              </ng-template>
+        <!-- Product Images Gallery - MUCH BIGGER -->
+        <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+          
+          <!-- Large Image Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div
+              *ngFor="let image of productDetail?.ImageUrls"
+              class="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 aspect-square bg-gradient-to-br from-gray-50 to-gray-100"
+            >
+              <!-- Image -->
+              <div
+                class="w-full h-full bg-center bg-cover bg-no-repeat transition-transform duration-700 group-hover:scale-110"
+                [style.background-image]="'url(' + image + ')'"
+              ></div>
+              
+              <!-- Corner accent -->
+              <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#4e9767]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Desktop table (hidden on <md) -->
-      <div class="hidden md:block overflow-x-auto hide-scrollbar">
-        <div class="min-w-[640px] rounded-lg border border-[#d0e7d7] bg-[#f8fcf9] overflow-hidden">
-          <table class="w-full table-fixed md:table-auto">
-            <!-- … same <thead> as before … -->
+      <!-- ========== RIGHT: PRODUCT INFO (30% width) ========== -->
+      <div class="lg:col-span-4">
+        <!-- Title Section -->
+        <div class="bg-white rounded-3xl shadow-lg p-6 border border-gray-100 mb-4">
+          <p class="text-[#0e1b12] text-3xl md:text-4xl font-black leading-tight mb-2">
+            {{ productDetail?.Name }}
+          </p>
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 bg-[#e7f3eb] text-[#4e9767] text-sm font-bold rounded-full">
+              SKU: {{ productDetail?.Id }}
+            </span>
+            <span class="px-3 py-1 bg-gradient-to-r from-[#4e9767] to-[#3d7a52] text-white text-sm font-bold rounded-full shadow-md">
+              {{getStockStatus() ? "In Stock" : "Out of Stock"}}
+            </span>
+          </div>
+        </div>
+        <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 sticky top-4 space-y-6">
+          <h3 class="text-[#0e1b12] text-2xl font-bold mb-4 flex items-center gap-3">
+            <svg class="w-6 h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Product Details
+          </h3>
+
+          <!-- Description -->
+          <div class="space-y-2">
+            <p class="text-[#4e9767] text-sm font-bold uppercase tracking-wide">Description</p>
+            <p class="text-[#0e1b12] text-base leading-relaxed bg-[#f8fcf9] p-4 rounded-xl">
+              {{ productDetail?.Description }}
+            </p>
+          </div>
+
+          <div class="h-px bg-gradient-to-r from-transparent via-[#d0e7d7] to-transparent"></div>
+
+          <!-- Category -->
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-[#e7f3eb] rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-[#4e9767]" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-[#4e9767] text-sm font-bold uppercase">Category</p>
+              <p class="text-[#0e1b12] text-lg font-semibold mt-1">{{ productDetail?.CategoryId }}</p>
+            </div>
+          </div>
+
+          <div class="h-px bg-gradient-to-r from-transparent via-[#d0e7d7] to-transparent"></div>
+
+          <!-- Price -->
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-[#4e9767] text-sm font-bold uppercase">Base Price</p>
+              <p class="text-[#0e1b12] text-3xl font-black mt-1">${{ productDetail?.BasePrice }}</p>
+            </div>
+          </div>
+
+          <div class="h-px bg-gradient-to-r from-transparent via-[#d0e7d7] to-transparent"></div>
+
+          <!-- Brand -->
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 bg-[#e7f3eb] rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-[#4e9767]" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-[#4e9767] text-sm font-bold uppercase">Brand</p>
+              <p class="text-[#0e1b12] text-lg font-semibold mt-1">{{ productDetail?.BrandName }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== STOCK DETAILS (Full Width Below) ========== -->
+    <div class="p-4 mt-8">
+      <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+        <h3 class="text-[#0e1b12] text-3xl font-black mb-8 flex items-center gap-3">
+          <svg class="w-8 h-8 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+          Stock & Variants
+        </h3>
+
+        <!-- Mobile cards (hidden on md+) -->
+        <div class="space-y-4 md:hidden">
+          <div *ngFor="let variant of productDetail?.Variants; let i = index"
+              class="rounded-2xl border-2 border-[#d0e7d7] bg-gradient-to-br from-[#f8fcf9] to-white p-5 shadow-md hover:shadow-lg transition-shadow">
+
+            <!-- Color -->
+            <div class="flex items-center gap-3 mb-3">
+              <span class="font-bold text-[#4e9767] text-sm uppercase">Color:</span>
+              <span class="inline-block w-8 h-8 rounded-xl border-2 border-gray-300 shadow-sm"
+                    [style.background-color]="variant.Color?.HexCode || '#fff'"></span>
+              <span class="text-[#0e1b12] font-semibold text-base">{{ variant.Color?.Name || 'N/A' }}</span>
+            </div>
+
+            <!-- Size -->
+            <div class="flex items-center gap-3 mb-3">
+              <span class="font-bold text-[#4e9767] text-sm uppercase">Size:</span>
+              <span class="text-[#0e1b12] font-semibold text-base">{{ variant.Size?.Name || 'N/A' }}</span>
+            </div>
+
+            <!-- Price -->
+            <div class="flex items-center gap-3 mb-3">
+              <span class="font-bold text-[#4e9767] text-sm uppercase">Price:</span>
+              <span class="text-[#0e1b12] font-bold text-lg">${{ variant.VariantPrice }}</span>
+            </div>
+
+            <!-- Quantity + actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-[#d0e7d7]">
+              <div class="flex items-center gap-3">
+                <span class="font-bold text-[#4e9767] text-sm uppercase">Qty:</span>
+
+                <ng-container *ngIf="editingStockIndex === i; else qtyView">
+                  <input type="number" min="0" [(ngModel)]="editedStock.quantity"
+                        class="w-20 border-2 border-[#4e9767] rounded-xl px-3 py-2 text-base font-semibold focus:ring-2 focus:ring-[#4e9767] focus:outline-none">
+                </ng-container>
+                <ng-template #qtyView>
+                  <span class="text-[#0e1b12] font-bold text-lg px-3 py-1 bg-[#e7f3eb] rounded-lg">{{ variant.Quantity }}</span>
+                </ng-template>
+              </div>
+
+              <div class="flex gap-3">
+                <ng-container *ngIf="editingStockIndex === i; else editBtn">
+                  <button (click)="saveEditedStock(i)" class="px-4 py-2 bg-[#4e9767] text-white font-bold rounded-xl hover:bg-[#3d7a52] transition-colors shadow-md">Save</button>
+                  <button (click)="cancelStockEdit()" class="px-4 py-2 bg-[#e25b45] text-white font-bold rounded-xl hover:bg-[#c74938] transition-colors shadow-md">Cancel</button>
+                </ng-container>
+                <ng-template #editBtn>
+                  <button (click)="editStockRow(i, variant)" class="px-4 py-2 bg-[#e7f3eb] text-[#4e9767] font-bold rounded-xl hover:bg-[#d0e7d7] transition-colors shadow-md">Edit</button>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop table (hidden on <md) - MUCH BIGGER -->
+        <div class="hidden md:block overflow-x-auto rounded-2xl border-2 border-[#d0e7d7] shadow-lg">
+          <table class="w-full">
             <thead>
-              <tr class="bg-[#f8fcf9]">
-                <th class="w-[22%] px-2 py-3 text-left text-[#0e1b12] text-xs md:text-sm font-medium">Color</th>
-                <th class="w-[18%] px-2 py-3 text-left text-[#0e1b12] text-xs md:text-sm font-medium">Size</th>
-                <th class="w-[22%] px-2 py-3 text-left text-[#0e1b12] text-xs md:text-sm font-medium">Variant Price</th>
-                <th class="w-[22%] px-2 py-3 text-left text-[#0e1b12] text-xs md:text-sm font-medium">Stock</th>
-                <th class="w-[16%] px-2 py-3 text-right text-[#0e1b12] text-xs md:text-sm font-medium"></th>
+              <tr class="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] text-white">
+                <th class="px-6 py-5 text-left text-base font-bold uppercase tracking-wide">Color</th>
+                <th class="px-6 py-5 text-left text-base font-bold uppercase tracking-wide">Size</th>
+                <th class="px-6 py-5 text-left text-base font-bold uppercase tracking-wide">Variant Price</th>
+                <th class="px-6 py-5 text-left text-base font-bold uppercase tracking-wide">Stock Quantity</th>
+                <th class="px-6 py-5 text-right text-base font-bold uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
 
-            <tbody>
+            <tbody class="bg-white">
               <tr *ngFor="let variant of productDetail?.Variants; let i = index"
-                  class="border-t border-[#d0e7d7]">
-                <!-- Same cells as in the previous answer -->
-                <td class="px-2 py-3 text-xs md:text-sm text-[#0e1b12]">
-                  <span class="inline-block w-4 h-4 rounded-full border border-[#ccc] mr-1 md:mr-2"
-                        [style.background-color]="variant.Color?.HexCode || '#fff'"></span>
-                  {{ variant.Color?.Name || 'N/A' }}
+                  class="border-b border-[#d0e7d7] hover:bg-[#f8fcf9] transition-colors">
+                
+                <!-- Color -->
+                <td class="px-6 py-5 text-base text-[#0e1b12] font-medium">
+                  <div class="flex items-center gap-3">
+                    <span class="inline-block w-10 h-10 rounded-xl border-2 border-gray-300 shadow-sm"
+                          [style.background-color]="variant.Color?.HexCode || '#fff'"></span>
+                    <span class="font-semibold">{{ variant.Color?.Name || 'N/A' }}</span>
+                  </div>
                 </td>
-                <td class="px-2 py-3 text-xs md:text-sm text-[#0e1b12]">{{ variant.Size?.Name || 'N/A' }}</td>
-                <td class="px-2 py-3 text-xs md:text-sm text-[#0e1b12]">${{ variant.VariantPrice }}</td>
-                <td class="px-2 py-3 text-xs md:text-sm text-[#4e9767]">
+                
+                <!-- Size -->
+                <td class="px-6 py-5 text-base text-[#0e1b12] font-semibold">
+                  {{ variant.Size?.Name || 'N/A' }}
+                </td>
+                
+                <!-- Price -->
+                <td class="px-6 py-5 text-lg text-[#0e1b12] font-bold">
+                  ${{ variant.VariantPrice }}
+                </td>
+                
+                <!-- Stock -->
+                <td class="px-6 py-5 text-base text-[#4e9767] font-bold">
                   <ng-container *ngIf="editingStockIndex === i; else viewMode">
                     <input type="number" min="0" [(ngModel)]="editedStock.quantity"
-                          class="w-16 md:w-20 border border-[#d0e7d7] rounded px-1 py-0.5 text-xs md:text-sm">
+                          class="w-28 border-2 border-[#4e9767] rounded-xl px-4 py-2 text-base font-bold focus:ring-2 focus:ring-[#4e9767] focus:outline-none">
                   </ng-container>
-                  <ng-template #viewMode>{{ variant.Quantity }}</ng-template>
+                  <ng-template #viewMode>
+                    <span class="px-4 py-2 bg-[#e7f3eb] rounded-lg inline-block">{{ variant.Quantity }}</span>
+                  </ng-template>
                 </td>
-                <td class="px-2 py-3 text-right">
+                
+                <!-- Actions -->
+                <td class="px-6 py-5 text-right">
                   <ng-container *ngIf="editingStockIndex === i; else editBtn">
-                    <button (click)="saveEditedStock(i)" class="text-[#4e9767] text-xs md:text-sm font-medium mr-2">Save</button>
-                    <button (click)="cancelStockEdit()" class="text-[#e25b45] text-xs md:text-sm font-medium">Cancel</button>
+                    <button (click)="saveEditedStock(i)" 
+                            class="px-5 py-2.5 bg-[#4e9767] text-white font-bold rounded-xl hover:bg-[#3d7a52] transition-all shadow-md hover:shadow-lg mr-2">
+                      Save
+                    </button>
+                    <button (click)="cancelStockEdit()" 
+                            class="px-5 py-2.5 bg-[#e25b45] text-white font-bold rounded-xl hover:bg-[#c74938] transition-all shadow-md hover:shadow-lg">
+                      Cancel
+                    </button>
                   </ng-container>
                   <ng-template #editBtn>
-                    <button (click)="editStockRow(i, variant)" class="text-[#4e9767] text-xs md:text-sm font-medium">Edit</button>
+                    <button (click)="editStockRow(i, variant)" 
+                            class="px-5 py-2.5 bg-[#e7f3eb] text-[#4e9767] font-bold rounded-xl hover:bg-[#d0e7d7] transition-all shadow-md hover:shadow-lg">
+                      Edit Stock
+                    </button>
                   </ng-template>
                 </td>
               </tr>
@@ -174,10 +259,10 @@
 <!-- Utility to hide native scrollbars while keeping scrollability -->
 <style>
   .hide-scrollbar {
-    -ms-overflow-style: none;           /* IE & Edge */
-    scrollbar-width: none;              /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   .hide-scrollbar::-webkit-scrollbar {
-    display: none;                      /* Chrome, Safari, Opera */
+    display: none;
   }
 </style>
