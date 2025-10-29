@@ -47,7 +47,7 @@ namespace Relation_IMS.Datas.Repositories
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.Name.Contains(search) || p.BrandName.Contains(search));
+                query = query.Where(p => p.Name.Contains(search,StringComparison.OrdinalIgnoreCase) || p.BrandName.Contains(search, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(sortBy))
@@ -118,13 +118,13 @@ namespace Relation_IMS.Datas.Repositories
             {
                 // Remove old variants not in the new list
                 var newIds = updateDto.Variants.Where(v => v.Id > 0).Select(v => v.Id).ToList();
-                var toRemove = product.Variants.Where(v => !newIds.Contains(v.Id)).ToList();
+                var toRemove = product.Variants!.Where(v => !newIds.Contains(v.Id)).ToList();
                 _context.ProductVariants.RemoveRange(toRemove);
 
                 // Add / Update
                 foreach (var dtoVar in updateDto.Variants)
                 {
-                    var existing = product.Variants.FirstOrDefault(v => v.Id == dtoVar.Id);
+                    var existing = product.Variants!.FirstOrDefault(v => v.Id == dtoVar.Id);
                     if (existing != null)
                     {
                         existing.ProductColorId = dtoVar.ProductColorId;
@@ -134,7 +134,7 @@ namespace Relation_IMS.Datas.Repositories
                     }
                     else
                     {
-                        product.Variants.Add(new ProductVariant
+                        product.Variants!.Add(new ProductVariant
                         {
                             ProductId = product.Id,
                             ProductColorId = dtoVar.ProductColorId,
@@ -146,7 +146,7 @@ namespace Relation_IMS.Datas.Repositories
                 }
             }
 
-            product.TotalQuantity = product.Variants.Sum(v => v.Quantity);
+            product.TotalQuantity = product.Variants!.Sum(v => v.Quantity);
             await _context.SaveChangesAsync();
             return product;
         }

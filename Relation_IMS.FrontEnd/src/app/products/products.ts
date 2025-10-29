@@ -607,6 +607,11 @@ export class Products implements OnInit {
     this.router.navigate(['/products', id]);
   }
 
+  getStockStatus(productId: number) {
+    const product = this.products.find(p => p.Id === productId);
+    return product.TotalQuantity > 0;
+  }
+
 }
 
 

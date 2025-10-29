@@ -36,6 +36,7 @@ interface Product {
   Description: string;
   BasePrice: number;
   CategoryId: number;
+  Category : Category;
   TotalQuantity:number;
   BrandName: string;
   ImageUrls: string[];
@@ -54,12 +55,13 @@ export class ProductDetails {
   productDetail: Product | null = null;
   editingStockIndex: number | null = null;
   editedStock = { quantity: 0 };
+  categories:Category[] = [];
 
   constructor(private route: ActivatedRoute) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.productId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadProductDetail();
+    await Promise.all([this.loadProductDetail()]);
   }
 
   async loadProductDetail() {
@@ -71,6 +73,7 @@ export class ProductDetails {
       console.error(`❌ Failed to load product details of id ${this.productId}:`, err);
     }
   }
+
 
   editStockRow(index: number, variant: Variant) {
     this.editingStockIndex = index;

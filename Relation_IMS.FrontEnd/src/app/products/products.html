@@ -151,7 +151,7 @@
               <!-- IN STOCK BADGE -->
               <div class="absolute top-4 left-4 z-10">
                 <span class="px-3 py-1.5 bg-white/95 backdrop-blur-sm text-[#4e9767] text-xs font-bold rounded-full shadow-lg border border-[#4e9767]/20">
-                  IN STOCK
+                  {{getStockStatus(product.Id) ? "In Stock" : "Out of Stock"}}
                 </span>
               </div>
 
