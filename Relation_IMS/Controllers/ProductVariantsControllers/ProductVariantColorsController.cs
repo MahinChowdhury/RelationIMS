@@ -18,6 +18,9 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         [HttpPost]
         public async Task<IActionResult> AddColorForProductAsync([FromBody] CreateNewProductColorDTO productColor)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var created = await _repo.AddColorForProductAsync(productColor);
             if (created == null)
             {

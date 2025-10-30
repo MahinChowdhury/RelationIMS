@@ -6,15 +6,19 @@ namespace Relation_IMS.Models.ProductModels
     public class Product
     {
         public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Product name is required.")]
+        public string Name { get; set; } = null!;
         public List<string>? ImageUrls { get; set; }
         public string? Description { get; set; }
         [Column(TypeName = "decimal(18,2)")]
+        [Required(ErrorMessage = "Product Price is required.")]
         [Range(0, double.MaxValue)]
         public double BasePrice { get; set; } = 0.0;
         public int TotalQuantity { get; set; } = 0;
+        [Required(ErrorMessage = "Category Id is required.")]
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
+        [Required(ErrorMessage = "Brand Id is required.")]
         public int BrandId { get; set; }
         public Brand? Brand { get; set; }
         public List<ProductVariant>? Variants { get; set; } = new();

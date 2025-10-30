@@ -6,12 +6,16 @@ namespace Relation_IMS.Dtos.ProductDtos
 {
     public class UpdateProductDTO
     {
-        public string Name { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Product name is required.")]
+        public string Name { get; set; } = null!;
         public string? Description { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
+        [Required(ErrorMessage = "Product Price is required.")]
         public double BasePrice { get; set; }
+        [Required(ErrorMessage = "Category Id is required.")]
         public int CategoryId { get; set; }
+        [Required(ErrorMessage = "Brand Id is required.")]
         public int BrandId { get; set; }
         public List<string>? ImageUrls { get; set; }
         public List<ProductVariant>? Variants { get; set; }

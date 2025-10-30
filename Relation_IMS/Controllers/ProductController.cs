@@ -47,6 +47,9 @@ namespace Relation_IMS.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProductAsync([FromBody] CreateNewProductDTO productDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var created = await _repo.CreateProductAsync(productDto);
 
             if (created == null)
@@ -59,6 +62,10 @@ namespace Relation_IMS.Controllers
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProductByIdAsync([FromRoute] int id, [FromBody] UpdateProductDTO updateDto) {
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var product = await _repo.UpdateProductByIdAsync(id,updateDto);
             return Ok(product);
         }

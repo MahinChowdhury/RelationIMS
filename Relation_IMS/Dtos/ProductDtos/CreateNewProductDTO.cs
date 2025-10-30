@@ -7,7 +7,8 @@ namespace Relation_IMS.Dtos.ProductDtos
 {
     public class CreateNewProductDTO
     {
-        public string Name { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Product name is required.")]
+        public string Name { get; set; } = null!;
         public List<string>? ImageUrls { get; set; }
         public string? Description { get; set; }
         [Column(TypeName = "decimal(18,2)")]

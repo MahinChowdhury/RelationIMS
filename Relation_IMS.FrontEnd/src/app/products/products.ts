@@ -302,7 +302,7 @@ export class Products implements OnInit {
             formData,
             { headers: { 'Content-Type': 'multipart/form-data' } }
           );
-          newImageUrls.push(res.data); // ← real URL
+          newImageUrls.push(res.data); // e.g., "https://..."
         }
       }
 
@@ -321,35 +321,26 @@ export class Products implements OnInit {
       }
       this.deletedVariantIds = [];
 
-      // ── 4. UPDATE / CREATE variants one by one ───────────────────────
-      for (const item of this.stockItems) {
+      // ── 4. Build full variants payload (like ProductDetails) ──────────
+      const variantsPayload = this.stockItems.map(item => {
         const color = this.colors.find(c => c.name === item.color);
         const size = this.availableSizes.find(s => s.name === item.size);
 
-        if (!color || !size) continue;
+        if (!color || !size) {
+          throw new Error(`Invalid color/size: ${item.color}/${item.size}`);
+        }
 
-        const variantPayload = {
+        return {
           Id: item.id ?? 0, // 0 = create new
           ProductId: this.editProduct.Id,
           ProductColorId: color.id,
           ProductSizeId: size.id,
-          VariantPrice: this.editProduct.BasePrice, // ← REQUIRED
+          VariantPrice: this.editProduct.BasePrice,
           Quantity: item.quantity,
         };
+      });
 
-        if (item.id) {
-          // UPDATE existing
-          await axios.put(
-            `https://localhost:7062/api/v1/ProductVariants/${item.id}`,
-            variantPayload
-          );
-        } else {
-          // CREATE new
-          await axios.post('https://localhost:7062/api/v1/ProductVariants', variantPayload);
-        }
-      }
-
-      // ── 5. UPDATE only the product (NO Variants in payload) ───────────
+      // ── 5. FULL PRODUCT UPDATE (including Variants) ───────────────────
       const productUpdatePayload = {
         Name: this.editProduct.Name,
         Description: this.editProduct.Description,
@@ -357,7 +348,7 @@ export class Products implements OnInit {
         CategoryId: this.editProduct.CategoryId,
         BrandId: this.editProduct.BrandId,
         ImageUrls: finalImageUrls,
-        // ← DO NOT send Variants here
+        Variants: variantsPayload, // ← THIS IS REQUIRED
       };
 
       await axios.put(
@@ -365,28 +356,23 @@ export class Products implements OnInit {
         productUpdatePayload
       );
 
-      // ── 6. Refresh local UI ───────────────────────────────────────────
-      const idx = this.products.findIndex(p => p.Id === this.editProduct.Id);
-      if (idx !== -1) {
-        this.products[idx] = {
-          ...this.products[idx],
-          ...this.editProduct,
-          ImageUrls: finalImageUrls,
-        };
-      }
+      console.log('Product & variants updated successfully');
 
-      // ── 7. Cleanup & close ───────────────────────────────────────────
+      // ── 6. Refresh the product list (UI sync) ─────────────────────────
+      await this.loadProducts(true);
+
+      // ── 7. Cleanup & close modal ─────────────────────────────────────
       this.stockItems = [];
       this.editSelectedImages = [];
       this.editImageFiles = [];
+      this.editingStockIndex = null; // ← important!
       this.showEditModal = false;
 
     } catch (err: any) {
-      console.error('Failed to update product:', err.response?.data || err);
+      console.error('Failed to update product:', err);
       alert('Failed to update product: ' + (err.response?.data?.message || err.message));
     }
   }
-
 
 
   async addProductConfirm() {
@@ -631,6 +617,33 @@ export class Products implements OnInit {
   getBrandName(brandId:number){
     const brand = this.brands.find(b => b.Id == brandId);
     return brand.Name;
+  }
+
+  // Add these properties
+  editingStockIndex: number | null = null;
+  editedStock = { color: '', size: '', quantity: 0 };
+
+  // Start editing a row
+  startStockEdit(index: number, stock: any) {
+    this.editingStockIndex = index;
+    this.editedStock = {
+      color: stock.color,
+      size: stock.size,
+      quantity: stock.quantity,
+    };
+  }
+
+  // Save edited row (local only – real save happens in saveEdit())
+  saveStockEdit(index: number) {
+    if (this.editedStock.quantity < 0) return;
+
+    this.stockItems[index] = { ...this.editedStock };
+    this.editingStockIndex = null;
+  }
+
+  // Cancel editing
+  cancelStockEdit() {
+    this.editingStockIndex = null;
   }
 
 }

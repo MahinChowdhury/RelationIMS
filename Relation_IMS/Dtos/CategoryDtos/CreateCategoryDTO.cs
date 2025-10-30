@@ -1,7 +1,10 @@
-﻿namespace Relation_IMS.Dtos.CategoryDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Relation_IMS.Dtos.CategoryDtos
 {
     public class CreateCategoryDTO
     {
-        public string Name { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Category Name is required")]
+        public string Name { get; set; } = null!;
     }
 }

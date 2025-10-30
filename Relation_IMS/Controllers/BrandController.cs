@@ -49,6 +49,9 @@ namespace Relation_IMS.Controllers
         [HttpPost]
         public async Task<ActionResult<Brand>> CreateBrandAsync(CreateBrandDTO brandDTO)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var created = await _repo.CreateBrandAsync(brandDTO);
 
             return CreatedAtAction(nameof(GetBrandById), new { id = created.Id }, created);

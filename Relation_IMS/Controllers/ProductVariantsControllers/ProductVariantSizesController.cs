@@ -18,6 +18,9 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         [HttpPost]
         public async Task<IActionResult> AddSizeForProductAsync([FromBody] CreateNewProductSizeDTO productSize)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var created = await _repo.AddSizeForProductAsync(productSize);
             if (created == null)
             {
@@ -52,7 +55,6 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (deleted == null) {
                 return NotFound(ModelState);
             }
-
             return Ok(deleted);
         }
     }

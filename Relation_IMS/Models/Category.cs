@@ -1,11 +1,13 @@
 ﻿using Relation_IMS.Models.ProductModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models;
 public class Category
 {
     public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Category Name is required")]
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; }
     public List<Product>? Products { get; set; } = new List<Product>();
 }
 

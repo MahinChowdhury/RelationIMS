@@ -33,6 +33,10 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
         [HttpPost]
         public async Task<ActionResult<ProductVariant>> CreateProductVariantAsync([FromBody] CreateProductVariantDTO variantDTO) {
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var created = await _repo.CreateProductVariantAsync(variantDTO);
             if (created == null) { 
                 return BadRequest();
@@ -44,6 +48,9 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult<ProductVariant>> UpdateProductVariantAsync([FromRoute] int id, [FromBody] UpdateProductVariantDTO variantDTO)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var updated = await _repo.UpdateProductVariantAsync(id,variantDTO);
             if (updated == null)
             {

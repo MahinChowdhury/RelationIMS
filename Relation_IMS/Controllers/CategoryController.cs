@@ -59,6 +59,9 @@ namespace Relation_IMS.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Category>> UpdateCategory([FromRoute] int id, [FromBody] UpdateCategoryDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var updated = await _categoryRepository.UpdateCategoryAsync(id,dto);
 
             if (updated == null)

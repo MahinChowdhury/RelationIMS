@@ -13,7 +13,7 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251029155343_Mig1")]
+    [Migration("20251030080315_Mig1")]
     partial class Mig1
     {
         /// <inheritdoc />

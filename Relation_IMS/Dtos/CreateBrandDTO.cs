@@ -1,7 +1,10 @@
-﻿namespace Relation_IMS.Dtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Relation_IMS.Dtos
 {
     public class CreateBrandDTO
     {
-        public string? Name { get; set; }
+        [Required(ErrorMessage = "Brand Name is required")]
+        public string Name { get; set; } = null!;
     }
 }

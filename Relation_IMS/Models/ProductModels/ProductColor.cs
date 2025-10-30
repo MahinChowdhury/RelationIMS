@@ -1,9 +1,13 @@
-﻿namespace Relation_IMS.Models.ProductModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Relation_IMS.Models.ProductModels
 {
     public class ProductColor
     {
         public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string HexCode { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Color name is required.")]
+        public string Name { get; set; } = null!;
+        [Required(ErrorMessage = "Color hexcode is required.")]
+        public string HexCode { get; set; } = null!;
     }
 }

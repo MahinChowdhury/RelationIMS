@@ -1,8 +1,12 @@
-﻿namespace Relation_IMS.Dtos.ProductDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Relation_IMS.Dtos.ProductDtos
 {
     public class CreateNewProductColorDTO
     {
-        public string Name { get; set; } = string.Empty;
-        public string HexCode { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Color name is required.")]
+        public string Name { get; set; } = null!;
+        [Required(ErrorMessage = "Color hexcode is required.")]
+        public string HexCode { get; set; } = null!;
     }
 }
