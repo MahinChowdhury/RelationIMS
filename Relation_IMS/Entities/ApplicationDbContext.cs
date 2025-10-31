@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models;
+using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.JWTModels;
+using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Entities;
@@ -56,6 +58,10 @@ public class ApplicationDbContext : DbContext
                 IsActive = true
             }
         );
+
+        modelBuilder.Entity<Order>()
+                .Property(i => i.PaymentStatus)
+                .HasConversion<string>();
     }
 
     //For JWT
@@ -72,5 +78,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ProductSize> ProductSizes { get; set; }
     public DbSet<Brand> Brands { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
 
 }

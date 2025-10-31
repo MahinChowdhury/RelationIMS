@@ -1,7 +1,6 @@
-﻿using Relation_IMS.Models.ProductModels;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Relation_IMS.Models;
+namespace Relation_IMS.Models.ProductModels;
 public class Category
 {
     public int Id { get; set; }

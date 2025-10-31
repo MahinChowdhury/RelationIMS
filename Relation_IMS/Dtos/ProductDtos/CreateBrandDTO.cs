@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Relation_IMS.Dtos
+namespace Relation_IMS.Dtos.ProductDtos
 {
     public class CreateBrandDTO
     {

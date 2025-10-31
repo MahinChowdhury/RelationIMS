@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Relation_IMS.Models.OrderModels;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Relation_IMS.Models.ProductModels
@@ -14,6 +15,7 @@ namespace Relation_IMS.Models.ProductModels
         [Required(ErrorMessage = "Product Price is required.")]
         [Range(0, double.MaxValue)]
         public double BasePrice { get; set; } = 0.0;
+        [Range(0, int.MaxValue)]
         public int TotalQuantity { get; set; } = 0;
         [Required(ErrorMessage = "Category Id is required.")]
         public int CategoryId { get; set; }
@@ -22,5 +24,6 @@ namespace Relation_IMS.Models.ProductModels
         public int BrandId { get; set; }
         public Brand? Brand { get; set; }
         public List<ProductVariant>? Variants { get; set; } = new();
+        public List<OrderItem>? OrderItems { get; set; }
     }
 }

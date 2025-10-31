@@ -14,7 +14,9 @@ namespace Relation_IMS.Dtos.ProductDtos
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
         public double BasePrice { get; set; } = 0.0;
+        [Required(ErrorMessage = "Category Id is required.")]
         public int CategoryId { get; set; }
+        [Required(ErrorMessage = "Brand Id is required.")]
         public int BrandId { get; set; }
     }
 }

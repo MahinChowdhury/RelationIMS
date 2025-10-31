@@ -52,6 +52,9 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
             var size = await _context.ProductSizes.FindAsync(id);
             if (size == null) return null;
 
+            _context.ProductSizes.Remove(size);
+            await _context.SaveChangesAsync();
+
             return size;
         }
     }

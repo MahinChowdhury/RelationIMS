@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models.JWTModels;
+using Relation_IMS.Models.OrderModels;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 using static Azure.Core.HttpHeader;
@@ -29,5 +30,7 @@ namespace Relation_IMS.Models
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         // Navigation property for Refresh Tokens
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+        public List<Order>? Orders { get; set; }
     }
 }

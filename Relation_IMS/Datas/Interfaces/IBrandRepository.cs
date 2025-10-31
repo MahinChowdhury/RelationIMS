@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Relation_IMS.Dtos;
-using Relation_IMS.Models;
+using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Datas.Interfaces
 {

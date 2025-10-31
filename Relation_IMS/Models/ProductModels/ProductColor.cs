@@ -7,7 +7,7 @@ namespace Relation_IMS.Models.ProductModels
         public int Id { get; set; }
         [Required(ErrorMessage = "Color name is required.")]
         public string Name { get; set; } = null!;
-        [Required(ErrorMessage = "Color hexcode is required.")]
+        [Required(ErrorMessage = "Color Hexcode is required.")]
         public string HexCode { get; set; } = null!;
     }
 }

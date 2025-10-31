@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
-using Relation_IMS.Dtos;
+using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Entities;
-using Relation_IMS.Models;
+using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Datas.Repositories
 {

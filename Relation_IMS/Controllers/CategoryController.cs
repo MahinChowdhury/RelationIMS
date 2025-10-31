@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.CategoryDtos;
-using Relation_IMS.Models;
+using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Controllers
 {
