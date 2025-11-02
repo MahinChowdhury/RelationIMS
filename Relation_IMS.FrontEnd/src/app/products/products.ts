@@ -291,12 +291,13 @@ export class Products implements OnInit {
     if (!this.editProduct.Id) return;
 
     try {
-      // ── 1. Upload NEW images only ─────────────────────────────────────
+      // ── 1️⃣ Upload NEW images only ──────────────────────────────
       const newImageUrls: string[] = [];
       if (this.editImageFiles.length > 0) {
         for (const file of this.editImageFiles) {
           const formData = new FormData();
           formData.append('file', file);
+
           const res = await axios.post(
             'https://localhost:7062/api/v1/Blob/upload',
             formData,
@@ -306,11 +307,11 @@ export class Products implements OnInit {
         }
       }
 
-      // ── 2. Build final ImageUrls (existing + new) ─────────────────────
+      // ── 2️⃣ Build final ImageUrls (existing + new) ───────────────
       const existingUrls = this.editSelectedImages.filter(img => img.startsWith('http'));
       const finalImageUrls = [...existingUrls, ...newImageUrls];
 
-      // ── 3. DELETE removed variants first ─────────────────────────────
+      // ── 3️⃣ DELETE removed variants (if any) ─────────────────────
       for (const variantId of this.deletedVariantIds) {
         try {
           await axios.delete(`https://localhost:7062/api/v1/ProductVariants/${variantId}`);
@@ -321,34 +322,40 @@ export class Products implements OnInit {
       }
       this.deletedVariantIds = [];
 
-      // ── 4. Build full variants payload (like ProductDetails) ──────────
-      const variantsPayload = this.stockItems.map(item => {
-        const color = this.colors.find(c => c.name === item.color);
-        const size = this.availableSizes.find(s => s.name === item.size);
+      // ── 4️⃣ Update only existing variants (PUT) ─────────────────
+      for (const item of this.stockItems) {
+        if (item.id && item.id !== 0) {
+          const color = this.colors.find(c => c.name === item.color);
+          const size = this.availableSizes.find(s => s.name === item.size);
 
-        if (!color || !size) {
-          throw new Error(`Invalid color/size: ${item.color}/${item.size}`);
+          if (!color || !size) continue;
+
+          const payload = {
+            Id: item.id,
+            ProductId: this.editProduct.Id,
+            ProductColorId: color.id,
+            ProductSizeId: size.id,
+            VariantPrice: this.editProduct.BasePrice,
+            Quantity: item.quantity
+          };
+
+          try {
+            await axios.put(`https://localhost:7062/api/v1/ProductVariants/${item.id}`, payload);
+            console.log(`Updated variant ${item.id}`);
+          } catch (err) {
+            console.error(`Failed to update variant ${item.id}`, err);
+          }
         }
+      }
 
-        return {
-          Id: item.id ?? 0, // 0 = create new
-          ProductId: this.editProduct.Id,
-          ProductColorId: color.id,
-          ProductSizeId: size.id,
-          VariantPrice: this.editProduct.BasePrice,
-          Quantity: item.quantity,
-        };
-      });
-
-      // ── 5. FULL PRODUCT UPDATE (including Variants) ───────────────────
+      // ── 5️⃣ Update Product itself (not variants anymore) ─────────
       const productUpdatePayload = {
         Name: this.editProduct.Name,
         Description: this.editProduct.Description,
         BasePrice: this.editProduct.BasePrice,
         CategoryId: this.editProduct.CategoryId,
         BrandId: this.editProduct.BrandId,
-        ImageUrls: finalImageUrls,
-        Variants: variantsPayload, // ← THIS IS REQUIRED
+        ImageUrls: finalImageUrls
       };
 
       await axios.put(
@@ -356,16 +363,15 @@ export class Products implements OnInit {
         productUpdatePayload
       );
 
-      console.log('Product & variants updated successfully');
+      console.log('✅ Product updated successfully');
 
-      // ── 6. Refresh the product list (UI sync) ─────────────────────────
+      // ── 6️⃣ Refresh list & close modal ──────────────────────────
       await this.loadProducts(true);
 
-      // ── 7. Cleanup & close modal ─────────────────────────────────────
       this.stockItems = [];
       this.editSelectedImages = [];
       this.editImageFiles = [];
-      this.editingStockIndex = null; // ← important!
+      this.editingStockIndex = null;
       this.showEditModal = false;
 
     } catch (err: any) {
@@ -575,6 +581,64 @@ export class Products implements OnInit {
     // reset input fields
     this.newStock = { color: '', size: '', quantity: 0 };
   }
+
+  async addEditStock() {
+    if (!this.newStock.color || !this.newStock.size || this.newStock.quantity <= 0) {
+      alert('Please select color, size, and enter a valid quantity.');
+      return;
+    }
+
+    try {
+      // Check duplicates
+      const exists = this.stockItems.find(
+        s => s.color === this.newStock.color && s.size === this.newStock.size
+      );
+      if (exists) {
+        exists.quantity = this.newStock.quantity;
+        return;
+      }
+
+      // Find color & size objects
+      const color = this.colors.find(c => c.name === this.newStock.color);
+      const size = this.availableSizes.find(s => s.name === this.newStock.size);
+
+      if (!color || !size) {
+        alert('Invalid color or size selected.');
+        return;
+      }
+
+      // ── 1️⃣ Build payload for ProductVariant ───────────────
+      const payload = {
+        ProductId: this.editProduct.Id,
+        ProductColorId: color.id,
+        ProductSizeId: size.id,
+        VariantPrice: this.editProduct.BasePrice,
+        Quantity: this.newStock.quantity
+      };
+
+      // ── 2️⃣ Call API to create variant ─────────────────────
+      const res = await axios.post('https://localhost:7062/api/v1/ProductVariants', payload);
+      const createdVariant = res.data;
+
+      // ── 3️⃣ Push to stockItems list with ID ────────────────
+      this.stockItems.push({
+        id: createdVariant.Id,                // from API
+        color: this.newStock.color,
+        size: this.newStock.size,
+        quantity: this.newStock.quantity
+      });
+
+      console.log('Variant created successfully:', createdVariant);
+
+      // ── 4️⃣ Reset input fields ─────────────────────────────
+      this.newStock = { color: '', size: '', quantity: 0 };
+
+    } catch (err: any) {
+      console.error('Failed to create variant:', err);
+      alert('Failed to add variant: ' + (err.response?.data?.message || err.message));
+    }
+  }
+
 
   removeStock(index: number) {
     const item = this.stockItems[index];
