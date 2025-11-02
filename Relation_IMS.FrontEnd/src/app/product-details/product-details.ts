@@ -61,6 +61,7 @@ export class ProductDetails {
   editingStockIndex: number | null = null;
   editedStock = { quantity: 0 };
   categories:Category[] = [];
+  selectedImage: string = ''; // NEW: Track selected image
 
   constructor(private route: ActivatedRoute) {}
 
@@ -73,12 +74,22 @@ export class ProductDetails {
     try {
       const res = await axios.get<Product>(`https://localhost:7062/api/v1/Product/${this.productId}`);
       this.productDetail = res.data;
+      
+      // NEW: Set first image as default selected image
+      if (this.productDetail.ImageUrls && this.productDetail.ImageUrls.length > 0) {
+        this.selectedImage = this.productDetail.ImageUrls[0];
+      }
+      
       console.log('🟢 Loaded product detail:', this.productDetail);
     } catch (err) {
       console.error(`❌ Failed to load product details of id ${this.productId}:`, err);
     }
   }
 
+  // NEW: Method to select image
+  selectImage(image: string) {
+    this.selectedImage = image;
+  }
 
   editStockRow(index: number, variant: Variant) {
     this.editingStockIndex = index;
