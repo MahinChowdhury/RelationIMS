@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, KeyValuePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import axios from 'axios';
@@ -51,7 +51,7 @@ interface Product {
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [RouterLink, NgFor, NgIf, FormsModule],
+  imports: [RouterLink, NgFor, NgIf, FormsModule, KeyValuePipe],
   templateUrl: './product-details.html',
   styleUrl: './product-details.css',
 })
@@ -136,6 +136,7 @@ export class ProductDetails {
 
       console.log('✅ Stock updated successfully:', requestBody);
       this.editingStockIndex = null;
+      this._lastVariantsHash = '';
     } catch (err) {
       // rollback
       this.productDetail.Variants[index].Quantity = prevQuantity;
@@ -150,4 +151,45 @@ export class ProductDetails {
   getStockStatus(){
     return this.productDetail!.TotalQuantity > 0;
   }
+
+  groupBy<T, K>(array: T[], keyFn: (item: T) => K): Map<K, T[]> {
+    const map = new Map<K, T[]>();
+    for (const item of array) {
+      const key = keyFn(item);
+      const group = map.get(key) ?? [];
+      group.push(item);
+      map.set(key, group);
+    }
+    return map;
+  }
+  
+  private _groupedVariantsCache = new Map<number | undefined, Variant[]>();
+  private _lastVariantsHash = '';
+
+  // ---------- inside the component ----------
+  groupedVariants(): Map<number | undefined, Variant[]> {
+    if (!this.productDetail?.Variants) {
+      this._groupedVariantsCache.clear();
+      return this._groupedVariantsCache;
+    }
+
+    // Create a simple hash of the variants array (based on Id + Quantity)
+    const currentHash = this.productDetail.Variants
+      .map(v => `${v.Id}-${v.Quantity}`)
+      .sort()
+      .join('|');
+
+    // Only recompute if variants changed
+    if (currentHash !== this._lastVariantsHash) {
+      this._lastVariantsHash = currentHash;
+      this._groupedVariantsCache = this.groupBy(this.productDetail.Variants, v => v.Color?.Id);
+    }
+
+    return this._groupedVariantsCache;
+  }
+  variantIdx(variant: Variant): number {
+    return this.productDetail?.Variants.findIndex(v => v.Id === variant.Id) ?? -1;
+  }
+
+  
 }
