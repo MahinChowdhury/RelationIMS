@@ -16,8 +16,8 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Order>>> GetAllOrdersAsync() {
-            var orders = await _repo.GetAllOrdersAsync();
+        public async Task<ActionResult<List<Order>>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
+            var orders = await _repo.GetAllOrdersAsync(search,  sortBy,pageNumber = 1, pageSize = 20);
             return Ok(orders);
         }
         [HttpGet("{id:int}")]
@@ -54,5 +54,25 @@ namespace Relation_IMS.Controllers
 
             return Ok(updated);
         }
+
+        [HttpGet("{id:int}/items")]
+        public async Task<ActionResult<List<OrderItem>>> GetItemsByOrderId([FromRoute] int id)
+        {
+            var items = await _repo.GetItemsByOrderIdAsync(id);
+            return Ok(items);
+        }
+
+        [HttpGet("customer/{customerId:int}")]
+        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId)
+        {
+            var orders = await _repo.GetOrderByCustomerIdAsync(customerId);
+
+            if (orders == null) {
+                return NotFound(new {message = $"Customer with id : {customerId} not found." });
+            }
+
+            return Ok(orders);
+        }
+
     }
 }

@@ -4,6 +4,7 @@ using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.CustomerDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.CustomerModels;
+using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Datas.Repositories
 {
@@ -36,9 +37,20 @@ namespace Relation_IMS.Datas.Repositories
             return customer;
         }
 
-        public async Task<List<Customer>> GetAllCustomersAsync()
+        public async Task<List<Customer>> GetAllCustomersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20)
         {
-            var customers = await _context.Customers.ToListAsync();
+            var query = _context.Customers.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+            }
+
+
+            var customers = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Include(o => o.Orders)
+                .ToListAsync();
 
             return customers;
         }

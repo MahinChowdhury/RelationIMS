@@ -119,7 +119,7 @@ export class Products implements OnInit {
         categoryId: this.selectedCategory ? this.selectedCategory.toString() : '-1',
         BrandId : this.selectedBrand ? this.selectedBrand.toString() : '-1',
         pageNumber: this.page.toString(),
-        pageSize: '10',
+        pageSize: '20',
       });
 
       const res = await axios.get(`https://localhost:7062/api/v1/Product?${params.toString()}`);

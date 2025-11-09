@@ -1,21 +1,18 @@
-﻿using Relation_IMS.Models.ProductModels;
+﻿using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Models.ProductModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Relation_IMS.Models.OrderModels
+namespace Relation_IMS.Dtos.OrderDtos
 {
-    public class OrderItem
+    public class CreateOrderItemDTO
     {
-        public int Id { get; set; }
-        [Required(ErrorMessage = "Order id is required.")]
         public int OrderId { get; set; }
-        public Order? Order { get; set; }
         [Required(ErrorMessage = "Product id is required.")]
         public int ProductId { get; set; }
-        public Product? Product { get; set; }
 
         [Required(ErrorMessage = "Item quantity is required.")]
-        [Range(0,int.MaxValue)]
+        [Range(0, int.MaxValue)]
         public int Quantity { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "unit price is required.")]
@@ -25,6 +22,5 @@ namespace Relation_IMS.Models.OrderModels
         [Required(ErrorMessage = "SubTotal amount is required.")]
         [Range(0, double.MaxValue)]
         public decimal Subtotal { get; set; }
-        public DateTime CreatedAt = DateTime.UtcNow;
     }
 }

@@ -107,7 +107,7 @@ export class CustomersComponent implements OnInit {
         search: this.searchTerm || '',
         sortBy: this.sortBy || '',
         pageNumber: this.page.toString(),
-        pageSize: '10'
+        pageSize: '20'
       });
 
       const res = await axios.get(`https://localhost:7062/api/v1/Customer?${params.toString()}`);

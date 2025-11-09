@@ -61,7 +61,8 @@ export class ProductDetails {
   editingStockIndex: number | null = null;
   editedStock = { quantity: 0 };
   categories:Category[] = [];
-  selectedImage: string = ''; // NEW: Track selected image
+  selectedImage: string = ''; 
+  TotalQuantity : number = 0;
 
   constructor(private route: ActivatedRoute) {}
 

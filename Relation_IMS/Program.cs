@@ -56,6 +56,7 @@ builder.Services.AddScoped<IProductVariantSizeRepository, ProductVariantSizeRepo
 builder.Services.AddScoped<IBrandRepository, BrandRepository>();
 builder.Services.AddScoped<ICustomerRepository,CustomerRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
 Lazy<IClientCacheService>? clientCacheInstance = null;
 

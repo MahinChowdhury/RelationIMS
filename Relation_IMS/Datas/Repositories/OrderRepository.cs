@@ -10,11 +10,11 @@ namespace Relation_IMS.Datas.Repositories
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly ApplicationDbContext _repo;
+        private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public OrderRepository(ApplicationDbContext repo, IMapper mapper)
+        public OrderRepository(ApplicationDbContext context, IMapper mapper)
         {
-            _repo = repo;
+            _context = context;
             _mapper = mapper;
         }
 
@@ -22,39 +22,64 @@ namespace Relation_IMS.Datas.Repositories
         {
             var newOrder = _mapper.Map<Order>(orderDto);
 
-            await _repo.Orders.AddAsync(newOrder);
-            await _repo.SaveChangesAsync();
+            await _context.Orders.AddAsync(newOrder);
+            await _context.SaveChangesAsync();
 
             return newOrder;
         }
 
         public async Task<Order?> DeleteOrderByIdAsync(int id)
         {
-            var order = await _repo.Orders.FindAsync(id);
+            var order = await _context.Orders.FindAsync(id);
             if (order == null) return null;
 
-            _repo.Orders.Remove(order);
-            await _repo.SaveChangesAsync();
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
 
             return order;
         }
 
-        public async Task<List<Order>> GetAllOrdersAsync()
+        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20)
         {
-            var orders = await _repo.Orders.ToListAsync();
+
+            var query = _context.Orders.AsQueryable();
+
+            var orders = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Include(c => c.Customer)
+                .ToListAsync();
+
+            return orders;
+        }
+
+        public async Task<List<OrderItem>> GetItemsByOrderIdAsync(int id)
+        {
+            var items = await _context.OrderItems.Where(o => o.OrderId == id).ToListAsync();
+
+            return items;
+        }
+
+        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId)
+        {
+            var orders = await _context.Orders.Where(o => o.CustomerId == customerId).ToListAsync();
+
             return orders;
         }
 
         public async Task<Order?> GetOrderByIdAsync(int id)
         {
-            var order = await _repo.Orders.FindAsync(id);
+            var order = await _context.Orders.Include(x => x.OrderItems)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             if (order == null) return null;
+
             return order;
         }
 
         public async Task<Order?> UpdateOrderByIdAsync(int id, UpdateOrderDTO updateDto)
         {
-            var order = await _repo.Orders.FindAsync(id);
+            var order = await _context.Orders.FindAsync(id);
             if (order == null) return null;
 
             order.CustomerId = updateDto.CustomerId;
@@ -64,7 +89,7 @@ namespace Relation_IMS.Datas.Repositories
             order.UserId = updateDto.UserId;
             order.Remarks = updateDto.Remarks;
 
-            await _repo.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return order;
         }

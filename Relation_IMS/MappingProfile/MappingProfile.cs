@@ -20,6 +20,7 @@ namespace Relation_IMS.MappingProfile
             CreateMap<CreateBrandDTO, Brand>();
             CreateMap<CreateCustomerDTO, Customer>();
             CreateMap<CreateOrderDTO, Order>();
+            CreateMap<CreateOrderItemDTO, OrderItem>();
         }
     }
 }

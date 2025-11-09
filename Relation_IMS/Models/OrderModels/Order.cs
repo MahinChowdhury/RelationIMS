@@ -31,6 +31,6 @@ namespace Relation_IMS.Models.OrderModels
         public User? User { get; set; }
         public string? Remarks { get; set; }
 
-        public DateTime CreatedAt = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

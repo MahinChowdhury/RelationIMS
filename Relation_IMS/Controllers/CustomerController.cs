@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Validations;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.CustomerDtos;
 using Relation_IMS.Models.CustomerModels;
+using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Controllers
 {
@@ -18,8 +20,8 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Customer>>> GetAllCustomersAsync() {
-            var customers = await _repo.GetAllCustomersAsync();
+        public async Task<ActionResult<List<Customer>>> GetAllCustomersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
+            var customers = await _repo.GetAllCustomersAsync(search, sortBy, pageNumber, pageSize);
 
             return Ok(customers);
         }

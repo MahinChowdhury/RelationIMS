@@ -1,1 +1,103 @@
-<p>dashboard works!</p>
+<div class="px-40 flex flex-1 justify-center py-5">
+          <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+            <h2 class="text-[#0e1b12] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">Employee Check-in/Check-out</h2>
+            <p class="text-[#0e1b12] text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">Current Status: Checked Out</p>
+            <p class="text-[#4e9767] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">Checked-in : 10:30 AM</p>
+            <div class="flex gap-4 py-6 px-4">
+              <div class="flex grow basis-0 flex-col items-stretch gap-4">
+                <div class="flex h-14 grow items-center justify-center rounded-lg px-3 bg-[#e7f3eb]">
+                  <p class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em]">00</p>
+                </div>
+                <div class="flex items-center justify-center"><p class="text-[#0e1b12] text-sm font-normal leading-normal">Hours</p></div>
+              </div>
+              <div class="flex grow basis-0 flex-col items-stretch gap-4">
+                <div class="flex h-14 grow items-center justify-center rounded-lg px-3 bg-[#e7f3eb]">
+                  <p class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em]">00</p>
+                </div>
+                <div class="flex items-center justify-center"><p class="text-[#0e1b12] text-sm font-normal leading-normal">Minutes</p></div>
+              </div>
+              <div class="flex grow basis-0 flex-col items-stretch gap-4">
+                <div class="flex h-14 grow items-center justify-center rounded-lg px-3 bg-[#e7f3eb]">
+                  <p class="text-[#0e1b12] text-lg font-bold leading-tight tracking-[-0.015em]">00</p>
+                </div>
+                <div class="flex items-center justify-center"><p class="text-[#0e1b12] text-sm font-normal leading-normal">Seconds</p></div>
+              </div>
+            </div>
+            <div class="flex px-4 py-3 justify-center">
+              <button
+                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-[#34b760] hover:bg-[#49796B] text-[#FAF9F6] text-base font-bold leading-normal tracking-[0.015em]"
+              >
+                <span class="truncate">Check-in</span>
+              </button>
+            </div>
+            <h2 class="text-[#0e1b12] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Past Records</h2>
+            <div class="px-4 py-3 @container">
+              <div class="flex overflow-hidden rounded-lg border border-[#d0e7d7] bg-[#f8fcf9]">
+                <table class="flex-1">
+                  <thead>
+                    <tr class="bg-[#f8fcf9]">
+                      <th class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120 px-4 py-3 text-left text-[#0e1b12] w-[400px] text-sm font-medium leading-normal">Date</th>
+                      <th class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240 px-4 py-3 text-left text-[#0e1b12] w-[400px] text-sm font-medium leading-normal">
+                        Check-in Time
+                      </th>
+                      <th class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360 px-4 py-3 text-left text-[#0e1b12] w-[400px] text-sm font-medium leading-normal">
+                        Check-out Time
+                      </th>
+                      <th class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480 px-4 py-3 text-left text-[#0e1b12] w-[400px] text-sm font-medium leading-normal">
+                        Total Hours
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-t border-t-[#d0e7d7]">
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">
+                        2024-03-01
+                      </td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">09:00 AM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">05:00 PM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">8 hours</td>
+                    </tr>
+                    <tr class="border-t border-t-[#d0e7d7]">
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">
+                        2024-02-29
+                      </td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">09:15 AM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">05:15 PM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">8 hours</td>
+                    </tr>
+                    <tr class="border-t border-t-[#d0e7d7]">
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">
+                        2024-02-28
+                      </td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">08:45 AM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">04:45 PM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">8 hours</td>
+                    </tr>
+                    <tr class="border-t border-t-[#d0e7d7]">
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">
+                        2024-02-27
+                      </td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">09:00 AM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">05:00 PM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">8 hours</td>
+                    </tr>
+                    <tr class="border-t border-t-[#d0e7d7]">
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">
+                        2024-02-26
+                      </td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">09:30 AM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">05:30 PM</td>
+                      <td class="table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480 h-[72px] px-4 py-2 w-[400px] text-[#4e9767] text-sm font-normal leading-normal">8 hours</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <style>
+                          @container(max-width:120px){.table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-120{display: none;}}
+                @container(max-width:240px){.table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-240{display: none;}}
+                @container(max-width:360px){.table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-360{display: none;}}
+                @container(max-width:480px){.table-ca81d9ba-2c64-43d6-bd3b-637a5ca65d88-column-480{display: none;}}
+              </style>
+            </div>
+          </div>
+        </div>
