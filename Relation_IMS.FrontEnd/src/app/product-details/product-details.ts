@@ -191,6 +191,5 @@ export class ProductDetails {
   variantIdx(variant: Variant): number {
     return this.productDetail?.Variants.findIndex(v => v.Id === variant.Id) ?? -1;
   }
-
   
 }

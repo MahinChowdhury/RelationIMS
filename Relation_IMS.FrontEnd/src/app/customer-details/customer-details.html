@@ -222,7 +222,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-[#e5e7eb]">
-              <tr *ngFor="let order of orders; let i = index" [class.bg-[#fafafa]]="i % 2 === 0">
+              <tr *ngFor="let order of orders; let i = index" [class.bg-[#fafafa]]="i % 2 === 0" class="cursor-pointer hover:bg-red-200" (click) = "viewOrderDetails(order.Id)">
                 <td class="px-5 py-4 font-medium">#{{ order.Id }}</td>
                 <td class="px-5 py-4 text-[#4e9767]">{{ formatDate(order.CreatedAt) }}</td>
                 <td class="px-5 py-4">৳{{ order.TotalAmount | number:'1.2-2' }}</td>

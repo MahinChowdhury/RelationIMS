@@ -1,5 +1,5 @@
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute,Router, RouterLink } from '@angular/router';
 import { NgFor, NgIf, NgClass, CommonModule, DecimalPipe } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
 import axios from 'axios';
@@ -55,6 +55,7 @@ export class CustomerDetails {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
@@ -145,5 +146,9 @@ export class CustomerDetails {
       document.execCommand('copy');
       document.body.removeChild(el);
     }
+  }
+
+  viewOrderDetails(orderId: number): void {
+    this.router.navigate(['/orders', orderId]);
   }
 }
