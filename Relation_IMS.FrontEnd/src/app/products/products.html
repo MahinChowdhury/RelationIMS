@@ -1,7 +1,7 @@
 <div class="px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-40 flex flex-1 justify-center py-5 bg-gradient-to-br from-[#f8fcf9] to-white min-h-screen">
   <div class="layout-content-container flex flex-col w-full max-w-none flex-1">
     
-    <!-- Header with Title + Add Button -->
+    <!-- Header with Title + Buttons -->
     <div class="flex flex-wrap justify-between items-center gap-3 p-4 mb-2">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center shadow-lg">
@@ -13,15 +13,31 @@
           <p class="text-[#0e1b12] text-3xl md:text-4xl font-black leading-tight tracking-tight">Product List</p>
         </div>
       </div>
-      <button
-        class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-12 px-6 bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white text-sm font-bold leading-normal shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
-        (click)="openCreateModal()"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        <span class="truncate">Add Product</span>
-      </button>
+      
+      <!-- Action Buttons -->
+      <div class="flex gap-3 flex-wrap">
+        <!-- Barcode Scanner Button -->
+        <button
+          class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-12 px-6 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-950 text-white text-sm font-bold leading-normal shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+          (click)="openBarcodeScanner()"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+          </svg>
+          <span class="truncate">Scan Barcode</span>
+        </button>
+        
+        <!-- Add Product Button -->
+        <button
+          class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-12 px-6 bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white text-sm font-bold leading-normal shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+          (click)="openCreateModal()"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span class="truncate">Add Product</span>
+        </button>
+      </div>
     </div>
 
     <!-- Search Bar -->
@@ -246,6 +262,14 @@
   </div>
 </div>
 
+<!-- Barcode Scanner Modal -->
+<app-barcode-scanner
+  *ngIf="showBarcodeScanner"
+  [enabled]="scannerEnabled"
+  (scanned)="onBarcodeScanned($event)"
+  (error)="onScanError($event)"
+  (closed)="closeBarcodeScanner()"
+></app-barcode-scanner>
 
 <!-- Delete Confirmation Modal -->
 <div
@@ -584,7 +608,6 @@
                   </ng-container>
 
                   <ng-template #editBtn>
-                    <!-- EDIT BUTTON (already there) -->
                     <button
                       type="button"
                       (click)="startStockEdit(i, s)"
@@ -592,8 +615,6 @@
                     >
                       Edit
                     </button>
-
-                    <!-- NEW DELETE BUTTON -->
                     <button
                       type="button"
                       (click)="removeStock(i)"

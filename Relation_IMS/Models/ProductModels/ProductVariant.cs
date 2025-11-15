@@ -21,4 +21,6 @@ public class ProductVariant
     [Required(ErrorMessage = "Quantity is required.")]
     [Range(0, int.MaxValue)]
     public int Quantity { get; set; } = 0;
+
+    public List<ProductItem>? ProductItems { get; set; }
 }

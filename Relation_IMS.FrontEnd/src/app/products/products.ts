@@ -4,10 +4,11 @@ import axios from 'axios';
 import { NgFor, NgIf} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { BarcodeScannerComponent } from '../barcode-scanner/barcode-scanner';
 
 @Component({
   selector: 'app-products',
-  imports: [NgFor,NgIf,FormsModule],
+  imports: [NgFor, NgIf, FormsModule,BarcodeScannerComponent],
   templateUrl: './products.html',
   styleUrl: './products.css'
 })
@@ -16,7 +17,7 @@ export class Products implements OnInit {
   products: any[] = [];
   colors: any[] = [];
   categories: any[] = [];
-  brands:any[] = [];
+  brands: any[] = [];
 
   placeholderImage: string =
     'https://via.placeholder.com/80x80.png?text=No+Image';
@@ -36,6 +37,9 @@ export class Products implements OnInit {
   showEditModal = false;
   showCreateModal = false;
 
+  // Barcode scanner modal
+  showBarcodeScanner = false;
+  scannerEnabled = false;
 
   addableProduct: any = {
     Id: null,
@@ -43,7 +47,7 @@ export class Products implements OnInit {
     Description: '',
     BasePrice: 0,
     CategoryId: 0,
-    BrandId : 0,
+    BrandId: 0,
   };
 
   editProduct: any = {
@@ -52,24 +56,21 @@ export class Products implements OnInit {
     Description: '',
     BasePrice: 0,
     CategoryId: 0,
-    BrandId : 0,
+    BrandId: 0,
   };
-
-  
 
   sortBy: string = '';
   selectedCategory: string = '';
-  selectedBrand : string = '';
+  selectedBrand: string = '';
   stockOrder: string = '';
 
-    // --- image handling (edit modal) ---
+  // --- image handling (edit modal) ---
   editSelectedImages: string[] = [];
   editImageFiles: File[] = [];
   @ViewChild('editImageInput') editImageInput!: ElementRef<HTMLInputElement>;
-  
 
   async ngOnInit() {
-    await Promise.all([this.loadProducts(), this.loadCategories(),this.loadColors(),this.loadBrands()]);
+    await Promise.all([this.loadProducts(), this.loadCategories(), this.loadColors(), this.loadBrands()]);
   }
 
   ngAfterViewInit() {
@@ -100,7 +101,7 @@ export class Products implements OnInit {
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       this.loadProducts(true);
-    }, 300); // debounce for smoother UX
+    }, 300);
   }
 
   async loadProducts(reset: boolean = false) {
@@ -111,13 +112,12 @@ export class Products implements OnInit {
 
     this.loading = true;
     try {
-
       const params = new URLSearchParams({
         search: this.searchTerm || '',
         sortBy: this.sortBy || '',
         stockOrder: this.stockOrder || '',
         categoryId: this.selectedCategory ? this.selectedCategory.toString() : '-1',
-        BrandId : this.selectedBrand ? this.selectedBrand.toString() : '-1',
+        BrandId: this.selectedBrand ? this.selectedBrand.toString() : '-1',
         pageNumber: this.page.toString(),
         pageSize: '20',
       });
@@ -145,14 +145,14 @@ export class Products implements OnInit {
     }
   }
 
-  async loadBrands(){
+  async loadBrands() {
     try {
       const res = await axios.get('https://localhost:7062/api/v1/Brand');
       this.brands = res.data.map((b: any) => ({
         Id: b.Id,
         Name: b.Name,
       }));
-      console.log('Brands',this.brands);
+      console.log('Brands', this.brands);
     } catch (err) {
       console.error('❌ Failed to load brands:', err);
     }
@@ -176,6 +176,27 @@ export class Products implements OnInit {
     return category ? category.name : 'Unknown';
   }
 
+  // ============ BARCODE SCANNER ============
+  openBarcodeScanner() {
+    this.showBarcodeScanner = true;
+    this.scannerEnabled = true;
+  }
+
+  closeBarcodeScanner() {
+    this.scannerEnabled = false;
+    this.showBarcodeScanner = false;
+  }
+
+  onBarcodeScanned(barcode: string) {
+    console.log('✅ Barcode scanned:', barcode);
+    this.closeBarcodeScanner();
+    this.router.navigate(['/products', barcode]);
+  }
+
+  onScanError(error: any) {
+    console.error('❌ Scan error:', error);
+  }
+
   // ---- EDIT MODAL ----
   async openEditModal(product: any) {
     this.editProduct = {
@@ -191,7 +212,7 @@ export class Products implements OnInit {
 
     await this.onCategoryChange(this.editProduct.CategoryId);
 
-    try{
+    try {
       const res = await axios.get(`https://localhost:7062/api/v1/ProductVariants/product/${this.editProduct.Id}`);
       
       this.stockItems = res.data.map((variant: any) => {
@@ -199,7 +220,7 @@ export class Products implements OnInit {
         const size = this.availableSizes.find(s => s.id === variant.ProductSizeId);
 
         return {
-          id: variant.Id, // ✅ preserve variant id
+          id: variant.Id,
           color: color ? color.name : `Color #${variant.ProductColorId}`,
           size: size ? size.name : `Size #${variant.ProductSizeId}`,
           quantity: variant.Quantity,
@@ -208,7 +229,7 @@ export class Products implements OnInit {
 
       console.log('🟩 Loaded stockItems:', this.stockItems);
 
-    } catch(err){
+    } catch (err) {
       console.error("Failed to load variants on Edit Modal");
       this.stockItems = [];
     }
@@ -231,14 +252,13 @@ export class Products implements OnInit {
       reader.readAsDataURL(file);
     });
 
-    input.value = ''; // reset for re-selection
+    input.value = '';
   }
 
   removeEditImage(img: string) {
     const idx = this.editSelectedImages.indexOf(img);
     if (idx === -1) return;
 
-    // If it was a preview (data URL) → also drop the File
     if (!img.startsWith('http')) {
       this.editImageFiles.splice(idx, 1);
     }
@@ -247,7 +267,7 @@ export class Products implements OnInit {
     if (this.editImageInput) this.editImageInput.nativeElement.value = '';
   }
 
-  openCreateModal(){
+  openCreateModal() {
     this.showCreateModal = true;
   }
 
@@ -259,15 +279,15 @@ export class Products implements OnInit {
       Description: '',
       BasePrice: 0,
       CategoryId: 0,
-      BrandId : 0,
+      BrandId: 0,
     };
     this.editSelectedImages = [];
     this.editImageFiles = [];
     if (this.editImageInput) this.editImageInput.nativeElement.value = '';
     this.stockItems = [];
-
   }
-  cancelCreate(){
+
+  cancelCreate() {
     this.showCreateModal = false;
     this.addableProduct = {
       Id: null,
@@ -276,22 +296,19 @@ export class Products implements OnInit {
       BasePrice: 0,
       CategoryId: 0,
       BrandId: 0
-    }
+    };
 
     this.selectedImages = [];
     this.imageFiles = [];
 
-    // Also reset the file input field if present
     if (this.imageInput) this.imageInput.nativeElement.value = '';
     this.stockItems = [];
-
   }
 
   async saveEdit() {
     if (!this.editProduct.Id) return;
 
     try {
-      // ── 1️⃣ Upload NEW images only ──────────────────────────────
       const newImageUrls: string[] = [];
       if (this.editImageFiles.length > 0) {
         for (const file of this.editImageFiles) {
@@ -303,15 +320,13 @@ export class Products implements OnInit {
             formData,
             { headers: { 'Content-Type': 'multipart/form-data' } }
           );
-          newImageUrls.push(res.data); // e.g., "https://..."
+          newImageUrls.push(res.data);
         }
       }
 
-      // ── 2️⃣ Build final ImageUrls (existing + new) ───────────────
       const existingUrls = this.editSelectedImages.filter(img => img.startsWith('http'));
       const finalImageUrls = [...existingUrls, ...newImageUrls];
 
-      // ── 3️⃣ DELETE removed variants (if any) ─────────────────────
       for (const variantId of this.deletedVariantIds) {
         try {
           await axios.delete(`https://localhost:7062/api/v1/ProductVariants/${variantId}`);
@@ -322,7 +337,6 @@ export class Products implements OnInit {
       }
       this.deletedVariantIds = [];
 
-      // ── 4️⃣ Update only existing variants (PUT) ─────────────────
       for (const item of this.stockItems) {
         if (item.id && item.id !== 0) {
           const color = this.colors.find(c => c.name === item.color);
@@ -348,7 +362,6 @@ export class Products implements OnInit {
         }
       }
 
-      // ── 5️⃣ Update Product itself (not variants anymore) ─────────
       const productUpdatePayload = {
         Name: this.editProduct.Name,
         Description: this.editProduct.Description,
@@ -365,7 +378,6 @@ export class Products implements OnInit {
 
       console.log('✅ Product updated successfully');
 
-      // ── 6️⃣ Refresh list & close modal ──────────────────────────
       await this.loadProducts(true);
 
       this.stockItems = [];
@@ -380,12 +392,10 @@ export class Products implements OnInit {
     }
   }
 
-
   async addProductConfirm() {
     try {
       const imageUrls: string[] = [];
 
-      // 1️⃣ Upload images (if any)
       if (this.imageFiles.length > 0) {
         for (const file of this.imageFiles) {
           const formData = new FormData();
@@ -401,7 +411,6 @@ export class Products implements OnInit {
         }
       }
 
-      // 2️⃣ Create product
       const payload = {
         Name: this.addableProduct.Name?.trim(),
         Description: this.addableProduct.Description?.trim(),
@@ -412,11 +421,10 @@ export class Products implements OnInit {
       };
 
       const res = await axios.post(`https://localhost:7062/api/v1/Product`, payload);
-      const productId = res.data.id || res.data.Id; // handle either casing
+      const productId = res.data.id || res.data.Id;
 
       console.log('✅ Product created with ID:', productId);
 
-      // 3️⃣ Add product variants (color-size-quantity combos)
       if (productId && this.stockItems.length > 0) {
         for (const stock of this.stockItems) {
           const color = this.colors.find(c => c.name === stock.color);
@@ -441,17 +449,15 @@ export class Products implements OnInit {
         console.log('✅ All product variants added successfully.');
       }
 
-      // 4️⃣ Refresh product list
       await this.loadProducts(true);
 
-      // 5️⃣ Close modal & reset form
       this.showCreateModal = false;
       this.addableProduct = {
         Name: '',
         Description: '',
         BasePrice: 0,
         CategoryId: '',
-        BrandId : 0,
+        BrandId: 0,
       };
       this.selectedImages = [];
       this.imageFiles = [];
@@ -465,11 +471,7 @@ export class Products implements OnInit {
     }
   }
 
-
-  
-  //Delete Section
-
-  // Called when clicking delete icon
+  // Delete Section
   confirmDelete(id: number) {
     this.productToDelete = id;
     this.showDeleteModal = true;
@@ -497,8 +499,7 @@ export class Products implements OnInit {
     }
   }
 
-  //images section
-
+  // Images section
   selectedImages: string[] = [];
   imageFiles: File[] = [];
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
@@ -519,7 +520,6 @@ export class Products implements OnInit {
       reader.readAsDataURL(file);
     });
 
-    // Reset input so the same file can be selected again
     input.value = '';
   }
 
@@ -529,16 +529,13 @@ export class Products implements OnInit {
       this.selectedImages.splice(index, 1);
       this.imageFiles.splice(index, 1);
 
-      // Optional: reset input to allow re-selection
       if (this.imageInput) this.imageInput.nativeElement.value = '';
     }
   }
 
-
-  // ---------------- STOCK MANAGEMENT ----------------
-  
+  // Stock Management
   stockItems: { 
-    id?: number;        // ← Add this (optional for new items)
+    id?: number;
     color: string; 
     size: string; 
     quantity: number 
@@ -547,7 +544,7 @@ export class Products implements OnInit {
   availableSizes: any[] = [];
   deletedVariantIds: number[] = [];
 
-  async onCategoryChange(newCategoryId:number) {
+  async onCategoryChange(newCategoryId: number) {
     const categoryId = Number(newCategoryId);
 
     try {
@@ -573,12 +570,11 @@ export class Products implements OnInit {
       s => s.color === this.newStock.color && s.size === this.newStock.size
     );
     if (exists) {
-      exists.quantity = this.newStock.quantity; // update existing
+      exists.quantity = this.newStock.quantity;
     } else {
       this.stockItems.push({ ...this.newStock });
     }
 
-    // reset input fields
     this.newStock = { color: '', size: '', quantity: 0 };
   }
 
@@ -589,7 +585,6 @@ export class Products implements OnInit {
     }
 
     try {
-      // Check duplicates
       const exists = this.stockItems.find(
         s => s.color === this.newStock.color && s.size === this.newStock.size
       );
@@ -598,7 +593,6 @@ export class Products implements OnInit {
         return;
       }
 
-      // Find color & size objects
       const color = this.colors.find(c => c.name === this.newStock.color);
       const size = this.availableSizes.find(s => s.name === this.newStock.size);
 
@@ -607,7 +601,6 @@ export class Products implements OnInit {
         return;
       }
 
-      // ── 1️⃣ Build payload for ProductVariant ───────────────
       const payload = {
         ProductId: this.editProduct.Id,
         ProductColorId: color.id,
@@ -616,13 +609,11 @@ export class Products implements OnInit {
         Quantity: this.newStock.quantity
       };
 
-      // ── 2️⃣ Call API to create variant ─────────────────────
       const res = await axios.post('https://localhost:7062/api/v1/ProductVariants', payload);
       const createdVariant = res.data;
 
-      // ── 3️⃣ Push to stockItems list with ID ────────────────
       this.stockItems.push({
-        id: createdVariant.Id,                // from API
+        id: createdVariant.Id,
         color: this.newStock.color,
         size: this.newStock.size,
         quantity: this.newStock.quantity
@@ -630,7 +621,6 @@ export class Products implements OnInit {
 
       console.log('Variant created successfully:', createdVariant);
 
-      // ── 4️⃣ Reset input fields ─────────────────────────────
       this.newStock = { color: '', size: '', quantity: 0 };
 
     } catch (err: any) {
@@ -638,7 +628,6 @@ export class Products implements OnInit {
       alert('Failed to add variant: ' + (err.response?.data?.message || err.message));
     }
   }
-
 
   removeStock(index: number) {
     const item = this.stockItems[index];
@@ -653,7 +642,7 @@ export class Products implements OnInit {
   editStock(index: number) {
     const stock = this.stockItems[index];
     this.newStock = { ...stock };
-    this.stockItems.splice(index, 1); // temporarily remove to re-add after editing
+    this.stockItems.splice(index, 1);
   }
 
   onStockInlineChange(index: number) {
@@ -661,7 +650,6 @@ export class Products implements OnInit {
     if (!stock.color || !stock.size || stock.quantity < 0) return;
 
     console.log(`🟢 Updated stock row ${index}:`, stock);
-    // You could also debounce and auto-save later if you want.
   }
 
   getColorHex(colorName: string): string | null {
@@ -669,7 +657,7 @@ export class Products implements OnInit {
     return color ? color.hex : null;
   }
 
-  NavigateToProductDetail(id:number){
+  NavigateToProductDetail(id: number) {
     this.router.navigate(['/products', id]);
   }
 
@@ -678,16 +666,14 @@ export class Products implements OnInit {
     return product.TotalQuantity > 0;
   }
 
-  getBrandName(brandId:number){
+  getBrandName(brandId: number) {
     const brand = this.brands.find(b => b.Id == brandId);
     return brand.Name;
   }
 
-  // Add these properties
   editingStockIndex: number | null = null;
   editedStock = { color: '', size: '', quantity: 0 };
 
-  // Start editing a row
   startStockEdit(index: number, stock: any) {
     this.editingStockIndex = index;
     this.editedStock = {
@@ -697,7 +683,6 @@ export class Products implements OnInit {
     };
   }
 
-  // Save edited row (local only – real save happens in saveEdit())
   saveStockEdit(index: number) {
     if (this.editedStock.quantity < 0) return;
 
@@ -705,12 +690,7 @@ export class Products implements OnInit {
     this.editingStockIndex = null;
   }
 
-  // Cancel editing
   cancelStockEdit() {
     this.editingStockIndex = null;
   }
-
 }
-
-
-

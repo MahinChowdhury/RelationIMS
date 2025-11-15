@@ -59,68 +59,79 @@
             Stock & Variants
           </h3>
 
-          <!-- Mobile cards (hidden on md+) -->
-          <div class="space-y-6 md:hidden">
+          <!-- Mobile table (hidden on md+) -->
+          <div class="md:hidden space-y-6">
             <ng-container *ngFor="let entry of groupedVariants() | keyvalue">
-              <div class="rounded-2xl border-2 border-[#d0e7d7] bg-gradient-to-br from-[#f8fcf9] to-white p-5 shadow-md hover:shadow-lg transition-shadow">
+              <div class="rounded-2xl border-2 border-[#d0e7d7] overflow-hidden shadow-lg bg-white">
                 
-                <!-- Color Header -->
-                <div class="flex items-center gap-3 mb-4 pb-3 border-b border-[#d0e7d7]">
-                  <span class="font-bold text-[#4e9767] text-xs uppercase">Color:</span>
-                  <span class="inline-block w-9 h-9 rounded-xl border-2 border-gray-300 shadow-sm"
-                        [style.background-color]="entry.value[0].Color?.HexCode || '#fff'"></span>
-                  <span class="text-[#0e1b12] font-bold text-base">{{ entry.value[0].Color?.Name || 'N/A' }}</span>
+                <!-- Color Header with Price -->
+                <div class="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] px-4 py-3 flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="inline-block w-8 h-8 rounded-lg border-2 border-white shadow-md flex-shrink-0"
+                          [style.background-color]="entry.value[0].Color?.HexCode || '#fff'"></span>
+                    <span class="text-white font-bold text-base">{{ entry.value[0].Color?.Name || 'N/A' }}</span>
+                  </div>
+                  <span class="text-white font-bold text-lg">${{ entry.value[0].VariantPrice }}</span>
                 </div>
 
-                <!-- Sizes List -->
-                <div class="space-y-3">
-                  <ng-container *ngFor="let variant of entry.value; let sizeIdx = index">
-                    <div class="flex items-center justify-between py-2">
-                      
-                      <!-- Size + Price -->
-                      <div class="flex-1">
-                        <div class="flex items-center gap-8 text-sm">
-                          <span class="font-semibold text-[#0e1b12]">{{ variant.Size?.Name || 'N/A' }}</span>
-                          <span class="text-[#4e9767] font-bold">${{ variant.VariantPrice }}</span>
-                        </div>
-                      </div>
-
-                      <!-- Quantity + Actions -->
-                      <div class="flex items-center gap-2">
-                        <ng-container *ngIf="editingStockIndex === variantIdx(variant); else qtyView">
-                          <input type="number" min="0" [(ngModel)]="editedStock.quantity"
-                                class="w-16 border-2 border-[#4e9767] rounded-lg px-2 py-1 text-xs font-semibold focus:ring-2 focus:ring-[#4e9767] focus:outline-none">
-                        </ng-container>
-                        <ng-template #qtyView>
-                          <span class="text-[#0e1b12] font-bold text-sm px-2 py-1 bg-[#e7f3eb] rounded-md">
-                            {{ variant.Quantity }}
-                          </span>
-                        </ng-template>
-
-                        <div class="flex gap-1">
-                          <ng-container *ngIf="editingStockIndex === variantIdx(variant); else editBtn">
-                            <button (click)="saveEditedStock(variantIdx(variant))"
-                                    class="px-2 py-1 bg-[#4e9767] text-white text-xs font-bold rounded-md hover:bg-[#3d7a52] transition-colors">
-                              Save
-                            </button>
-                            <button (click)="cancelStockEdit()"
-                                    class="px-2 py-1 bg-[#e25b45] text-white text-xs font-bold rounded-md hover:bg-[#c74938] transition-colors">
-                              Cancel
-                            </button>
-                          </ng-container>
-                          <ng-template #editBtn>
-                            <button (click)="editStockRow(variantIdx(variant), variant)"
-                                    class="px-2 py-1 bg-[#e7f3eb] text-[#4e9767] text-xs font-bold rounded-md hover:bg-[#d0e7d7] transition-colors">
-                              Edit
-                            </button>
-                          </ng-template>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Divider between sizes (except last) -->
-                    <div *ngIf="sizeIdx < entry.value.length - 1" class="border-t border-[#d0e7d7] -mx-2"></div>
-                  </ng-container>
+                <!-- Table Structure -->
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <!-- Column Headers -->
+                    <thead>
+                      <tr class="bg-[#f8fcf9] border-b-2 border-[#d0e7d7]">
+                        <th class="px-3 py-2 text-left text-[#4e9767] text-xs font-bold uppercase border-r border-[#d0e7d7]">Size</th>
+                        <th class="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase border-r border-[#d0e7d7]">Qty</th>
+                        <th class="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <!-- Rows -->
+                    <tbody>
+                      <ng-container *ngFor="let variant of entry.value; let last = last">
+                        <tr class="hover:bg-[#f8fcf9] transition-colors" [class.border-b]="!last" [class.border-[#d0e7d7]]="!last">
+                          <!-- Size Cell -->
+                          <td class="px-3 py-3 text-[#0e1b12] font-semibold text-sm border-r border-[#d0e7d7]">
+                            {{ variant.Size?.Name || 'N/A' }}
+                          </td>
+                          
+                          <!-- Quantity Cell -->
+                          <td class="px-3 py-3 text-center border-r border-[#d0e7d7]">
+                            <ng-container *ngIf="editingStockIndex === variantIdx(variant); else qtyView">
+                              <input type="number" min="0" [(ngModel)]="editedStock.quantity"
+                                    class="w-16 border-2 border-[#4e9767] rounded-lg px-2 py-1.5 text-sm font-bold focus:ring-2 focus:ring-[#4e9767] focus:outline-none">
+                            </ng-container>
+                            <ng-template #qtyView>
+                              <span class="px-2.5 py-1 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm">
+                                {{ variant.Quantity }}
+                              </span>
+                            </ng-template>
+                          </td>
+                          
+                          <!-- Actions Cell -->
+                          <td class="px-3 py-3 text-center">
+                            <ng-container *ngIf="editingStockIndex === variantIdx(variant); else editBtn">
+                              <div class="flex gap-1 justify-center">
+                                <button (click)="saveEditedStock(variantIdx(variant))"
+                                        class="px-2.5 py-1.5 bg-[#4e9767] text-white text-xs font-bold rounded-lg hover:bg-[#3d7a52] transition-all shadow-md">
+                                  Save
+                                </button>
+                                <button (click)="cancelStockEdit()"
+                                        class="px-2.5 py-1.5 bg-[#e25b45] text-white text-xs font-bold rounded-lg hover:bg-[#c74938] transition-all shadow-md">
+                                  Cancel
+                                </button>
+                              </div>
+                            </ng-container>
+                            <ng-template #editBtn>
+                              <button (click)="editStockRow(variantIdx(variant), variant)"
+                                      class="px-3 py-1.5 bg-[#e7f3eb] text-[#4e9767] text-xs font-bold rounded-lg hover:bg-[#d0e7d7] transition-all shadow-md">
+                                Edit
+                              </button>
+                            </ng-template>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </ng-container>
