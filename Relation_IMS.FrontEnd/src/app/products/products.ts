@@ -442,7 +442,6 @@ export class Products implements OnInit {
             VariantPrice: this.addableProduct.BasePrice ?? 0,
             Quantity: stock.quantity
           };
-
           await axios.post(`https://localhost:7062/api/v1/ProductVariants`, variantPayload);
         }
 

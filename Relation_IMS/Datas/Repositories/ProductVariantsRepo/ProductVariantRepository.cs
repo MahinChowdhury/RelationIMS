@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Entities;
+using Relation_IMS.Factory;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
@@ -12,11 +13,12 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-
-        public ProductVariantRepository(ApplicationDbContext context, IMapper mapper)
+        private readonly ProductItemsBuilderFactory _factory;
+        public ProductVariantRepository(ApplicationDbContext context, IMapper mapper,ProductItemsBuilderFactory factory)
         {
             _context = context;
             _mapper = mapper;
+            _factory = factory;
         }
 
         public async Task<List<ProductVariant>> GetAllProductVariantsAsync()
@@ -37,14 +39,28 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
         public async Task<ProductVariant> CreateProductVariantAsync(CreateProductVariantDTO variantDTO)
         {
+            // Step 1: Map DTO → Entity
             var variant = _mapper.Map<ProductVariant>(variantDTO);
 
+            // Step 2: Save the variant first so we get the Variant.Id
             await _context.ProductVariants.AddAsync(variant);
-            
             await _context.SaveChangesAsync();
 
-            var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == variant.ProductId);
-            product!.TotalQuantity += variant.Quantity;
+            // Step 3: Create ProductItems using the factory
+            var productItems = _factory.BuildItems(
+                productVariantId: variant.Id,
+                quantity: variant.Quantity,
+                defaultInventoryId: variantDTO.DefaultInventoryId // pass from DTO
+            );
+
+            // Step 4: Add items to DB
+            await _context.ProductItems.AddRangeAsync(productItems);
+            await _context.SaveChangesAsync();
+
+            // Step 5: Update Product total quantity
+            var product = await _context.Products.FirstAsync(x => x.Id == variant.ProductId);
+            product.TotalQuantity += variant.Quantity;
+
             await _context.SaveChangesAsync();
 
             return variant;
@@ -86,7 +102,9 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
         public async Task<List<ProductVariant>> GetProductVariantsByProductIdAsync(int id)
         {
-            var variants = await _context.ProductVariants.Where(p => p.ProductId == id).ToListAsync();
+            var variants = await _context.ProductVariants
+                .Where(p => p.ProductId == id)
+                .ToListAsync();
 
             return variants;
         }

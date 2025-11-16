@@ -10,6 +10,7 @@ using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Datas.Repositories.ProductVariantsRepo;
 using Relation_IMS.Entities;
+using Relation_IMS.Factory;
 using Relation_IMS.Services.AzureServices;
 using Relation_IMS.Services.JWTServices;
 using System.IdentityModel.Tokens.Jwt;
@@ -58,6 +59,8 @@ builder.Services.AddScoped<ICustomerRepository,CustomerRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<ProductItemsBuilderFactory>();
+builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
 
 Lazy<IClientCacheService>? clientCacheInstance = null;
 

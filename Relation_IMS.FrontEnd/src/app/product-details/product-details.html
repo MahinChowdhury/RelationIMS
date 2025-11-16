@@ -82,7 +82,7 @@
                       <tr class="bg-[#f8fcf9] border-b-2 border-[#d0e7d7]">
                         <th class="px-3 py-2 text-left text-[#4e9767] text-xs font-bold uppercase border-r border-[#d0e7d7]">Size</th>
                         <th class="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase border-r border-[#d0e7d7]">Qty</th>
-                        <th class="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase">Actions</th>
+                        <th class="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase">Defects</th>
                       </tr>
                     </thead>
                     <!-- Rows -->
@@ -107,26 +107,10 @@
                             </ng-template>
                           </td>
                           
-                          <!-- Actions Cell -->
                           <td class="px-3 py-3 text-center">
-                            <ng-container *ngIf="editingStockIndex === variantIdx(variant); else editBtn">
-                              <div class="flex gap-1 justify-center">
-                                <button (click)="saveEditedStock(variantIdx(variant))"
-                                        class="px-2.5 py-1.5 bg-[#4e9767] text-white text-xs font-bold rounded-lg hover:bg-[#3d7a52] transition-all shadow-md">
-                                  Save
-                                </button>
-                                <button (click)="cancelStockEdit()"
-                                        class="px-2.5 py-1.5 bg-[#e25b45] text-white text-xs font-bold rounded-lg hover:bg-[#c74938] transition-all shadow-md">
-                                  Cancel
-                                </button>
-                              </div>
-                            </ng-container>
-                            <ng-template #editBtn>
-                              <button (click)="editStockRow(variantIdx(variant), variant)"
-                                      class="px-3 py-1.5 bg-[#e7f3eb] text-[#4e9767] text-xs font-bold rounded-lg hover:bg-[#d0e7d7] transition-all shadow-md">
-                                Edit
-                              </button>
-                            </ng-template>
+                            <span class="px-2.5 py-1 bg-[#fde7e7] text-[#d9534f] rounded-lg inline-block font-bold text-sm">
+                              {{ variant.Defects }}
+                            </span>
                           </td>
                         </tr>
                       </ng-container>
@@ -146,7 +130,7 @@
                   <th class="border border-[#d0e7d7] px-4 py-4 text-left text-white text-sm lg:text-base font-bold uppercase">Color</th>
                   <th class="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Size</th>
                   <th class="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Quantity</th>
-                  <th class="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Actions</th>
+                  <th class="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Defects</th>
                 </tr>
               </thead>
 
@@ -186,26 +170,10 @@
                         </ng-template>
                       </td>
 
-                      <!-- ACTIONS CELL -->
                       <td class="border border-[#d0e7d7] px-4 py-4 text-center">
-                        <ng-container *ngIf="editingStockIndex === variantIdx(variant); else editBtn">
-                          <div class="flex gap-2 justify-center">
-                            <button (click)="saveEditedStock(variantIdx(variant))"
-                                    class="px-4 py-2 bg-[#4e9767] text-white text-xs lg:text-sm font-bold rounded-lg hover:bg-[#3d7a52] transition-all shadow-md hover:shadow-lg">
-                              Save
-                            </button>
-                            <button (click)="cancelStockEdit()"
-                                    class="px-4 py-2 bg-[#e25b45] text-white text-xs lg:text-sm font-bold rounded-lg hover:bg-[#c74938] transition-all shadow-md hover:shadow-lg">
-                              Cancel
-                            </button>
-                          </div>
-                        </ng-container>
-                        <ng-template #editBtn>
-                          <button (click)="editStockRow(variantIdx(variant), variant)"
-                                  class="px-4 py-2 bg-[#e7f3eb] text-[#4e9767] text-xs lg:text-sm font-bold rounded-lg hover:bg-[#d0e7d7] transition-all shadow-md hover:shadow-lg">
-                            Edit
-                          </button>
-                        </ng-template>
+                        <span class="px-3 py-1.5 bg-[#fde7e7] text-[#d9534f] rounded-lg inline-block font-bold text-sm lg:text-base">
+                          {{ variant.Defects }}
+                        </span>
                       </td>
                     </tr>
                   </ng-container>

@@ -8,6 +8,7 @@ namespace Relation_IMS.Models.ProductModels
         
         public int ProductVariantId { get; set; }
         public ProductVariant? ProductVariant { get; set; }
+        public string Code { get; set; } = null!; 
         public bool IsDefected { get; set; }
         public bool IsSold { get; set; }
         public int InventoryId { get; set; }

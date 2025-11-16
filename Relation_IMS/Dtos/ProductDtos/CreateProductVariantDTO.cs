@@ -19,5 +19,7 @@ namespace Relation_IMS.Dtos.ProductDtos
         [Required(ErrorMessage = "Quantity is required.")]
         public int Quantity { get; set; }
 
+        public int DefaultInventoryId { get; set; }
+
     }
 }

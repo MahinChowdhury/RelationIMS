@@ -25,6 +25,7 @@ interface Variant {
   ProductColorId: number;
   ProductSizeId: number;
   Quantity: number;
+  Defects: number;
   VariantPrice: number;
   Color?: Color;
   Size?: Size;
