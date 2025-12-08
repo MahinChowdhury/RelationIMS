@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Relation_IMS.Migrations
 {
     /// <inheritdoc />
-    public partial class Mig2 : Migration
+    public partial class Mig1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -74,6 +74,20 @@ namespace Relation_IMS.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Customers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Inventories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Inventories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,7 +192,8 @@ namespace Relation_IMS.Migrations
                     NetAmount = table.Column<double>(type: "numeric(18,2)", nullable: false),
                     PaymentStatus = table.Column<string>(type: "text", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    Remarks = table.Column<string>(type: "text", nullable: true)
+                    Remarks = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -264,8 +279,7 @@ namespace Relation_IMS.Migrations
                     ProductId = table.Column<int>(type: "integer", nullable: false),
                     ProductColorId = table.Column<int>(type: "integer", nullable: false),
                     ProductSizeId = table.Column<int>(type: "integer", nullable: false),
-                    VariantPrice = table.Column<double>(type: "numeric(18,2)", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false)
+                    VariantPrice = table.Column<double>(type: "numeric(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -319,6 +333,35 @@ namespace Relation_IMS.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ProductItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    IsDefected = table.Column<bool>(type: "boolean", nullable: false),
+                    IsSold = table.Column<bool>(type: "boolean", nullable: false),
+                    InventoryId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductItems_Inventories_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductItems_ProductVariants_ProductVariantId",
+                        column: x => x.ProductVariantId,
+                        principalTable: "ProductVariants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Clients",
                 columns: new[] { "Id", "ClientId", "ClientSecret", "ClientURL", "IsActive", "Name" },
@@ -363,6 +406,16 @@ namespace Relation_IMS.Migrations
                 name: "IX_Orders_UserId",
                 table: "Orders",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductItems_InventoryId",
+                table: "ProductItems",
+                column: "InventoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductItems_ProductVariantId",
+                table: "ProductItems",
+                column: "ProductVariantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
@@ -424,7 +477,7 @@ namespace Relation_IMS.Migrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
-                name: "ProductVariants");
+                name: "ProductItems");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
@@ -436,13 +489,10 @@ namespace Relation_IMS.Migrations
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "ProductColors");
+                name: "Inventories");
 
             migrationBuilder.DropTable(
-                name: "ProductSizes");
-
-            migrationBuilder.DropTable(
-                name: "Products");
+                name: "ProductVariants");
 
             migrationBuilder.DropTable(
                 name: "Clients");
@@ -455,6 +505,15 @@ namespace Relation_IMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "ProductColors");
+
+            migrationBuilder.DropTable(
+                name: "ProductSizes");
+
+            migrationBuilder.DropTable(
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "Brands");

@@ -14,7 +14,8 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ProductItemsBuilderFactory _factory;
-        public ProductVariantRepository(ApplicationDbContext context, IMapper mapper,ProductItemsBuilderFactory factory)
+
+        public ProductVariantRepository(ApplicationDbContext context, IMapper mapper, ProductItemsBuilderFactory factory)
         {
             _context = context;
             _mapper = mapper;
@@ -23,17 +24,26 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
         public async Task<List<ProductVariant>> GetAllProductVariantsAsync()
         {
-            var variants = await _context.ProductVariants.ToListAsync();
+            var variants = await _context.ProductVariants
+                .Include(v => v.ProductItems)
+                .ToListAsync();
             return variants;
         }
 
         public async Task<ProductVariant?> GetProductVariantByIdAsync(int id)
         {
-            var variant = await _context.ProductVariants.FirstOrDefaultAsync(s => s.Id == id);
-            if (variant == null) {
+            var variant = await _context.ProductVariants
+                .Include(v => v.ProductItems!)
+                    .ThenInclude(pi => pi.Inventory)
+                .Include(v => v.Color)
+                .Include(v => v.Size)
+                .Include(v => v.Product)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (variant == null)
+            {
                 return null;
             }
-
             return variant;
         }
 
@@ -49,8 +59,8 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
             // Step 3: Create ProductItems using the factory
             var productItems = _factory.BuildItems(
                 productVariantId: variant.Id,
-                quantity: variant.Quantity,
-                defaultInventoryId: variantDTO.DefaultInventoryId // pass from DTO
+                quantity: variantDTO.Quantity,
+                defaultInventoryId: variantDTO.DefaultInventoryId
             );
 
             // Step 4: Add items to DB
@@ -58,44 +68,63 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
             await _context.SaveChangesAsync();
 
             // Step 5: Update Product total quantity
-            var product = await _context.Products.FirstAsync(x => x.Id == variant.ProductId);
-            product.TotalQuantity += variant.Quantity;
+            var product = await _context.Products
+                .Include(p => p.Variants!)
+                    .ThenInclude(v => v.ProductItems)
+                .FirstAsync(x => x.Id == variant.ProductId);
+
+            product.TotalQuantity = product.Variants!
+                .Sum(v => v.ProductItems?.Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0);
 
             await _context.SaveChangesAsync();
 
             return variant;
         }
 
-        public async Task<ProductVariant?> UpdateProductVariantAsync(int id,UpdateProductVariantDTO variantDTO)
+        public async Task<ProductVariant?> UpdateProductVariantAsync(int id, UpdateProductVariantDTO variantDTO)
         {
-            var variant = await _context.ProductVariants.FirstOrDefaultAsync(x=>x.Id == id);
-
-            if (variant == null) {
+            var variant = await _context.ProductVariants.FirstOrDefaultAsync(x => x.Id == id);
+            if (variant == null)
+            {
                 return null;
             }
 
             variant.ProductColorId = variantDTO.ProductColorId;
             variant.ProductSizeId = variantDTO.ProductSizeId;
             variant.VariantPrice = variantDTO.VariantPrice;
-            variant.Quantity = variantDTO.Quantity;
 
+            await _context.SaveChangesAsync();
             return variant;
-
         }
 
         public async Task<ProductVariant?> DeleteProductVariantAsync(int id)
         {
-            var variant = await _context.ProductVariants.FirstOrDefaultAsync(v => v.Id == id);
-            if (variant == null) {
+            var variant = await _context.ProductVariants
+                .Include(v => v.ProductItems)
+                .FirstOrDefaultAsync(v => v.Id == id);
+
+            if (variant == null)
+            {
                 return null;
             }
 
-            var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == variant.ProductId);
-            product!.TotalQuantity -= variant.Quantity;
+            var product = await _context.Products
+                .Include(p => p.Variants!)
+                    .ThenInclude(v => v.ProductItems)
+                .FirstOrDefaultAsync(x => x.Id == variant.ProductId);
 
-            _context.ProductVariants.Remove(variant);
+            if (product != null)
+            {
+                _context.ProductVariants.Remove(variant);
+                await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
+                // Recalculate product total quantity
+                product.TotalQuantity = product.Variants!
+                    .Where(v => v.Id != id) // Exclude the deleted variant
+                    .Sum(v => v.ProductItems?.Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0);
+
+                await _context.SaveChangesAsync();
+            }
 
             return variant;
         }
@@ -103,9 +132,12 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
         public async Task<List<ProductVariant>> GetProductVariantsByProductIdAsync(int id)
         {
             var variants = await _context.ProductVariants
+                .Include(v => v.ProductItems!)
+                    .ThenInclude(pi => pi.Inventory)
+                .Include(v => v.Color)
+                .Include(v => v.Size)
                 .Where(p => p.ProductId == id)
                 .ToListAsync();
-
             return variants;
         }
     }

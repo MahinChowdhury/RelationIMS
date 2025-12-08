@@ -13,7 +13,7 @@ namespace Relation_IMS.Datas.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public ProductRepository(ApplicationDbContext context,IMapper mapper)
+        public ProductRepository(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -31,7 +31,8 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Product?> DeleteProductByIdAsync(int id)
         {
             var product = _context.Products.FirstOrDefault(p => p.Id == id);
-            if (product == null) {
+            if (product == null)
+            {
                 return null;
             }
 
@@ -47,7 +48,7 @@ namespace Relation_IMS.Datas.Repositories
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.Name.Contains(search,StringComparison.OrdinalIgnoreCase) || p.Brand!.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || p.Brand!.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(sortBy))
@@ -57,11 +58,13 @@ namespace Relation_IMS.Datas.Repositories
                 if (sortBy.Equals("Price Ascending")) query = query.OrderBy(p => p.BasePrice);
                 if (sortBy.Equals("Price Descending")) query = query.OrderByDescending(p => p.BasePrice);
             }
-            else {
+            else
+            {
                 query = query.OrderBy(p => p.Id);
             }
 
-            if (brandId != -1) {
+            if (brandId != -1)
+            {
                 query = query.Where(p => p.BrandId == brandId);
             }
 
@@ -70,7 +73,8 @@ namespace Relation_IMS.Datas.Repositories
                 query = query.Where(p => p.CategoryId == categoryId);
             }
 
-            if (!string.IsNullOrEmpty(stockOrder)){
+            if (!string.IsNullOrEmpty(stockOrder))
+            {
                 if (stockOrder.Equals("Ascending")) query = query.OrderBy(p => p.TotalQuantity);
                 if (stockOrder.Equals("Descending")) query = query.OrderByDescending(p => p.TotalQuantity);
             }
@@ -89,11 +93,16 @@ namespace Relation_IMS.Datas.Repositories
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
                 .Include(p => p.Variants!)
-                .ThenInclude(v => v.Color)
+                    .ThenInclude(v => v.Color)
                 .Include(p => p.Variants!)
-                .ThenInclude(v => v.Size)
+                    .ThenInclude(v => v.Size)
+                .Include(p => p.Variants!)
+                    .ThenInclude(v => v.ProductItems!)
+                        .ThenInclude(pi => pi.Inventory)
                 .FirstOrDefaultAsync(p => p.Id == id);
-            if (product == null) {
+
+            if (product == null)
+            {
                 return null;
             }
 
@@ -135,7 +144,6 @@ namespace Relation_IMS.Datas.Repositories
                         existing.ProductColorId = dtoVar.ProductColorId;
                         existing.ProductSizeId = dtoVar.ProductSizeId;
                         existing.VariantPrice = dtoVar.VariantPrice;
-                        existing.Quantity = dtoVar.Quantity;
                     }
                     else
                     {
@@ -145,13 +153,21 @@ namespace Relation_IMS.Datas.Repositories
                             ProductColorId = dtoVar.ProductColorId,
                             ProductSizeId = dtoVar.ProductSizeId,
                             VariantPrice = dtoVar.VariantPrice,
-                            Quantity = dtoVar.Quantity
                         });
                     }
                 }
             }
 
-            product.TotalQuantity = product.Variants!.Sum(v => v.Quantity);
+            // Recalculate total quantity based on ProductItems
+            await _context.Entry(product).Collection(p => p.Variants!).LoadAsync();
+            foreach (var variant in product.Variants!)
+            {
+                await _context.Entry(variant).Collection(v => v.ProductItems!).LoadAsync();
+            }
+
+            product.TotalQuantity = product.Variants!
+                .Sum(v => v.ProductItems?.Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0);
+
             await _context.SaveChangesAsync();
             return product;
         }

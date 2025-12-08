@@ -76,8 +76,6 @@ namespace Relation_IMS.Datas.Repositories
             if (item == null) return null;
 
             item.IsDefected = true;
-            item.ProductVariant!.Defects++;
-            item.ProductVariant.Quantity--;
 
             await _context.SaveChangesAsync();
 

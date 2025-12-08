@@ -473,9 +473,6 @@ namespace Relation_IMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Defects")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ProductColorId")
                         .HasColumnType("integer");
 
@@ -483,9 +480,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("ProductSizeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<double>("VariantPrice")

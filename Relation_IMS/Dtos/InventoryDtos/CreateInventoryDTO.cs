@@ -1,4 +1,4 @@
-﻿namespace Relation_IMS.Dtos
+﻿namespace Relation_IMS.Dtos.InventoryDtos
 {
     public class CreateInventoryDTO
     {

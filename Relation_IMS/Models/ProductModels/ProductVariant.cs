@@ -20,7 +20,9 @@ public class ProductVariant
     public double VariantPrice { get; set; }
     [Required(ErrorMessage = "Quantity is required.")]
     [Range(0, int.MaxValue)]
-    public int Quantity { get; set; } = 0;
-    public int Defects { get; set; } = 0;
+    public int Quantity => ProductItems?
+            .Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0;
+    public int Defects => ProductItems?
+            .Count(pi => pi.IsDefected) ?? 0;
     public List<ProductItem>? ProductItems { get; set; }
 }

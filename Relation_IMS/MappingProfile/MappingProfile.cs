@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using Relation_IMS.Dtos;
 using Relation_IMS.Dtos.CategoryDtos;
 using Relation_IMS.Dtos.CustomerDtos;
+using Relation_IMS.Dtos.InventoryDtos;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models;
