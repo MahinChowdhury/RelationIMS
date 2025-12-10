@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos;
 using Relation_IMS.Dtos.InventoryDtos;
+using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Controllers
 {
@@ -92,6 +93,7 @@ namespace Relation_IMS.Controllers
         {
             if (!ModelState.IsValid)
             {
+         
                 return BadRequest(ModelState);
             }
 
@@ -123,6 +125,13 @@ namespace Relation_IMS.Controllers
         public async Task<IActionResult> GetProductStockAcrossInventories(int productId)
         {
             var stockSummary = await _inventoryRepo.GetProductStockAcrossInventoriesAsync(productId);
+            return Ok(stockSummary);
+        }
+
+        [HttpGet("variant/{variantId}/stock")]
+        public async Task<IActionResult> GetVariantStockAcrossInventories(int variantId)
+        {
+            var stockSummary = await _inventoryRepo.GetVariantStockAcrossInventoriesAsync(variantId);
             return Ok(stockSummary);
         }
     }

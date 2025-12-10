@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
-import useIntersectionObserver from '../hooks/useIntersectionObserver';
-import useDebounce from '../hooks/useDebounce';
-import { type Order, PaymentStatus } from '../types';
+import api from '../../services/api';
+import useIntersectionObserver from '../../hooks/useIntersectionObserver';
+import useDebounce from '../../hooks/useDebounce';
+import { type Order, PaymentStatus } from '../../types';
 
 export default function OrdersPage() {
     const navigate = useNavigate();

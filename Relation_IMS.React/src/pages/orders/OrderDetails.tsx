@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../services/api';
-import { type Order, PaymentStatus, type Product } from '../types';
+import api from '../../services/api';
+import { type Order, PaymentStatus, type Product } from '../../types';
 
 export default function OrderDetailsPage() {
     const { id } = useParams<{ id: string }>();

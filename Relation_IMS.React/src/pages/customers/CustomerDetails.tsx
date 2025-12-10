@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
-import type { Customer, Order } from '../types';
+import api from '../../services/api';
+import type { Customer, Order } from '../../types';
 
 export default function CustomerDetailsPage() {
     const { id } = useParams();

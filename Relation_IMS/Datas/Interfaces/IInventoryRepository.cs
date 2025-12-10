@@ -16,5 +16,6 @@ namespace Relation_IMS.Datas.Interfaces
         Task<List<InventoryStockDTO>> GetInventoryStockSummaryAsync(int inventoryId);
         Task<List<ProductInventoryStockDTO>> GetProductStockAcrossInventoriesAsync(int productId);
         Task<List<ProductItemSummaryDTO>> GetInventoryProductItemsAsync(int inventoryId);
+        Task<List<VariantStockDTO>> GetVariantStockAcrossInventoriesAsync(int variantId);
     }
 }

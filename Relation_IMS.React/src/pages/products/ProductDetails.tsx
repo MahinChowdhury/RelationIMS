@@ -2,6 +2,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
+import InventoryStockModal from '../../components/products/InventoryStockModal';
+import type { InventoryStock } from '../../types';
 
 // ---------- Interfaces ----------
 interface Color {
@@ -52,8 +54,15 @@ export default function ProductDetails() {
     const { id } = useParams<{ id: string }>();
     const [productDetail, setProductDetail] = useState<Product | null>(null);
     const [selectedImage, setSelectedImage] = useState<string>('');
-    const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
-    const [editedStock, setEditedStock] = useState<{ quantity: number }>({ quantity: 0 });
+
+    // Inventory Modal State
+    const [showInventoryModal, setShowInventoryModal] = useState(false);
+    const [inventoryLoading, setInventoryLoading] = useState(false);
+    const [stockData, setStockData] = useState<InventoryStock[]>([]);
+    const [selectedVariantName, setSelectedVariantName] = useState('');
+
+    // const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
+    // const [editedStock, setEditedStock] = useState<{ quantity: number }>({ quantity: 0 });
 
     useEffect(() => {
         if (id) {
@@ -74,60 +83,80 @@ export default function ProductDetails() {
         }
     };
 
-    const editStockRow = (index: number, variant: Variant) => {
-        setEditingStockIndex(index);
-        setEditedStock({ quantity: variant.Quantity });
-    };
-
-    const cancelStockEdit = () => {
-        setEditingStockIndex(null);
-    };
-
-    const saveEditedStock = async (index: number) => {
-        if (!productDetail || editedStock.quantity < 0) return;
-
-        const updatedVariants = [...productDetail.Variants];
-        const prevQuantity = updatedVariants[index].Quantity;
-        updatedVariants[index].Quantity = editedStock.quantity;
-
-        // Optimistic update
-        setProductDetail({ ...productDetail, Variants: updatedVariants });
+    const fetchInventoryStock = async (variantId: number, colorName: string, sizeName: string) => {
+        setInventoryLoading(true);
+        setStockData([]);
+        setSelectedVariantName(`${colorName} - ${sizeName}`);
+        setShowInventoryModal(true);
 
         try {
-            const variantsPayload = updatedVariants.map(v => ({
-                Id: v.Id ?? 0,
-                ProductId: productDetail.Id,
-                ProductColorId: v.ProductColorId,
-                ProductSizeId: v.ProductSizeId,
-                Quantity: v.Quantity,
-                VariantPrice: productDetail.BasePrice,
-            }));
-
-            const finalImageUrls = Array.isArray(productDetail.ImageUrls)
-                ? [...productDetail.ImageUrls]
-                : [];
-
-            const requestBody = {
-                Name: productDetail.Name,
-                Description: productDetail.Description,
-                BasePrice: productDetail.BasePrice,
-                CategoryId: productDetail.CategoryId,
-                BrandId: productDetail.BrandId,
-                ImageUrls: finalImageUrls,
-                Variants: variantsPayload,
-            };
-
-            await api.put(`/Product/${productDetail.Id}`, requestBody);
-
-            console.log('✅ Stock updated successfully:', requestBody);
-            setEditingStockIndex(null);
+            console.log(`Fetching inventory for variantId: ${variantId}`);
+            // Explicitly override baseURL to remove /v1 as per user provided endpoint
+            const res = await api.get<InventoryStock[]>(`/Inventory/variant/${variantId}/stock`, {
+                baseURL: 'https://localhost:7062/api'
+            });
+            setStockData(res.data);
         } catch (err) {
-            // Rollback
-            updatedVariants[index].Quantity = prevQuantity;
-            setProductDetail({ ...productDetail, Variants: updatedVariants });
-            console.error('❌ Failed to update stock:', err);
+            console.error('Failed to load inventory stock:', err);
+        } finally {
+            setInventoryLoading(false);
         }
     };
+
+    // const editStockRow = (index: number, variant: Variant) => {
+    //     setEditingStockIndex(index);
+    //     setEditedStock({ quantity: variant.Quantity });
+    // };
+
+    // const cancelStockEdit = () => {
+    //     setEditingStockIndex(null);
+    // };
+
+    // const saveEditedStock = async (index: number) => {
+    //     if (!productDetail || editedStock.quantity < 0) return;
+
+    //     const updatedVariants = [...productDetail.Variants];
+    //     const prevQuantity = updatedVariants[index].Quantity;
+    //     // updatedVariants[index].Quantity = editedStock.quantity;
+
+    //     // Optimistic update
+    //     setProductDetail({ ...productDetail, Variants: updatedVariants });
+
+    //     try {
+    //         const variantsPayload = updatedVariants.map(v => ({
+    //             Id: v.Id ?? 0,
+    //             ProductId: productDetail.Id,
+    //             ProductColorId: v.ProductColorId,
+    //             ProductSizeId: v.ProductSizeId,
+    //             Quantity: v.Quantity,
+    //             VariantPrice: productDetail.BasePrice,
+    //         }));
+
+    //         const finalImageUrls = Array.isArray(productDetail.ImageUrls)
+    //             ? [...productDetail.ImageUrls]
+    //             : [];
+
+    //         const requestBody = {
+    //             Name: productDetail.Name,
+    //             Description: productDetail.Description,
+    //             BasePrice: productDetail.BasePrice,
+    //             CategoryId: productDetail.CategoryId,
+    //             BrandId: productDetail.BrandId,
+    //             ImageUrls: finalImageUrls,
+    //             Variants: variantsPayload,
+    //         };
+
+    //         await api.put(`/Product/${productDetail.Id}`, requestBody);
+
+    //         console.log('✅ Stock updated successfully:', requestBody);
+    //         // setEditingStockIndex(null);
+    //     } catch (err) {
+    //         // Rollback
+    //         updatedVariants[index].Quantity = prevQuantity;
+    //         setProductDetail({ ...productDetail, Variants: updatedVariants });
+    //         console.error('❌ Failed to update stock:', err);
+    //     }
+    // };
 
     const getStockStatus = () => {
         return (productDetail?.TotalQuantity ?? 0) > 0;
@@ -148,9 +177,9 @@ export default function ProductDetails() {
     }, [productDetail]);
 
     // Helper to find original index of a variant
-    const getVariantIndex = (variantId: number) => {
-        return productDetail?.Variants.findIndex(v => v.Id === variantId) ?? -1;
-    };
+    // const getVariantIndex = (variantId: number) => {
+    //     return productDetail?.Variants.findIndex(v => v.Id === variantId) ?? -1;
+    // };
 
 
     if (!productDetail) {
@@ -237,7 +266,7 @@ export default function ProductDetails() {
                                                 </thead>
                                                 <tbody>
                                                     {variants.map((variant, idx) => {
-                                                        const originalIndex = getVariantIndex(variant.Id);
+                                                        // const originalIndex = getVariantIndex(variant.Id);
                                                         const isLast = idx === variants.length - 1;
                                                         return (
                                                             <tr key={variant.Id} className={`hover:bg-[#f8fcf9] transition-colors ${!isLast ? 'border-b border-[#d0e7d7]' : ''}`}>
@@ -245,28 +274,12 @@ export default function ProductDetails() {
                                                                     {variant.Size?.Name || 'N/A'}
                                                                 </td>
                                                                 <td className="px-3 py-3 text-center border-r border-[#d0e7d7]">
-                                                                    {editingStockIndex === originalIndex ? (
-                                                                        <input
-                                                                            type="number"
-                                                                            min="0"
-                                                                            value={editedStock.quantity}
-                                                                            onChange={(e) => setEditedStock({ quantity: parseInt(e.target.value) || 0 })}
-                                                                            onBlur={() => saveEditedStock(originalIndex)}
-                                                                            onKeyDown={(e) => {
-                                                                                if (e.key === 'Enter') saveEditedStock(originalIndex);
-                                                                                if (e.key === 'Escape') cancelStockEdit();
-                                                                            }}
-                                                                            className="w-16 border-2 border-[#4e9767] rounded-lg px-2 py-1.5 text-sm font-bold focus:ring-2 focus:ring-[#4e9767] focus:outline-none"
-                                                                            autoFocus
-                                                                        />
-                                                                    ) : (
-                                                                        <span
-                                                                            onClick={() => editStockRow(originalIndex, variant)}
-                                                                            className="px-2.5 py-1 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm cursor-pointer hover:bg-[#d0e7d7]"
-                                                                        >
-                                                                            {variant.Quantity}
-                                                                        </span>
-                                                                    )}
+                                                                    <button
+                                                                        onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || 'N/A', variant.Size?.Name || 'N/A')}
+                                                                        className="px-2.5 py-1 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm cursor-pointer hover:bg-[#d0e7d7] transition-colors"
+                                                                    >
+                                                                        {variant.Quantity}
+                                                                    </button>
                                                                 </td>
                                                                 <td className="px-3 py-3 text-center">
                                                                     <span className="px-2.5 py-1 bg-[#fde7e7] text-[#d9534f] rounded-lg inline-block font-bold text-sm">
@@ -297,7 +310,7 @@ export default function ProductDetails() {
                                     <tbody className="bg-white">
                                         {Array.from(groupedVariants).map(([_, variants]) =>
                                             variants.map((variant, idx) => {
-                                                const originalIndex = getVariantIndex(variant.Id);
+                                                // const originalIndex = getVariantIndex(variant.Id);
                                                 const isFirst = idx === 0;
                                                 return (
                                                     <tr key={variant.Id} className="hover:bg-[#f8fcf9] transition-colors">
@@ -319,28 +332,12 @@ export default function ProductDetails() {
                                                             {variant.Size?.Name || 'N/A'}
                                                         </td>
                                                         <td className="border border-[#d0e7d7] px-4 py-4 text-center">
-                                                            {editingStockIndex === originalIndex ? (
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    value={editedStock.quantity}
-                                                                    onChange={(e) => setEditedStock({ quantity: parseInt(e.target.value) || 0 })}
-                                                                    onBlur={() => saveEditedStock(originalIndex)}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') saveEditedStock(originalIndex);
-                                                                        if (e.key === 'Escape') cancelStockEdit();
-                                                                    }}
-                                                                    className="w-20 lg:w-24 border-2 border-[#4e9767] rounded-lg px-3 py-2 text-sm lg:text-base font-bold focus:ring-2 focus:ring-[#4e9767] focus:outline-none mx-auto"
-                                                                    autoFocus
-                                                                />
-                                                            ) : (
-                                                                <span
-                                                                    onClick={() => editStockRow(originalIndex, variant)}
-                                                                    className="px-3 py-1.5 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm lg:text-base cursor-pointer hover:bg-[#d0e7d7]"
-                                                                >
-                                                                    {variant.Quantity}
-                                                                </span>
-                                                            )}
+                                                            <button
+                                                                onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || 'N/A', variant.Size?.Name || 'N/A')}
+                                                                className="px-2.5 py-1 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm cursor-pointer hover:bg-[#d0e7d7] transition-colors"
+                                                            >
+                                                                {variant.Quantity}
+                                                            </button>
                                                         </td>
                                                         <td className="border border-[#d0e7d7] px-4 py-4 text-center">
                                                             <span className="px-3 py-1.5 bg-[#fde7e7] text-[#d9534f] rounded-lg inline-block font-bold text-sm lg:text-base">
@@ -449,6 +446,14 @@ export default function ProductDetails() {
                 }
                 `}
             </style>
+
+            <InventoryStockModal
+                show={showInventoryModal}
+                onClose={() => setShowInventoryModal(false)}
+                stockData={stockData}
+                loading={inventoryLoading}
+                variantName={selectedVariantName}
+            />
         </div>
     );
 }

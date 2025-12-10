@@ -67,3 +67,14 @@ export interface Customer {
     Orders?: Order[];
     CreatedDate?: string;
 }
+
+export interface InventoryStock {
+    InventoryId: number;
+    Inventory: {
+        Id: number;
+        Name: string;
+        Description: string;
+        ProductItems: any[];
+    };
+    Quantity: number;
+}

@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
-import Products from './pages/Products';
-import Customers from './pages/Customers';
-import CustomerDetails from './pages/CustomerDetails';
-import ProductDetails from './components/products/ProductDetails';
+import Products from './pages/products/Products';
+import Customers from './pages/customers/Customers';
+import CustomerDetails from './pages/customers/CustomerDetails';
+import ProductDetails from './pages/products/ProductDetails';
 
-import Orders from './pages/Orders';
-import OrderDetails from './pages/OrderDetails';
+import Orders from './pages/orders/Orders';
+import OrderDetails from './pages/orders/OrderDetails';
 
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;

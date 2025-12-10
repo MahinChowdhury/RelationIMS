@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import ProductCard from '../components/products/ProductCard';
-import { ProductFormModal, DeleteProductModal } from '../components/products/ProductModals';
-import BarcodeScanner from '../components/BarcodeScanner';
-import useIntersectionObserver from '../hooks/useIntersectionObserver';
-import useDebounce from '../hooks/useDebounce';
-import type { Product, StockItem } from '../types';
+import api from '../../services/api';
+import ProductCard from '../../components/products/ProductCard';
+import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
+import BarcodeScanner from '../../components/BarcodeScanner';
+import useIntersectionObserver from '../../hooks/useIntersectionObserver';
+import useDebounce from '../../hooks/useDebounce';
+import type { Product, StockItem } from '../../types';
 
 export default function ProductsPage() {
     const navigate = useNavigate();

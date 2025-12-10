@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import useIntersectionObserver from '../hooks/useIntersectionObserver';
-import useDebounce from '../hooks/useDebounce';
-import type { Customer } from '../types';
-import { CustomerFormModal, DeleteCustomerModal } from '../components/customers/CustomerModals';
+import api from '../../services/api';
+import useIntersectionObserver from '../../hooks/useIntersectionObserver';
+import useDebounce from '../../hooks/useDebounce';
+import type { Customer } from '../../types';
+import { CustomerFormModal, DeleteCustomerModal } from '../../components/customers/CustomerModals';
 
 export default function CustomersPage() {
     const navigate = useNavigate();

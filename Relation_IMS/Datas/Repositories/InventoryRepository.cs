@@ -217,6 +217,22 @@ namespace Relation_IMS.Datas.Repositories
 
             return items;
         }
+
+        public async Task<List<VariantStockDTO>> GetVariantStockAcrossInventoriesAsync(int variantId)
+        {
+            var result = await _context.Inventories
+                .Select(inv => new VariantStockDTO
+                {
+                    InventoryId = inv.Id,
+                    Inventory = inv,
+                    Quantity = inv.ProductItems
+                        .Where(pi => pi.ProductVariantId == variantId && !pi.IsDefected && !pi.IsSold)
+                        .Count()
+                })
+                .ToListAsync();
+
+            return result;
+        }
     }
 
     // Simplified DTO for inventory stock summary
