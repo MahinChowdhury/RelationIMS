@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -61,9 +60,6 @@ export default function ProductDetails() {
     const [stockData, setStockData] = useState<InventoryStock[]>([]);
     const [selectedVariantName, setSelectedVariantName] = useState('');
 
-    // const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
-    // const [editedStock, setEditedStock] = useState<{ quantity: number }>({ quantity: 0 });
-
     useEffect(() => {
         if (id) {
             loadProductDetail(id);
@@ -91,7 +87,6 @@ export default function ProductDetails() {
 
         try {
             console.log(`Fetching inventory for variantId: ${variantId}`);
-            // Explicitly override baseURL to remove /v1 as per user provided endpoint
             const res = await api.get<InventoryStock[]>(`/Inventory/variant/${variantId}/stock`, {
                 baseURL: 'https://localhost:7062/api'
             });
@@ -102,61 +97,6 @@ export default function ProductDetails() {
             setInventoryLoading(false);
         }
     };
-
-    // const editStockRow = (index: number, variant: Variant) => {
-    //     setEditingStockIndex(index);
-    //     setEditedStock({ quantity: variant.Quantity });
-    // };
-
-    // const cancelStockEdit = () => {
-    //     setEditingStockIndex(null);
-    // };
-
-    // const saveEditedStock = async (index: number) => {
-    //     if (!productDetail || editedStock.quantity < 0) return;
-
-    //     const updatedVariants = [...productDetail.Variants];
-    //     const prevQuantity = updatedVariants[index].Quantity;
-    //     // updatedVariants[index].Quantity = editedStock.quantity;
-
-    //     // Optimistic update
-    //     setProductDetail({ ...productDetail, Variants: updatedVariants });
-
-    //     try {
-    //         const variantsPayload = updatedVariants.map(v => ({
-    //             Id: v.Id ?? 0,
-    //             ProductId: productDetail.Id,
-    //             ProductColorId: v.ProductColorId,
-    //             ProductSizeId: v.ProductSizeId,
-    //             Quantity: v.Quantity,
-    //             VariantPrice: productDetail.BasePrice,
-    //         }));
-
-    //         const finalImageUrls = Array.isArray(productDetail.ImageUrls)
-    //             ? [...productDetail.ImageUrls]
-    //             : [];
-
-    //         const requestBody = {
-    //             Name: productDetail.Name,
-    //             Description: productDetail.Description,
-    //             BasePrice: productDetail.BasePrice,
-    //             CategoryId: productDetail.CategoryId,
-    //             BrandId: productDetail.BrandId,
-    //             ImageUrls: finalImageUrls,
-    //             Variants: variantsPayload,
-    //         };
-
-    //         await api.put(`/Product/${productDetail.Id}`, requestBody);
-
-    //         console.log('✅ Stock updated successfully:', requestBody);
-    //         // setEditingStockIndex(null);
-    //     } catch (err) {
-    //         // Rollback
-    //         updatedVariants[index].Quantity = prevQuantity;
-    //         setProductDetail({ ...productDetail, Variants: updatedVariants });
-    //         console.error('❌ Failed to update stock:', err);
-    //     }
-    // };
 
     const getStockStatus = () => {
         return (productDetail?.TotalQuantity ?? 0) > 0;
@@ -176,276 +116,197 @@ export default function ProductDetails() {
         return map;
     }, [productDetail]);
 
-    // Helper to find original index of a variant
-    // const getVariantIndex = (variantId: number) => {
-    //     return productDetail?.Variants.findIndex(v => v.Id === variantId) ?? -1;
-    // };
-
-
     if (!productDetail) {
         return <div className="p-8 text-center text-gray-500">Loading product details...</div>;
     }
 
     return (
-        <div className="px-4 md:px-8 lg:px-16 xl:px-32 flex flex-1 justify-center py-5 bg-gradient-to-br from-[#f8fcf9] to-white min-h-screen">
-            <div className="layout-content-container flex flex-col w-full max-w-[1600px]">
+        <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6">
 
-                {/* Breadcrumb */}
-                <div className="flex flex-wrap gap-2 p-4 text-sm md:text-base">
-                    <Link className="text-[rgb(78,151,103)] font-semibold cursor-pointer hover:text-[#3d7a52] transition-colors" to="/products">Products</Link>
-                    <span className="text-[#4e9767] font-medium">/</span>
-                    <span className="text-[#0e1b12] font-semibold">{productDetail.Name}</span>
-                </div>
-
-                {/* MAIN LAYOUT */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 p-4">
-
-                    {/* LEFT: PRODUCT IMAGES (40%) */}
-                    <div className="lg:col-span-5 w-full">
-                        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 border border-gray-100 lg:sticky lg:top-4">
-                            {/* Main Image */}
-                            <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gradient-to-br from-gray-50 to-gray-100 mb-4 md:mb-6 w-full">
-                                <div
-                                    className="w-full h-full bg-center bg-contain bg-no-repeat"
-                                    style={{ backgroundImage: `url(${selectedImage})` }}
-                                ></div>
-                                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-bl from-[#4e9767]/20 to-transparent"></div>
-                            </div>
-
-                            {/* Thumbnails */}
-                            <div className="flex gap-2 md:gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                                {productDetail.ImageUrls?.map((image, idx) => (
-                                    <div
-                                        key={idx}
-                                        onClick={() => setSelectedImage(image)}
-                                        className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg md:rounded-xl overflow-hidden shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${selectedImage === image ? 'ring-2 md:ring-4 ring-[#4e9767] opacity-100' : 'opacity-50'}`}
-                                    >
-                                        <div
-                                            className="w-full h-full bg-center bg-cover bg-no-repeat"
-                                            style={{ backgroundImage: `url(${image})` }}
-                                        ></div>
-                                    </div>
-                                ))}
-                            </div>
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="flex justify-between items-center">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li className="inline-flex items-center">
+                        <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to="/dashboard">
+                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                            Dashboard
+                        </Link>
+                    </li>
+                    <li>
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <Link className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white" to="/products">products</Link>
                         </div>
-                    </div>
+                    </li>
+                    <li aria-current="page">
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{productDetail.Name}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
 
-                    {/* RIGHT: STOCK TABLE (60%) */}
-                    <div className="lg:col-span-7 w-full">
-                        <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 border border-gray-100">
-                            <h3 className="text-[#0e1b12] text-2xl md:text-3xl font-black mb-4 md:mb-8 flex items-center gap-3">
-                                <svg className="w-6 h-6 md:w-8 md:h-8 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                                Stock & Variants
-                            </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-                            {/* Mobile Table */}
-                            <div className="md:hidden space-y-6">
-                                {Array.from(groupedVariants).map(([colorId, variants]) => (
-                                    <div key={colorId ?? 'unknown'} className="rounded-2xl border-2 border-[#d0e7d7] overflow-hidden shadow-lg bg-white">
-                                        <div className="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] px-4 py-3 flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <span
-                                                    className="inline-block w-8 h-8 rounded-lg border-2 border-white shadow-md flex-shrink-0"
-                                                    style={{ backgroundColor: variants[0].Color?.HexCode || '#fff' }}
-                                                ></span>
-                                                <span className="text-white font-bold text-base">{variants[0].Color?.Name || 'N/A'}</span>
-                                            </div>
-                                            <span className="text-white font-bold text-lg">${variants[0].VariantPrice}</span>
-                                        </div>
+                {/* Left Column: Images */}
+                <div className="lg:col-span-5 flex flex-col gap-6">
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-4 flex flex-col items-center">
+                        <div className="relative w-full aspect-[4/5] bg-gray-50 dark:bg-black/20 rounded-lg overflow-hidden mb-4 group">
+                            <div
+                                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                                style={{ backgroundImage: `url(${selectedImage})` }}
+                            ></div>
 
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full">
-                                                <thead>
-                                                    <tr className="bg-[#f8fcf9] border-b-2 border-[#d0e7d7]">
-                                                        <th className="px-3 py-2 text-left text-[#4e9767] text-xs font-bold uppercase border-r border-[#d0e7d7]">Size</th>
-                                                        <th className="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase border-r border-[#d0e7d7]">Qty</th>
-                                                        <th className="px-3 py-2 text-center text-[#4e9767] text-xs font-bold uppercase">Defects</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {variants.map((variant, idx) => {
-                                                        // const originalIndex = getVariantIndex(variant.Id);
-                                                        const isLast = idx === variants.length - 1;
-                                                        return (
-                                                            <tr key={variant.Id} className={`hover:bg-[#f8fcf9] transition-colors ${!isLast ? 'border-b border-[#d0e7d7]' : ''}`}>
-                                                                <td className="px-3 py-3 text-[#0e1b12] font-semibold text-sm border-r border-[#d0e7d7]">
-                                                                    {variant.Size?.Name || 'N/A'}
-                                                                </td>
-                                                                <td className="px-3 py-3 text-center border-r border-[#d0e7d7]">
-                                                                    <button
-                                                                        onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || 'N/A', variant.Size?.Name || 'N/A')}
-                                                                        className="px-2.5 py-1 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm cursor-pointer hover:bg-[#d0e7d7] transition-colors"
-                                                                    >
-                                                                        {variant.Quantity}
-                                                                    </button>
-                                                                </td>
-                                                                <td className="px-3 py-3 text-center">
-                                                                    <span className="px-2.5 py-1 bg-[#fde7e7] text-[#d9534f] rounded-lg inline-block font-bold text-sm">
-                                                                        {variant.Defects}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Desktop Table */}
-                            <div className="hidden md:block overflow-x-auto rounded-2xl border border-[#d0e7d7] shadow-lg">
-                                <table className="w-full min-w-full border-collapse">
-                                    <thead>
-                                        <tr className="bg-gradient-to-r from-[#4e9767] to-[#3d7a52]">
-                                            <th className="border border-[#d0e7d7] px-4 py-4 text-left text-white text-sm lg:text-base font-bold uppercase">Color</th>
-                                            <th className="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Size</th>
-                                            <th className="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Quantity</th>
-                                            <th className="border border-[#d0e7d7] px-4 py-4 text-center text-white text-sm lg:text-base font-bold uppercase">Defects</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white">
-                                        {Array.from(groupedVariants).map(([_, variants]) =>
-                                            variants.map((variant, idx) => {
-                                                // const originalIndex = getVariantIndex(variant.Id);
-                                                const isFirst = idx === 0;
-                                                return (
-                                                    <tr key={variant.Id} className="hover:bg-[#f8fcf9] transition-colors">
-                                                        {isFirst && (
-                                                            <td
-                                                                rowSpan={variants.length}
-                                                                className="border border-[#d0e7d7] px-4 py-4 align-middle bg-gradient-to-br from-[#f8fcf9] to-white"
-                                                            >
-                                                                <div className="flex items-center gap-3">
-                                                                    <span
-                                                                        className="inline-block w-10 h-10 rounded-lg border-2 border-gray-300 shadow-sm flex-shrink-0"
-                                                                        style={{ backgroundColor: variant.Color?.HexCode || '#fff' }}
-                                                                    ></span>
-                                                                    <span className="font-bold text-[#0e1b12] text-sm lg:text-base">{variant.Color?.Name || 'N/A'}</span>
-                                                                </div>
-                                                            </td>
-                                                        )}
-                                                        <td className="border border-[#d0e7d7] px-4 py-4 text-center text-[#0e1b12] font-semibold text-sm lg:text-base">
-                                                            {variant.Size?.Name || 'N/A'}
-                                                        </td>
-                                                        <td className="border border-[#d0e7d7] px-4 py-4 text-center">
-                                                            <button
-                                                                onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || 'N/A', variant.Size?.Name || 'N/A')}
-                                                                className="px-2.5 py-1 bg-[#e7f3eb] text-[#4e9767] rounded-lg inline-block font-bold text-sm cursor-pointer hover:bg-[#d0e7d7] transition-colors"
-                                                            >
-                                                                {variant.Quantity}
-                                                            </button>
-                                                        </td>
-                                                        <td className="border border-[#d0e7d7] px-4 py-4 text-center">
-                                                            <span className="px-3 py-1.5 bg-[#fde7e7] text-[#d9534f] rounded-lg inline-block font-bold text-sm lg:text-base">
-                                                                {variant.Defects}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                        </div>
+                        <div className="flex gap-3 w-full overflow-x-auto pb-2">
+                            {productDetail.ImageUrls?.map((image, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setSelectedImage(image)}
+                                    className={`w-16 h-16 shrink-0 rounded-lg border-2 ${selectedImage === image ? 'border-primary' : 'border-gray-200 dark:border-gray-700'} overflow-hidden relative hover:border-primary/50 transition-colors`}
+                                >
+                                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}></div>
+                                </button>
+                            ))}
+                            <button className="w-16 h-16 shrink-0 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative flex items-center justify-center bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary hover:bg-primary/5 transition-all">
+                                <span className="material-symbols-outlined">add_a_photo</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                {/* PRODUCT INFO */}
-                <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-gray-100 mx-4">
-                    <p className="text-[#0e1b12] text-xl md:text-2xl lg:text-4xl font-black leading-tight mb-2">
-                        {productDetail.Name}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                        <span className="px-2 md:px-3 py-1 bg-[#e7f3eb] text-[#4e9767] text-xs md:text-sm font-bold rounded-full">
-                            SKU: {productDetail.Id}
-                        </span>
-                        <span className="px-2 md:px-3 py-1 bg-gradient-to-r from-[#4e9767] to-[#3d7a52] text-white text-xs md:text-sm font-bold rounded-full shadow-md">
-                            {getStockStatus() ? "In Stock" : "Out of Stock"}
-                        </span>
-                    </div>
-                </div>
+                {/* Right Column: Stock & Info */}
+                <div className="lg:col-span-7 flex flex-col gap-6">
 
-                <div className="p-4 mt-2">
-                    <div className="bg-white rounded-3xl shadow-xl p-4 md:p-8 border border-gray-100">
-                        <h3 className="text-[#0e1b12] text-xl md:text-2xl font-bold mb-4 md:mb-6 flex items-center gap-3">
-                            <svg className="w-5 h-5 md:w-6 md:h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                    {/* Stock Table */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                        <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">inventory_2</span>
+                            Stock & Variants
+                        </h2>
+                        <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-[#2a4032]">
+                            <table className="w-full text-sm text-center">
+                                <thead>
+                                    <tr className="bg-[#4e9767] text-white">
+                                        <th className="py-3 px-4 font-bold uppercase text-xs">Color</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Size</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Quantity</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Defects</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-[#112116] divide-y divide-gray-100 dark:divide-[#2a4032]">
+                                    {Array.from(groupedVariants).map(([_, variants]) => (
+                                        variants.map((variant, idx) => {
+                                            const isFirst = idx === 0;
+                                            return (
+                                                <tr key={variant.Id}>
+                                                    {isFirst && (
+                                                        <td
+                                                            rowSpan={variants.length}
+                                                            className="py-3 px-4 border-r border-gray-100 dark:border-[#2a4032]"
+                                                        >
+                                                            <div className="flex items-center gap-2 justify-center">
+                                                                <span
+                                                                    className="w-4 h-4 rounded shadow-sm border border-gray-200"
+                                                                    style={{ backgroundColor: variant.Color?.HexCode || '#fff' }}
+                                                                ></span>
+                                                                <span className="font-medium text-text-main dark:text-white">{variant.Color?.Name || 'N/A'}</span>
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                    <td className="py-3 px-4 text-text-main dark:text-gray-300">{variant.Size?.Name || 'N/A'}</td>
+                                                    <td className="py-3 px-4">
+                                                        <button
+                                                            onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '')}
+                                                            className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold dark:bg-green-900/40 dark:text-green-300 hover:underline cursor-pointer"
+                                                        >
+                                                            {variant.Quantity}
+                                                        </button>
+                                                    </td>
+                                                    <td className="py-3 px-4">
+                                                        <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${variant.Defects > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'}`}>
+                                                            {variant.Defects}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Product Header Card */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 className="text-3xl font-extrabold text-text-main dark:text-white tracking-tight">{productDetail.Name}</h1>
+                            <div className="flex items-center gap-3 mt-2">
+                                <span className="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wide">
+                                    SKU: {productDetail.Id}
+                                </span>
+                                <span className={`bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide flex items-center gap-1`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${getStockStatus() ? 'bg-primary' : 'bg-red-500'}`}></span>
+                                    {getStockStatus() ? "In Stock" : "Out of Stock"}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="text-right hidden sm:block">
+                            <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">Retail Price</p>
+                            <p className="text-3xl font-black text-text-main dark:text-white">${productDetail.BasePrice.toFixed(2)}</p>
+                        </div>
+                    </div>
+
+                    {/* Product Details Cards */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                        <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">info</span>
                             Product Details
-                        </h3>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            {/* Description */}
-                            <div className="sm:col-span-2 lg:col-span-4 space-y-2">
-                                <p className="text-[#4e9767] text-xs md:text-sm font-bold uppercase tracking-wide">Description</p>
-                                <p className="text-[#0e1b12] text-sm md:text-base leading-relaxed bg-[#f8fcf9] p-3 md:p-4 rounded-xl">
-                                    {productDetail.Description}
-                                </p>
-                            </div>
-
-                            {/* Category */}
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 bg-[#e7f3eb] rounded-xl flex items-center justify-center">
-                                    <svg className="w-5 h-5 md:w-6 md:h-6 text-[#4e9767]" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                                    </svg>
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[#4e9767] text-xs md:text-sm font-bold uppercase">Category</p>
-                                    <p className="text-[#0e1b12] text-base md:text-lg font-semibold mt-1 break-words">{productDetail.Category?.Name}</p>
+                        </h2>
+                        <div className="flex flex-col gap-6">
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-text-secondary mb-2 tracking-wide">Description</label>
+                                <div className="bg-gray-50 dark:bg-[#112116] p-4 rounded-lg border border-gray-100 dark:border-[#2a4032]">
+                                    <p className="text-sm text-text-main dark:text-gray-300 leading-relaxed">
+                                        {productDetail.Description}
+                                    </p>
                                 </div>
                             </div>
-
-                            {/* Price */}
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-xl flex items-center justify-center shadow-lg">
-                                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                                    </svg>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary">
+                                        <span className="material-symbols-outlined text-[20px]">category</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Category</span>
+                                        <span className="text-sm font-bold text-text-main dark:text-white">{productDetail.Category?.Name}</span>
+                                    </div>
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="text-[#4e9767] text-xs md:text-sm font-bold uppercase">Base Price</p>
-                                    <p className="text-[#0e1b12] text-2xl md:text-3xl font-black mt-1">${productDetail.BasePrice}</p>
+                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-primary text-white p-2 rounded-md shadow-sm shadow-primary/20">
+                                        <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Base Cost</span>
+                                        <span className="text-sm font-bold text-text-main dark:text-white">${productDetail.BasePrice.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary">
+                                        <span className="material-symbols-outlined text-[20px]">verified</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Brand</span>
+                                        <span className="text-sm font-bold text-text-main dark:text-white">{productDetail.Brand?.Name}</span>
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Brand */}
-                            <div className="flex items-start gap-3 md:gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 bg-[#e7f3eb] rounded-xl flex items-center justify-center">
-                                    <svg className="w-5 h-5 md:w-6 md:h-6 text-[#4e9767]" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-[#4e9767] text-xs md:text-sm font-bold uppercase">Brand</p>
-                                    <p className="text-[#0e1b12] text-base md:text-lg font-semibold mt-1 break-words">{productDetail.Brand?.Name}</p>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
+
                 </div>
-
             </div>
-
-            {/* Styles for hiding scrollbar */}
-            <style>
-                {`
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                `}
-            </style>
 
             <InventoryStockModal
                 show={showInventoryModal}
@@ -457,4 +318,3 @@ export default function ProductDetails() {
         </div>
     );
 }
-

@@ -78,3 +78,4 @@ export interface InventoryStock {
     };
     Quantity: number;
 }
+export * from './transfer';

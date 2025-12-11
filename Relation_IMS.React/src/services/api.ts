@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with default configuration
 const api = axios.create({
-    baseURL: 'https://localhost:7062/api/v1', // Hardcoded as per Angular project
+    baseURL: 'https://localhost:7062/api', // Corrected base URL
     headers: {
         'Content-Type': 'application/json',
     },

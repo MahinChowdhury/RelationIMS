@@ -8,10 +8,12 @@ import ProductDetails from './pages/products/ProductDetails';
 import Orders from './pages/orders/Orders';
 import OrderDetails from './pages/orders/OrderDetails';
 
+import InventoryOptions from './pages/inventory/InventoryOptions';
+import InventoryTransfer from './pages/inventory/InventoryTransfer';
+
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;
 const Reports = () => <div className="p-4">Reports Page Coming Soon</div>;
-const Inventory = () => <div className="p-4">Inventory Page Coming Soon</div>;
 
 function App() {
   return (
@@ -25,7 +27,8 @@ function App() {
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<CustomerDetails />} />
         <Route path="reports" element={<Reports />} />
-        <Route path="inventory" element={<Inventory />} />
+        <Route path="inventory" element={<InventoryOptions />} />
+        <Route path="inventory/transfer" element={<InventoryTransfer />} />
         {/* Deep link support for products */}
         <Route path="products/:id" element={<ProductDetails />} />
       </Route>

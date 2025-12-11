@@ -10,7 +10,6 @@ import type { Product, StockItem } from '../../types';
 
 export default function ProductsPage() {
     const navigate = useNavigate();
-    // const { id } = useParams(); // For deep linking via barcode or url
 
     // State
     const [products, setProducts] = useState<Product[]>([]);
@@ -174,7 +173,7 @@ export default function ProductsPage() {
         return (p?.TotalQuantity || 0) > 0;
     };
 
-    // --- Modals ---
+    // --- Modals --- (Keep all modal logic same)
     // OPEN EDIT
     const openEditModal = async (product: Product) => {
         setCurrentProduct({ ...product, CategoryId: product.CategoryId || product.Category?.Id || 0 });
@@ -187,9 +186,6 @@ export default function ProductsPage() {
         // Load Variants
         try {
             const res = await api.get(`/ProductVariants/product/${product.Id}`);
-
-            // HACK: because availableSizes state update might be slow, let's just map sizes by ID from the global fetch if simpler, or just trust the race condition won't bite often.
-            // Or better, refetch sizes and pass to map.
             const sizeRes = await api.get(`/ProductVariantSizes/category/${product.CategoryId}`);
             const sizes = sizeRes.data;
             setAvailableSizes(sizes.map((s: any) => ({ id: s.Id, name: s.Name })));
@@ -204,9 +200,7 @@ export default function ProductsPage() {
                     quantity: variant.Quantity
                 };
             });
-
             setStockItems(mappedStock);
-
         } catch (err) {
             console.error("Failed variants", err);
         }
@@ -216,7 +210,6 @@ export default function ProductsPage() {
     // SAVE EDIT
     const saveEdit = async () => {
         if (!currentProduct.Id) return;
-
         try {
             // 1. Upload new images
             const newImageUrls: string[] = [];
@@ -366,11 +359,7 @@ export default function ProductsPage() {
         const idx = selectedImages.indexOf(img);
         if (idx > -1) {
             setSelectedImages(prev => prev.filter((_, i) => i !== idx));
-            // Note: removing from file list is trickier if we don't map 1:1 perfectly by index logic if mixed with strings. 
-            // Simplification: if it's a blob url (uploaded now), remove from file list. if http, just remove from selectedImages.
             if (!img.startsWith('http')) {
-                // This logic is imperfect without 1:1 mapping, but valid for basic needs. 
-                // In Angular code: uses index match.
                 const fileIdx = idx - selectedImages.filter(im => im.startsWith('http')).length;
                 if (fileIdx >= 0) {
                     setImageFiles(prev => prev.filter((_, i) => i !== fileIdx));
@@ -407,76 +396,68 @@ export default function ProductsPage() {
         setEditingStockIndex(null);
     };
 
-    // Barcode
     const onBarcodeScanned = (code: string) => {
         setShowBarcodeScanner(false);
         navigate(`/products/${code}`);
     };
 
     return (
-        <div className="px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-40 flex flex-1 justify-center py-5 bg-gradient-to-br from-[#f8fcf9] to-white min-h-screen">
-            <div className="layout-content-container flex flex-col w-full max-w-none flex-1">
+        <div className="container mx-auto max-w-screen-2xl px-4 py-4 md:px-6 md:py-6 flex flex-col gap-4">
 
-                {/* Header */}
-                <div className="flex flex-wrap justify-between items-center gap-3 p-4 mb-2">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center shadow-lg">
-                            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-[#0e1b12] text-3xl md:text-4xl font-black leading-tight tracking-tight">Product List</p>
-                        </div>
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="bg-primary text-white p-2 rounded-lg shadow-sm">
+                        <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
                     </div>
+                    <h1 className="text-2xl font-extrabold text-text-main dark:text-white tracking-tight">Product List</h1>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                        <span className="hidden sm:inline">Scan</span>
+                    </button>
+                    <button
+                        onClick={openCreateModal}
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">add</span>
+                        <span className="hidden sm:inline">Add Product</span>
+                        <span className="sm:hidden">Add</span>
+                    </button>
+                </div>
+            </div>
 
-                    <div className="flex gap-3 flex-wrap">
-                        <button
-                            onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
-                            className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-12 px-6 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-950 text-white text-sm font-bold leading-normal shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
-                            <span className="truncate">Scan Barcode</span>
-                        </button>
-                        <button
-                            onClick={openCreateModal}
-                            className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-12 px-6 bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white text-sm font-bold leading-normal shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                            <span className="truncate">Add Product</span>
-                        </button>
+            {/* Search & Filters */}
+            <div className="flex flex-col gap-3">
+                <div className="relative w-full">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <span className="material-symbols-outlined text-gray-400 text-[20px]">search</span>
                     </div>
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full py-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-white shadow-sm focus:ring-primary focus:border-primary dark:bg-[#1a2e22] dark:border-[#2a4032] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary transition-all"
+                        placeholder="Search products..."
+                    />
                 </div>
-
-                {/* Search */}
-                <div className="px-4 py-3">
-                    <label className="flex flex-col min-w-40 h-14 w-full">
-                        <div className="flex w-full flex-1 items-stretch rounded-2xl h-full shadow-md hover:shadow-lg transition-shadow">
-                            <div className="text-[#4e9767] flex border-none bg-white items-center justify-center pl-5 rounded-l-2xl border-r-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
-                            </div>
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search products by name, brand, or category..."
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl text-[#0e1b12] focus:outline-0 focus:ring-2 focus:ring-[#4e9767] border-none bg-white focus:border-none h-full placeholder:text-[#4e9767]/60 px-5 rounded-l-none border-l-0 pl-3 text-base font-medium leading-normal"
-                            />
-                        </div>
-                    </label>
-                </div>
-
-                {/* Filters */}
-                <div className="flex gap-3 p-3 flex-wrap pr-4">
-                    {/* Filters logic is same as angular, just React selects */}
-                    {/* SORT */}
+                <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                    {/* Sort */}
                     <div className="relative">
-                        <button className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all">
-                            <svg className="w-4 h-4 text-[#4e9767]" fill="currentColor" viewBox="0 0 20 20"><path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" /></svg>
-                            {sortBy || "Sort By"}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path></svg>
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px]">sort</span>
+                            {sortBy || "Sort"}
+                            <span className="material-symbols-outlined text-[14px] text-gray-400">expand_more</span>
                         </button>
-                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer">
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        >
                             <option value="">Sort by</option>
                             <option value="SKU">SKU</option>
                             <option value="Brand">Brand</option>
@@ -485,71 +466,76 @@ export default function ProductsPage() {
                         </select>
                     </div>
 
-                    {/* BRAND */}
+                    {/* Brand */}
                     <div className="relative">
-                        <button className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {selectedBrand === '' ? "Brand" : getBrandName(Number(selectedBrand))}
                         </button>
-                        <select value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer">
+                        <select
+                            value={selectedBrand}
+                            onChange={(e) => setSelectedBrand(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        >
                             <option value="">All Brands</option>
                             {brands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
                         </select>
                     </div>
 
-                    {/* CATEGORY */}
+                    {/* Category */}
                     <div className="relative">
-                        <button className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {selectedCategory === '' ? "Category" : getCategoryNameById(Number(selectedCategory))}
                         </button>
-                        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer">
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        >
                             <option value="">All Categories</option>
                             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
 
-                    {/* STOCK */}
+                    {/* Stock */}
                     <div className="relative">
-                        <button className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {stockOrder || "Stock Status"}
                         </button>
-                        <select value={stockOrder} onChange={(e) => setStockOrder(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer">
+                        <select
+                            value={stockOrder}
+                            onChange={(e) => setStockOrder(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        >
                             <option value="">Default</option>
                             <option value="Ascending">Ascending</option>
                             <option value="Descending">Descending</option>
                         </select>
                     </div>
                 </div>
+            </div>
 
-                {/* PRODUCTS GRID */}
-                <div className="px-4 py-3">
-                    <div className="rounded-2xl border-2 border-[#d0e7d7] bg-white shadow-xl p-6">
-                        <div className="grid gap-6 grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                            {products.map(product => (
-                                <ProductCard
-                                    key={product.Id}
-                                    product={product}
-                                    placeholderImage={placeholderImage}
-                                    getStockStatus={getStockStatus}
-                                    getCategoryNameById={(id) => getCategoryNameById(Number(id))}
-                                    getBrandName={(id) => getBrandName(Number(id))}
-                                    onEdit={openEditModal}
-                                    onDelete={(id) => { setProductToDelete(id); setShowDeleteModal(true); }}
-                                />
-                            ))}
-                        </div>
+            {/* Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 pb-6">
+                {products.map(product => (
+                    <ProductCard
+                        key={product.Id}
+                        product={product}
+                        placeholderImage={placeholderImage}
+                        getStockStatus={getStockStatus}
+                        getCategoryNameById={(id) => getCategoryNameById(Number(id))}
+                        getBrandName={(id) => getBrandName(Number(id))}
+                        // onEdit and onDelete removed from card view but logic kept in parent if needed later
+                        onEdit={openEditModal}
+                        onDelete={(id) => { setProductToDelete(id); setShowDeleteModal(true); }}
+                    />
+                ))}
+            </div>
 
-                        {/* Infinite Scroll Anchor */}
-                        <div ref={containerRef} className="flex flex-col items-center justify-center py-8 mt-8">
-                            {loading && (
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="w-12 h-12 border-4 border-[#e7f3eb] border-t-[#4e9767] rounded-full animate-spin"></div>
-                                    <p className="text-[#4e9767] text-base font-semibold">Loading more products...</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
+            {/* Infinite Scroll Anchor */}
+            <div ref={containerRef} className="flex flex-col items-center justify-center py-4">
+                {loading && (
+                    <div className="w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+                )}
             </div>
 
             {/* MODALS */}
@@ -624,7 +610,6 @@ export default function ProductsPage() {
                 setEditedStock={setEditedStock}
                 getColorHex={getColorHex}
             />
-
         </div>
     );
 }

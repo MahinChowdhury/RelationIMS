@@ -13,12 +13,14 @@ namespace Relation_IMS.Datas.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+
         public InventoryRepository(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
 
+        // Create new inventory
         public async Task<Inventory> CreateNewInventoryAsync(CreateInventoryDTO inventoryDto)
         {
             var inventory = _mapper.Map<Inventory>(inventoryDto);
@@ -27,73 +29,148 @@ namespace Relation_IMS.Datas.Repositories
             return inventory;
         }
 
+        // Delete inventory by id
         public async Task<Inventory?> DeleteInventoryByIdAsync(int id)
         {
             var inventory = await _context.Inventories.FindAsync(id);
             if (inventory == null) return null;
+
             _context.Inventories.Remove(inventory);
             await _context.SaveChangesAsync();
             return inventory;
         }
 
+        // Get all inventories
         public async Task<List<Inventory>> GetAllInventoriesAsync()
         {
             var inventories = await _context.Inventories.ToListAsync();
             return inventories;
         }
 
+        // Get inventory by id
         public async Task<Inventory?> GetInventoryByIdAsync(int id)
         {
             var inventory = await _context.Inventories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.Id == id);
 
-            if (inventory == null) return null;
             return inventory;
         }
 
+        // Update inventory by id
         public async Task<Inventory?> UpdateInventoryByIdAsync(int id, CreateInventoryDTO inventoryDto)
         {
             var inventory = await _context.Inventories.FindAsync(id);
             if (inventory == null) return null;
+
             inventory.Name = inventoryDto.Name;
             inventory.Description = inventoryDto.Description;
             await _context.SaveChangesAsync();
             return inventory;
         }
 
-        // New method to transfer items between inventories
-        public async Task<bool> TransferProductItemsAsync(int sourceInventoryId, int destinationInventoryId, int productVariantId, int quantity)
+        // Transfer product item by code with source and destination validation
+        public async Task<TransferResultDTO> TransferProductItemByCodeAsync(string productItemCode, int sourceInventoryId, int destinationInventoryId)
         {
-            // Get available items from source inventory
-            var availableItems = await _context.ProductItems
-                .Where(pi => pi.InventoryId == sourceInventoryId
-                    && pi.ProductVariantId == productVariantId
-                    && !pi.IsDefected
-                    && !pi.IsSold)
-                .Take(quantity)
-                .ToListAsync();
+            var result = new TransferResultDTO();
 
-            if (availableItems.Count < quantity)
+            // Verify source inventory exists and get its details
+            var sourceInventory = await _context.Inventories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == sourceInventoryId);
+
+            if (sourceInventory == null)
             {
-                return false; // Not enough items to transfer
+                result.Success = false;
+                result.Message = "Source inventory not found.";
+                return result;
             }
 
-            // Verify destination inventory exists
-            var destinationExists = await _context.Inventories.AnyAsync(i => i.Id == destinationInventoryId);
-            if (!destinationExists)
+            // Verify destination inventory exists and get its details
+            var destinationInventory = await _context.Inventories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == destinationInventoryId);
+
+            if (destinationInventory == null)
             {
-                return false;
+                result.Success = false;
+                result.Message = "Destination inventory not found.";
+                return result;
             }
 
-            // Transfer items
-            foreach (var item in availableItems)
+            // Check if source and destination are the same
+            if (sourceInventoryId == destinationInventoryId)
             {
-                item.InventoryId = destinationInventoryId;
+                result.Success = false;
+                result.Message = "Source and destination inventories cannot be the same.";
+                return result;
             }
 
+            // Get the item by code
+            var item = await _context.ProductItems
+                .FirstOrDefaultAsync(pi => pi.Code == productItemCode);
+
+            if (item == null)
+            {
+                result.Success = false;
+                result.Message = $"Product item with code '{productItemCode}' not found.";
+                return result;
+            }
+
+            // Verify item is currently in the source inventory
+            if (item.InventoryId != sourceInventoryId)
+            {
+                result.Success = false;
+                result.Message = $"Product item '{productItemCode}' is not in the source inventory. Current inventory ID: {item.InventoryId}";
+                return result;
+            }
+
+            // Check if item can be transferred (not defected or sold)
+            if (item.IsDefected)
+            {
+                result.Success = false;
+                result.Message = $"Cannot transfer defected item: {item.Code}";
+                return result;
+            }
+
+            if (item.IsSold)
+            {
+                result.Success = false;
+                result.Message = $"Cannot transfer sold item: {item.Code}";
+                return result;
+            }
+
+            // Transfer item
+            item.InventoryId = destinationInventoryId;
             await _context.SaveChangesAsync();
-            return true;
+
+            // Build success response with full inventory details
+            result.Success = true;
+            result.Message = $"Successfully transferred item {item.Code} from '{sourceInventory.Name}' to '{destinationInventory.Name}'.";
+            result.TransferredCount = 1;
+            result.TransferDetails = new List<TransferItemDetail>
+            {
+                new TransferItemDetail
+                {
+                    Code = item.Code,
+                    SourceInventoryId = sourceInventoryId,
+                    SourceInventory = new InventoryBasicDTO
+                    {
+                        Id = sourceInventory.Id,
+                        Name = sourceInventory.Name,
+                        Description = sourceInventory.Description
+                    },
+                    DestinationInventoryId = destinationInventoryId,
+                    DestinationInventory = new InventoryBasicDTO
+                    {
+                        Id = destinationInventory.Id,
+                        Name = destinationInventory.Name,
+                        Description = destinationInventory.Description
+                    }
+                }
+            };
+
+            return result;
         }
 
         // Get inventory stock summary by product variant - OPTIMIZED
@@ -218,6 +295,7 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
+        // Get variant stock across all inventories
         public async Task<List<VariantStockDTO>> GetVariantStockAcrossInventoriesAsync(int variantId)
         {
             var result = await _context.Inventories
@@ -225,7 +303,7 @@ namespace Relation_IMS.Datas.Repositories
                 {
                     InventoryId = inv.Id,
                     Inventory = inv,
-                    Quantity = inv.ProductItems
+                    Quantity = inv.ProductItems!
                         .Where(pi => pi.ProductVariantId == variantId && !pi.IsDefected && !pi.IsSold)
                         .Count()
                 })
@@ -234,6 +312,8 @@ namespace Relation_IMS.Datas.Repositories
             return result;
         }
     }
+
+    // ===== DTOs =====
 
     // Simplified DTO for inventory stock summary
     public class InventoryStockDTO
@@ -256,5 +336,18 @@ namespace Relation_IMS.Datas.Repositories
         public string SizeName { get; set; } = string.Empty;
         public int Quantity { get; set; }
     }
-    
+
+    // DTO for product item summary
+    public class ProductItemSummaryDTO
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public int ProductVariantId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string ColorName { get; set; } = string.Empty;
+        public string SizeName { get; set; } = string.Empty;
+        public bool IsDefected { get; set; }
+        public bool IsSold { get; set; }
+    }
+
 }

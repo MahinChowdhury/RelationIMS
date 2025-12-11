@@ -2,7 +2,6 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos;
 using Relation_IMS.Dtos.InventoryDtos;
-using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Controllers
 {
@@ -89,27 +88,33 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory/transfer
         [HttpPost("transfer")]
-        public async Task<IActionResult> TransferProductItems([FromBody] TransferProductItemsDTO transferDto)
+        public async Task<IActionResult> TransferProductItem([FromBody] TransferProductItemsDTO transferDto)
         {
             if (!ModelState.IsValid)
             {
-         
                 return BadRequest(ModelState);
             }
 
-            var success = await _inventoryRepo.TransferProductItemsAsync(
+            var result = await _inventoryRepo.TransferProductItemByCodeAsync(
+                transferDto.ProductItemCode,
                 transferDto.SourceInventoryId,
-                transferDto.DestinationInventoryId,
-                transferDto.ProductVariantId,
-                transferDto.Quantity
+                transferDto.DestinationInventoryId
             );
 
-            if (!success)
+            if (!result.Success)
             {
-                return BadRequest(new { message = "Transfer failed. Check if source has enough items and destination exists." });
+                return BadRequest(new
+                {
+                    message = result.Message
+                });
             }
 
-            return Ok(new { message = $"Successfully transferred {transferDto.Quantity} items." });
+            return Ok(new
+            {
+                message = result.Message,
+                transferredCount = result.TransferredCount,
+                details = result.TransferDetails
+            });
         }
 
         // GET: api/Inventory/5/stock-summary
@@ -128,6 +133,7 @@ namespace Relation_IMS.Controllers
             return Ok(stockSummary);
         }
 
+        // GET: api/Inventory/variant/5/stock - Get variant stock across all inventories
         [HttpGet("variant/{variantId}/stock")]
         public async Task<IActionResult> GetVariantStockAcrossInventories(int variantId)
         {

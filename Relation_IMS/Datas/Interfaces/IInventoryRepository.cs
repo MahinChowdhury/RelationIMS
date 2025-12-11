@@ -7,15 +7,20 @@ namespace Relation_IMS.Datas.Interfaces
 {
     public interface IInventoryRepository
     {
+        // Basic CRUD operations
         Task<List<Inventory>> GetAllInventoriesAsync();
         Task<Inventory?> GetInventoryByIdAsync(int id);
         Task<Inventory> CreateNewInventoryAsync(CreateInventoryDTO inventoryDto);
         Task<Inventory?> UpdateInventoryByIdAsync(int id, CreateInventoryDTO inventoryDto);
         Task<Inventory?> DeleteInventoryByIdAsync(int id);
-        Task<bool> TransferProductItemsAsync(int sourceInventoryId, int destinationInventoryId, int productVariantId, int quantity);
+
+        // Product item operations
+        Task<List<ProductItemSummaryDTO>> GetInventoryProductItemsAsync(int inventoryId);
+        Task<TransferResultDTO> TransferProductItemByCodeAsync(string productItemCode, int sourceInventoryId, int destinationInventoryId);
+
+        // Stock summary operations
         Task<List<InventoryStockDTO>> GetInventoryStockSummaryAsync(int inventoryId);
         Task<List<ProductInventoryStockDTO>> GetProductStockAcrossInventoriesAsync(int productId);
-        Task<List<ProductItemSummaryDTO>> GetInventoryProductItemsAsync(int inventoryId);
         Task<List<VariantStockDTO>> GetVariantStockAcrossInventoriesAsync(int variantId);
     }
 }
