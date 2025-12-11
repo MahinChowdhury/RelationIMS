@@ -5,7 +5,7 @@ using Relation_IMS.Dtos.InventoryDtos;
 
 namespace Relation_IMS.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class InventoryController : ControllerBase
     {
