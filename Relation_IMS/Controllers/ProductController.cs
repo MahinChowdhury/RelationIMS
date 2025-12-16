@@ -45,16 +45,58 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateProductAsync([FromBody] CreateNewProductDTO productDto)
+        public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductFormDTO productFormDto, [FromServices] System.Threading.Channels.Channel<Relation_IMS.Services.ProductImageUploadTask> channel)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var productDto = new CreateNewProductDTO
+            {
+                Name = productFormDto.Name,
+                Description = productFormDto.Description,
+                BasePrice = productFormDto.BasePrice,
+                BrandId = productFormDto.BrandId,
+                CategoryId = productFormDto.CategoryId,
+                ImageUrls = new List<string>() // Initially empty, will be updated by background job
+            };
 
             var created = await _repo.CreateProductAsync(productDto);
 
             if (created == null)
             {
-                return BadRequest(new {Message = "Product couldn't be created."});
+                return BadRequest(new { Message = "Product couldn't be created." });
+            }
+
+            // Queue images for background upload
+            if (productFormDto.Images != null && productFormDto.Images.Count > 0)
+            {
+                var imagesToUpload = new List<(string FileName, Stream Content)>();
+
+                foreach (var file in productFormDto.Images)
+                {
+                    if (file.Length > 0)
+                    {
+                        var memoryStream = new MemoryStream();
+                        await file.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
+                        
+                        // Generate a unique filename here or let service handle uniqueness?
+                        // Service uses Path.GetFileNameWithoutExtension(file.FileName) then adds .webp
+                        // To avoid collisions we should probably randomize or append ID, but sticking to existing logic for now.
+                        // Existing logic: var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                        
+                        // We will pass the original filename so service can process it similarly
+                         var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                         var fileName = $"{Guid.NewGuid()}_{fileNameWithoutExt}.webp"; // Enhanced uniqueness
+
+                        imagesToUpload.Add((fileName, memoryStream));
+                    }
+                }
+
+                if (imagesToUpload.Count > 0)
+                {
+                    await channel.Writer.WriteAsync(new Relation_IMS.Services.ProductImageUploadTask(created.Id, imagesToUpload));
+                }
             }
 
             return CreatedAtAction(nameof(GetProductById), new { id = created.Id }, created);

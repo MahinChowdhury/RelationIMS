@@ -87,9 +87,7 @@ export default function ProductDetails() {
 
         try {
             console.log(`Fetching inventory for variantId: ${variantId}`);
-            const res = await api.get<InventoryStock[]>(`/Inventory/variant/${variantId}/stock`, {
-                baseURL: 'https://localhost:7062/api'
-            });
+            const res = await api.get<InventoryStock[]>(`/Inventory/variant/${variantId}/stock`);
             setStockData(res.data);
         } catch (err) {
             console.error('Failed to load inventory stock:', err);
@@ -284,11 +282,11 @@ export default function ProductDetails() {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-primary text-white p-2 rounded-md shadow-sm shadow-primary/20">
+                                    <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-primary/20">
                                         <span className="material-symbols-outlined text-[20px]">attach_money</span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Base Cost</span>
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Last Price</span>
                                         <span className="text-sm font-bold text-text-main dark:text-white">${productDetail.BasePrice.toFixed(2)}</span>
                                     </div>
                                 </div>

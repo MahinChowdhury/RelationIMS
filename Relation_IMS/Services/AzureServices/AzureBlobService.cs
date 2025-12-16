@@ -40,5 +40,25 @@ namespace Relation_IMS.Services.AzureServices
 
             return blobClient.Uri.ToString();
         }
+
+        public async Task<string> UploadImageStreamAsync(Stream stream, string fileName)
+        {
+             var blobClient = _blobClient.GetBlobClient(fileName);
+
+             // Load and convert image to WebP
+             // Reset stream position if needed, but usually we expect it to be at start
+             if (stream.Position != 0 && stream.CanSeek) stream.Position = 0;
+
+             using var image = await Image.LoadAsync(stream);
+
+             using var outputStream = new MemoryStream();
+             var encoder = new WebpEncoder { Quality = 75 };
+             await image.SaveAsync(outputStream, encoder);
+             outputStream.Position = 0;
+
+             await blobClient.UploadAsync(outputStream, overwrite: true);
+
+             return blobClient.Uri.ToString();
+        }
     }
 }

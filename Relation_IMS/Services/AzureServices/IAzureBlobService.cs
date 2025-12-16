@@ -3,5 +3,6 @@
     public interface IAzureBlobService
     {
         Task<string> UploadFileAsync(IFormFile file);
+        Task<string> UploadImageStreamAsync(Stream stream, string fileName);
     }
 }

@@ -276,27 +276,26 @@ export default function ProductsPage() {
 
     const createProduct = async () => {
         try {
-            const imageUrls: string[] = [];
-            for (const file of imageFiles) {
-                const formData = new FormData();
-                formData.append('file', file);
-                const res = await api.post('/Blob/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                imageUrls.push(res.data);
-            }
+            const formData = new FormData();
+            formData.append('Name', currentProduct.Name);
+            formData.append('Description', currentProduct.Description || '');
+            formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
+            formData.append('CategoryId', currentProduct.CategoryId.toString());
+            formData.append('BrandId', currentProduct.BrandId.toString());
 
-            const payload = {
-                Name: currentProduct.Name,
-                ImageUrls: imageUrls,
-                Description: currentProduct.Description,
-                BasePrice: currentProduct.BasePrice,
-                CategoryId: currentProduct.CategoryId,
-                BrandId: currentProduct.BrandId
-            };
+            // Append images
+            imageFiles.forEach(file => {
+                formData.append('Images', file);
+            });
 
-            const res = await api.post('/Product', payload);
+            // Note: Product creation is now instant, images upload in background.
+            const res = await api.post('/Product', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
             const productId = res.data.id || res.data.Id;
 
-            // Add Variants
+            // Add Variants (Keep existing logic as it uses a separate endpoint)
             if (productId && stockItems.length > 0) {
                 for (const stock of stockItems) {
                     const colorId = colors.find(c => c.name === stock.color)?.id;
@@ -317,6 +316,7 @@ export default function ProductsPage() {
 
             setShowCreateModal(false);
             loadProducts(true);
+            alert('Product created! Images are uploading in the background.');
 
         } catch (e) {
             console.error(e);

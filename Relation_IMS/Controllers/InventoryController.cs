@@ -5,8 +5,10 @@ using Relation_IMS.Dtos.InventoryDtos;
 
 namespace Relation_IMS.Controllers
 {
-    [Route("api/v1/[controller]")]
+
     [ApiController]
+    [Route("api/v1/[controller]")]
+    
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryRepository _inventoryRepo;

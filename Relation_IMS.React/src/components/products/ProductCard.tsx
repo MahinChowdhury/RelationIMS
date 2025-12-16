@@ -52,7 +52,7 @@ export default function ProductCard({
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                 style={{ backgroundImage: `url(${product.ImageUrls?.[0] || placeholderImage})` }}
             ></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-50 group-hover:opacity-90 transition-opacity"></div>
 
             <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
                 {statusBadge}

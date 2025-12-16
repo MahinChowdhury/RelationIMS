@@ -60,7 +60,12 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<ProductItemsBuilderFactory>();
+builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
+
+// Background Services
+builder.Services.AddHostedService<Relation_IMS.Services.BackgroundProductImageUploader>();
+builder.Services.AddSingleton(System.Threading.Channels.Channel.CreateUnbounded<Relation_IMS.Services.ProductImageUploadTask>());
 
 Lazy<IClientCacheService>? clientCacheInstance = null;
 
