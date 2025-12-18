@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import type { InventoryBasicDTO, TransferProductItemsDTO, TransferResultDTO } from '../../types';
+import BarcodeScanner from '../../components/BarcodeScanner';
 
 interface ScannedItem {
     id: string; // unique scan id
@@ -11,6 +12,7 @@ interface ScannedItem {
     count: number;
     scannedAt: Date;
 }
+
 
 const InventoryTransfer = () => {
     // const navigate = useNavigate();
@@ -22,6 +24,7 @@ const InventoryTransfer = () => {
     const [loading, setLoading] = useState(false);
     const [transferring, setTransferring] = useState(false);
     const [notes, setNotes] = useState('');
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const scanInputRef = useRef<HTMLInputElement>(null);
 
     // Mock recent transfers for UI completeness as API doesn't exist yet for history
@@ -78,6 +81,30 @@ const InventoryTransfer = () => {
         setScanInput('');
         // Keep focus for continuous scanning
         scanInputRef.current?.focus();
+    };
+
+    const handleBarcodeScanned = (code: string) => {
+        if (!code) return;
+
+        // Check if item already scanned
+        const existingItemIndex = scannedItems.findIndex(item => item.code === code);
+
+        if (existingItemIndex >= 0) {
+            const updatedItems = [...scannedItems];
+            updatedItems[existingItemIndex].count += 1;
+            updatedItems[existingItemIndex].scannedAt = new Date();
+            setScannedItems(updatedItems);
+        } else {
+            setScannedItems(prev => [{
+                id: Date.now().toString(),
+                code: code,
+                description: 'Product ' + code,
+                count: 1,
+                scannedAt: new Date()
+            }, ...prev]);
+        }
+
+        // Optional: play beep sound here
     };
 
     const handleRemoveItem = (code: string) => {
@@ -229,7 +256,13 @@ const InventoryTransfer = () => {
                         </div>
 
                         <form onSubmit={handleScan} className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-[24px]">qr_code_scanner</span>
+                            <button
+                                type="button"
+                                onClick={() => setIsScannerOpen(true)}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[24px]">qr_code_scanner</span>
+                            </button>
                             <input
                                 ref={scanInputRef}
                                 type="text"
@@ -417,6 +450,15 @@ const InventoryTransfer = () => {
                     </table>
                 </div>
             </div>
+            {/* Barcode Scanner Modal */}
+            {isScannerOpen && (
+                <BarcodeScanner
+                    enabled={true}
+                    onScanned={handleBarcodeScanned}
+                    onClose={() => setIsScannerOpen(false)}
+                    onError={(error) => console.error("Scanner error:", error)}
+                />
+            )}
         </div>
     );
 };
