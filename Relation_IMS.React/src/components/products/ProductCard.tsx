@@ -13,7 +13,6 @@ interface ProductCardProps {
 export default function ProductCard({
     product,
     placeholderImage,
-    getStockStatus,
     getCategoryNameById,
     getBrandName
 }: ProductCardProps) {

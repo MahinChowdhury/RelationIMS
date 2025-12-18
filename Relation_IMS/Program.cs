@@ -11,6 +11,7 @@ using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Datas.Repositories.ProductVariantsRepo;
 using Relation_IMS.Entities;
 using Relation_IMS.Factory;
+using Relation_IMS.Services;
 using Relation_IMS.Services.AzureServices;
 using Relation_IMS.Services.JWTServices;
 using System.IdentityModel.Tokens.Jwt;
@@ -60,12 +61,11 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<ProductItemsBuilderFactory>();
-builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
 
 // Background Services
-builder.Services.AddHostedService<Relation_IMS.Services.BackgroundProductImageUploader>();
-builder.Services.AddSingleton(System.Threading.Channels.Channel.CreateUnbounded<Relation_IMS.Services.ProductImageUploadTask>());
+builder.Services.AddHostedService<BackgroundProductImageUploader>();
+builder.Services.AddSingleton(System.Threading.Channels.Channel.CreateUnbounded<ProductImageUploadTask>());
 
 Lazy<IClientCacheService>? clientCacheInstance = null;
 

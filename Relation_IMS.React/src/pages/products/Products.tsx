@@ -4,6 +4,7 @@ import api from '../../services/api';
 import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
 import BarcodeScanner from '../../components/BarcodeScanner';
+import { BarcodeSheet } from '../../components/products/BarcodeSheet';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { Product, StockItem } from '../../types';
@@ -401,8 +402,89 @@ export default function ProductsPage() {
         navigate(`/products/${code}`);
     };
 
+    // Print Barcodes
+    const [showPrintModal, setShowPrintModal] = useState(false);
+    const [itemsToPrint, setItemsToPrint] = useState<{ code: string; itemDetails: string }[]>([]);
+
+    const handlePrintBarcodes = async (productId: number) => {
+        try {
+            const product = products.find(p => p.Id === productId);
+            if (!product) return;
+
+            // We need to fetch variants to get codes
+            // If the backend `GetProductVariantsByProductId` returns ProductItems inside, we can use that.
+            // But `ProductVariantsController` returns `List<ProductVariant>`.
+            // Does `ProductVariant` contain `ProductItems`?
+            // Let's check `ProductVariant.cs` (it should).
+            // Actually, `ProductRepository` includes `ProductItems` in `GetProductById`.
+            // `GetAllProducts` usually doesn't include deep nested variants for performance.
+            // So let's fetch the full product details first.
+
+            const res = await api.get<Product>(`/Product/${productId}`);
+            const fullProduct = res.data as any; // Cast to any to access nested Variants and ProductItems
+
+            if (fullProduct.Variants) {
+                const barcodes: { code: string; itemDetails: string }[] = [];
+                fullProduct.Variants.forEach((variant: any) => {
+                    const colorName = variant.Color?.Name || variant.ProductColorId.toString(); // Fallback if name not populated
+                    const sizeName = variant.Size?.Name || variant.ProductSizeId.toString();
+
+                    if (variant.ProductItems) {
+                        variant.ProductItems.forEach((item: any) => {
+                            if (!item.IsSold && !item.IsDefected) {
+                                barcodes.push({
+                                    code: item.Code,
+                                    itemDetails: `Color: ${colorName}, Size: ${sizeName}`
+                                });
+                            }
+                        });
+                    }
+                });
+                setItemsToPrint(barcodes);
+                setShowPrintModal(true);
+            } else {
+                alert('No variants found for this product.');
+            }
+
+        } catch (error) {
+            console.error('Failed to prepare barcodes:', error);
+            alert('Failed to load product details for printing.');
+        }
+    };
+
+    const printSheet = () => {
+        window.print();
+    };
+
     return (
         <div className="container mx-auto max-w-screen-2xl px-4 py-4 md:px-6 md:py-6 flex flex-col gap-4">
+
+            {/* Print Modal Overlay (Using a simple full screen div for now to support @media print) */}
+            {showPrintModal && (
+                <div className="fixed inset-0 z-[9999] bg-white overflow-auto">
+                    <div className="p-4 flex justify-between items-center bg-gray-100 border-b no-print sticky top-0">
+                        <h2 className="text-xl font-bold">Print Barcodes</h2>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={printSheet}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold flex items-center gap-2"
+                            >
+                                <span className="material-symbols-outlined">print</span> Print
+                            </button>
+                            <button
+                                onClick={() => setShowPrintModal(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-bold"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                    <div className="p-8">
+                        {/* Dynamic Import or direct usage if imported at top */}
+                        <BarcodeSheet items={itemsToPrint} />
+                    </div>
+                </div>
+            )}
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -517,17 +599,27 @@ export default function ProductsPage() {
             {/* Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 pb-6">
                 {products.map(product => (
-                    <ProductCard
-                        key={product.Id}
-                        product={product}
-                        placeholderImage={placeholderImage}
-                        getStockStatus={getStockStatus}
-                        getCategoryNameById={(id) => getCategoryNameById(Number(id))}
-                        getBrandName={(id) => getBrandName(Number(id))}
-                        // onEdit and onDelete removed from card view but logic kept in parent if needed later
-                        onEdit={openEditModal}
-                        onDelete={(id) => { setProductToDelete(id); setShowDeleteModal(true); }}
-                    />
+                    <div key={product.Id} className="relative group">
+                        <ProductCard
+                            product={product}
+                            placeholderImage={placeholderImage}
+                            getStockStatus={getStockStatus}
+                            getCategoryNameById={(id) => getCategoryNameById(Number(id))}
+                            getBrandName={(id) => getBrandName(Number(id))}
+                            onEdit={openEditModal}
+                            onDelete={(id) => { setProductToDelete(id); setShowDeleteModal(true); }}
+                        />
+                        {/* Print Button Overlay on Card */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handlePrintBarcodes(product.Id); }}
+                                className="p-1.5 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 hover:text-blue-600"
+                                title="Print Barcodes"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">print</span>
+                            </button>
+                        </div>
+                    </div>
                 ))}
             </div>
 
