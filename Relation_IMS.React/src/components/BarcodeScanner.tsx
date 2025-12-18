@@ -56,7 +56,6 @@ export default function BarcodeScanner({ enabled, onScanned, onError, onClose }:
 
     useEffect(() => {
         if (enabled && mode === 'camera') {
-            // Small delay to ensure video element is mounted and ready
             const timer = setTimeout(() => {
                 startScanning();
             }, 100);
@@ -132,174 +131,174 @@ export default function BarcodeScanner({ enabled, onScanned, onError, onClose }:
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl border-2 border-[#d0e7d7] overflow-hidden">
+            <div className="bg-white dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl max-h-[92vh] border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
 
-                {/* Header */}
-                <div className="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] p-6 text-white">
+                {/* Header - unchanged size */}
+                <div className="bg-white dark:bg-background-dark p-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                                </svg>
+                        <div className="flex items-center gap-2">
+                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                                <span className="material-symbols-outlined text-[28px]">qr_code_scanner</span>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black">Scan Barcode</h2>
-                                <p className="text-sm text-white/80">Use camera or upload image</p>
+                                <h2 className="text-xl font-extrabold text-text-main dark:text-white tracking-tight">Scan Barcode</h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Use camera or upload image</p>
                             </div>
                         </div>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 flex items-center justify-center text-white hover:bg-white/20 rounded-xl transition-all text-2xl font-bold"
+                            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all"
                         >
-                            ×
+                            <span className="material-symbols-outlined text-[24px]">close</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Mode Tabs */}
-                <div className="flex border-b-2 border-[#e7f3eb] bg-[#f8fcf9]">
+                {/* Mode Tabs - slightly reduced vertical padding for better proportion */}
+                <div className="flex border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/20 flex-shrink-0">
                     <button
                         onClick={() => handleModeChange('camera')}
-                        className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 transition-all hover:bg-white/50 ${mode === 'camera'
-                                ? 'bg-white text-[#4e9767] font-bold border-b-2 border-[#4e9767]'
-                                : 'text-gray-600'
-                            }`}
+                        className={`flex-1 py-3 px-6 flex items-center justify-center gap-2 transition-all font-bold text-sm ${
+                            mode === 'camera'
+                                ? 'bg-white dark:bg-background-dark text-primary border-b-2 border-primary shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        }`}
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                        <span className="material-symbols-outlined text-[20px]">videocam</span>
                         Camera Scan
                     </button>
                     <button
                         onClick={() => handleModeChange('upload')}
-                        className={`flex-1 py-4 px-6 flex items-center justify-center gap-2 transition-all hover:bg-white/50 ${mode === 'upload'
-                                ? 'bg-white text-[#4e9767] font-bold border-b-2 border-[#4e9767]'
-                                : 'text-gray-600'
-                            }`}
+                        className={`flex-1 py-3 px-6 flex items-center justify-center gap-2 transition-all font-bold text-sm ${
+                            mode === 'upload'
+                                ? 'bg-white dark:bg-background-dark text-primary border-b-2 border-primary shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                        }`}
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
+                        <span className="material-symbols-outlined text-[20px]">upload_file</span>
                         Upload Image
                     </button>
                 </div>
 
-                {/* Camera Mode */}
-                {mode === 'camera' && (
-                    <div className="relative bg-black">
-                        <video
-                            ref={videoRef}
-                            className={`w-full h-[400px] object-cover ${!enabled ? 'hidden' : ''}`}
-                        ></video>
+                {/* Main Content Area - Increased height for camera */}
+                <div className="flex-1 min-h-0 overflow-hidden">
+                    {/* Camera Mode - Taller scanner */}
+                    {mode === 'camera' && (
+                        <div className="relative bg-black h-full">
+                            <video
+                                ref={videoRef}
+                                className={`w-full h-full object-cover ${!enabled ? 'hidden' : ''}`}
+                            />
 
-                        {/* Loading State */}
-                        {!enabled && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <div className="w-16 h-16 border-4 border-[#e7f3eb] border-t-[#4e9767] rounded-full animate-spin mx-auto mb-4"></div>
-                                    <p className="text-white text-lg font-semibold">Initializing camera...</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Scanning Overlay */}
-                        {enabled && (
-                            <div className="absolute inset-0 pointer-events-none">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
-                                    <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-[#4e9767] rounded-tl-2xl"></div>
-                                    <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-[#4e9767] rounded-tr-2xl"></div>
-                                    <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-[#4e9767] rounded-bl-2xl"></div>
-                                    <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-[#4e9767] rounded-br-2xl"></div>
-
-                                    <div className="absolute inset-0 overflow-hidden">
-                                        <div className="w-full h-0.5 bg-[#4e9767] shadow-lg shadow-[#4e9767]/50 animate-[scan_2s_ease-in-out_infinite]"></div>
+                            {/* Loading State */}
+                            {!enabled && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                                    <div className="text-center">
+                                        <div className="w-12 h-12 border-4 border-gray-700 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+                                        <p className="text-gray-400 text-sm font-semibold">Initializing camera...</p>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        <style>{`
-              @keyframes scan {
-                0% { transform: translateY(0); }
-                100% { transform: translateY(256px); }
-              }
-            `}</style>
-                    </div>
-                )}
+                            )}
 
-                {/* Upload Mode */}
-                {mode === 'upload' && (
-                    <div className="relative bg-gradient-to-br from-[#f8fcf9] to-white">
-                        <div className="h-[400px] flex items-center justify-center p-8">
+                            {/* Scanning Overlay */}
+                            {enabled && (
+                                <div className="absolute inset-0 pointer-events-none">
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 border border-white/20 rounded-xl backdrop-blur-[1px]">
+                                        <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-primary rounded-tl-xl"></div>
+                                        <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-primary rounded-tr-xl"></div>
+                                        <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-primary rounded-bl-xl"></div>
+                                        <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-xl"></div>
+
+                                        <div className="absolute inset-0 overflow-hidden rounded-xl">
+                                            <div className="w-full h-1 bg-primary/80 shadow-[0_0_20px_rgba(23,207,84,0.8)] animate-[scan_3s_ease-in-out_infinite]"></div>
+                                        </div>
+                                    </div>
+                                    <div className="absolute bottom-8 left-0 w-full text-center">
+                                        <span className="inline-block px-5 py-2.5 bg-black/60 backdrop-blur-md rounded-full text-white text-sm font-medium">
+                                            Point camera at a barcode
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <style jsx>{`
+                                @keyframes scan {
+                                    0% { transform: translateY(-100%); opacity: 0; }
+                                    20% { opacity: 1; }
+                                    80% { opacity: 1; }
+                                    100% { transform: translateY(200%); opacity: 0; }
+                                }
+                            `}</style>
+                        </div>
+                    )}
+
+                    {/* Upload Mode - Matches camera height area */}
+                    {mode === 'upload' && (
+                        <div className="relative bg-gray-50 dark:bg-black/20 h-full flex items-center justify-center p-8">
                             <div className="text-center w-full max-w-md">
                                 {uploadedImage ? (
-                                    <div className="mb-6">
-                                        <img src={uploadedImage} className="max-h-64 mx-auto rounded-xl shadow-lg border-2 border-[#d0e7d7]" alt="Uploaded barcode" />
+                                    <div className="mb-6 relative">
+                                        <img
+                                            src={uploadedImage}
+                                            className="max-h-96 mx-auto rounded-xl shadow-xl border-2 border-gray-200 dark:border-gray-700"
+                                            alt="Uploaded barcode"
+                                        />
+                                        <button
+                                            onClick={resetUpload}
+                                            className="absolute -top-3 -right-3 bg-white dark:bg-gray-800 text-gray-600 hover:text-red-600 rounded-full p-2 shadow-lg transition-all"
+                                        >
+                                            <span className="material-symbols-outlined text-[24px]">close</span>
+                                        </button>
+
                                         {isProcessing && (
-                                            <div className="mt-4">
-                                                <div className="w-12 h-12 border-4 border-[#e7f3eb] border-t-[#4e9767] rounded-full animate-spin mx-auto"></div>
-                                                <p className="text-[#4e9767] font-semibold mt-3">Processing image...</p>
+                                            <div className="absolute inset-0 bg-white/90 dark:bg-black/90 flex items-center justify-center rounded-xl backdrop-blur-sm">
+                                                <div className="text-center">
+                                                    <div className="w-12 h-12 border-4 border-gray-300 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+                                                    <p className="text-primary font-bold text-lg">Processing...</p>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
                                 ) : (
                                     <div
-                                        className="border-3 border-dashed border-[#d0e7d7] rounded-2xl p-12 bg-white hover:bg-[#f8fcf9] transition-colors cursor-pointer"
+                                        className="border-4 border-dashed border-gray-300 dark:border-gray-600 rounded-3xl p-12 bg-white dark:bg-background-dark hover:border-primary dark:hover:border-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-all cursor-pointer group"
                                         onClick={() => fileInputRef.current?.click()}
                                         onDragOver={onDragOver}
                                         onDrop={onDrop}
                                     >
-                                        <div className="w-20 h-20 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                            </svg>
+                                        <div className="w-20 h-20 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                                            <span className="material-symbols-outlined text-[40px] text-gray-400 group-hover:text-primary transition-colors">
+                                                upload_file
+                                            </span>
                                         </div>
-                                        <p className="text-xl font-bold text-[#0e1b12] mb-2">Drop image here or click to upload</p>
-                                        <p className="text-sm text-gray-600 mb-4">Supports JPG, PNG, or any image format</p>
-                                        <button className="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg transition-shadow">
-                                            Choose File
+                                        <h3 className="text-2xl font-bold text-text-main dark:text-white mb-2">Click to upload</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">PNG, JPG, GIF or SVG (max 10MB)</p>
+                                        <button className="px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-base transition-all shadow-lg shadow-primary/30">
+                                            Select Image
                                         </button>
                                     </div>
                                 )}
-
-                                {uploadedImage && !isProcessing && (
-                                    <button
-                                        onClick={resetUpload}
-                                        className="mt-4 text-[#4e9767] font-semibold hover:underline"
-                                    >
-                                        Upload Different Image
-                                    </button>
-                                )}
                             </div>
                         </div>
+                    )}
+                </div>
 
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={onFileSelected}
-                            className="hidden"
-                        />
-                    </div>
-                )}
+                {/* Hidden file input */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onFileSelected}
+                    className="hidden"
+                />
 
-                {/* Footer */}
-                <div className="p-6 bg-gradient-to-br from-[#f8fcf9] to-white border-t-2 border-[#e7f3eb]">
-                    <div className="flex items-center gap-3 text-[#0e1b12]">
-                        <svg className="w-5 h-5 text-[#4e9767] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        {mode === 'camera' && (
-                            <p className="text-sm font-medium">
-                                Hold your camera steady and position the barcode within the frame. The scanner will automatically detect and read it.
-                            </p>
-                        )}
-                        {mode === 'upload' && (
-                            <p className="text-sm font-medium">
-                                Upload a clear image of your barcode. Ensure the barcode is visible and not blurry for best results.
-                            </p>
-                        )}
+                {/* Footer - unchanged */}
+                <div className="p-5 bg-gray-50 dark:bg-black/30 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+                    <div className="flex items-start gap-3 text-text-main dark:text-gray-300">
+                        <span className="material-symbols-outlined text-[22px] text-primary mt-0.5">info</span>
+                        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                                Hold your device steady. The scanner automatically detects barcode.
+                        </p>
                     </div>
                 </div>
             </div>
