@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import type { Customer, Order } from '../../types';
 
@@ -40,36 +40,63 @@ export default function CustomerDetailsPage() {
         }
     };
 
+    // --- Derived Logic ---
+    const totalSpent = orders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
+    const totalDue = orders
+        .filter(o => o.PaymentStatus !== 2) // Assuming 2 is Paid
+        .reduce((sum, o) => sum + (o.NetAmount || 0), 0);
+
+    const lastOrderDate = orders.length > 0
+        ? new Date(Math.max(...orders.map(o => new Date(o.CreatedAt).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'N/A';
+
     const formatDate = (dateString?: string) => {
         if (!dateString || dateString.startsWith('0001-01-01')) return 'N/A';
-        return new Date(dateString).toLocaleDateString();
+        return new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     };
 
-    const getPaymentStatusText = (status: number) => {
+    const formatFullDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const getPaymentStatusBadge = (status: number) => {
         switch (status) {
-            case 0: return 'Pending';
-            case 1: return 'Partial';
-            case 2: return 'Paid';
-            default: return 'Unknown';
+            case 2: // Paid
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        <span className="size-1.5 rounded-full bg-green-500"></span>
+                        Paid
+                    </span>
+                );
+            case 1: // Partial
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                        <span className="size-1.5 rounded-full bg-yellow-500"></span>
+                        Partial
+                    </span>
+                );
+            default: // Pending / Unknown
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400">
+                        <span className="size-1.5 rounded-full bg-gray-500"></span>
+                        Pending
+                    </span>
+                );
         }
     };
 
-    const getTotalSpent = () => orders.reduce((sum, o) => sum + o.NetAmount, 0);
-    const getAverageOrder = () => orders.length ? getTotalSpent() / orders.length : 0;
-
-    const copyToClipboard = async (text: string) => {
-        try {
-            await navigator.clipboard.writeText(text);
-        } catch (err) {
-            console.error('Failed to copy', err);
-        }
+    const getCustomerStatus = () => {
+        if (totalSpent > 2000) return 'VIP Customer';
+        if (orders.length > 5) return 'Loyal Customer';
+        return 'Retail Customer';
     };
 
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-[#4e9767] border-gray-200"></div>
-                <p className="mt-4 text-[#4e9767] text-lg">Loading customer details...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary border-gray-200"></div>
+                <p className="mt-4 text-primary text-lg font-medium">Loading details...</p>
             </div>
         );
     }
@@ -77,8 +104,8 @@ export default function CustomerDetailsPage() {
     if (error || !customer) {
         return (
             <div className="p-8 flex justify-center min-h-screen">
-                <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-red-800 flex items-center gap-3 h-fit">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-red-800 flex items-center gap-3 h-fit shadow-sm">
+                    <span className="material-symbols-outlined">error</span>
                     <span>{error || 'Customer not found'}</span>
                 </div>
             </div>
@@ -86,125 +113,236 @@ export default function CustomerDetailsPage() {
     }
 
     return (
-        <div className="px-4 md:px-8 lg:px-40 flex flex-1 justify-center py-6 min-h-screen bg-[#f8fcf9]">
-            <div className="layout-content-container flex flex-col max-w-5xl w-full flex-1 space-y-8">
+        <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6">
 
-                {/* Header */}
-                <header className="flex flex-col md:flex-row items-start md:items-center gap-5 p-4 bg-white rounded-xl shadow-sm border border-[#e7f3eb]">
-                    <Link to="/customers" className="text-[#4e9767] hover:text-[#0e1b12] flex items-center gap-1 text-lg font-medium transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-                        Back
-                    </Link>
-
-                    <div className="flex-1 flex items-center gap-4">
-                        <div className="bg-[#d0e7d7] rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-[#0e1b12]">
-                            {customer.Name.slice(0, 2).toUpperCase()}
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="flex">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li className="inline-flex items-center">
+                        <Link to="/" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
+                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                            Dashboard
+                        </Link>
+                    </li>
+                    <li>
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <Link to="/customers" className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white">Customers</Link>
                         </div>
-                        <div>
-                            <h1 className="text-[#0e1b12] text-3xl font-bold">{customer.Name}</h1>
-                            <p className="text-[#4e9767] text-base">Customer since {formatDate(customer.CreatedDate)}</p>
+                    </li>
+                    <li aria-current="page">
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">Customer Details</span>
                         </div>
-                    </div>
-                </header>
+                    </li>
+                </ol>
+            </nav>
 
-                {/* Statistics */}
-                <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    <div className="bg-white border border-[#d0e7d7] rounded-xl p-6 flex items-center gap-4 shadow-sm">
-                        <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-7 h-7 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg></div>
-                        <div><p className="text-[#4e9767] text-sm font-medium">Total Orders</p><p className="text-[#0e1b12] text-2xl font-bold">{orders.length}</p></div>
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">{customer.Name}</h1>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
+                            {getCustomerStatus()}
+                        </span>
                     </div>
-                    <div className="bg-white border border-[#d0e7d7] rounded-xl p-6 flex items-center gap-4 shadow-sm">
-                        <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-7 h-7 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
-                        <div><p className="text-[#4e9767] text-sm font-medium">Total Spent</p><p className="text-[#0e1b12] text-2xl font-bold">৳{getTotalSpent().toFixed(2)}</p></div>
-                    </div>
-                    <div className="bg-white border border-[#d0e7d7] rounded-xl p-6 flex items-center gap-4 shadow-sm">
-                        <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-7 h-7 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-5-2h6m-3-8v12" /></svg></div>
-                        <div><p className="text-[#4e9767] text-sm font-medium">Average Order</p><p className="text-[#0e1b12] text-2xl font-bold">৳{getAverageOrder().toFixed(2)}</p></div>
-                    </div>
-                </section>
+                    <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
+                        Customer ID: #CUST-{customer.Id.toString().padStart(4, '0')} • Member since {formatDate(customer.CreatedDate)}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-all shadow-sm">
+                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
 
-                {/* Customer Info */}
-                <section className="bg-white rounded-2xl border border-[#d0e7d7] p-6 md:p-8 shadow-sm">
-                    <h2 className="text-[#0e1b12] text-2xl font-bold mb-6 flex items-center gap-3">
-                        <svg className="w-7 h-7 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        Customer Information
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f8fcf9] border border-[#d0e7d7]">
-                            <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-6 h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>
-                            <div><p className="text-sm font-medium text-[#4e9767]">Full Name</p><p className="text-lg font-semibold text-[#0e1b12]">{customer.Name}</p></div>
-                        </div>
-                        <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f8fcf9] border border-[#d0e7d7]">
-                            <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-6 h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg></div>
-                            <div className="flex-1 flex justify-between items-center">
-                                <div><p className="text-sm font-medium text-[#4e9767]">Phone</p><p className="text-lg font-semibold text-[#0e1b12]">{customer.Phone}</p></div>
-                                <button onClick={() => copyToClipboard(customer.Phone)} className="p-2 rounded-lg hover:bg-[#d0e7d7] text-[#4e9767]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                {/* Left Column: Profile & Contact */}
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    {/* Profile Card */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] overflow-hidden">
+                        <div className="relative h-32 w-full bg-gradient-to-r from-green-50 to-emerald-100 dark:from-[#112116] dark:to-[#1a2e22]"></div>
+                        <div className="px-6 pb-6">
+                            <div className="relative -mt-12 mb-4">
+                                <div className="size-24 rounded-full border-4 border-white dark:border-[#1a2e22] shadow-sm bg-gray-200 bg-center bg-cover flex items-center justify-center text-3xl font-bold text-gray-400">
+                                    {/* Placeholder if no image */}
+                                    {customer.Name.substring(0, 2).toUpperCase()}
+                                </div>
+                            </div>
+                            <h2 className="text-xl font-bold text-text-main dark:text-white">{customer.Name}</h2>
+                            <p className="text-sm text-text-secondary dark:text-gray-400 mb-6">{getCustomerStatus()}</p>
+
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-green-500 text-white text-sm font-bold rounded-lg shadow-md shadow-green-500/20 transition-all w-full">
+                                    <span className="material-symbols-outlined text-[18px]">call</span>
+                                    Call
+                                </button>
+                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#112116] dark:border-gray-700 dark:text-gray-200 dark:hover:bg-white/5 transition-all w-full">
+                                    <span className="material-symbols-outlined text-[18px]">mail</span>
+                                    Message
+                                </button>
+                            </div>
+
+                            <hr className="border-gray-100 dark:border-[#2a4032] mb-6" />
+
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                        <span className="material-symbols-outlined text-[20px]">mail</span>
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Email Address</p>
+                                        <p className="text-sm font-medium text-text-main dark:text-gray-200 truncate" title={customer.Email}>{customer.Email || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                        <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Phone Number</p>
+                                        <p className="text-sm font-medium text-text-main dark:text-gray-200">{customer.Phone}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                        <span className="material-symbols-outlined text-[20px]">location_on</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Address</p>
+                                        <p className="text-sm font-medium text-text-main dark:text-gray-200 break-words">
+                                            {customer.Address}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 p-4 rounded-xl bg-[#f8fcf9] border border-[#d0e7d7]">
-                            <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-6 h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div>
-                            <div className="flex-1 flex justify-between items-center">
-                                <div><p className="text-sm font-medium text-[#4e9767]">Email</p><p className="text-lg font-semibold text-[#0e1b12]">{customer.Email || <span className="text-gray-400 italic">Not provided</span>}</p></div>
-                                {customer.Email && <button onClick={() => copyToClipboard(customer.Email!)} className="p-2 rounded-lg hover:bg-[#d0e7d7] text-[#4e9767]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>}
+                    </div>
+
+                    {/* Internal Notes (Placeholder) */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-5">
+                        <h3 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary text-[18px]">sticky_note_2</span>
+                            Internal Notes
+                        </h3>
+                        <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/20 rounded-lg p-3">
+                            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                No internal notes added yet.
+                            </p>
+                        </div>
+                        <button className="mt-3 text-xs font-medium text-primary hover:text-green-600 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                            Add Note
+                        </button>
+                    </div>
+                </div>
+
+                {/* Right Column: Stats & Orders */}
+                <div className="lg:col-span-8 flex flex-col gap-6">
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-text-secondary mb-1">Total Purchases</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">${totalSpent.toFixed(2)}</p>
+                            </div>
+                            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary dark:bg-primary/20">
+                                <span className="material-symbols-outlined">shopping_bag</span>
                             </div>
                         </div>
-                        <div className="md:col-span-1 flex items-start gap-4 p-4 rounded-xl bg-[#f8fcf9] border border-[#d0e7d7]">
-                            <div className="bg-[#e7f3eb] p-3 rounded-lg"><svg className="w-6 h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg></div>
-                            <div><p className="text-sm font-medium text-[#4e9767]">Address</p><p className="text-lg font-semibold text-[#0e1b12]">{customer.Address}</p></div>
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between relative overflow-hidden">
+                            <div className={`absolute right-0 top-0 w-1 h-full ${totalDue > 0 ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                            <div>
+                                <p className="text-xs font-medium text-text-secondary mb-1">Total Due</p>
+                                <p className={`text-2xl font-black ${totalDue > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                    ${totalDue.toFixed(2)}
+                                </p>
+                            </div>
+                            <div className={`size-10 rounded-full flex items-center justify-center ${totalDue > 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
+                                <span className="material-symbols-outlined">account_balance_wallet</span>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-text-secondary mb-1">Last Order</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">{lastOrderDate}</p>
+                            </div>
+                            <div className="size-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 dark:bg-blue-900/20">
+                                <span className="material-symbols-outlined">event</span>
+                            </div>
                         </div>
                     </div>
-                </section>
 
-                {/* Order History */}
-                <section className="bg-white rounded-xl border border-[#d0e7d7] shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-[#d0e7d7] flex items-center justify-between">
-                        <h2 className="text-[#0e1b12] text-xl font-bold flex items-center gap-2">
-                            <svg className="w-6 h-6 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                            Order History
-                        </h2>
-                        <span className="text-sm text-[#4e9767]">{orders.length} order{orders.length !== 1 ? 's' : ''}</span>
-                    </div>
-
-                    {orders.length === 0 ? (
-                        <div className="p-12 text-center text-[#9ca3af]">
-                            <p className="text-lg">No orders found for this customer.</p>
+                    {/* Recent Orders Table */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] flex-1">
+                        <div className="p-6 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">receipt_long</span>
+                                Recent Orders
+                            </h2>
+                            <span className="text-sm font-medium text-text-secondary">{orders.length} orders found</span>
                         </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-[#f8fcf9]">
-                                    <tr>
-                                        <th className="px-5 py-3 text-[#0e1b12] font-medium">Order ID</th>
-                                        <th className="px-5 py-3 text-[#0e1b12] font-medium">Date</th>
-                                        <th className="px-5 py-3 text-[#0e1b12] font-medium">Total</th>
-                                        <th className="px-5 py-3 text-[#0e1b12] font-medium">Discount</th>
-                                        <th className="px-5 py-3 text-[#0e1b12] font-medium">Net</th>
-                                        <th className="px-5 py-3 text-[#0e1b12] font-medium">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-[#e5e7eb]">
-                                    {orders.map((order, i) => (
-                                        <tr key={order.Id} className={`${i % 2 === 0 ? 'bg-[#fafafa]' : ''} hover:bg-green-50 cursor-pointer`} onClick={() => navigate(`/orders/${order.Id}`)}>
-                                            <td className="px-5 py-4 font-medium">#{order.Id}</td>
-                                            <td className="px-5 py-4 text-[#4e9767]">{formatDate(order.CreatedAt)}</td>
-                                            <td className="px-5 py-4">৳{order.TotalAmount.toFixed(2)}</td>
-                                            <td className="px-5 py-4 text-[#4e9767]">৳{order.Discount.toFixed(2)}</td>
-                                            <td className="px-5 py-4 font-semibold">৳{order.NetAmount.toFixed(2)}</td>
-                                            <td className="px-5 py-4">
-                                                <span className={`flex min-w-[84px] max-w-[120px] items-center justify-center rounded-lg h-8 px-4 text-sm font-medium ${order.PaymentStatus === 2 ? 'bg-green-100 text-green-800' :
-                                                    order.PaymentStatus === 1 ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {getPaymentStatusText(order.PaymentStatus)}
-                                                </span>
-                                            </td>
+
+                        {orders.length === 0 ? (
+                            <div className="p-8 text-center text-text-secondary">
+                                No orders found for this customer.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
+                                    <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] dark:text-gray-400">
+                                        <tr>
+                                            <th className="px-6 py-4 font-bold" scope="col">Order ID</th>
+                                            <th className="px-6 py-4 font-bold" scope="col">Date</th>
+                                            {/* <th className="px-6 py-4 font-bold" scope="col">Items</th> -- Skipped as Order model doesn't always populate items deeply here */}
+                                            <th className="px-6 py-4 font-bold" scope="col">Status</th>
+                                            <th className="px-6 py-4 font-bold text-right" scope="col">Amount</th>
+                                            <th className="px-6 py-4 font-bold text-center" scope="col">Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </section>
+                                    </thead>
+                                    <tbody className="bg-white dark:bg-[#1a2e22]">
+                                        {orders.map((order) => (
+                                            <tr key={order.Id} className="border-b dark:border-[#2a4032] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-primary">#ORD-{order.Id}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-text-secondary">{formatFullDate(order.CreatedAt)}</td>
+                                                <td className="px-6 py-4">
+                                                    {getPaymentStatusBadge(order.PaymentStatus)}
+                                                </td>
+                                                <td className="px-6 py-4 font-bold text-right">${order.NetAmount.toFixed(2)}</td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <button
+                                                        onClick={() => navigate(`/orders/${order.Id}`)}
+                                                        className="text-gray-400 hover:text-primary transition-colors"
+                                                        title="View Order"
+                                                    >
+                                                        <span className="material-symbols-outlined">visibility</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {orders.length > 5 && (
+                            <div className="p-4 border-t border-gray-100 dark:border-[#2a4032] flex justify-center">
+                                <button className="text-sm font-medium text-text-secondary hover:text-primary transition-colors flex items-center gap-1">
+                                    Show All Orders
+                                    <span className="material-symbols-outlined text-[16px]">expand_more</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
             </div>
         </div>
     );

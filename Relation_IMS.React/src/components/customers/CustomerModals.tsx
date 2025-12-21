@@ -4,7 +4,7 @@ import type { Customer } from '../../types';
 interface CustomerFormModalProps {
     show: boolean;
     mode: 'create' | 'edit';
-    customer: Customer; // In create mode, this will be empty/partial
+    customer: Customer;
     onClose: () => void;
     onSave: () => void;
     onChange: (field: string, value: any) => void;
@@ -28,100 +28,125 @@ export function CustomerFormModal({
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-md border-2 border-[#d0e7d7] relative my-8 animate-fadeIn overflow-y-auto max-h-[90vh]">
-                {/* Close Button */}
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all text-2xl font-bold"
-                >
-                    ×
-                </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
 
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center shadow-lg">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {mode === 'create' ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            )}
-                        </svg>
+                <div className="px-6 py-5 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/50 dark:bg-[#112116]/50">
+                    <div className="flex items-center gap-3">
+                        <div className={`size-10 rounded-xl flex items-center justify-center shadow-sm ${mode === 'create' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                            <span className="material-symbols-outlined text-[24px]">
+                                {mode === 'create' ? 'person_add' : 'edit_square'}
+                            </span>
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-text-main dark:text-white leading-tight">
+                                {mode === 'create' ? 'Add New Customer' : 'Edit Customer'}
+                            </h2>
+                            <p className="text-xs text-text-secondary dark:text-gray-400 font-medium">
+                                {mode === 'create' ? 'Enter customer details below' : 'Update customer information'}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-[#0e1b12] text-2xl font-black">{mode === 'create' ? 'Add New Customer' : 'Edit Customer'}</h2>
-                        <p className="text-[#4e9767] text-sm font-medium">{mode === 'create' ? 'Create a new customer profile' : 'Update customer information'}</p>
-                    </div>
+                    <button
+                        onClick={onClose}
+                        className="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">close</span>
+                    </button>
                 </div>
 
-                <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+                {/* Body */}
+                <div className="p-6 flex flex-col gap-4">
                     {/* Name */}
-                    <div>
-                        <label className="text-[#0e1b12] text-sm font-bold mb-2 block">Full Name</label>
-                        <input
-                            value={customer.Name}
-                            onChange={(e) => onChange('Name', e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl bg-white border-2 border-[#e7f3eb] text-[#0e1b12] focus:outline-none focus:ring-2 focus:ring-[#4e9767] focus:border-transparent font-medium transition-all"
-                            placeholder="Enter full name"
-                            required
-                        />
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Full Name</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <span className="material-symbols-outlined text-[20px]">person</span>
+                            </div>
+                            <input
+                                type="text"
+                                value={customer.Name}
+                                onChange={(e) => onChange('Name', e.target.value)}
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
+                                placeholder="e.g. Michael Ross"
+                                required
+                            />
+                        </div>
                     </div>
 
-                    {/* Phone */}
-                    <div>
-                        <label className="text-[#0e1b12] text-sm font-bold mb-2 block">Phone Number</label>
-                        <input
-                            value={customer.Phone}
-                            onChange={(e) => onChange('Phone', e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl bg-white border-2 border-[#e7f3eb] text-[#0e1b12] focus:outline-none focus:ring-2 focus:ring-[#4e9767] focus:border-transparent font-medium transition-all"
-                            placeholder="Enter phone number"
-                            required
-                        />
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                        <label className="text-[#0e1b12] text-sm font-bold mb-2 block">Email Address</label>
-                        <input
-                            type="email"
-                            value={customer.Email}
-                            onChange={(e) => onChange('Email', e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl bg-white border-2 border-[#e7f3eb] text-[#0e1b12] focus:outline-none focus:ring-2 focus:ring-[#4e9767] focus:border-transparent font-medium transition-all"
-                            placeholder="Enter email address"
-                        />
+                    {/* Contact Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-bold text-text-main dark:text-gray-300">Phone</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                    <span className="material-symbols-outlined text-[20px]">call</span>
+                                </div>
+                                <input
+                                    type="tel"
+                                    value={customer.Phone}
+                                    onChange={(e) => onChange('Phone', e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
+                                    placeholder="+1 (555) 000-0000"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-bold text-text-main dark:text-gray-300">Email</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                    <span className="material-symbols-outlined text-[20px]">mail</span>
+                                </div>
+                                <input
+                                    type="email"
+                                    value={customer.Email}
+                                    onChange={(e) => onChange('Email', e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
+                                    placeholder="michael@example.com"
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Address */}
-                    <div>
-                        <label className="text-[#0e1b12] text-sm font-bold mb-2 block">Address</label>
-                        <textarea
-                            value={customer.Address}
-                            onChange={(e) => onChange('Address', e.target.value)}
-                            rows={3}
-                            className="w-full px-4 py-3 rounded-xl bg-white border-2 border-[#e7f3eb] text-[#0e1b12] focus:outline-none focus:ring-2 focus:ring-[#4e9767] focus:border-transparent font-medium transition-all resize-none"
-                            placeholder="Enter delivery address"
-                        ></textarea>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Address</label>
+                        <div className="relative">
+                            <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
+                                <span className="material-symbols-outlined text-[20px]">location_on</span>
+                            </div>
+                            <textarea
+                                value={customer.Address}
+                                onChange={(e) => onChange('Address', e.target.value)}
+                                rows={3}
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                placeholder="Enter full delivery address"
+                            ></textarea>
+                        </div>
                     </div>
+                </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex justify-end gap-3 pt-4 border-t-2 border-[#e7f3eb] mt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-bold transition-all shadow-md hover:shadow-lg"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white font-bold transition-all shadow-md hover:shadow-lg"
-                        >
-                            {mode === 'create' ? 'Add Customer' : 'Update Customer'}
-                        </button>
-                    </div>
-                </form>
+                {/* Footer */}
+                <div className="px-6 py-4 bg-gray-50/50 dark:bg-[#112116]/50 border-t border-gray-100 dark:border-[#2a4032] flex items-center justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onSave}
+                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-md shadow-green-500/20 transition-all flex items-center gap-2"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">check</span>
+                        {mode === 'create' ? 'Save Customer' : 'Update Changes'}
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -132,35 +157,31 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[#d0e7d7] transform transition-all">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center">
-                        <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
+                <div className="p-6 flex flex-col items-center text-center gap-4">
+                    <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-red-500 text-[32px]">warning</span>
                     </div>
                     <div>
-                        <h2 className="text-[#0e1b12] text-xl font-black">Delete Customer</h2>
-                        <p className="text-[#4e9767] text-sm">This action cannot be undone</p>
+                        <h2 className="text-xl font-black text-text-main dark:text-white mb-1">Delete Customer</h2>
+                        <p className="text-sm text-text-secondary dark:text-gray-400">
+                            Are you sure you want to delete this customer? This action cannot be undone.
+                        </p>
                     </div>
                 </div>
-                <p className="text-[#0e1b12] text-base mb-6 leading-relaxed">
-                    Are you sure you want to delete this customer? All associated data will be permanently removed.
-                </p>
-
-                <div className="flex justify-end gap-3">
+                <div className="grid grid-cols-2 gap-3 px-6 pb-6">
                     <button
                         onClick={onCancel}
-                        className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-semibold transition-all shadow-md hover:shadow-lg"
+                        className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all shadow-md hover:shadow-lg"
+                        className="px-4 py-2.5 text-sm font-bold text-white bg-red-500 rounded-lg hover:bg-red-600 shadow-md shadow-red-500/20 transition-all"
                     >
-                        Delete Customer
+                        Yes, Delete
                     </button>
                 </div>
             </div>

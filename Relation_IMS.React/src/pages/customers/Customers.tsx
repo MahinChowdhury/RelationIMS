@@ -19,6 +19,7 @@ export default function CustomersPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 300);
     const [sortBy, setSortBy] = useState<'orderFrequency' | 'lastOrderDate' | ''>('');
+    const [statusFilter, setStatusFilter] = useState<string>('All');
 
     // Modals
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -27,15 +28,13 @@ export default function CustomersPage() {
 
     // Editing / Creating State
     const [customerToDelete, setCustomerToDelete] = useState<number | null>(null);
-
-    const initialCustomerState: Customer = {
+    const [editingCustomer, setEditingCustomer] = useState<Customer>({
         Id: 0,
         Name: '',
         Phone: '',
         Email: '',
         Address: ''
-    };
-    const [editingCustomer, setEditingCustomer] = useState<Customer>(initialCustomerState);
+    });
 
     // Infinite Scroll Hook
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 1.0 });
@@ -93,24 +92,46 @@ export default function CustomersPage() {
         }
     };
 
-    // Client-side Sort/Filter application if API doesn't handle everything or for immediate feedback
-    // The API seems to handle basic search/sort params, but Angular had 'applyFilters' locally too.
-    // For now we trust the API + local state updates.
-    // However, the Angular code sorted locally for orderFrequency/lastOrderDate if API didn't.
-    // Let's assume API does it or we do it here. The Angular code fetched *then* applied filters? No, it fetched then applied filters to `this.filtered`.
-    // Let's replicate strict behavior: define `filteredCustomers` derived state.
+    // --- Helpers for Derived Stats ---
+    const getStats = (c: Customer) => {
+        const orders = c.Orders || [];
+        const totalSpent = orders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
+        // Assuming PaymentStatus 'Paid' is 2.
+        const dueAmount = orders
+            .filter(o => o.PaymentStatus !== 2)
+            .reduce((sum, o) => sum + (o.NetAmount || 0), 0);
 
-    // BUT looking at Angular: loadCustomers calls API then `applyFilters`. `applyFilters` does local filtering/sorting.
-    // This suggests the API might not strictly handle the complex sorts or fuzzy search perfect?
-    // Actually, `params` are sent to API. So API likely does server-side filtering.
-    // The Angular `applyFilters` seems redundant or modifying the View Model.
-    // Let's stick to API-driven for scalability, but we can conform if needed.
-    // Wait, Angular `applyFilters` sorts `list` based on `sortBy`. If API returns paged data, local sort is weird.
-    // We will assume usage of API params is primary.
+        return { totalSpent, dueAmount, orderCount: orders.length };
+    };
+
+    const getStatus = (c: Customer) => {
+        const { totalSpent, orderCount } = getStats(c);
+        const createdDate = c.CreatedDate ? new Date(c.CreatedDate) : new Date();
+        const daysSinceCreation = (new Date().getTime() - createdDate.getTime()) / (1000 * 3600 * 24);
+
+        if (totalSpent > 2000) return 'VIP';
+        if (daysSinceCreation < 30 && orderCount < 5) return 'New';
+        if (orderCount === 0 && daysSinceCreation > 60) return 'Inactive';
+        return 'Active';
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Active': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+            case 'VIP': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+            case 'New': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+            case 'Inactive': return 'bg-gray-100 text-gray-500 dark:bg-gray-700/30 dark:text-gray-400';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    // Client-side filtering for derived status
+    const filteredCustomers = customers.filter(c => {
+        if (statusFilter === 'All') return true;
+        return getStatus(c) === statusFilter;
+    });
 
     // --- Handlers ---
-    const getOrderCount = (c: Customer) => c.Orders?.length || 0;
-
     const navigateToDetail = (id: number) => {
         navigate(`/customers/${id}`);
     };
@@ -152,7 +173,7 @@ export default function CustomersPage() {
     };
 
     const openCreate = () => {
-        setEditingCustomer(initialCustomerState);
+        setEditingCustomer({ Id: 0, Name: '', Phone: '', Email: '', Address: '' });
         setShowCreateModal(true);
     };
 
@@ -162,147 +183,226 @@ export default function CustomersPage() {
     };
 
     return (
-        <div className="px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-40 flex flex-1 justify-center py-5 bg-gradient-to-br from-[#f8fcf9] to-white min-h-screen">
-            <div className="layout-content-container flex flex-col w-full max-w-none flex-1">
+        <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6">
 
-                {/* Header */}
-                <div className="flex flex-wrap justify-between items-center gap-3 p-4 mb-2">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center shadow-lg">
-                            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                            </svg>
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="flex">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li className="inline-flex items-center">
+                        <a href="#" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
+                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <a href="#" className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white">Customers</a>
                         </div>
-                        <div>
-                            <p className="text-[#0e1b12] text-3xl md:text-4xl font-black leading-tight tracking-tight">Customer Management</p>
-                            <p className="text-[#4e9767] text-sm font-medium mt-1">Manage your customer base and track order history</p>
+                    </li>
+                    <li aria-current="page">
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">All Customers</span>
                         </div>
-                    </div>
+                    </li>
+                </ol>
+            </nav>
+
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">Customer List</h1>
+                    <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
+                        Detailed contact information, shopping activity, and order history.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
                     <button
                         onClick={openCreate}
-                        className="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl h-12 px-6 bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white text-sm font-bold leading-normal shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-lg shadow-green-500/20 transition-all"
                     >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                        <span className="truncate">Add Customer</span>
+                        <span className="material-symbols-outlined text-[20px]">person_add</span>
+                        Add Customer
                     </button>
                 </div>
+            </div>
 
-                {/* Search */}
-                <div className="px-4 py-3">
-                    <label className="flex flex-col min-w-40 h-14 w-full">
-                        <div className="flex w-full flex-1 items-stretch rounded-2xl h-full shadow-md hover:shadow-lg transition-shadow">
-                            <div className="text-[#4e9767] flex border-none bg-white items-center justify-center pl-5 rounded-l-2xl border-r-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
-                            </div>
-                            <input
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search by name, email, or phone..."
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl text-[#0e1b12] focus:outline-0 focus:ring-2 focus:ring-[#4e9767] border-none bg-white focus:border-none h-full placeholder:text-[#4e9767]/60 px-5 rounded-l-none border-l-0 pl-3 text-base font-medium leading-normal"
-                            />
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+                <div className="relative group w-full md:w-96">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <span className="material-symbols-outlined text-text-secondary">search</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full p-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-all"
+                        placeholder="Search by name, email, or phone..."
+                    />
+                </div>
+                <div className="flex gap-3">
+                    <div className="relative">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                        >
+                            <option value="All">Status: All</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="VIP">VIP</option>
+                            <option value="New">New</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
+                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
                         </div>
-                    </label>
-                </div>
-
-                {/* Filters */}
-                <div className="flex gap-3 p-3 flex-wrap pr-4">
-                    <button
-                        onClick={() => setSortBy(prev => prev === 'orderFrequency' ? '' : 'orderFrequency')}
-                        className={`flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 ${sortBy === 'orderFrequency' ? 'border-[#4e9767] shadow-inner bg-green-50' : 'border-[#e7f3eb]'} hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all`}
-                    >
-                        <svg className="w-4 h-4 text-[#4e9767]" fill="currentColor" viewBox="0 0 20 20"><path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3z" /></svg>
-                        Order Frequency
-                    </button>
-
-                    <button
-                        onClick={() => setSortBy(prev => prev === 'lastOrderDate' ? '' : 'lastOrderDate')}
-                        className={`flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 ${sortBy === 'lastOrderDate' ? 'border-[#4e9767] shadow-inner bg-green-50' : 'border-[#e7f3eb]'} hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all`}
-                    >
-                        <svg className="w-4 h-4 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        Last Order Date
-                    </button>
-                </div>
-
-                {/* Table */}
-                <div className="px-4 py-3">
-                    <div className="hidden md:block bg-white rounded-2xl shadow-xl border-2 border-[#d0e7d7] overflow-hidden">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] text-white">
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Name</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Phone</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Email</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Address</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Orders</th>
-                                    <th className="px-4 py-4 text-right text-sm font-bold leading-normal uppercase tracking-wide">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white">
-                                {customers.map((c) => (
-                                    <tr key={c.Id} className="border-b border-[#d0e7d7] hover:bg-[#e7ede7] transition-colors">
-                                        <td className="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-semibold">{c.Name}</td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm">{c.Phone}</td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm">{c.Email || '-'}</td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm truncate max-w-[200px]">{c.Address}</td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm cursor-pointer hover:underline" onClick={() => navigateToDetail(c.Id)}>
-                                            {getOrderCount(c)} order{getOrderCount(c) === 1 ? '' : 's'}
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <button onClick={() => navigateToDetail(c.Id)} className="p-2 rounded-lg bg-[#e7f3eb] text-[#4e9767] hover:bg-[#d0e7d7] transition-all">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                                </button>
-                                                <button onClick={() => openEdit(c)} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                                </button>
-                                                <button onClick={() => { setCustomerToDelete(c.Id); setShowDeleteModal(true); }} className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
+                    <div className="relative">
+                        <select
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            onChange={(e) => {
+                                if (e.target.value.includes('Newest')) setSortBy('lastOrderDate');
+                                else if (e.target.value.includes('Freq')) setSortBy('orderFrequency');
+                                else setSortBy('');
+                            }}
+                        >
+                            <option>Sort by: Default</option>
+                            <option>Sort by: Newest Order</option>
+                            <option>Sort by: Order Frequency</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
+                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    {/* Mobile Cards */}
-                    <div className="md:hidden flex flex-col gap-4">
-                        {customers.map((c) => (
-                            <div key={c.Id} className="bg-white rounded-2xl shadow-lg border-2 border-[#d0e7d7] p-4 flex flex-col gap-3">
-                                <div className="flex justify-between items-start">
-                                    <h3 className="text-[#0e1b12] text-lg font-bold">{c.Name}</h3>
-                                    <div className="flex gap-1">
-                                        <button onClick={() => navigateToDetail(c.Id)} className="p-2 rounded-lg bg-[#e7f3eb] text-[#4e9767] hover:bg-[#d0e7d7] transition-all">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </button>
-                                        <button onClick={() => openEdit(c)} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                        </button>
-                                        <button onClick={() => { setCustomerToDelete(c.Id); setShowDeleteModal(true); }} className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
+            {/* List Header (Desktop) */}
+            <div className="hidden lg:flex px-4 text-xs font-bold text-text-secondary uppercase tracking-wider gap-3">
+                <div className="w-[180px] xl:w-[220px]">Customer</div>
+                <div className="flex-1 min-w-[140px]">Email</div>
+                <div className="w-[115px] xl:w-[130px]">Mobile</div>
+                {/* Skipped Last Order Column */}
+                <div className="w-[80px] xl:w-[100px] text-right">Total Spent</div>
+                <div className="w-[80px] xl:w-[100px] text-right">Outstanding</div>
+                <div className="w-[60px] xl:w-[80px] text-center">Orders</div>
+                <div className="w-[70px] xl:w-[80px] text-right">Actions</div>
+            </div>
+
+            {/* Customer List */}
+            <div className="flex flex-col gap-3">
+                {filteredCustomers.map((c) => {
+                    const stats = getStats(c);
+                    const status = getStatus(c);
+
+                    return (
+                        <div key={c.Id} className="bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] p-3 md:p-4 grid grid-cols-2 lg:flex lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
+
+                            {/* Customer Info */}
+                            <div className="col-span-2 flex items-center gap-3 lg:w-[180px] xl:w-[220px]">
+                                <div className="size-10 rounded-full bg-gray-200 bg-center bg-cover border border-gray-100 dark:border-gray-700 shrink-0 flex items-center justify-center font-bold text-gray-500 text-sm">
+                                    {c.Name.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-text-main dark:text-white text-base leading-tight truncate max-w-[120px]">{c.Name}</h3>
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide font-bold ${getStatusColor(status)}`}>
+                                            {status}
+                                        </span>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-2 text-sm">
-                                    <div className="flex justify-between"><span className="font-medium text-[#4e9767]">Phone</span><span>{c.Phone}</span></div>
-                                    <div className="flex justify-between"><span className="font-medium text-[#4e9767]">Email</span><span>{c.Email || '-'}</span></div>
-                                    <div className="flex justify-between"><span className="font-medium text-[#4e9767]">Address</span><span>{c.Address}</span></div>
-                                    <div className="flex justify-between"><span className="font-medium text-[#4e9767]">Orders</span><span>{getOrderCount(c)}</span></div>
+                                    <p className="text-xs text-text-secondary font-medium mt-0.5">ID: #CUS-{c.Id.toString().padStart(3, '0')}</p>
                                 </div>
                             </div>
-                        ))}
-                    </div>
 
-                    {/* Infinite Scroll Anchor */}
-                    <div ref={containerRef} className="flex flex-col items-center justify-center py-8 mt-8">
-                        {loading && (
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-12 h-12 border-4 border-[#e7f3eb] border-t-[#4e9767] rounded-full animate-spin"></div>
-                                <p className="text-[#4e9767] text-base font-semibold">Loading more customers...</p>
+                            {/* Email */}
+                            <div className="col-span-2 flex flex-col lg:flex-1 min-w-[140px]">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Email</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">mail</span>
+                                    <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.Email}>{c.Email || '-'}</span>
+                                </div>
                             </div>
-                        )}
-                    </div>
+
+                            {/* Mobile */}
+                            <div className="col-span-1 flex flex-col lg:w-[115px] xl:w-[130px]">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Mobile</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">smartphone</span>
+                                    <span className="text-sm font-bold text-text-main dark:text-white lg:font-medium tracking-tight">{c.Phone}</span>
+                                </div>
+                            </div>
+
+                            {/* Orders Count */}
+                            <div className="col-span-1 flex flex-col lg:w-[60px] xl:w-[80px] lg:items-center">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-2">Orders</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-primary lg:hidden">shopping_bag</span>
+                                    <span className="text-sm font-bold text-text-main dark:text-white">{stats.orderCount}</span>
+                                </div>
+                            </div>
+
+                            {/* Total Spent */}
+                            <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Total Spent</span>
+                                <span className="text-sm font-bold text-text-main dark:text-white">${stats.totalSpent.toFixed(2)}</span>
+                            </div>
+
+                            {/* Due Amount */}
+                            <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Due Amount</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">payments</span>
+                                    <span className={`font-bold text-sm lg:text-sm ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                        ${stats.dueAmount.toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="col-span-2 flex items-center gap-2 mt-2 lg:mt-0 justify-end w-full lg:w-[70px] xl:w-[80px] border-t lg:border-t-0 border-gray-100 dark:border-[#2a4032] pt-2 lg:pt-0">
+                                <button
+                                    onClick={() => navigateToDetail(c.Id)}
+                                    className="flex items-center justify-center size-8 rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-primary hover:text-white hover:border-primary transition-all dark:bg-green-900/20 dark:border-green-800/50 dark:text-green-400 dark:hover:bg-primary group/btn"
+                                    title="View Details"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                </button>
+                                <button
+                                    onClick={() => openEdit(c)}
+                                    className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-gray-50 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+                                    title="Edit"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                </button>
+                                <button
+                                    onClick={() => { setCustomerToDelete(c.Id); setShowDeleteModal(true); }}
+                                    className="flex items-center justify-center size-8 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
+                                    title="Delete"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    );
+                })}
+
+                {/* Infinite Scroll Sentinel */}
+                <div ref={containerRef} className="flex flex-col items-center justify-center py-8">
+                    {loading && (
+                        <div className="flex items-center gap-2 text-primary">
+                            <span className="material-symbols-outlined animate-spin text-2xl">progress_activity</span>
+                            <span className="text-sm font-medium">Loading customers...</span>
+                        </div>
+                    )}
+                    {!hasMore && customers.length > 0 && (
+                        <p className="text-text-secondary text-sm">No more customers to load.</p>
+                    )}
+                    {!loading && customers.length === 0 && (
+                        <p className="text-text-secondary text-base">No customers found.</p>
+                    )}
                 </div>
             </div>
 
