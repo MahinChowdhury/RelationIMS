@@ -288,7 +288,7 @@ export default function CustomersPage() {
                 <div className="w-[80px] xl:w-[100px] text-right">Total Spent</div>
                 <div className="w-[80px] xl:w-[100px] text-right">Outstanding</div>
                 <div className="w-[60px] xl:w-[80px] text-center">Orders</div>
-                <div className="w-[70px] xl:w-[80px] text-right">Actions</div>
+                <div className="w-[120px] text-right">Actions</div>
             </div>
 
             {/* Customer List */}
@@ -334,14 +334,6 @@ export default function CustomersPage() {
                                 </div>
                             </div>
 
-                            {/* Orders Count */}
-                            <div className="col-span-1 flex flex-col lg:w-[60px] xl:w-[80px] lg:items-center">
-                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-2">Orders</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-primary lg:hidden">shopping_bag</span>
-                                    <span className="text-sm font-bold text-text-main dark:text-white">{stats.orderCount}</span>
-                                </div>
-                            </div>
 
                             {/* Total Spent */}
                             <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
@@ -360,8 +352,17 @@ export default function CustomersPage() {
                                 </div>
                             </div>
 
+                            {/* Orders Count */}
+                            <div className="col-span-1 flex flex-col lg:w-[60px] xl:w-[80px] lg:items-center">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-2">Orders</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-primary lg:hidden">shopping_bag</span>
+                                    <span className="text-sm font-bold text-text-main dark:text-white">{stats.orderCount}</span>
+                                </div>
+                            </div>
+
                             {/* Actions */}
-                            <div className="col-span-2 flex items-center gap-2 mt-2 lg:mt-0 justify-end w-full lg:w-[70px] xl:w-[80px] border-t lg:border-t-0 border-gray-100 dark:border-[#2a4032] pt-2 lg:pt-0">
+                            <div className="col-span-2 flex items-center gap-2 mt-2 lg:mt-0 justify-end w-full lg:w-[120px] border-t lg:border-t-0 border-gray-100 dark:border-[#2a4032] pt-2 lg:pt-0">
                                 <button
                                     onClick={() => navigateToDetail(c.Id)}
                                     className="flex items-center justify-center size-8 rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-primary hover:text-white hover:border-primary transition-all dark:bg-green-900/20 dark:border-green-800/50 dark:text-green-400 dark:hover:bg-primary group/btn"

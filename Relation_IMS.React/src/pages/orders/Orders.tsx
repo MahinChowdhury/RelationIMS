@@ -169,7 +169,9 @@ export default function OrdersPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all">
+                    <button
+                        onClick={() => navigate('/orders/create')}
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all">
                         <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
                         Create Order
                     </button>
@@ -232,7 +234,7 @@ export default function OrdersPage() {
                 <div className="w-[100px] text-right">Paid Amt</div>
                 <div className="w-[100px] text-right">Due Amt</div>
                 <div className="w-[100px] text-right">Status</div>
-                <div className="w-[100px] text-right">Actions</div>
+                <div className="w-[150px] text-right">Actions</div>
             </div>
 
             {/* List Items */}
@@ -278,6 +280,22 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Net Amount</span>
                             <span className="text-sm font-bold text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
+                        </div>
+
+                        {/* Paid Amount */}
+                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Paid Amt</span>
+                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                ৳{(order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0).toFixed(2)}
+                            </span>
+                        </div>
+
+                        {/* Due Amount */}
+                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Due Amt</span>
+                            <span className="text-sm font-medium text-red-500 dark:text-red-400">
+                                ৳{(order.PaymentStatus === PaymentStatus.Paid ? 0 : order.NetAmount).toFixed(2)}
+                            </span>
                         </div>
 
                         {/* Status */}

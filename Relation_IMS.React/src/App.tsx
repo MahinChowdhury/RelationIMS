@@ -7,6 +7,7 @@ import ProductDetails from './pages/products/ProductDetails';
 
 import Orders from './pages/orders/Orders';
 import OrderDetails from './pages/orders/OrderDetails';
+import CreateOrder from './pages/orders/CreateOrder';
 
 import InventoryOptions from './pages/inventory/InventoryOptions';
 import InventoryTransfer from './pages/inventory/InventoryTransfer';
@@ -23,6 +24,7 @@ function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="products" element={<Products />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="orders/create" element={<CreateOrder />} />
         <Route path="orders/:id" element={<OrderDetails />} />
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<CustomerDetails />} />
