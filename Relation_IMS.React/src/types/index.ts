@@ -78,4 +78,13 @@ export interface InventoryStock {
     };
     Quantity: number;
 }
+export interface ScannedItem {
+    id: string; // unique scan id
+    code: string;
+    description?: string; // placeholder for product name/desc if we can fetch it, otherwise just code
+    count: number;
+    scannedAt: Date;
+    isValid?: boolean; // New field for validation status
+}
+
 export * from './transfer';

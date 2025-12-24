@@ -34,7 +34,6 @@ export default function OrderDetailsPage() {
                 const itemsWithProducts = await Promise.all(orderData.OrderItems.map(async (item) => {
                     try {
                         const prodRes = await api.get<Product>(`/Product/${item.ProductId}`);
-                        // Create a new item object with the fetched Product
                         return { ...item, Product: prodRes.data };
                     } catch (err) {
                         console.error(`Failed to load product ${item.ProductId}:`, err);
@@ -63,6 +62,8 @@ export default function OrderDetailsPage() {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
         });
     };
 
@@ -77,168 +78,283 @@ export default function OrderDetailsPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600"></div>
-                <p className="mt-4 text-gray-600 text-lg">Loading order details…</p>
+            <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-background-light dark:bg-background-dark">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary"></div>
+                <p className="mt-4 text-text-secondary font-medium">Loading order details...</p>
             </div>
         );
     }
 
-    if (error) {
+    if (error || !order) {
         return (
-            <div className="p-4 min-h-screen bg-gray-50 flex justify-center">
-                <div className="max-w-5xl w-full">
-                    <Link to="/orders" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Back to Orders</Link>
-                    <div className="bg-red-50 border-2 border-red-200 rounded-xl p-5 text-red-800 flex items-center gap-3">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        <span>{error}</span>
+            <div className="p-4 min-h-screen bg-background-light dark:bg-background-dark flex justify-center items-center">
+                <div className="max-w-md w-full text-center">
+                    <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-8 mb-6">
+                        <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
+                        <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Oops! Something went wrong</h2>
+                        <p className="text-red-600 dark:text-red-400">{error || 'Order not found'}</p>
                     </div>
+                    <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20">
+                        <span className="material-symbols-outlined">arrow_back</span>
+                        Back to Orders
+                    </Link>
                 </div>
             </div>
         );
     }
 
-    if (!order) return null;
+    const paidAmount = order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : (order.PaymentStatus === PaymentStatus.Partial ? order.NetAmount / 2 : 0);
+    const dueAmount = order.NetAmount - paidAmount;
+    const paidPercentage = order.NetAmount > 0 ? (paidAmount / order.NetAmount) * 100 : 0;
 
     return (
-        <div className="px-4 md:px-8 lg:px-40 flex flex-1 justify-center py-6 bg-gray-50 min-h-screen">
-            <div className="layout-content-container flex flex-col max-w-5xl w-full flex-1">
+        <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 font-display text-text-main dark:text-white bg-background-light dark:bg-background-dark min-h-screen">
+            {/* Breadcrumbs */}
+            <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
+                <Link className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center" to="/">
+                    <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                    Dashboard
+                </Link>
+                <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
+                <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">Orders</Link>
+                <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
+                <span className="text-text-main dark:text-gray-200 font-bold">Order #{order.Id}</span>
+            </div>
 
-                {/* Header */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                        <div className="flex items-center gap-4">
-                            <Link to="/orders" className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-base font-medium">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Back to Orders
-                            </Link>
-                            <div className="h-6 w-px bg-gray-300"></div>
-                            <h1 className="text-gray-900 text-2xl md:text-3xl font-bold">Order #{order.Id}</h1>
-                        </div>
-                        <span className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold border-2 
-                            ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-50 text-green-700 border-green-200' :
-                                order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                    'bg-red-50 text-red-700 border-red-200'}`}>
+            {/* Header Actions */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <div className="flex items-center gap-3 mb-1">
+                        <h1 className="text-3xl md:text-4xl font-black text-text-main dark:text-white tracking-tight">Order #{order.Id}</h1>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border
+                            ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800' :
+                                order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' :
+                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800'}`}>
                             {getPaymentStatusText(order.PaymentStatus)}
                         </span>
                     </div>
-                    <p className="text-gray-500 text-sm mt-3 ml-0 md:ml-32">Placed on {formatDate(order.CreatedAt)}</p>
+                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base">Placed on {formatDate(order.CreatedAt)}</p>
                 </div>
+                <div className="flex flex-wrap gap-3">
+                    <button className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
+                        <span className="material-symbols-outlined text-lg">print</span>
+                        Print Invoice
+                    </button>
+                    <button className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
+                        <span className="material-symbols-outlined text-lg">download</span>
+                        Download PDF
+                    </button>
+                    <button className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
+                        <span className="material-symbols-outlined text-lg">edit</span>
+                        Edit Order
+                    </button>
+                </div>
+            </div>
 
-                {/* Order Items */}
-                <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 className="text-gray-900 text-lg font-bold">Order Items</h2>
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Customer Info */}
+                <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">
+                        <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">person</span>
+                            Customer Details
+                        </h3>
+                        <Link to={`/customers/${order.CustomerId}`} className="text-primary hover:text-green-700 text-sm font-semibold">View Profile</Link>
                     </div>
-
-                    {(!order.OrderItems || order.OrderItems.length === 0) ? (
-                        <div className="p-12 text-center text-gray-400">
-                            <svg className="mx-auto w-16 h-16 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2" />
-                            </svg>
-                            <p className="text-base">No items in this order.</p>
+                    <div className="flex flex-col sm:flex-row gap-6">
+                        <div className="flex flex-col items-center sm:items-start gap-3 min-w-[120px]">
+                            <div className="size-20 rounded-full bg-cover bg-center border-2 border-[#e7f3eb] dark:border-[#2a4032] bg-gray-100 flex items-center justify-center text-3xl font-bold text-text-secondary">
+                                {order.Customer?.Name?.charAt(0) || '#'}
+                            </div>
+                            <div className="text-center sm:text-left">
+                                <p className="font-bold text-text-main dark:text-white text-lg">{order.Customer?.Name || 'Unknown Customer'}</p>
+                                <p className="text-xs text-text-secondary">ID: #{order.CustomerId}</p>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="divide-y divide-gray-200">
-                            {order.OrderItems.map((item, i) => (
-                                <div key={item.Id} className={`p-4 md:p-6 hover:bg-gray-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                                    <div className="flex flex-col md:flex-row gap-4">
-                                        {/* Product Image */}
-                                        <div className="flex-shrink-0">
-                                            <div className="w-24 h-24 md:w-28 md:h-28 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
-                                                {item.Product?.ImageUrls && item.Product.ImageUrls.length > 0 ? (
-                                                    <img
-                                                        src={item.Product.ImageUrls[0]}
-                                                        alt={item.Product.Name || 'Product'}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="text-gray-400">
-                                                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                        </svg>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Product Details */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-col md:flex-row md:justify-between gap-3">
-                                                <div className="flex-1">
-                                                    <h3 className="text-gray-900 font-bold text-base md:text-lg mb-1">
-                                                        {item.Product ? item.Product.Name : `Product #${item.ProductId}`}
-                                                    </h3>
-                                                    {item.Product?.Description && (
-                                                        <p className="text-gray-600 text-sm line-clamp-2 mb-2">{item.Product.Description}</p>
-                                                    )}
-                                                    <div className="flex flex-wrap gap-2 text-sm">
-                                                        {item.Product?.Category && (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                                                                {item.Product.Category.Name}
-                                                            </span>
-                                                        )}
-                                                        {item.Product?.Brand && (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">
-                                                                {item.Product.Brand.Name}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div className="md:text-right space-y-1 md:min-w-[140px]">
-                                                    <div className="text-sm text-gray-600">
-                                                        <span className="font-medium">Qty:</span> {item.Quantity}
-                                                    </div>
-                                                    <div className="text-sm text-gray-600">
-                                                        <span className="font-medium">Unit Price:</span> ৳{item.UnitPrice.toFixed(2)}
-                                                    </div>
-                                                    <div className="text-base md:text-lg font-bold text-gray-900 pt-1 border-t border-gray-200">
-                                                        ৳{item.Subtotal.toFixed(2)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                        <div className="flex-1 space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Contact Info</p>
+                                    <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200 mb-1">
+                                        <span className="material-symbols-outlined text-primary text-base">mail</span>
+                                        <a className="hover:underline" href={`mailto:${order.Customer?.Email || ''}`}>{order.Customer?.Email || 'N/A'}</a>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200">
+                                        <span className="material-symbols-outlined text-primary text-base">call</span>
+                                        <a className="hover:underline" href={`tel:${order.Customer?.Phone || ''}`}>{order.Customer?.Phone || 'N/A'}</a>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
-
-                {/* Payment Summary */}
-                <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                    <h2 className="text-gray-900 text-lg font-bold mb-5 pb-3 border-b border-gray-200">Payment Summary</h2>
-
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center text-base">
-                            <span className="text-gray-600 font-medium">Total Amount</span>
-                            <span className="text-gray-900 font-semibold">৳{order.TotalAmount.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-base">
-                            <span className="text-gray-600 font-medium">Discount</span>
-                            <span className="text-red-600 font-semibold">- ৳{order.Discount.toFixed(2)}</span>
-                        </div>
-                        <div className="border-t-2 border-gray-200 pt-4 flex justify-between items-center">
-                            <span className="text-gray-900 font-bold text-lg">Net Amount</span>
-                            <span className="text-gray-900 font-bold text-2xl">৳{order.NetAmount.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                            <span className="text-gray-600 font-medium">Payment Status</span>
-                            <span className={`inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-bold
-                                ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-700' :
-                                    order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-red-100 text-red-700'}`}>
-                                {getPaymentStatusText(order.PaymentStatus)}
-                            </span>
+                                <div>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Shipping Address</p>
+                                    <div className="flex items-start gap-2 text-sm text-text-main dark:text-gray-200">
+                                        <span className="material-symbols-outlined text-primary text-base mt-0.5">location_on</span>
+                                        <span className="whitespace-pre-wrap">{order.Customer?.Address || 'No shipping address provided.'}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </section>
+                </div>
 
+                {/* Payment Info */}
+                <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">
+                        <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">payments</span>
+                            Payment Details
+                        </h3>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border
+                            ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800' :
+                                order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' :
+                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800'}`}>
+                            {getPaymentStatusText(order.PaymentStatus)}
+                        </span>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
+                                <p className="text-xs text-text-secondary mb-1">Payment Method</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-text-main dark:text-white">credit_card</span>
+                                    <span className="font-bold text-sm text-text-main dark:text-white">Cash / POS</span>
+                                </div>
+                            </div>
+                            <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
+                                <p className="text-xs text-text-secondary mb-1">Order Type</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-text-main dark:text-white">shopping_bag</span>
+                                    <span className="font-bold text-sm text-text-main dark:text-white">Retail</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                                <div>
+                                    <p className="text-sm font-medium text-text-secondary">Total Amount Paid</p>
+                                    <p className="text-xl font-bold text-primary">৳{paidAmount.toFixed(2)}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-medium text-text-secondary">Remaining Due</p>
+                                    <p className={`text-xl font-bold ${dueAmount > 0 ? 'text-red-500' : 'text-text-main dark:text-white'}`}>৳{dueAmount.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            {/* Progress Bar */}
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                                <div className={`h-2.5 rounded-full ${paidPercentage === 100 ? 'bg-primary' : 'bg-primary/80'}`} style={{ width: `${paidPercentage}%` }}></div>
+                            </div>
+                            <p className="text-xs text-center text-text-secondary">{paidPercentage.toFixed(0)}% of payment completed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Order Items & Summary Section */}
+            <div className="flex flex-col lg:flex-row gap-6">
+                {/* Order Items Table */}
+                <div className="flex-1 bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] overflow-hidden">
+                    <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
+                        <h3 className="text-lg font-bold text-text-main dark:text-white">Order Items</h3>
+                        <span className="text-sm text-text-secondary">{order.OrderItems?.length || 0} Items</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-[#f8fcf9] dark:bg-white/5 text-text-secondary font-medium">
+                                <tr>
+                                    <th className="px-6 py-3">Product</th>
+                                    <th className="px-6 py-3">Price</th>
+                                    <th className="px-6 py-3 text-center">Quantity</th>
+                                    <th className="px-6 py-3 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
+                                {(!order.OrderItems || order.OrderItems.length === 0) ? (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-8 text-center text-text-secondary">No items found in this order.</td>
+                                    </tr>
+                                ) : (
+                                    order.OrderItems.map((item) => (
+                                        <tr key={item.Id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-[#e7f3eb] dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                                                        {item.Product?.ImageUrls?.[0] ? (
+                                                            <img src={item.Product.ImageUrls[0]} alt={item.Product.Name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <span className="material-symbols-outlined text-gray-400">image</span>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-text-main dark:text-white truncate max-w-[200px]">{item.Product?.Name || `Item #${item.ProductId}`}</p>
+                                                        {item.Product?.Category && <p className="text-xs text-text-secondary">{item.Product.Category.Name}</p>}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-text-main dark:text-gray-200 font-medium">৳{item.UnitPrice.toFixed(2)}</td>
+                                            <td className="px-6 py-4 text-center text-text-main dark:text-gray-200">{item.Quantity}</td>
+                                            <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">৳{item.Subtotal.toFixed(2)}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Order Summary */}
+                <div className="w-full lg:w-96 shrink-0 flex flex-col gap-6">
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
+                        <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">Order Summary</h3>
+                        <div className="space-y-3 mb-6">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-text-secondary font-medium">Subtotal</span>
+                                <span className="text-text-main dark:text-white font-bold">৳{order.TotalAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-text-secondary font-medium">Discount</span>
+                                <span className="text-green-600 dark:text-green-400 font-bold">-৳{order.Discount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-text-secondary font-medium">Tax (0%)</span>
+                                <span className="text-text-main dark:text-white font-bold">৳0.00</span>
+                            </div>
+                        </div>
+                        <div className="border-t border-dashed border-gray-300 dark:border-gray-600 pt-4 mb-4">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-base font-bold text-text-main dark:text-white">Net Amount</span>
+                                <span className="text-xl font-black text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 border border-green-100 dark:border-green-900/20 space-y-2">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-green-800 dark:text-green-300 font-medium">Paid by Customer</span>
+                                <span className="text-green-800 dark:text-green-300 font-bold">৳{paidAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-base pt-2 border-t border-green-200 dark:border-green-800/30">
+                                <span className="text-red-600 dark:text-red-400 font-bold">Total Due</span>
+                                <span className="text-red-600 dark:text-red-400 font-black text-lg">৳{dueAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <button className="w-full mt-6 bg-primary text-white font-bold h-12 rounded-lg hover:bg-green-600 transition-all shadow-md flex items-center justify-center gap-2">
+                            <span className="material-symbols-outlined">mark_email_read</span>
+                            Send Invoice Email
+                        </button>
+                    </div>
+
+                    {/* Notes Card */}
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
+                        <h3 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-gray-400 text-lg">sticky_note_2</span>
+                            Internal Remarks
+                        </h3>
+                        <textarea
+                            readOnly
+                            className="w-full bg-[#f8fcf9] dark:bg-black/20 border-none rounded-lg text-sm p-3 min-h-[100px] text-text-main dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-primary resize-none"
+                            placeholder="No remarks for this order."
+                            value={order.Remarks || ''}
+                        ></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -135,208 +135,203 @@ export default function OrdersPage() {
     };
 
     return (
-        <div className="px-4 md:px-8 lg:px-16 xl:px-32 2xl:px-40 flex flex-1 justify-center py-5 bg-gradient-to-br from-[#f8fcf9] to-white min-h-screen">
-            <div className="layout-content-container flex flex-col w-full max-w-none flex-1">
-
-                {/* Header */}
-                <div className="flex flex-wrap justify-between items-center gap-3 p-4 mb-2">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center shadow-lg">
-                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
+        <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6 font-display text-text-main">
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="flex">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li className="inline-flex items-center">
+                        <Link to="/" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
+                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                            Dashboard
+                        </Link>
+                    </li>
+                    <li>
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400">Orders</span>
                         </div>
-                        <div>
-                            <p className="text-[#0e1b12] text-3xl md:text-4xl font-black leading-tight tracking-tight">Order Management</p>
-                            <p className="text-[#4e9767] text-sm font-medium mt-1">Track and manage all customer orders</p>
+                    </li>
+                    <li aria-current="page">
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">All Orders</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">Orders List</h1>
+                    <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
+                        Manage customer orders, track payments, and update status.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all">
+                        <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+                        Create Order
+                    </button>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+                <div className="relative group w-full md:w-96">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <span className="material-symbols-outlined text-text-secondary">search</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full p-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-all"
+                        placeholder="Search by order ID, customer name..."
+                    />
+                </div>
+                <div className="flex gap-3">
+                    <div className="relative">
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value as any)}
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                        >
+                            <option value="all">Payment: All</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
+                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                        </div>
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as any)}
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                        >
+                            <option value="">Sort by: Default</option>
+                            <option value="date">Sort by: Date</option>
+                            <option value="amount">Sort by: Amount</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
+                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Search Bar */}
-                <div className="px-4 py-3">
-                    <label className="flex flex-col min-w-40 h-14 w-full">
-                        <div className="flex w-full flex-1 items-stretch rounded-2xl h-full shadow-md hover:shadow-lg transition-shadow">
-                            <div className="text-[#4e9767] flex border-none bg-white items-center justify-center pl-5 rounded-l-2xl border-r-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                                    <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                                </svg>
+            {/* List Header (Desktop) */}
+            <div className="hidden lg:flex px-4 text-xs font-bold text-text-secondary uppercase tracking-wider gap-3">
+                <div className="w-[100px]">Order ID</div>
+                <div className="flex-1 min-w-[180px]">Customer</div>
+                <div className="w-[100px]">Date</div>
+                <div className="w-[90px] text-right">Discount</div>
+                <div className="w-[100px] text-right">Net Amt</div>
+                <div className="w-[100px] text-right">Paid Amt</div>
+                <div className="w-[100px] text-right">Due Amt</div>
+                <div className="w-[100px] text-right">Status</div>
+                <div className="w-[100px] text-right">Actions</div>
+            </div>
+
+            {/* List Items */}
+            <div className="flex flex-col gap-3">
+                {filtered.map((order) => (
+                    <div key={order.Id} className="bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
+                        {/* Order ID */}
+                        <div className="flex items-center justify-between lg:w-[100px]">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Order ID</span>
+                            <Link to={`/orders/${order.Id}`} className="font-bold text-primary hover:underline text-sm truncate">
+                                #{order.Id}
+                            </Link>
+                        </div>
+
+                        {/* Customer */}
+                        <div className="flex items-center gap-3 lg:flex-1 min-w-[180px]">
+                            <div className="size-8 rounded-full bg-gray-200 bg-center bg-cover border border-gray-100 dark:border-gray-700 shrink-0 flex items-center justify-center text-xs font-bold text-gray-500">
+                                {order.Customer?.Name?.charAt(0) || '#'}
                             </div>
-                            <input
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search by Order ID or Customer ID..."
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-2xl text-[#0e1b12] focus:outline-0 focus:ring-2 focus:ring-[#4e9767] border-none bg-white focus:border-none h-full placeholder:text-[#4e9767]/60 px-5 rounded-l-none border-l-0 pl-3 text-base font-medium leading-normal"
-                            />
-                        </div>
-                    </label>
-                </div>
-
-                {/* Filter Bar */}
-                <div className="flex gap-3 p-3 flex-wrap pr-4">
-                    <button
-                        onClick={() => setSortBy(prev => prev === 'date' ? '' : 'date')}
-                        className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                    >
-                        <svg className="w-4 h-4 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        Sort by Date
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"
-                            className={sortBy === 'date' ? 'rotate-180' : ''}>
-                            <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                        </svg>
-                    </button>
-
-                    <button
-                        onClick={() => setSortBy(prev => prev === 'amount' ? '' : 'amount')}
-                        className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                    >
-                        <svg className="w-4 h-4 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Sort by Amount
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"
-                            className={sortBy === 'amount' ? 'rotate-180' : ''}>
-                            <path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"></path>
-                        </svg>
-                    </button>
-
-                    <button
-                        onClick={() => setFilterStatus(prev => prev === 'all' ? 'paid' : prev === 'paid' ? 'pending' : 'all')}
-                        className="flex h-10 items-center justify-center gap-x-2 rounded-xl bg-white hover:bg-gray-50 border-2 border-[#e7f3eb] hover:border-[#4e9767] pl-4 pr-3 text-[#0e1b12] text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                    >
-                        <svg className="w-4 h-4 text-[#4e9767]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
-                        {filterStatus === 'all' ? 'All Status' : filterStatus === 'paid' ? 'Paid Only' : 'Pending Only'}
-                    </button>
-                </div>
-
-                {/* Table / Cards */}
-                <div className="px-4 py-3">
-                    {/* Desktop Table (Hidden on mobile) */}
-                    <div className="hidden md:block bg-white rounded-2xl shadow-xl border-2 border-[#d0e7d7] overflow-hidden">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gradient-to-r from-[#4e9767] to-[#3d7a52] text-white">
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Order ID</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Customer</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Date</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Total</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Discount</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Net Amount</th>
-                                    <th className="px-4 py-4 text-left text-sm font-bold leading-normal uppercase tracking-wide">Status</th>
-                                    <th className="px-4 py-4 text-right text-sm font-bold leading-normal uppercase tracking-wide">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white">
-                                {filtered.map((order) => (
-                                    <tr key={order.Id} className="border-b border-[#d0e7d7] hover:bg-[#e7ede7] transition-colors">
-                                        <td className="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-semibold leading-normal">
-                                            #{order.Id}
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm font-normal leading-normal">
-                                            <Link to={`/customers/${order.CustomerId}`} className="hover:underline hover:text-[#0e1b12] font-medium">
-                                                {order.Customer?.Name || `Customer #${order.CustomerId}`}
-                                            </Link>
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm font-normal leading-normal">
-                                            {formatDate(order.CreatedAt)}
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-normal leading-normal">
-                                            ৳{order.TotalAmount.toFixed(2)}
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-[#4e9767] text-sm font-normal leading-normal">
-                                            ৳{order.Discount.toFixed(2)}
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-[#0e1b12] text-sm font-semibold leading-normal">
-                                            ৳{order.NetAmount.toFixed(2)}
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2">
-                                            <span className={`inline-flex items-center justify-center rounded-lg px-3 py-1 text-xs font-medium 
-                                                ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800' :
-                                                    order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'}`}>
-                                                {getPaymentStatusText(order.PaymentStatus)}
-                                            </span>
-                                        </td>
-                                        <td className="h-[72px] px-4 py-2 text-right">
-                                            <button
-                                                onClick={() => navigate(`/orders/${order.Id}`)}
-                                                className="p-2 rounded-lg bg-[#e7f3eb] text-[#4e9767] hover:bg-[#d0e7d7] transition-all"
-                                                title="View Details"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Mobile Cards */}
-                    <div className="md:hidden flex flex-col gap-4">
-                        {filtered.map((order) => (
-                            <div key={order.Id} className="bg-white rounded-2xl shadow-lg border-2 border-[#d0e7d7] p-4 flex flex-col gap-3">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="text-[#0e1b12] text-lg font-bold">#{order.Id}</h3>
-                                        <p className="text-[#4e9767] text-sm">
-                                            <Link to={`/customers/${order.CustomerId}`} className="hover:underline font-medium">
-                                                Customer #{order.CustomerId}
-                                            </Link>
-                                        </p>
-                                    </div>
-                                    <span className={`inline-flex items-center justify-center rounded-lg px-3 py-1 text-xs font-medium
-                                        ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800' :
-                                            order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'}`}>
-                                        {getPaymentStatusText(order.PaymentStatus)}
-                                    </span>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <Link to={`/customers/${order.CustomerId}`} className="font-bold text-text-main dark:text-white text-sm leading-tight truncate max-w-[140px] hover:text-primary">
+                                        {order.Customer?.Name || `Customer #${order.CustomerId}`}
+                                    </Link>
                                 </div>
-                                <div className="grid grid-cols-1 gap-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="font-medium text-[#4e9767]">Date</span>
-                                        <span className="text-[#0e1b12]">{formatDate(order.CreatedAt)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="font-medium text-[#4e9767]">Total</span>
-                                        <span className="text-[#0e1b12]">৳{order.TotalAmount.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="font-medium text-[#4e9767]">Discount</span>
-                                        <span className="text-[#0e1b12]">৳{order.Discount.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="font-medium text-[#4e9767]">Net Amount</span>
-                                        <span className="text-[#0e1b12] font-semibold">৳{order.NetAmount.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => navigate(`/orders/${order.Id}`)}
-                                    className="w-full mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white text-sm font-bold transition-all shadow-md hover:shadow-lg"
-                                >
-                                    View Details
-                                </button>
+                                <p className="text-[11px] text-text-secondary font-medium mt-0.5">{order.Customer?.Email || 'No email'}</p>
                             </div>
-                        ))}
-                    </div>
+                        </div>
 
-                    {/* Infinite Scroll Anchor */}
-                    <div ref={containerRef} className="flex flex-col items-center justify-center py-8 mt-8">
-                        {loading && (
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-12 h-12 border-4 border-[#e7f3eb] border-t-[#4e9767] rounded-full animate-spin"></div>
-                                <p className="text-[#4e9767] text-base font-semibold">Loading more orders...</p>
+                        {/* Date */}
+                        <div className="flex items-center justify-between lg:block lg:w-[100px]">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Date</span>
+                            <span className="text-sm text-text-main dark:text-white">{formatDate(order.CreatedAt)}</span>
+                        </div>
+
+                        {/* Discount */}
+                        <div className="flex items-center justify-between lg:block lg:w-[90px] lg:text-right">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Discount</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">৳{order.Discount.toFixed(2)}</span>
+                        </div>
+
+                        {/* Net Amount */}
+                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Net Amount</span>
+                            <span className="text-sm font-bold text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Status</span>
+                            <div className="flex justify-end">
+                                <span className={`px-2 py-1 rounded text-[11px] uppercase tracking-wide font-bold border
+                                    ${order.PaymentStatus === PaymentStatus.Paid
+                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800'
+                                        : order.PaymentStatus === PaymentStatus.Partial
+                                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800'
+                                    }`}>
+                                    {getPaymentStatusText(order.PaymentStatus)}
+                                </span>
                             </div>
-                        )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 mt-2 lg:mt-0 justify-end w-full lg:w-[150px] border-t lg:border-t-0 border-gray-100 dark:border-[#2a4032] pt-2 lg:pt-0">
+                            <button
+                                onClick={() => navigate(`/orders/${order.Id}`)}
+                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+                                title="View Details">
+                                <span className="material-symbols-outlined text-[16px]">visibility</span>
+                            </button>
+                            <button className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Edit Order">
+                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
+                                <span className="material-symbols-outlined text-[16px]">print</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                ))}
+            </div>
+
+            {/* Infinite Scroll Anchor */}
+            <div ref={containerRef} className="flex flex-col items-center justify-center py-4 mt-4">
+                {loading && (
+                    <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                        <span className="text-text-secondary text-sm font-medium">Loading orders...</span>
+                    </div>
+                )}
+                {!hasMore && filtered.length > 0 && (
+                    <p className="text-text-secondary text-sm">No more orders to load.</p>
+                )}
+                {!loading && filtered.length === 0 && (
+                    <div className="flex flex-col items-center py-10 opacity-60">
+                        <span className="material-symbols-outlined text-4xl mb-2">search_off</span>
+                        <p className="text-text-secondary">No orders found.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

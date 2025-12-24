@@ -2,16 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import type { InventoryBasicDTO, TransferProductItemsDTO, TransferResultDTO } from '../../types';
-import BarcodeScanner from '../../components/BarcodeScanner';
+import type { InventoryBasicDTO, TransferProductItemsDTO, TransferResultDTO, ScannedItem } from '../../types';
+import InventoryTransferScanner from '../../components/inventory/InventoryTransferScanner';
 
-interface ScannedItem {
-    id: string; // unique scan id
-    code: string;
-    description?: string; // placeholder for product name/desc if we can fetch it, otherwise just code
-    count: number;
-    scannedAt: Date;
-}
 
 
 const InventoryTransfer = () => {
@@ -19,6 +12,8 @@ const InventoryTransfer = () => {
     const [inventories, setInventories] = useState<InventoryBasicDTO[]>([]);
     const [sourceId, setSourceId] = useState<number | ''>('');
     const [destinationId, setDestinationId] = useState<number | ''>('');
+    const [sourceItems, setSourceItems] = useState<any[]>([]); // Store items for validation
+    const [isSourceLoading, setIsSourceLoading] = useState(false);
     const [scanInput, setScanInput] = useState('');
     const [scannedItems, setScannedItems] = useState<ScannedItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -54,11 +49,56 @@ const InventoryTransfer = () => {
         fetchInventories();
     }, []);
 
+    // Validation: Fetch source items when sourceId changes
+    useEffect(() => {
+        if (!sourceId) {
+            setSourceItems([]);
+            return;
+        }
+        const fetchSourceItems = async () => {
+            setIsSourceLoading(true);
+            try {
+                const res = await api.get(`/Inventory/${sourceId}/items`);
+                setSourceItems(res.data || []);
+            } catch (err) {
+                console.error("Failed to load source items for validation", err);
+                // Fallback: we might allow scanning but warn? For now let's strict validate against what we can fetch.
+            } finally {
+                setIsSourceLoading(false);
+            }
+        };
+        fetchSourceItems();
+    }, [sourceId]);
+
+    const validateBarcode = (code: string): boolean => {
+        if (!sourceId) {
+            alert('Please select a source inventory first.');
+            setIsScannerOpen(false);
+            return false;
+        }
+        // Strict validation: Code must exist in source inventory items
+        // The API returns list of objects. We need to check if ANY item has this code.
+        // Based on `GetInventoryItems`, it returns list of objects. Assuming these have `Code` or `ProductItemCode`
+        // Let's assume the shape matches ProductItem logic
+        const exists = sourceItems.some((item: any) => item.Code === code || item.ProductItemCode === code);
+
+        if (!exists) {
+            alert(`Item ${code} not found in source inventory!`);
+            return false;
+        }
+        return true;
+    };
+
     const handleScan = (e: React.FormEvent) => {
         e.preventDefault();
         if (!scanInput.trim()) return;
 
         const code = scanInput.trim();
+
+        if (!validateBarcode(code)) {
+            setScanInput(''); // Clear input if invalid
+            return;
+        }
 
         // Check if item already scanned
         const existingItemIndex = scannedItems.findIndex(item => item.code === code);
@@ -86,6 +126,17 @@ const InventoryTransfer = () => {
     const handleBarcodeScanned = (code: string) => {
         if (!code) return;
 
+        // Validation handled by scanner callback prop 'onValidate' before calling this, 
+        // OR we can double check here.
+        // We will assume onScanned is only called for valid items if onValidate is passed.
+
+        // Find product details from sourceItems if possible
+        const sourceItem = sourceItems.find((i: any) => i.Code === code || i.ProductItemCode === code);
+        const description = sourceItem
+            ? `${sourceItem.Product?.Name || 'Unknown Product'} - ${sourceItem.Color?.Name || sourceItem.Color} / ${sourceItem.Size?.Name || sourceItem.Size}`
+            : 'Product ' + code;
+
+
         // Check if item already scanned
         const existingItemIndex = scannedItems.findIndex(item => item.code === code);
 
@@ -98,13 +149,12 @@ const InventoryTransfer = () => {
             setScannedItems(prev => [{
                 id: Date.now().toString(),
                 code: code,
-                description: 'Product ' + code,
+                description: description,
                 count: 1,
-                scannedAt: new Date()
+                scannedAt: new Date(),
+                isValid: true
             }, ...prev]);
         }
-
-        // Optional: play beep sound here
     };
 
     const handleRemoveItem = (code: string) => {
@@ -212,7 +262,7 @@ const InventoryTransfer = () => {
                                         className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-[#112116] border border-gray-200 dark:border-[#2a4032] rounded-lg text-sm text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none disabled:opacity-50"
                                         value={sourceId}
                                         onChange={(e) => setSourceId(Number(e.target.value))}
-                                        disabled={loading}
+                                        disabled={loading || isSourceLoading}
                                     >
                                         <option value="">{loading ? 'Loading...' : 'Select Source...'}</option>
                                         {inventories.map(inv => (
@@ -452,10 +502,12 @@ const InventoryTransfer = () => {
             </div>
             {/* Barcode Scanner Modal */}
             {isScannerOpen && (
-                <BarcodeScanner
+                <InventoryTransferScanner
                     enabled={true}
+                    scannedItems={scannedItems}
                     onScanned={handleBarcodeScanned}
                     onClose={() => setIsScannerOpen(false)}
+                    onValidate={validateBarcode}
                     onError={(error) => console.error("Scanner error:", error)}
                 />
             )}
