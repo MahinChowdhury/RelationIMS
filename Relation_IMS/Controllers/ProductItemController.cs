@@ -22,6 +22,13 @@ namespace Relation_IMS.Controllers
             return Ok(items);
         }
 
+        [HttpGet("defects")]
+        public async Task<ActionResult<List<ProductItem>>> GetAllDefectedProductItems()
+        {
+            var items = await _repo.GetAllDefectedProductItemsAsync();
+            return Ok(items);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ProductItem?>> GetProductItemById([FromRoute] int id)
         {
@@ -57,13 +64,21 @@ namespace Relation_IMS.Controllers
             return Ok(deleted);
         }
 
-        [HttpPost("{id:int}/defect")]
-        public async Task<ActionResult<ProductItem?>> DefectProductItemById([FromRoute] int id) {
-            var defect = await _repo.DefectProductItemByIdAsync(id);
-            if (defect == null) return NotFound(new { message = $"productItem not found with id : {id}"});
+        //[HttpPost("{id:int}/defect")]
+        //public async Task<ActionResult<ProductItem?>> DefectProductItemById([FromRoute] int id) {
+        //    var defect = await _repo.DefectProductItemByIdAsync(id);
+        //    if (defect == null) return NotFound(new { message = $"productItem not found with id : {id}"});
+
+        //    return Ok(defect);
+        //}
+
+        [HttpPost("{code}/defect")]
+        public async Task<ActionResult<ProductItem?>> DefectProductItemByCode([FromRoute] string code)
+        {
+            var defect = await _repo.DefectProductItemByCodeAsync(code);
+            if (defect == null) return NotFound(new { message = $"productItem not found with code : {code}" });
 
             return Ok(defect);
         }
-
     }
 }

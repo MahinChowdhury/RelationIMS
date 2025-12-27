@@ -46,7 +46,7 @@ const InventoryOptions = () => {
 
             {/* Grid Options */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-                <Link to="#" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-primary/50 transition-all">
+                <Link to="/inventory/locations" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-primary/50 transition-all">
                     <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">
                         <span className="material-symbols-outlined text-3xl">inventory_2</span>
                     </div>
@@ -74,7 +74,7 @@ const InventoryOptions = () => {
                     <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">Movement History</h3>
                 </Link>
 
-                <Link to="#" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-gray-600/50 transition-all">
+                <Link to="/inventory/defects" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-gray-600/50 transition-all">
                     <div className="p-3 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 group-hover:scale-110 transition-transform duration-300">
                         <span className="material-symbols-outlined text-3xl">production_quantity_limits</span>
                     </div>

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Products from './pages/products/Products';
 import Customers from './pages/customers/Customers';
@@ -11,6 +11,10 @@ import CreateOrder from './pages/orders/CreateOrder';
 
 import InventoryOptions from './pages/inventory/InventoryOptions';
 import InventoryTransfer from './pages/inventory/InventoryTransfer';
+import DefectItems from './pages/inventory/DefectItems';
+import InventoryLocations from './pages/inventory/InventoryLocations';
+import InventoryDetails from './pages/inventory/InventoryDetails';
+import Welcome from './pages/Welcome';
 
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;
@@ -20,7 +24,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Welcome />} />
+        <Route path="welcome" element={<Welcome />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="products" element={<Products />} />
         <Route path="orders" element={<Orders />} />
@@ -31,6 +36,9 @@ function App() {
         <Route path="reports" element={<Reports />} />
         <Route path="inventory" element={<InventoryOptions />} />
         <Route path="inventory/transfer" element={<InventoryTransfer />} />
+        <Route path="inventory/defects" element={<DefectItems />} />
+        <Route path="inventory/locations" element={<InventoryLocations />} />
+        <Route path="inventory/locations/:id" element={<InventoryDetails />} />
         {/* Deep link support for products */}
         <Route path="products/:id" element={<ProductDetails />} />
       </Route>

@@ -26,6 +26,16 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
+        public async Task<List<ProductItem>> GetAllDefectedProductItemsAsync()
+        {
+            var items = await _context.ProductItems
+                .Where(i => i.IsDefected == true)
+                .ToListAsync();
+
+            return items;
+        }
+
+
         public async Task<ProductItem?> GetProductItemByIdAsync(int id)
         {
             var item = await _context.ProductItems
@@ -70,9 +80,20 @@ namespace Relation_IMS.Datas.Repositories
             return item;
         }
 
-        public async Task<ProductItem?> DefectProductItemByIdAsync(int id)
+        //public async Task<ProductItem?> DefectProductItemByIdAsync(int id)
+        //{
+        //    var item = await _context.ProductItems.Include(i => i.ProductVariant).FirstOrDefaultAsync(x => x.Id == id);
+        //    if (item == null) return null;
+
+        //    item.IsDefected = true;
+
+        //    await _context.SaveChangesAsync();
+
+        //    return item;
+        //}
+        public async Task<ProductItem?> DefectProductItemByCodeAsync(string code)
         {
-            var item = await _context.ProductItems.Include(i => i.ProductVariant).FirstOrDefaultAsync(x => x.Id == id);
+            var item = await _context.ProductItems.Include(i => i.ProductVariant).FirstOrDefaultAsync(x => x.Code == code);
             if (item == null) return null;
 
             item.IsDefected = true;
