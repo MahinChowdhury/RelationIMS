@@ -14,6 +14,8 @@ import InventoryTransfer from './pages/inventory/InventoryTransfer';
 import DefectItems from './pages/inventory/DefectItems';
 import InventoryLocations from './pages/inventory/InventoryLocations';
 import InventoryDetails from './pages/inventory/InventoryDetails';
+import StockIn from './pages/inventory/StockIn';
+import MovementHistory from './pages/inventory/MovementHistory';
 import Welcome from './pages/Welcome';
 
 // Placeholder components
@@ -39,6 +41,8 @@ function App() {
         <Route path="inventory/defects" element={<DefectItems />} />
         <Route path="inventory/locations" element={<InventoryLocations />} />
         <Route path="inventory/locations/:id" element={<InventoryDetails />} />
+        <Route path="inventory/stock-in" element={<StockIn />} />
+        <Route path="inventory/history" element={<MovementHistory />} />
         {/* Deep link support for products */}
         <Route path="products/:id" element={<ProductDetails />} />
       </Route>

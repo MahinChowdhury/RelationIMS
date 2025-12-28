@@ -9,8 +9,10 @@ export default {
             colors: {
                 "primary": "#17cf54",
                 "primary-dark": "#12a543",
-                "background-light": "#f6f8f6",
+                "background-light": "#f8fcf9",
                 "background-dark": "#112116",
+                "surface-light": "rgba(255, 255, 255, 0.6)",
+                "surface-dark": "rgba(17, 33, 22, 0.6)",
                 "text-main": "#0e1b12",
                 "text-secondary": "#4e9767",
             },

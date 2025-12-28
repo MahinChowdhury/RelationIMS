@@ -11,3 +11,44 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+    background: #d0e7d7; 
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #4e9767; 
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.dark .glass-panel {
+    background: rgba(17, 33, 22, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Leaf pattern background */
+.bg-pattern {
+    background-color: #f8fcf9;
+    background-image: radial-gradient(#17cf54 0.5px, transparent 0.5px), radial-gradient(#17cf54 0.5px, #f8fcf9 0.5px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.4;
+}
+.dark .bg-pattern {
+        background-color: #112116;
+        background-image: radial-gradient(#17cf54 0.5px, transparent 0.5px), radial-gradient(#17cf54 0.5px, #112116 0.5px);
+        opacity: 0.1;
+}

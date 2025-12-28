@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 
 interface BarcodeScannerProps {
@@ -55,7 +56,7 @@ export default function BarcodeScanner({ enabled, onScanned, onError, onClose }:
         }
     }, [enabled, startScanning, stopScanning]);
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl max-h-[92vh] border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
 
@@ -138,6 +139,7 @@ export default function BarcodeScanner({ enabled, onScanned, onError, onClose }:
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

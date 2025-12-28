@@ -53,7 +53,7 @@ const InventoryOptions = () => {
                     <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">Inventories</h3>
                 </Link>
 
-                <Link to="#" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-blue-600/50 transition-all">
+                <Link to="/inventory/stock-in" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-blue-600/50 transition-all">
                     <div className="p-3 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
                         <span className="material-symbols-outlined text-3xl">input</span>
                     </div>
@@ -67,7 +67,7 @@ const InventoryOptions = () => {
                     <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">Transfer Stock</h3>
                 </Link>
 
-                <Link to="#" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-orange-600/50 transition-all">
+                <Link to="/inventory/history" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-orange-600/50 transition-all">
                     <div className="p-3 rounded-full bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
                         <span className="material-symbols-outlined text-3xl">history</span>
                     </div>
