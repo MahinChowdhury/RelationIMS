@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models;
 using Relation_IMS.Models.CustomerModels;
+using Relation_IMS.Models.InventoryModels;
 using Relation_IMS.Models.JWTModels;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.ProductModels;
@@ -83,4 +84,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<ProductItem> ProductItems { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
+    public DbSet<InventoryTransferRecord> InventoryTransferRecords { get; set; }
 }

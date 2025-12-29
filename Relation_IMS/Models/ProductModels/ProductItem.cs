@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Relation_IMS.Models.InventoryModels;
 using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.ProductModels

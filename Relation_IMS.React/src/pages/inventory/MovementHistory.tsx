@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { MovementLog } from '../../types/inventory';
+import { getInventoryMovementHistory } from '../../services/InventoryService';
 
 const MovementHistory = () => {
     const [logs, setLogs] = useState<MovementLog[]>([]);
@@ -12,11 +13,18 @@ const MovementHistory = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 300);
 
-    const { containerRef, isVisible } = useIntersectionObserver({ threshold: 0.1 });
+    // Filters
+    const [dateFilter, setDateFilter] = useState('');
+    const [sourceFilter, setSourceFilter] = useState('');
+    const [destinationFilter, setDestinationFilter] = useState('');
+    const [userFilter, setUserFilter] = useState(''); // Assuming user ID input or select if IDs known
 
+    // Effect to trigger search reload
     useEffect(() => {
         loadLogs(true);
-    }, [debouncedSearch]);
+    }, [debouncedSearch, dateFilter, sourceFilter, destinationFilter, userFilter]);
+
+    const { containerRef, isVisible } = useIntersectionObserver({ threshold: 0.1 });
 
     useEffect(() => {
         if (isVisible && !loading && hasMore) {
@@ -39,35 +47,55 @@ const MovementHistory = () => {
 
         setLoading(true);
         try {
-            // Mock API delay
-            await new Promise(resolve => setTimeout(resolve, 800));
+            const currentPage = reset ? 1 : page;
+            const records = await getInventoryMovementHistory({
+                pageNumber: currentPage,
+                pageSize: 20,
+                search: debouncedSearch,
+                date: dateFilter || undefined,
+                // Validating if inputs are numbers for IDs, otherwise sending undefined
+                // In a real app, these selects would likely return IDs directly
+                // sourceId: sourceFilter ? parseInt(sourceFilter) : undefined,
+                // destinationId: destinationFilter ? parseInt(destinationFilter) : undefined,
+                // userId: userFilter ? parseInt(userFilter) : undefined,
+            });
 
-            // Generate mock data for the requested page
-            const newLogs: MovementLog[] = Array.from({ length: 10 }).map((_, i) => {
-                const id = ((reset ? 0 : page - 1) * 10) + i + 1;
-                const isEven = id % 2 === 0;
-                return {
-                    Id: id,
-                    Date: new Date(Date.now() - id * 3600000).toISOString(),
-                    ProductName: isEven ? 'Oxford Button-Down' : 'Slim Fit Chino',
-                    ProductSku: isEven ? 'SKU-OX-202' : 'SKU-CH-992',
-                    ProductImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJ7rOpz9IFqxZG3Kz9nfXt3Rl4uDlTOj-lfxY1finlkjuOVEQH0twi2lcKHWy84_LxDnvBqO8la_stfD6j5I10C3vmDfN-vL3OT22dP5JQV_a7LriFQKZqQYoZNiqJymbwH30fDCu6vBWqtlqjdY9893Zvs59-JiZkgB8RyMpKCAop-2ygr8kqq-S1LvvVza_FYmUgGH5ELVUU0ZWigAQVF__-wvN9qPoCZ_2iQaKt9Ml-ioBjK1Ogs5PD7tLk8IQARZ_WO98pf7c',
-                    SourceLocation: isEven ? 'Main Warehouse' : 'Downtown Store',
-                    DestinationLocation: isEven ? 'Downtown Store' : 'Main Warehouse',
-                    Quantity: 10 + i * 5,
-                    User: 'Jane Doe',
-                    UserAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYw8EF0g0Ov-0uly9YL3Itf6CDJzBHZzSY13o4LDcs91tfYqWmD-6Z1SCnHPYc8wtJyEJbeCyYVTnvbAS4X3tDoyOYIEvA_sBBCTQwOhpmb0-LxXG7hhOQhhKxl7eF9uLUGPAA6pUg53Yg-BcovjM8sdG-dupSPUpN1vVt1G7AFuayE-9zvsa35kACuQwiYhbv_eWUXOk0t3fopx6SHiLlhjkRMo_e_Og1aTizTWrhFz1t7vLn-UcNLGSwNAKGkCAE7o5RBbr1mes',
+            if (!records || records.length === 0) {
+                if (reset) setLogs([]);
+                setHasMore(false);
+                setLoading(false);
+                return;
+            }
+
+            // Flatten the response logic: API returns records (groups of items), UI expects linear logs (one row per item)
+            // Or UI could handle grouped logs. Current UI design implies one row per "movement".
+            // Since API returns items grouped by transfer record, we need to flatten this.
+
+            const flattenedLogs: MovementLog[] = records.flatMap(record => {
+                return record.Items.map(item => ({
+                    Id: record.Id * 1000 + item.ProductVariantId, // Composite ID for key
+                    Date: record.Date,
+                    ProductName: item.ProductName,
+                    ProductSku: item.ProductSku,
+                    ProductImage: item.ProductImageUrl || '', // Fallback image
+                    SourceLocation: record.SourceInventoryName,
+                    DestinationLocation: record.DestinationInventoryName,
+                    Quantity: item.Quantity,
+                    User: record.UserName,
+                    UserAvatar: record.UserAvatarUrl || '',
                     ActionType: 'Transfer'
-                };
+                }));
             });
 
             if (reset) {
-                setLogs(newLogs);
+                setLogs(flattenedLogs);
             } else {
-                setLogs(prev => [...prev, ...newLogs]);
+                setLogs(prev => [...prev, ...flattenedLogs]);
             }
 
-            if (page >= 5) setHasMore(false); // Stop after 50 items for mock demo
+            if (records.length < 20) {
+                setHasMore(false);
+            }
 
         } catch (error) {
             console.error('Failed to load logs:', error);
@@ -129,32 +157,45 @@ const MovementHistory = () => {
                             <label className="flex flex-col gap-1.5">
                                 <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">Date Range</span>
                                 <div className="flex items-center gap-2">
-                                    <input className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary" type="date" />
+                                    <input
+                                        className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary"
+                                        type="date"
+                                        value={dateFilter}
+                                        onChange={(e) => setDateFilter(e.target.value)}
+                                    />
                                 </div>
                             </label>
+                            {/* Detailed filters (Source/Dest/User) would require fetching available options. Keeping simple for now or accepting IDs if known. */}
+                            {/* Placeholder selects for visual completeness, logic simplified for MVP */}
                             <label className="flex flex-col gap-1.5">
                                 <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">Source</span>
-                                <select className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8">
+                                <select
+                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
+                                    value={sourceFilter}
+                                    onChange={(e) => setSourceFilter(e.target.value)}
+                                >
                                     <option value="">All Locations</option>
-                                    <option value="warehouse-a">Main Warehouse</option>
-                                    <option value="store-1">Downtown Store</option>
-                                    <option value="store-2">Uptown Store</option>
+                                    {/* Populate dynamically if inventory list available */}
                                 </select>
                             </label>
                             <label className="flex flex-col gap-1.5">
                                 <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">Destination</span>
-                                <select className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8">
+                                <select
+                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
+                                    value={destinationFilter}
+                                    onChange={(e) => setDestinationFilter(e.target.value)}
+                                >
                                     <option value="">All Locations</option>
-                                    <option value="warehouse-a">Main Warehouse</option>
-                                    <option value="store-1">Downtown Store</option>
                                 </select>
                             </label>
                             <label className="flex flex-col gap-1.5">
                                 <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">User</span>
-                                <select className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8">
+                                <select
+                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
+                                    value={userFilter}
+                                    onChange={(e) => setUserFilter(e.target.value)}
+                                >
                                     <option value="">All Users</option>
-                                    <option value="jane">Jane Doe</option>
-                                    <option value="mark">Mark Smith</option>
                                 </select>
                             </label>
                         </div>
@@ -177,7 +218,7 @@ const MovementHistory = () => {
                             </thead>
                             <tbody className="divide-y divide-[#d0e7d7]/50 dark:divide-white/5">
                                 {logs.map((log) => (
-                                    <tr key={log.Id} className="group hover:bg-white/40 dark:hover:bg-white/5 transition-colors">
+                                    <tr key={`${log.Id}-${log.ProductSku}`} className="group hover:bg-white/40 dark:hover:bg-white/5 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-bold text-[#0e1b12] dark:text-white">
@@ -191,7 +232,11 @@ const MovementHistory = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="size-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200">
-                                                    <img className="w-full h-full object-cover" alt={log.ProductName} src={log.ProductImage} />
+                                                    {log.ProductImage ? (
+                                                        <img className="w-full h-full object-cover" alt={log.ProductName} src={log.ProductImage} />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs text-gray-500">No Img</div>
+                                                    )}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold text-[#0e1b12] dark:text-white">{log.ProductName}</span>
@@ -219,7 +264,13 @@ const MovementHistory = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
-                                                <img className="size-8 rounded-full object-cover border border-white dark:border-white/10 shadow-sm" alt={log.User} src={log.UserAvatar} />
+                                                {log.UserAvatar ? (
+                                                    <img className="size-8 rounded-full object-cover border border-white dark:border-white/10 shadow-sm" alt={log.User} src={log.UserAvatar} />
+                                                ) : (
+                                                    <div className="size-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 border border-white dark:border-white/10 shadow-sm">
+                                                        {log.User.charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{log.User}</span>
                                             </div>
                                         </td>

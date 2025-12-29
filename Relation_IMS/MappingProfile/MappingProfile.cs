@@ -4,8 +4,8 @@ using Relation_IMS.Dtos.CustomerDtos;
 using Relation_IMS.Dtos.InventoryDtos;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Dtos.ProductDtos;
-using Relation_IMS.Models;
 using Relation_IMS.Models.CustomerModels;
+using Relation_IMS.Models.InventoryModels;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.ProductModels;
 

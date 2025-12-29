@@ -6,7 +6,7 @@ namespace Relation_IMS.Dtos.InventoryDtos
     public class TransferProductItemsDTO
     {
         [Required(ErrorMessage = "Product item code is required.")]
-        public string ProductItemCode { get; set; } = string.Empty;
+        public List<string> ProductItemCode { get; set; } = new();
 
         [Required(ErrorMessage = "Source inventory ID is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "Source inventory ID must be greater than 0.")]
@@ -15,6 +15,9 @@ namespace Relation_IMS.Dtos.InventoryDtos
         [Required(ErrorMessage = "Destination inventory ID is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "Destination inventory ID must be greater than 0.")]
         public int DestinationInventoryId { get; set; }
+
+        [Required(ErrorMessage = "User ID is required.")]
+        public int UserId { get; set; }
     }
 
     // Transfer result DTO with inventory details

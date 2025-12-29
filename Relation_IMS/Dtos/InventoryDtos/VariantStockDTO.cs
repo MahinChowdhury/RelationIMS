@@ -1,4 +1,4 @@
-﻿using Relation_IMS.Models;
+﻿using Relation_IMS.Models.InventoryModels;
 
 namespace Relation_IMS.Dtos.InventoryDtos
 {

@@ -141,7 +141,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApps", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost:5173")
+        policy.WithOrigins(
+              "http://localhost:4200",
+              "http://localhost:5173",
+              "https://localhost:5173"  // Add HTTPS variant if needed
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -168,10 +172,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowClientApps");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowClientApps");
 app.MapControllers();
 
 app.Run();

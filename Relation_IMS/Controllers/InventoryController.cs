@@ -97,10 +97,11 @@ namespace Relation_IMS.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _inventoryRepo.TransferProductItemByCodeAsync(
+            var result = await _inventoryRepo.TransferProductItemsByCodesAsync(
                 transferDto.ProductItemCode,
                 transferDto.SourceInventoryId,
-                transferDto.DestinationInventoryId
+                transferDto.DestinationInventoryId,
+                transferDto.UserId
             );
 
             if (!result.Success)
@@ -141,6 +142,21 @@ namespace Relation_IMS.Controllers
         {
             var stockSummary = await _inventoryRepo.GetVariantStockAcrossInventoriesAsync(variantId);
             return Ok(stockSummary);
+        }
+
+        // GET: api/Inventory/transfer/history
+        [HttpGet("transfer/history")]
+        public async Task<IActionResult> GetInventoryMovementHistory(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? search = null,
+            [FromQuery] DateTime? date = null,
+            [FromQuery] int? sourceId = null,
+            [FromQuery] int? destinationId = null,
+            [FromQuery] int? userId = null)
+        {
+            var records = await _inventoryRepo.GetInventoryTransferRecordsAsync(pageNumber, pageSize, search, date, sourceId, destinationId, userId);
+            return Ok(records);
         }
     }
 }

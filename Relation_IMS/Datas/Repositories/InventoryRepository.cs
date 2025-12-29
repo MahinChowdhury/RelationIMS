@@ -5,6 +5,7 @@ using Relation_IMS.Dtos;
 using Relation_IMS.Dtos.InventoryDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models;
+using Relation_IMS.Models.InventoryModels;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Datas.Repositories
@@ -69,10 +70,14 @@ namespace Relation_IMS.Datas.Repositories
             return inventory;
         }
 
-        // Transfer product item by code with source and destination validation
-        public async Task<TransferResultDTO> TransferProductItemByCodeAsync(string productItemCode, int sourceInventoryId, int destinationInventoryId)
+        // Transfer product items by codes with source and destination validation
+        public async Task<TransferResultDTO> TransferProductItemsByCodesAsync(List<string> productItemCodes, int sourceInventoryId, int destinationInventoryId, int userId)
         {
-            var result = new TransferResultDTO();
+            var result = new TransferResultDTO
+            {
+                InvalidCodes = new List<string>(),
+                TransferDetails = new List<TransferItemDetail>()
+            };
 
             // Verify source inventory exists and get its details
             var sourceInventory = await _context.Inventories
@@ -106,51 +111,71 @@ namespace Relation_IMS.Datas.Repositories
                 return result;
             }
 
-            // Get the item by code
-            var item = await _context.ProductItems
-                .FirstOrDefaultAsync(pi => pi.Code == productItemCode);
+            // Get all items by codes
+            var items = await _context.ProductItems
+                .Where(pi => productItemCodes.Contains(pi.Code))
+                .ToListAsync();
 
-            if (item == null)
+            // Validate all items
+            var validItems = new List<ProductItem>();
+            var errorMessages = new List<string>();
+
+            // Check for missing items
+            foreach (var code in productItemCodes)
+            {
+                var item = items.FirstOrDefault(i => i.Code == code);
+                if (item == null)
+                {
+                    result.InvalidCodes.Add(code);
+                    errorMessages.Add($"Item '{code}' not found.");
+                    continue;
+                }
+
+                // Verify item is currently in the source inventory
+                if (item.InventoryId != sourceInventoryId)
+                {
+                    result.InvalidCodes.Add(code);
+                    errorMessages.Add($"Item '{code}' is not in the source inventory.");
+                    continue;
+                }
+
+                // Check if item can be transferred (not defected or sold)
+                if (item.IsDefected)
+                {
+                    result.InvalidCodes.Add(code);
+                    errorMessages.Add($"Item '{code}' is defected.");
+                    continue;
+                }
+
+                if (item.IsSold)
+                {
+                    result.InvalidCodes.Add(code);
+                    errorMessages.Add($"Item '{code}' is sold.");
+                    continue;
+                }
+
+                validItems.Add(item);
+            }
+
+            // If there are any invalid codes, fail the transaction
+            if (result.InvalidCodes.Any())
             {
                 result.Success = false;
-                result.Message = $"Product item with code '{productItemCode}' not found.";
+                result.Message = $"Transfer failed. {result.InvalidCodes.Count} invalid items found: {string.Join(", ", errorMessages)}";
                 return result;
             }
 
-            // Verify item is currently in the source inventory
-            if (item.InventoryId != sourceInventoryId)
-            {
-                result.Success = false;
-                result.Message = $"Product item '{productItemCode}' is not in the source inventory. Current inventory ID: {item.InventoryId}";
-                return result;
-            }
+            // Begin execution strategy for transaction (optional but good practice, assuming default execution strategy implicitly)
+            // Or better, use a transaction block if needed. EF Core `SaveChanges` is atomic, so if we just modify entities and save, it's a transaction.
+            // But we are creating a new record too, so single SaveChanges is fine.
 
-            // Check if item can be transferred (not defected or sold)
-            if (item.IsDefected)
+            // Transfer items
+            foreach (var item in validItems)
             {
-                result.Success = false;
-                result.Message = $"Cannot transfer defected item: {item.Code}";
-                return result;
-            }
-
-            if (item.IsSold)
-            {
-                result.Success = false;
-                result.Message = $"Cannot transfer sold item: {item.Code}";
-                return result;
-            }
-
-            // Transfer item
-            item.InventoryId = destinationInventoryId;
-            await _context.SaveChangesAsync();
-
-            // Build success response with full inventory details
-            result.Success = true;
-            result.Message = $"Successfully transferred item {item.Code} from '{sourceInventory.Name}' to '{destinationInventory.Name}'.";
-            result.TransferredCount = 1;
-            result.TransferDetails = new List<TransferItemDetail>
-            {
-                new TransferItemDetail
+                item.InventoryId = destinationInventoryId;
+                
+                // Add to transfer details result
+                result.TransferDetails.Add(new TransferItemDetail
                 {
                     Code = item.Code,
                     SourceInventoryId = sourceInventoryId,
@@ -167,8 +192,26 @@ namespace Relation_IMS.Datas.Repositories
                         Name = destinationInventory.Name,
                         Description = destinationInventory.Description
                     }
-                }
+                });
+            }
+
+            // Create Inventory Transfer Record
+            var transferRecord = new InventoryTransferRecord
+            {
+                SourceInventoryId = sourceInventoryId,
+                DestinationInventoryId = destinationInventoryId,
+                UserId = userId,
+                DateTime = DateTime.UtcNow,
+                ProductItems = validItems // Link the transferred items to this record
             };
+
+            await _context.InventoryTransferRecords.AddAsync(transferRecord);
+            await _context.SaveChangesAsync();
+
+            // Build success response
+            result.Success = true;
+            result.Message = $"Successfully transferred {validItems.Count} items from '{sourceInventory.Name}' to '{destinationInventory.Name}'.";
+            result.TransferredCount = validItems.Count;
 
             return result;
         }
@@ -295,6 +338,93 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
+        // Get inventory transfer records with filtering and pagination
+        public async Task<List<InventoryTransferHistoryDTO>> GetInventoryTransferRecordsAsync(int pageNumber = 1, int pageSize = 20, string? search = null, DateTime? date = null, int? sourceId = null, int? destinationId = null, int? userId = null)
+        {
+            var query = _context.InventoryTransferRecords
+                .Include(r => r.SourceInventory)
+                .Include(r => r.DestinationInventory)
+                .Include(r => r.User)
+                .Include(r => r.ProductItems)
+                    .ThenInclude(pi => pi.ProductVariant)
+                        .ThenInclude(pv => pv.Product)
+                .Include(r => r.ProductItems)
+                    .ThenInclude(pi => pi.ProductVariant)
+                        .ThenInclude(pv => pv.Color)
+                .Include(r => r.ProductItems)
+                    .ThenInclude(pi => pi.ProductVariant)
+                        .ThenInclude(pv => pv.Size)
+                .AsNoTracking();
+
+            // Apply filters based on search term
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                query = query.Where(r => 
+                    r.ProductItems.Any(pi => 
+                        pi.ProductVariant!.Product!.Name.ToLower().Contains(search) || 
+                        pi.Code.ToLower().Contains(search)));
+            }
+
+            if (date.HasValue)
+            {
+                // Filter by date (ignoring time)
+                var nextDay = date.Value.AddDays(1);
+                query = query.Where(r => r.DateTime >= date.Value && r.DateTime < nextDay);
+            }
+
+            if (sourceId.HasValue)
+            {
+                query = query.Where(r => r.SourceInventoryId == sourceId);
+            }
+
+            if (destinationId.HasValue)
+            {
+                query = query.Where(r => r.DestinationInventoryId == destinationId);
+            }
+
+            if (userId.HasValue)
+            {
+                query = query.Where(r => r.UserId == userId);
+            }
+
+            // Execute query with pagination
+            var records = await query
+                .OrderByDescending(r => r.DateTime)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Map to DTO
+            var result = records.Select(r => new InventoryTransferHistoryDTO
+            {
+                Id = r.Id,
+                Date = r.DateTime,
+                SourceInventoryName = r.SourceInventory?.Name ?? "Unknown",
+                DestinationInventoryName = r.DestinationInventory?.Name ?? "Unknown",
+                UserName = r.User != null ? $"{r.User.Firstname} {r.User.Lastname}".Trim() : "Unknown",
+                UserAvatarUrl = null,
+                Items = r.ProductItems
+                    .GroupBy(pi => pi.ProductVariantId)
+                    .Select(g => {
+                        var firstItem = g.First();
+                        return new TransferHistoryItemDTO
+                        {
+                            ProductId = firstItem.ProductVariant!.ProductId,
+                            ProductName = firstItem.ProductVariant.Product!.Name,
+                            ProductSku = firstItem.Code, // Using Item Code as SKU since Product/Variant SKU is missing
+                            ProductImageUrl = firstItem.ProductVariant.Product?.ImageUrls?.FirstOrDefault(), // Use first image from product
+                            ProductVariantId = g.Key,
+                            ColorName = firstItem.ProductVariant.Color?.Name ?? "N/A",
+                            SizeName = firstItem.ProductVariant.Size?.Name ?? "N/A",
+                            Quantity = g.Count()
+                        };
+                    }).ToList()
+            }).ToList();
+
+            return result;
+        }
+
         // Get variant stock across all inventories
         public async Task<List<VariantStockDTO>> GetVariantStockAcrossInventoriesAsync(int variantId)
         {
@@ -313,41 +443,6 @@ namespace Relation_IMS.Datas.Repositories
         }
     }
 
-    // ===== DTOs =====
 
-    // Simplified DTO for inventory stock summary
-    public class InventoryStockDTO
-    {
-        public int ProductVariantId { get; set; }
-        public int ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public string ColorName { get; set; } = string.Empty;
-        public string SizeName { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-    }
-
-    // DTO for product stock across inventories
-    public class ProductInventoryStockDTO
-    {
-        public int InventoryId { get; set; }
-        public string InventoryName { get; set; } = string.Empty;
-        public int ProductVariantId { get; set; }
-        public string ColorName { get; set; } = string.Empty;
-        public string SizeName { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-    }
-
-    // DTO for product item summary
-    public class ProductItemSummaryDTO
-    {
-        public int Id { get; set; }
-        public string Code { get; set; } = string.Empty;
-        public int ProductVariantId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public string ColorName { get; set; } = string.Empty;
-        public string SizeName { get; set; } = string.Empty;
-        public bool IsDefected { get; set; }
-        public bool IsSold { get; set; }
-    }
 
 }

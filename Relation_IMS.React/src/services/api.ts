@@ -1,11 +1,13 @@
 import axios from 'axios';
 
-// Create an Axios instance with default configuration
-const api = axios.create({
-    baseURL: 'https://localhost:7062/api/v1', // Corrected base URL with version
+const API_BASE_URL = 'https://localhost:7062/api/v1'; // Use HTTPS directly
+
+export const api = axios.create({
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true,
 });
 
 // Add a response interceptor to handle errors globally if needed

@@ -28,3 +28,24 @@ export interface MovementLog {
     UserAvatar: string;
     ActionType: 'Transfer' | 'StockIn' | 'StockOut' | 'Audit';
 }
+
+export interface TransferHistoryItem {
+    ProductId: number;
+    ProductName: string;
+    ProductSku: string;
+    ProductImageUrl?: string;
+    ProductVariantId: number;
+    ColorName: string;
+    SizeName: string;
+    Quantity: number;
+}
+
+export interface InventoryTransferHistoryResponse {
+    Id: number;
+    Date: string;
+    SourceInventoryName: string;
+    DestinationInventoryName: string;
+    UserName: string;
+    UserAvatarUrl?: string;
+    Items: TransferHistoryItem[];
+}
