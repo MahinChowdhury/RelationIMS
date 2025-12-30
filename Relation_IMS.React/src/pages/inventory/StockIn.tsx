@@ -288,7 +288,6 @@ export default function StockIn() {
                             // New Product Form
                             <div className="flex flex-col gap-8 animate-fadeIn">
                                 <ProductForm
-                                    mode="create"
                                     product={currentProduct}
                                     categories={categories}
                                     brands={brands}

@@ -23,7 +23,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("defects")]
-        public async Task<ActionResult<List<ProductItem>>> GetAllDefectedProductItems()
+        public async Task<ActionResult<List<DefectItemResDTO>>> GetAllDefectedProductItems()
         {
             var items = await _repo.GetAllDefectedProductItemsAsync();
             return Ok(items);
@@ -73,9 +73,17 @@ namespace Relation_IMS.Controllers
         //}
 
         [HttpPost("{code}/defect")]
-        public async Task<ActionResult<ProductItem?>> DefectProductItemByCode([FromRoute] string code)
+        public async Task<ActionResult<DefectItemResDTO?>> DefectProductItemByCode([FromRoute] string code, [FromBody] DefectRequestDTO defectDto)
         {
-            var defect = await _repo.DefectProductItemByCodeAsync(code);
+            // Extract user ID from claims
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ?? User.FindFirst("id");
+            int? userId = null;
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            var defect = await _repo.DefectProductItemByCodeAsync(code, defectDto, userId);
             if (defect == null) return NotFound(new { message = $"productItem not found with code : {code}" });
 
             return Ok(defect);

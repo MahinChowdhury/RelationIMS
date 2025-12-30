@@ -1,8 +1,9 @@
 
 export interface TransferProductItemsDTO {
-    ProductItemCode: string;
+    ProductItemCode: string[];
     SourceInventoryId: number;
     DestinationInventoryId: number;
+    UserId: number;
 }
 
 export interface InventoryBasicDTO {

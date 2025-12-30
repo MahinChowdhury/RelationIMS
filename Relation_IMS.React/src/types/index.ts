@@ -85,6 +85,7 @@ export interface ScannedItem {
     count: number;
     scannedAt: Date;
     isValid?: boolean; // New field for validation status
+    imageUrl?: string | null;
 }
 
 export * from './transfer';

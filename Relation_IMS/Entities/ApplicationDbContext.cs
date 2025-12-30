@@ -83,6 +83,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<ProductItem> ProductItems { get; set; }
+    public DbSet<ProductDefect> ProductDefects { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<InventoryTransferRecord> InventoryTransferRecords { get; set; }
+    public DbSet<InventoryTransferRecordItem> InventoryTransferRecordItems { get; set; }
 }

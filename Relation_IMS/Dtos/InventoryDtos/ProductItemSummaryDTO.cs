@@ -8,6 +8,7 @@ namespace Relation_IMS.Dtos.InventoryDtos
         public string ProductName { get; set; } = string.Empty;
         public string ColorName { get; set; } = string.Empty;
         public string SizeName { get; set; } = string.Empty;
+        public string? ProductImageUrl { get; set; }
         public bool IsDefected { get; set; }
         public bool IsSold { get; set; }
     }

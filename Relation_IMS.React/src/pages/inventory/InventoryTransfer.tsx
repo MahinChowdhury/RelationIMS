@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import type { InventoryBasicDTO, TransferProductItemsDTO, TransferResultDTO, ScannedItem } from '../../types';
+import type { InventoryBasicDTO, TransferProductItemsDTO, ScannedItem } from '../../types';
 import InventoryTransferScanner from '../../components/inventory/InventoryTransferScanner';
 
 
@@ -133,7 +133,7 @@ const InventoryTransfer = () => {
         // Find product details from sourceItems if possible
         const sourceItem = sourceItems.find((i: any) => i.Code === code || i.ProductItemCode === code);
         const description = sourceItem
-            ? `${sourceItem.Product?.Name || 'Unknown Product'} - ${sourceItem.Color?.Name || sourceItem.Color} / ${sourceItem.Size?.Name || sourceItem.Size}`
+            ? `${sourceItem.ProductName || 'Unknown Product'} - ${sourceItem.ColorName || sourceItem.Color} / ${sourceItem.SizeName || sourceItem.Size}`
             : 'Product ' + code;
 
 
@@ -150,6 +150,7 @@ const InventoryTransfer = () => {
                 id: Date.now().toString(),
                 code: code,
                 description: description,
+                imageUrl: sourceItem?.ProductImageUrl,
                 count: 1,
                 scannedAt: new Date(),
                 isValid: true
@@ -166,45 +167,29 @@ const InventoryTransfer = () => {
 
         setTransferring(true);
         try {
-            // Process each unique scanned item
-            // Since API is single item transfer, we loop. 
-            // Ideally backend supports batch, but based on current API:
-
-            const results: TransferResultDTO[] = [];
-
-            for (const item of scannedItems) {
-                // We need to call transfer for EACH count of the item? 
-                // The API TransferProductItemByCodeAsync implies transferring a specific "ProductItemCode".
-                // If "ProductItemCode" is a unique serial (like scanning a specific physical item), then count is always 1 per scan entry if unique codes.
-                // But if "ProductItemCode" is a SKU, then we need a quantity field in the API.
-                // Looking at TransferProductItemsDTO, it only has ProductItemCode. 
-                // And the Controller calls _inventoryRepo.TransferProductItemByCodeAsync.
-                // This strongly suggests Unique Item Tracking (Serial Numbers/Barcodes).
-                // So if I scan "A" twice, is it the same item?
-                // If the system tracks unique items, "A" can only be in one place.
-                // If "A" is a SKU, we need Qty.
-                // Given the user UI "Scan barcode to increment", it suggests SKU based scanning where you scan same barcode multiple times to increase count.
-                // BUT the backend API `TransferProductItemByCodeAsync` suggests moving a SINGLE specific item instance by code.
-                // If it's SKU based, the backend is missing Quantity.
-                // If it's Unique Item based, scanning same code twice is invalid (can't move same item twice).
-
-                // Let's assume for now it's Unique Item Codes being scanned, OR the backend handles "find ANY item with this SKU and move it".
-                // If it's "find ANY item with this SKU", we should call it N times for N count.
-
+            // Flatten all scanned items into a single list of codes
+            // If item A has count 3, we add "A" to the list 3 times.
+            const codesToTransfer: string[] = [];
+            scannedItems.forEach(item => {
                 for (let i = 0; i < item.count; i++) {
-                    const payload: TransferProductItemsDTO = {
-                        ProductItemCode: item.code,
-                        SourceInventoryId: Number(sourceId),
-                        DestinationInventoryId: Number(destinationId)
-                    };
-                    const response = await api.post('/Inventory/transfer', payload);
-                    results.push(response.data);
+                    codesToTransfer.push(item.code);
                 }
-            }
+            });
 
-            alert('Transfer Completed Successfully!');
-            setScannedItems([]);
-            setNotes('');
+            const payload: TransferProductItemsDTO = {
+                ProductItemCode: codesToTransfer, // Send as List<string> to match backend DTO
+                SourceInventoryId: Number(sourceId),
+                DestinationInventoryId: Number(destinationId),
+                UserId: 1 // TODO: getting user id from auth context
+            };
+
+            const response = await api.post('/Inventory/transfer', payload);
+
+            if (response.status === 200) {
+                alert('Transfer Completed Successfully! ' + (response.data.message || ''));
+                setScannedItems([]);
+                setNotes('');
+            }
         } catch (error: any) {
             console.error(error);
             alert('Transfer Failed: ' + (error.response?.data?.message || error.message));
@@ -374,9 +359,13 @@ const InventoryTransfer = () => {
                                 scannedItems.map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#112116] rounded-xl border border-gray-100 dark:border-[#2a4032] group">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-200 dark:bg-[#2a4032] rounded-lg flex items-center justify-center text-gray-400">
+                                            <div className="w-12 h-12 bg-gray-200 dark:bg-[#2a4032] rounded-lg flex items-center justify-center text-gray-400 overflow-hidden">
                                                 {/* Placeholder Image */}
-                                                <span className="material-symbols-outlined">image</span>
+                                                {item.imageUrl ? (
+                                                    <img src={item.imageUrl} alt={item.description} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined">image</span>
+                                                )}
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-text-main dark:text-white text-sm">{item.description}</h4>

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
-import type { MovementLog } from '../../types/inventory';
+import type { InventoryTransferHistoryResponse } from '../../types/inventory';
 import { getInventoryMovementHistory } from '../../services/InventoryService';
 
 const MovementHistory = () => {
-    const [logs, setLogs] = useState<MovementLog[]>([]);
+    const [logs, setLogs] = useState<InventoryTransferHistoryResponse[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -67,30 +67,10 @@ const MovementHistory = () => {
                 return;
             }
 
-            // Flatten the response logic: API returns records (groups of items), UI expects linear logs (one row per item)
-            // Or UI could handle grouped logs. Current UI design implies one row per "movement".
-            // Since API returns items grouped by transfer record, we need to flatten this.
-
-            const flattenedLogs: MovementLog[] = records.flatMap(record => {
-                return record.Items.map(item => ({
-                    Id: record.Id * 1000 + item.ProductVariantId, // Composite ID for key
-                    Date: record.Date,
-                    ProductName: item.ProductName,
-                    ProductSku: item.ProductSku,
-                    ProductImage: item.ProductImageUrl || '', // Fallback image
-                    SourceLocation: record.SourceInventoryName,
-                    DestinationLocation: record.DestinationInventoryName,
-                    Quantity: item.Quantity,
-                    User: record.UserName,
-                    UserAvatar: record.UserAvatarUrl || '',
-                    ActionType: 'Transfer'
-                }));
-            });
-
             if (reset) {
-                setLogs(flattenedLogs);
+                setLogs(records);
             } else {
-                setLogs(prev => [...prev, ...flattenedLogs]);
+                setLogs(prev => [...prev, ...records]);
             }
 
             if (records.length < 20) {
@@ -217,70 +197,84 @@ const MovementHistory = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#d0e7d7]/50 dark:divide-white/5">
-                                {logs.map((log) => (
-                                    <tr key={`${log.Id}-${log.ProductSku}`} className="group hover:bg-white/40 dark:hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-[#0e1b12] dark:text-white">
-                                                    {new Date(log.Date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                    {new Date(log.Date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="size-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200">
-                                                    {log.ProductImage ? (
-                                                        <img className="w-full h-full object-cover" alt={log.ProductName} src={log.ProductImage} />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs text-gray-500">No Img</div>
-                                                    )}
-                                                </div>
+                                {logs.map((log) => {
+                                    const totalQuantity = log.Items.reduce((sum, item) => sum + item.Quantity, 0);
+
+                                    return (
+                                        <tr key={log.Id} className="group hover:bg-white/40 dark:hover:bg-white/5 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap align-top">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-[#0e1b12] dark:text-white">{log.ProductName}</span>
-                                                    <span className="text-xs text-[#4e9767] font-medium bg-primary/10 px-1.5 py-0.5 rounded w-fit">{log.ProductSku}</span>
+                                                    <span className="text-sm font-bold text-[#0e1b12] dark:text-white">
+                                                        {new Date(log.Date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {new Date(log.Date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-900/30">
-                                                    <span className="size-2 rounded-full bg-orange-400"></span>
-                                                    <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">{log.SourceLocation}</span>
+                                            </td>
+                                            <td className="px-6 py-4 align-top">
+                                                <div className="flex flex-col gap-3">
+                                                    {log.Items.map((item, index) => (
+                                                        <div key={`${log.Id}-${item.ProductVariantId}-${index}`} className="flex items-center gap-3">
+                                                            <div className="size-8 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200">
+                                                                {item.ProductImageUrl ? (
+                                                                    <img className="w-full h-full object-cover" alt={item.ProductName} src={item.ProductImageUrl} />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-[10px] text-gray-500">No Img</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-bold text-[#0e1b12] dark:text-white">{item.ProductName}</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] text-[#4e9767] font-medium bg-primary/10 px-1.5 py-0.5 rounded w-fit">{item.ProductSku}</span>
+                                                                    {item.SizeName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Size: {item.SizeName}</span>}
+                                                                    {item.ColorName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Color: {item.ColorName}</span>}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <span className="material-symbols-outlined text-gray-400 text-sm">arrow_forward</span>
-                                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
-                                                    <span className="size-2 rounded-full bg-blue-400"></span>
-                                                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">{log.DestinationLocation}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-sm font-black ${log.Quantity >= 0 ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-red-100 text-red-600 border border-red-200'}`}>
-                                                {log.Quantity >= 0 ? `+${log.Quantity}` : log.Quantity}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                {log.UserAvatar ? (
-                                                    <img className="size-8 rounded-full object-cover border border-white dark:border-white/10 shadow-sm" alt={log.User} src={log.UserAvatar} />
-                                                ) : (
-                                                    <div className="size-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 border border-white dark:border-white/10 shadow-sm">
-                                                        {log.User.charAt(0).toUpperCase()}
+                                            </td>
+                                            <td className="px-6 py-4 align-top">
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-900/30">
+                                                        <span className="size-2 rounded-full bg-orange-400"></span>
+                                                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">{log.SourceInventoryName}</span>
                                                     </div>
-                                                )}
-                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{log.User}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-gray-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10">
-                                                <span className="material-symbols-outlined text-[20px]">more_vert</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                    <span className="material-symbols-outlined text-gray-400 text-sm">arrow_forward</span>
+                                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
+                                                        <span className="size-2 rounded-full bg-blue-400"></span>
+                                                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">{log.DestinationInventoryName}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center align-top">
+                                                <div className="mt-1">
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-black bg-primary/10 text-primary border border-primary/20">
+                                                        {totalQuantity} Items
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 align-top">
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    {log.UserAvatarUrl ? (
+                                                        <img className="size-8 rounded-full object-cover border border-white dark:border-white/10 shadow-sm" alt={log.UserName} src={log.UserAvatarUrl} />
+                                                    ) : (
+                                                        <div className="size-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 border border-white dark:border-white/10 shadow-sm">
+                                                            {log.UserName.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{log.UserName}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right align-top">
+                                                <button className="text-gray-400 hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10 mt-1">
+                                                    <span className="material-symbols-outlined text-[20px]">more_vert</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

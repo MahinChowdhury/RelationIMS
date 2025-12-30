@@ -2,7 +2,6 @@ import { useRef } from 'react';
 import type { StockItem, Product } from '../../types';
 
 interface ProductFormProps {
-    mode: 'create' | 'edit';
     product: Product;
     categories: any[];
     brands: any[];
@@ -33,7 +32,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({
-    mode, product, categories, brands, colors, availableSizes, stockItems, selectedImages,
+    product, categories, brands, colors, availableSizes, stockItems, selectedImages,
     onChange, onCategoryChange,
     onImagesSelected, removeImage,
     newStock, setNewStock, addStock, removeStock,

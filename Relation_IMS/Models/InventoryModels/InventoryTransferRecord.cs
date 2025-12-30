@@ -7,7 +7,8 @@ namespace Relation_IMS.Models.InventoryModels
     {
         public int Id { get; set; }
 
-        public List<ProductItem> ProductItems { get; set; } = new();
+        // public List<ProductItem> ProductItems { get; set; } = new(); // REMOVED: Caused 1-to-Many issue
+        public List<InventoryTransferRecordItem> TransferItems { get; set; } = new();
 
         [Required(ErrorMessage = "Source InventoryId is required.")]
         public int SourceInventoryId { get; set; }

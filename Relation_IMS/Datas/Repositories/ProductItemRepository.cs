@@ -26,13 +26,29 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
-        public async Task<List<ProductItem>> GetAllDefectedProductItemsAsync()
+        public async Task<List<DefectItemResDTO>> GetAllDefectedProductItemsAsync()
         {
-            var items = await _context.ProductItems
-                .Where(i => i.IsDefected == true)
+            var defects = await _context.ProductDefects
+                .Include(d => d.ProductItem)
+                    .ThenInclude(pi => pi.ProductVariant)
+                        .ThenInclude(pv => pv.Product)
+                .Include(d => d.ReportedByUser)
+                .OrderByDescending(d => d.DefectDate)
+                .Select(d => new DefectItemResDTO
+                {
+                    Id = d.Id,
+                    ProductItemId = d.ProductItemId,
+                    Code = d.ProductItem.Code,
+                    ProductName = d.ProductItem.ProductVariant.Product.Name,
+                    Reason = d.Reason,
+                    Status = d.Status,
+                    ReportedBy = d.ReportedByUser != null ? d.ReportedByUser.Firstname + " " + (d.ReportedByUser.Lastname ?? "") : "Unknown",
+                    DefectDate = d.DefectDate,
+                    ProductImageUrl = d.ProductItem.ProductVariant.Product.ImageUrls.FirstOrDefault() // Helper or logic might be needed if list is stored as string
+                })
                 .ToListAsync();
 
-            return items;
+            return defects;
         }
 
 
@@ -91,16 +107,53 @@ namespace Relation_IMS.Datas.Repositories
 
         //    return item;
         //}
-        public async Task<ProductItem?> DefectProductItemByCodeAsync(string code)
+        public async Task<DefectItemResDTO?> DefectProductItemByCodeAsync(string code, DefectRequestDTO defectDto, int? userId)
         {
-            var item = await _context.ProductItems.Include(i => i.ProductVariant).FirstOrDefaultAsync(x => x.Code == code);
+            var item = await _context.ProductItems
+                .Include(i => i.ProductVariant)
+                .ThenInclude(pv => pv.Product)
+                .FirstOrDefaultAsync(x => x.Code == code);
+
             if (item == null) return null;
 
+            // 1. Mark item as defected
             item.IsDefected = true;
 
+            // 2. Create Defect Record
+            var defectRecord = new ProductDefect
+            {
+                ProductItemId = item.Id,
+                Reason = defectDto.Reason,
+                Status = "Pending Review",
+                ReportedByUserId = userId,
+                DefectDate = DateTime.UtcNow
+            };
+
+            await _context.ProductDefects.AddAsync(defectRecord);
             await _context.SaveChangesAsync();
 
-            return item;
+            // 3. Return DTO
+            // We need to fetch the user name if userId is present, or just use current context (but repo shouldn't know about HttpContext).
+            // For now, let's fetch it or just return basic info.
+            string reportedByName = "Unknown";
+            if (userId.HasValue)
+            {
+                var user = await _context.Users.FindAsync(userId.Value);
+                if (user != null) reportedByName = user.Firstname + " " + (user.Lastname ?? "");
+            }
+
+            return new DefectItemResDTO
+            {
+                Id = defectRecord.Id,
+                ProductItemId = item.Id,
+                Code = item.Code,
+                ProductName = item.ProductVariant?.Product?.Name ?? "Unknown",
+                Reason = defectRecord.Reason,
+                Status = defectRecord.Status,
+                ReportedBy = reportedByName,
+                DefectDate = defectRecord.DefectDate,
+                ProductImageUrl = item.ProductVariant?.Product?.ImageUrls?.FirstOrDefault()
+            };
         }
     }
 }

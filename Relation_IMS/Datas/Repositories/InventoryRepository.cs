@@ -120,16 +120,26 @@ namespace Relation_IMS.Datas.Repositories
             var validItems = new List<ProductItem>();
             var errorMessages = new List<string>();
 
-            // Check for missing items
+            // Start loop to validate and pick items
             foreach (var code in productItemCodes)
             {
+                // Find first matching item that hasn't been picked yet
+                // We search in 'items' list. Since we want to pick unique instances for each code occurrence,
+                // we need to remove the picked item from 'items' list or track used IDs.
+                
                 var item = items.FirstOrDefault(i => i.Code == code);
+                
                 if (item == null)
                 {
+                    // If no item found in remaining list, it means either code is wrong 
+                    // OR we ran out of stock for that code (requested 5, found 4)
                     result.InvalidCodes.Add(code);
-                    errorMessages.Add($"Item '{code}' not found.");
+                    errorMessages.Add($"Item '{code}' not found or insufficient quantity.");
                     continue;
                 }
+
+                // Remove from pool so it's not picked again
+                items.Remove(item);
 
                 // Verify item is currently in the source inventory
                 if (item.InventoryId != sourceInventoryId)
@@ -172,8 +182,6 @@ namespace Relation_IMS.Datas.Repositories
             // Transfer items
             foreach (var item in validItems)
             {
-                item.InventoryId = destinationInventoryId;
-                
                 // Add to transfer details result
                 result.TransferDetails.Add(new TransferItemDetail
                 {
@@ -201,9 +209,21 @@ namespace Relation_IMS.Datas.Repositories
                 SourceInventoryId = sourceInventoryId,
                 DestinationInventoryId = destinationInventoryId,
                 UserId = userId,
-                DateTime = DateTime.UtcNow,
-                ProductItems = validItems // Link the transferred items to this record
+                DateTime = DateTime.UtcNow
             };
+
+            // Link items using Join Entity (Many-to-Many logic)
+            foreach (var item in validItems)
+            {
+                 // Create record item link
+                 transferRecord.TransferItems.Add(new InventoryTransferRecordItem
+                 {
+                     ProductItem = item
+                 });
+
+                 // Update item's current location
+                 item.InventoryId = destinationInventoryId;
+            }
 
             await _context.InventoryTransferRecords.AddAsync(transferRecord);
             await _context.SaveChangesAsync();
@@ -330,6 +350,7 @@ namespace Relation_IMS.Datas.Repositories
                     ProductName = pi.ProductVariant!.Product!.Name,
                     ColorName = pi.ProductVariant.Color!.Name,
                     SizeName = pi.ProductVariant.Size!.Name,
+                    ProductImageUrl = pi.ProductVariant.Product.ImageUrls != null ? pi.ProductVariant.Product.ImageUrls.FirstOrDefault() : null,
                     IsDefected = pi.IsDefected,
                     IsSold = pi.IsSold
                 })
@@ -345,25 +366,29 @@ namespace Relation_IMS.Datas.Repositories
                 .Include(r => r.SourceInventory)
                 .Include(r => r.DestinationInventory)
                 .Include(r => r.User)
-                .Include(r => r.ProductItems)
-                    .ThenInclude(pi => pi.ProductVariant)
-                        .ThenInclude(pv => pv.Product)
-                .Include(r => r.ProductItems)
-                    .ThenInclude(pi => pi.ProductVariant)
-                        .ThenInclude(pv => pv.Color)
-                .Include(r => r.ProductItems)
-                    .ThenInclude(pi => pi.ProductVariant)
-                        .ThenInclude(pv => pv.Size)
+                // Include navigation through Join Table
+                .Include(r => r.TransferItems)
+                    .ThenInclude(ti => ti.ProductItem)
+                        .ThenInclude(pi => pi.ProductVariant)
+                            .ThenInclude(pv => pv.Product)
+                .Include(r => r.TransferItems)
+                    .ThenInclude(ti => ti.ProductItem)
+                        .ThenInclude(pi => pi.ProductVariant)
+                            .ThenInclude(pv => pv.Color)
+                .Include(r => r.TransferItems)
+                    .ThenInclude(ti => ti.ProductItem)
+                        .ThenInclude(pi => pi.ProductVariant)
+                            .ThenInclude(pv => pv.Size)
                 .AsNoTracking();
 
-            // Apply filters based on search term
+            // Apply filters based on search term (Updated to check TransferItems)
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.ToLower();
                 query = query.Where(r => 
-                    r.ProductItems.Any(pi => 
-                        pi.ProductVariant!.Product!.Name.ToLower().Contains(search) || 
-                        pi.Code.ToLower().Contains(search)));
+                    r.TransferItems.Any(ti => 
+                        ti.ProductItem!.ProductVariant!.Product!.Name.ToLower().Contains(search) || 
+                        ti.ProductItem.Code.ToLower().Contains(search)));
             }
 
             if (date.HasValue)
@@ -404,21 +429,20 @@ namespace Relation_IMS.Datas.Repositories
                 DestinationInventoryName = r.DestinationInventory?.Name ?? "Unknown",
                 UserName = r.User != null ? $"{r.User.Firstname} {r.User.Lastname}".Trim() : "Unknown",
                 UserAvatarUrl = null,
-                Items = r.ProductItems
-                    .GroupBy(pi => pi.ProductVariantId)
-                    .Select(g => {
-                        var firstItem = g.First();
-                        return new TransferHistoryItemDTO
-                        {
-                            ProductId = firstItem.ProductVariant!.ProductId,
-                            ProductName = firstItem.ProductVariant.Product!.Name,
-                            ProductSku = firstItem.Code, // Using Item Code as SKU since Product/Variant SKU is missing
-                            ProductImageUrl = firstItem.ProductVariant.Product?.ImageUrls?.FirstOrDefault(), // Use first image from product
-                            ProductVariantId = g.Key,
-                            ColorName = firstItem.ProductVariant.Color?.Name ?? "N/A",
-                            SizeName = firstItem.ProductVariant.Size?.Name ?? "N/A",
-                            Quantity = g.Count()
-                        };
+                Items = r.TransferItems
+                    // Flatten to product items
+                    .Select(ti => ti.ProductItem!) 
+                    // Now simple select each physical item as its own row (frontend will group if needed, or we display all)
+                    .Select(pi => new TransferHistoryItemDTO
+                    {
+                        ProductId = pi.ProductVariant!.ProductId,
+                        ProductName = pi.ProductVariant.Product!.Name,
+                        ProductSku = pi.Code, // Using Item Code/Serial
+                        ProductImageUrl = pi.ProductVariant.Product?.ImageUrls?.FirstOrDefault(),
+                        ProductVariantId = pi.ProductVariantId,
+                        ColorName = pi.ProductVariant.Color?.Name ?? "N/A",
+                        SizeName = pi.ProductVariant.Size?.Name ?? "N/A",
+                        Quantity = 1 
                     }).ToList()
             }).ToList();
 
@@ -442,7 +466,4 @@ namespace Relation_IMS.Datas.Repositories
             return result;
         }
     }
-
-
-
 }

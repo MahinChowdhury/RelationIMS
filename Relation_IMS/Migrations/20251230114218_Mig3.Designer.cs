@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Relation_IMS.Entities;
@@ -12,9 +13,11 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251230114218_Mig3")]
+    partial class Mig3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -466,46 +469,6 @@ namespace Relation_IMS.Migrations
                     b.ToTable("ProductColors");
                 });
 
-            modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductDefect", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DefectDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("ProductItemId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ReportedByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ResolutionAction")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ResolutionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductItemId");
-
-                    b.HasIndex("ReportedByUserId");
-
-                    b.ToTable("ProductDefects");
-                });
-
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductItem", b =>
                 {
                     b.Property<int>("Id")
@@ -766,23 +729,6 @@ namespace Relation_IMS.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductDefect", b =>
-                {
-                    b.HasOne("Relation_IMS.Models.ProductModels.ProductItem", "ProductItem")
-                        .WithMany()
-                        .HasForeignKey("ProductItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Relation_IMS.Models.User", "ReportedByUser")
-                        .WithMany()
-                        .HasForeignKey("ReportedByUserId");
-
-                    b.Navigation("ProductItem");
-
-                    b.Navigation("ReportedByUser");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductItem", b =>

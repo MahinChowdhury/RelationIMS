@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { ProductForm } from './ProductForm';
 import type { Product, StockItem } from '../../types';
 
@@ -110,7 +109,6 @@ export function ProductFormModal({
                 </div>
 
                 <ProductForm
-                    mode={mode}
                     product={product}
                     categories={categories}
                     brands={brands}

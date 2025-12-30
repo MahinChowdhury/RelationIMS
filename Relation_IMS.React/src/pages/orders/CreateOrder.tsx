@@ -48,7 +48,6 @@ export default function CreateOrder() {
 
     // UI State
     const [isScanning, setIsScanning] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [itemLoading, setItemLoading] = useState(false);
 
@@ -265,7 +264,7 @@ export default function CreateOrder() {
             const itemPromises = cart.map(item => {
                 // Find productId from the cached item
                 const originalItem = allItems.find(i => i.Id === item.Id);
-                const productId = originalItem?.ProductVariant?.ProductId || originalItem?.ProductVariant?.Product?.Id || 0;
+                const productId = originalItem?.ProductVariant?.Product?.Id || 0;
 
                 return api.post('/OrderItem', {
                     OrderId: orderId,

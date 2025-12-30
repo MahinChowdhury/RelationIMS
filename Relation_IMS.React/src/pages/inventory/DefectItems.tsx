@@ -282,7 +282,7 @@ export default function DefectItems() {
                                             {defect.Status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 flex items-center gap-2">
+                                    <td className="px-6 py-4 flex items-start gap-2">
                                         <div className="size-6 rounded-full bg-gray-200 flex items-center justify-center font-bold text-[10px] text-gray-500">
                                             {defect.ReportedBy?.substring(0, 2).toUpperCase() || '??'}
                                         </div>
