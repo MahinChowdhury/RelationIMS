@@ -42,7 +42,8 @@ namespace Relation_IMS.Datas.Repositories
             var query = _context.Customers.AsQueryable();
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.Name.ToLower().Contains(search.ToLower()) || p.Phone.Contains(search));
+
             }
 
 

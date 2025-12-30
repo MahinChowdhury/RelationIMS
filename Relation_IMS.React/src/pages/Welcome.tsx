@@ -40,7 +40,7 @@ export default function Welcome() {
                     <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                         <span className="material-symbols-outlined">eco</span>
                     </div>
-                    <span className="text-xl font-bold text-text-main dark:text-white">EcoWear</span>
+                    <span className="text-xl font-bold text-text-main dark:text-white">Relation</span>
                 </div>
             </div>
         </div>
