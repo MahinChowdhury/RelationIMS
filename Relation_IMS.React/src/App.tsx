@@ -17,6 +17,7 @@ import InventoryDetails from './pages/inventory/InventoryDetails';
 import StockIn from './pages/inventory/StockIn';
 import MovementHistory from './pages/inventory/MovementHistory';
 import Welcome from './pages/Welcome';
+import Configuration from './pages/configuration/Configuration';
 
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;
@@ -43,6 +44,7 @@ function App() {
         <Route path="inventory/locations/:id" element={<InventoryDetails />} />
         <Route path="inventory/stock-in" element={<StockIn />} />
         <Route path="inventory/history" element={<MovementHistory />} />
+        <Route path="configuration" element={<Configuration />} />
         {/* Deep link support for products */}
         <Route path="products/:id" element={<ProductDetails />} />
       </Route>

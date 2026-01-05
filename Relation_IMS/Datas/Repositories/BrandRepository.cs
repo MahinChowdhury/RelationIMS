@@ -52,5 +52,16 @@ namespace Relation_IMS.Datas.Repositories
 
             return brand;
         }
+
+        public async Task<Brand?> UpdateBrandAsync(int id, CreateBrandDTO brandDTO)
+        {
+            var brand = await _context.Brands.FindAsync(id);
+            if (brand == null) return null;
+
+            _mapper.Map(brandDTO, brand);
+            await _context.SaveChangesAsync();
+
+            return brand;
+        }
     }
 }

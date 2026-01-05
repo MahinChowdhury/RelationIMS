@@ -33,14 +33,18 @@ interface ProductItem {
 }
 
 interface CartItem {
-    Id: number; // ProductItem Id
+    Id: number; // ProductItem Id of the FIRST scanned item in this group
+    ProductId: number; // Product Id for order creation
     Code: string;
     Name: string;
     VariantDetails: string;
     Price: number;
-    Quantity: number; // Always 1 for unique items usually, but keeping for consistency or if we group
+    Quantity: number;
     Subtotal: number;
     ImageUrl?: string;
+    // New fields for grouping
+    VariantKey?: string;
+    OriginalItemIds: number[]; // Track all ItemIDs in this group
 }
 
 export default function CreateOrder() {
@@ -57,8 +61,7 @@ export default function CreateOrder() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
 
-    // Product Item Cache (Since no search API)
-    const [allItems, setAllItems] = useState<ProductItem[]>([]);
+    // Product Item Cache (Since no search API) - REMOVED
     const [productSearch, setProductSearch] = useState('');
     const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -76,25 +79,6 @@ export default function CreateOrder() {
     const subtotal = cart.reduce((acc, item) => acc + item.Subtotal, 0);
     const netAmount = Math.max(0, subtotal - discount);
     const dueAmount = Math.max(0, netAmount - paidAmount);
-
-    // --- Init: Fetch All Product Items for Client-Side Lookups ---
-    useEffect(() => {
-        const fetchItems = async () => {
-            setItemLoading(true);
-            try {
-                const res = await api.get<ProductItem[]>('/ProductItem');
-                // Filter out sold/defected items? Maybe? 
-                // Assuming we can only sell available items.
-                const available = res.data.filter(i => !i.IsSold && !i.IsDefected);
-                setAllItems(available);
-            } catch (err) {
-                console.error("Failed to load product items", err);
-            } finally {
-                setItemLoading(false);
-            }
-        };
-        fetchItems();
-    }, []);
 
     // --- Customer Search ---
     useEffect(() => {
@@ -151,22 +135,28 @@ export default function CreateOrder() {
     }, []);
 
 
-    // --- Product Search Logic (Client Side) ---
-    const handleProductSearch = (term: string) => {
+    // --- Product Search Logic (Server Side) ---
+    const handleProductSearch = async (term: string) => {
         if (!term) return;
 
         const code = term.trim();
+        setItemLoading(true);
 
-        // Check if already in cart
-        if (cart.some(c => c.Code === code)) {
-            alert(`Item ${code} is already in the cart.`);
-            setProductSearch('');
-            return;
-        }
+        try {
+            // 1. Check if specific item already scanned? 
+            // The requirement says "if multiple productItems of a same product scanned.. it should be grouped together and increase quantity"
+            // So we need to fetch the item details first to know its Product/Variant.
 
-        const found = allItems.find(i => i.Code === code);
+            const res = await api.get<ProductItem>(`/ProductItem/code/${code}`);
+            const found = res.data;
 
-        if (found) {
+            if (found.IsSold || found.IsDefected) {
+                alert(`Item with code '${code}' is already Sold or Defected.`);
+                setItemLoading(false);
+                setProductSearch('');
+                return;
+            }
+
             // Map to Cart Item
             const product = found.ProductVariant?.Product;
             const variant = found.ProductVariant;
@@ -179,23 +169,73 @@ export default function CreateOrder() {
             const size = variant?.Size?.Name || "";
             const details = [color, size].filter(Boolean).join(" / ");
 
-            const newItem: CartItem = {
-                Id: found.Id, // ProductItem ID
-                Code: found.Code,
-                Name: name,
-                VariantDetails: details,
-                Price: price,
-                Quantity: 1, // Unique item
-                Subtotal: price,
-                ImageUrl: imageUrl
-            };
+            // Grouping Logic: 
+            // We group by ProductVariantId (or ProductId if no variants used).
+            // But wait, the CartItem needs to track WHICH specific items were added if we want to mark them sold?
+            // "if multiple productItems of a same product scanned.. it should be grouped together"
+            // This implies the Order Items view is AGGREGATED.
+            // But we must remember the individual Item Ids to handle the transaction if needed?
+            // The User Request says "add that product item in the orderitems api".
+            // If the Order API only takes `ProductId`, we lose the specific Item Serial.
+            // However, for the display in "Order Items section.. it must show detail of the product.. grouped together".
 
-            setCart(prev => [newItem, ...prev]);
+            // So I will Aggregate in the Cart State using a unique Key (e.g. VariantId).
+            // I'll keep a list of `OriginalItemIds` in the cart item to track which specific items make up this quantity.
+
+            const groupKey = variant?.Id ? `v-${variant.Id}` : `p-${product?.Id}`;
+
+            setCart(prev => {
+                const existingIndex = prev.findIndex(item => item.VariantKey === groupKey);
+
+                if (existingIndex >= 0) {
+                    // Update existing
+                    const existing = prev[existingIndex];
+
+                    // Check if this specific serial is already in the aggregated list (prevent double scan of same item)
+                    if (existing.OriginalItemIds.includes(found.Id)) {
+                        alert(`Item ${code} is already in the cart.`);
+                        return prev;
+                    }
+
+                    const updatedItems = [...prev];
+                    updatedItems[existingIndex] = {
+                        ...existing,
+                        Quantity: existing.Quantity + 1,
+                        Subtotal: (existing.Quantity + 1) * existing.Price,
+                        OriginalItemIds: [...existing.OriginalItemIds, found.Id]
+                    };
+                    return updatedItems;
+                } else {
+                    // Add new
+                    const newItem: CartItem = {
+                        Id: found.Id, // Primary ID (arbitrary one of them)
+                        ProductId: product?.Id || 0,
+                        Code: found.Code, // Display code of the first one
+                        Name: name,
+                        VariantDetails: details,
+                        Price: price,
+                        Quantity: 1,
+                        Subtotal: price,
+                        ImageUrl: imageUrl,
+                        VariantKey: groupKey,
+                        OriginalItemIds: [found.Id]
+                    };
+                    return [newItem, ...prev];
+                }
+            });
+
             setProductSearch('');
 
-            // Visual feedback could go here
-        } else {
-            alert(`Item with code '${code}' not found or unavailable.`);
+        } catch (err) {
+            console.error("Product lookup failed", err);
+            // Check for 404
+            if ((err as any)?.response?.status === 404) {
+                alert(`Item with code '${code}' not found.`);
+            } else {
+                alert('Error searching for product.');
+            }
+        } finally {
+            setItemLoading(false);
         }
     };
 
@@ -254,22 +294,12 @@ export default function CreateOrder() {
             // NOTE: This might mean the specific serial code isn't stored in the order, 
             // which might be a gap in the current API vs User Requirement.
             // I will implement using the existing API but pass the ProductID.
-            // I'll calculate total quantity for the same ProductID if multiple unique items of same product are added?
-            // OR create separate line items. Separate is safer for now.
-
-            // Wait, if I sell `PV-1-A` and `PV-1-B` (both Product ID 1), I should tell the backend.
-            // If the DTO doesn't support it, I can't.
-            // For now, I will map the correct ProductId.
 
             const itemPromises = cart.map(item => {
-                // Find productId from the cached item
-                const originalItem = allItems.find(i => i.Id === item.Id);
-                const productId = originalItem?.ProductVariant?.Product?.Id || 0;
-
                 return api.post('/OrderItem', {
                     OrderId: orderId,
-                    ProductId: productId,
-                    Quantity: 1, // Since we are scanning unique items
+                    ProductId: item.ProductId,
+                    Quantity: item.Quantity,
                     UnitPrice: item.Price,
                     Subtotal: item.Subtotal
                 });

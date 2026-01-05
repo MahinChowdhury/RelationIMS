@@ -56,8 +56,24 @@ namespace Relation_IMS.Datas.Repositories
         {
             var item = await _context.ProductItems
                 .Include(x => x.ProductVariant)
+                    .ThenInclude(v => v.Product)
                 .Include(x => x.Inventory)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
+            return item;
+        }
+
+        public async Task<ProductItem?> GetProductItemByCodeAsync(string code)
+        {
+            var item = await _context.ProductItems
+                .Include(x => x.ProductVariant)
+                    .ThenInclude(v => v.Product)
+                .Include(x => x.ProductVariant)
+                    .ThenInclude(v => v.Color)
+                .Include(x => x.ProductVariant)
+                    .ThenInclude(v => v.Size)
+                .Include(x => x.Inventory)
+                .FirstOrDefaultAsync(x => x.Code == code);
 
             return item;
         }

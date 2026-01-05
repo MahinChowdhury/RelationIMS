@@ -57,5 +57,29 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             }
             return Ok(deleted);
         }
+
+        [HttpGet]
+        public async Task<ActionResult<List<ProductSize>>> GetAllSizesAsync()
+        {
+            var sizes = await _repo.GetAllSizesAsync();
+            if (sizes == null) return NotFound();
+            return Ok(sizes);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<ProductSize>> UpdateProductSize([FromRoute] int id, [FromBody] CreateNewProductSizeDTO sizeDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _repo.UpdateSizeForProductAsync(id, sizeDTO);
+
+            if (updated == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(updated);
+        }
     }
 }

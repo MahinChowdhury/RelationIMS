@@ -57,5 +57,21 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
             return size;
         }
+
+        public async Task<List<ProductSize>?> GetAllSizesAsync()
+        {
+            return await _context.ProductSizes.ToListAsync();
+        }
+
+        public async Task<ProductSize?> UpdateSizeForProductAsync(int id, CreateNewProductSizeDTO productSize)
+        {
+            var size = await _context.ProductSizes.FindAsync(id);
+            if (size == null) return null;
+
+            _mapper.Map(productSize, size);
+            await _context.SaveChangesAsync();
+
+            return size;
+        }
     }
 }

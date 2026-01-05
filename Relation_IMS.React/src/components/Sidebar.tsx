@@ -79,14 +79,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     {/* Bottom Section */}
                     <div className="flex flex-col gap-1 border-t border-gray-100 dark:border-[#2a4032] pt-4">
                         <Link
-                            to="/settings"
+                            to="/configuration"
                             onClick={onClose}
                             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
                         >
                             <span className="material-symbols-outlined text-gray-500 group-hover:text-primary dark:text-gray-400">
-                                settings
+                                tune
                             </span>
-                            <span className="text-sm font-medium">Settings</span>
+                            <span className="text-sm font-medium">Configuration</span>
                         </Link>
 
                         <div className="flex items-center gap-3 px-3 py-2.5 mt-2">

@@ -57,5 +57,21 @@ namespace Relation_IMS.Controllers
             return CreatedAtAction(nameof(GetBrandById), new { id = created.Id }, created);
         }
 
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<Brand>> UpdateBrand([FromRoute] int id, [FromBody] CreateBrandDTO brandDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _repo.UpdateBrandAsync(id, brandDTO);
+
+            if (updated == null)
+            {
+                return NotFound(new { Message = $"Brand with Id : {id} not found" });
+            }
+
+            return Ok(updated);
+        }
+
     }
 }

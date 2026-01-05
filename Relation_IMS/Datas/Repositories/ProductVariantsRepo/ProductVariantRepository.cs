@@ -140,5 +140,36 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
                 .ToListAsync();
             return variants;
         }
+
+        public async Task<List<ProductItem>> AddStockAsync(int variantId, int quantity, int inventoryId)
+        {
+            var variant = await _context.ProductVariants.FindAsync(variantId);
+            if (variant == null) return new List<ProductItem>();
+
+            // Use factory to build new items with unique codes
+            var productItems = _factory.BuildItems(
+                productVariantId: variantId,
+                quantity: quantity,
+                defaultInventoryId: inventoryId
+            );
+
+            await _context.ProductItems.AddRangeAsync(productItems);
+            await _context.SaveChangesAsync();
+
+            // Update Product Total Quantity
+            var product = await _context.Products
+                .Include(p => p.Variants!)
+                    .ThenInclude(v => v.ProductItems)
+                .FirstOrDefaultAsync(x => x.Id == variant.ProductId);
+
+            if (product != null)
+            {
+                product.TotalQuantity = product.Variants!
+                    .Sum(v => v.ProductItems?.Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0);
+                await _context.SaveChangesAsync();
+            }
+
+            return productItems;
+        }
     }
 }

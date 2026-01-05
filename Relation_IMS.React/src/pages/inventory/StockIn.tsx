@@ -31,15 +31,127 @@ export default function StockIn() {
     const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
     const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
 
+    // Existing Product State
+    const [foundProduct, setFoundProduct] = useState<Product | null>(null);
+    const [loadingProduct, setLoadingProduct] = useState(false);
+    const [addStockQuantities, setAddStockQuantities] = useState<{ [variantId: number]: number }>({});
+
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [showScanner, setShowScanner] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const handleScan = (code: string) => {
+    const handleScan = async (code: string) => {
         setSearchQuery(code);
         setShowScanner(false);
-        // Here you would typically trigger the search automatically
+        handleSearch(code);
+    };
+
+    const [newVariantsToCreate, setNewVariantsToCreate] = useState<any[]>([]);
+
+    const handleSearch = async (term: string, isUpdate: boolean = false) => {
+        if (!term) return;
+
+        if (!isUpdate) {
+            setLoadingProduct(true);
+            setFoundProduct(null);
+            setAddStockQuantities({});
+            setNewVariantsToCreate([]);
+        }
+
+        try {
+            // 1. Find Item by Code
+            let productId = isUpdate && foundProduct ? foundProduct.Id : 0;
+
+            if (!productId) {
+                // Try to find by Item Code first
+                try {
+                    const itemRes = await api.get<any>(`/ProductItem/code/${term}`);
+                    if (itemRes.data && itemRes.data.ProductVariant) {
+                        productId = itemRes.data.ProductVariant.ProductId;
+                    }
+                } catch (e) {
+                    console.log("Not found by item code");
+                }
+
+                if (!productId) {
+                    // Fallback: Check if term is a numeric ID (Product ID)
+                    if (!isNaN(Number(term))) {
+                        productId = Number(term);
+                    } else {
+                        alert("Product not found with this code.");
+                        setLoadingProduct(false);
+                        return;
+                    }
+                }
+            }
+
+            // 2. Load Full Product Details
+            const productRes = await api.get<Product>(`/Product/${productId}`);
+            setFoundProduct(productRes.data);
+
+            // 3. Load Available Sizes for this Product's Category
+            if (productRes.data.CategoryId) {
+                onCategoryChange(productRes.data.CategoryId);
+            }
+
+        } catch (err) {
+            console.error(err);
+            if (!isUpdate) alert("Failed to load product details.");
+        } finally {
+            setLoadingProduct(false);
+        }
+    };
+
+    const handleAddStockChange = (variantId: number, qty: string) => {
+        const val = parseInt(qty) || 0;
+        setAddStockQuantities(prev => ({ ...prev, [variantId]: val }));
+    };
+
+    const submitAddStock = async () => {
+        if (!foundProduct) return;
+
+        const updates = Object.entries(addStockQuantities).filter(([_, qty]) => qty > 0);
+
+        if (updates.length === 0 && newVariantsToCreate.length === 0) {
+            alert("No changes to save.");
+            return;
+        }
+
+        try {
+            setLoadingProduct(true);
+
+            // 1. Update existing variants
+            for (const [variantIdStr, qty] of updates) {
+                const variantId = parseInt(variantIdStr);
+                await api.post(`/ProductVariants/${variantId}/stock`, {
+                    Quantity: qty,
+                    InventoryId: 1
+                });
+            }
+
+            // 2. Create new variants
+            for (const v of newVariantsToCreate) {
+                await api.post('/ProductVariants', {
+                    ProductId: foundProduct.Id,
+                    ProductColorId: v.colorId,
+                    ProductSizeId: v.sizeId,
+                    VariantPrice: foundProduct.BasePrice,
+                    Quantity: v.quantity,
+                    DefaultInventoryId: 1
+                });
+            }
+
+            alert("Updates saved successfully!");
+            setAddStockQuantities({});
+            setNewVariantsToCreate([]);
+            handleSearch(searchQuery, true);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to save updates.");
+        } finally {
+            setLoadingProduct(false);
+        }
     };
 
     useEffect(() => {
@@ -165,6 +277,38 @@ export default function StockIn() {
         }
     };
 
+    const [newVariant, setNewVariant] = useState({ colorId: 0, sizeId: 0, quantity: 1 });
+
+    const addVariantToCreate = () => {
+        if (!foundProduct || !newVariant.colorId || !newVariant.sizeId) {
+            alert("Please select both color and size.");
+            return;
+        }
+
+        const color = colors.find(c => c.id === newVariant.colorId);
+        const size = availableSizes.find(s => s.id === newVariant.sizeId);
+
+        // Check if already in foundProduct or in buffer
+        const existsInProduct = foundProduct.Variants?.find((v: any) => v.ProductColorId === newVariant.colorId && v.ProductSizeId === newVariant.sizeId);
+        const existsInBuffer = newVariantsToCreate.find(v => v.colorId === newVariant.colorId && v.sizeId === newVariant.sizeId);
+
+        if (existsInProduct || existsInBuffer) {
+            alert("This variant already exists or is already added to the list.");
+            return;
+        }
+
+        setNewVariantsToCreate(prev => [...prev, {
+            ...newVariant,
+            colorName: color?.name,
+            sizeName: size?.name
+        }]);
+        setNewVariant({ colorId: 0, sizeId: 0, quantity: 1 });
+    };
+
+    const removeNewVariant = (index: number) => {
+        setNewVariantsToCreate(prev => prev.filter((_, i) => i !== index));
+    };
+
     const getColorHex = (name: string) => colors.find(c => c.name === name)?.hex || null;
 
     return (
@@ -240,41 +384,191 @@ export default function StockIn() {
                         {activeTab === 'existing' ? (
                             <div className="flex flex-col gap-6 animate-fadeIn">
                                 {/* Search Section */}
-                                <div className="flex flex-col gap-4">
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                            <span className="material-symbols-outlined text-gray-400 text-[24px]">search</span>
-                                        </div>
+                                <div className="flex flex-col gap-4 relative">
+                                    <div className="flex gap-2 w-full">
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-lg rounded-xl focus:ring-[#17cf54] focus:border-[#17cf54] block w-full pl-12 p-4 placeholder-gray-400 shadow-sm transition-all"
-                                            placeholder="Scan barcode or search by name/SKU..."
+                                            placeholder="Scan item code (PV-...) or Enter Product ID..."
                                             autoFocus
                                         />
                                         <button
+                                            onClick={() => handleSearch(searchQuery)}
+                                            className="px-6 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-xl font-bold transition-colors"
+                                        >
+                                            Search
+                                        </button>
+                                    </div>
+                                    <div className="absolute right-0 top-0 h-full flex items-center pr-2">
+                                        <button
                                             onClick={() => setShowScanner(true)}
-                                            className="absolute inset-y-2 right-2 px-4 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-sm transition-colors flex items-center gap-2"
+                                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-300 mr-28 mt-2"
                                         >
                                             <span className="material-symbols-outlined text-[18px]">barcode_scanner</span>
-                                            Scan
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Recent / Empty State */}
-                                <div className="flex flex-col items-center justify-center py-12 text-center gap-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50/50 dark:bg-white/5">
-                                    <div className="w-16 h-16 bg-white dark:bg-white/10 rounded-full flex items-center justify-center shadow-sm">
-                                        <span className="material-symbols-outlined text-3xl text-gray-400">qr_code_scanner</span>
+
+                                {loadingProduct && <div className="text-center py-10 font-bold text-gray-400">Loading Product...</div>}
+
+                                {foundProduct && (
+                                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 animate-fadeIn">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
+                                                <p className="text-sm text-gray-500">{foundProduct.Category?.Name} • {foundProduct.Brand?.Name}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs uppercase font-bold text-gray-400">Total Stock</p>
+                                                <p className="text-2xl font-black text-[#17cf54]">{foundProduct.TotalQuantity}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-gray-50 dark:bg-white/5 text-gray-500 font-medium">
+                                                    <tr>
+                                                        <th className="px-4 py-3 rounded-l-lg">Variant</th>
+                                                        <th className="px-4 py-3 text-center">Current Stock</th>
+                                                        <th className="px-4 py-3 text-center">Defects</th>
+                                                        <th className="px-4 py-3 text-center rounded-r-lg w-48">Add Stock</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100 dark:divide-white/10">
+                                                    {foundProduct.Variants?.map(variant => (
+                                                        <tr key={variant.Id}>
+                                                            <td className="px-4 py-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    {variant.Color && (
+                                                                        <span className="w-4 h-4 rounded-full border border-gray-200 shadow-sm" style={{ backgroundColor: variant.Color.HexCode }} title={variant.Color.Name}></span>
+                                                                    )}
+                                                                    <span className="font-bold text-text-main dark:text-white">
+                                                                        {variant.Size?.Name}
+                                                                        {variant.Color && <span className="font-normal text-gray-400 ml-1">({variant.Color.Name})</span>}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center font-mono font-bold">{variant.Quantity}</td>
+                                                            <td className="px-4 py-3 text-center text-red-400">{variant.Defects}</td>
+                                                            <td className="px-4 py-3">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    className="w-full bg-[#f8fcf9] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-center font-bold focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                                    placeholder="+0"
+                                                                    value={addStockQuantities[variant.Id] || ''}
+                                                                    onChange={(e) => handleAddStockChange(variant.Id, e.target.value)}
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+
+                                                    {/* Buffered New Variants */}
+                                                    {newVariantsToCreate.map((v, idx) => (
+                                                        <tr key={`new-${idx}`} className="bg-green-50/50 dark:bg-green-900/10">
+                                                            <td className="px-4 py-3 font-bold text-text-main dark:text-white">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="w-4 h-4 rounded-full border border-gray-200 shadow-sm" style={{ backgroundColor: colors.find(c => c.id === v.colorId)?.hex || '#ccc' }}></span>
+                                                                    {v.sizeName} ({v.colorName})
+                                                                    <span className="ml-2 text-[10px] bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded font-black uppercase">Pending</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center font-mono text-gray-400">—</td>
+                                                            <td className="px-4 py-3 text-center text-gray-400">—</td>
+                                                            <td className="px-4 py-3 flex items-center gap-2">
+                                                                <div className="flex-1 text-center font-black text-[#17cf54] text-lg">+{v.quantity}</div>
+                                                                <button
+                                                                    onClick={() => removeNewVariant(idx)}
+                                                                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div className="mt-6 flex justify-end">
+                                            <button
+                                                onClick={submitAddStock}
+                                                className="px-6 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-xl font-bold shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
+                                            >
+                                                <span className="material-symbols-outlined">add_box</span>
+                                                Update Stock
+                                            </button>
+                                        </div>
+
+                                        <div className="mt-8 pt-8 border-t border-gray-100 dark:border-white/10">
+                                            <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white mb-4">Add New Variant</h3>
+                                            <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-100 dark:border-white/10 flex flex-col md:flex-row gap-4 items-end">
+                                                <div className="flex-1 w-full">
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Color</label>
+                                                    <select
+                                                        value={newVariant.colorId}
+                                                        onChange={(e) => setNewVariant({ ...newVariant, colorId: Number(e.target.value) })}
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                    >
+                                                        <option value={0}>Select Color</option>
+                                                        {colors.map(c => (
+                                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="flex-1 w-full">
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Size</label>
+                                                    <select
+                                                        value={newVariant.sizeId}
+                                                        onChange={(e) => setNewVariant({ ...newVariant, sizeId: Number(e.target.value) })}
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                    >
+                                                        <option value={0}>Select Size</option>
+                                                        {availableSizes.map(s => (
+                                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="w-full md:w-32">
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Quantity</label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={newVariant.quantity}
+                                                        onChange={(e) => setNewVariant({ ...newVariant, quantity: Number(e.target.value) })}
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-bold text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={addVariantToCreate}
+                                                    className="w-full md:w-auto px-6 py-2 bg-[#4e9767] hover:bg-[#3d7a52] text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 h-[38px]"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">add_task</span>
+                                                    Add to List
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="max-w-xs">
-                                        <h3 className="text-base font-bold text-[#0e1b12] dark:text-white">Ready to Scan</h3>
-                                        <p className="text-sm text-[#4e9767] dark:text-gray-400 mt-1">
-                                            Scan a product barcode or enter a SKU to register new stock.
-                                        </p>
+                                )}
+
+                                {/* Recent / Empty State - Show only if no product found */}
+                                {!foundProduct && !loadingProduct && (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center gap-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50/50 dark:bg-white/5">
+                                        <div className="w-16 h-16 bg-white dark:bg-white/10 rounded-full flex items-center justify-center shadow-sm">
+                                            <span className="material-symbols-outlined text-3xl text-gray-400">qr_code_scanner</span>
+                                        </div>
+                                        <div className="max-w-xs">
+                                            <h3 className="text-base font-bold text-[#0e1b12] dark:text-white">Ready to Scan</h3>
+                                            <p className="text-sm text-[#4e9767] dark:text-gray-400 mt-1">
+                                                Scan a product barcode or enter a SKU to register new stock.
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {showScanner && (
                                     <BarcodeScanner

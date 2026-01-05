@@ -58,5 +58,16 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
             return color;
         }
+
+        public async Task<ProductColor?> UpdateColorForProductAsync(int id, CreateNewProductColorDTO productColor)
+        {
+            var color = await _context.ProductColors.FindAsync(id);
+            if (color == null) return null;
+
+            _mapper.Map(productColor, color);
+            await _context.SaveChangesAsync();
+
+            return color;
+        }
     }
 }

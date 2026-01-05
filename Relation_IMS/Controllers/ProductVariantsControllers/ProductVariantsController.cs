@@ -77,6 +77,16 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             return Ok(variants);
         }
 
+        [HttpPost("{id:int}/stock")]
+        public async Task<ActionResult<List<ProductItem>>> AddStock([FromRoute] int id, [FromBody] AddStockDTO stockDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var items = await _repo.AddStockAsync(id, stockDto.Quantity, stockDto.InventoryId);
+            return Ok(items);
+        }
+
 
     }
 }

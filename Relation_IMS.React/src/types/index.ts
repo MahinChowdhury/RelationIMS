@@ -22,6 +22,7 @@ export interface Product {
         Id: number;
         Name: string;
     };
+    Variants?: any[]; // Using any[] for now to avoid circular deps or complex typing here, or bring in Variant type
 }
 // --- Customers ---
 export const PaymentStatus = {

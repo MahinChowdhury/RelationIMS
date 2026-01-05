@@ -58,5 +58,21 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
 
             return Ok(deleted);
         }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<ProductColor>> UpdateProductColor([FromRoute] int id, [FromBody] CreateNewProductColorDTO colorDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _repo.UpdateColorForProductAsync(id, colorDTO);
+
+            if (updated == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(updated);
+        }
     }
 }
