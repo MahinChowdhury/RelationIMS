@@ -20,7 +20,14 @@ namespace Relation_IMS.Models.OrderModels
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "unit price is required.")]
         [Range(0, double.MaxValue)]
-        public double UnitPrice { get; set; }
+        public decimal UnitPrice { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Required(ErrorMessage = "Cost price is required.")]
+        [Range(0, double.MaxValue)]
+        public decimal CostPrice { get; set; } = 0.0m;
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal Discount { get; set; } = 0.0m;
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "SubTotal amount is required.")]
         [Range(0, double.MaxValue)]

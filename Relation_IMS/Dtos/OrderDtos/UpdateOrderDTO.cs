@@ -12,14 +12,17 @@ namespace Relation_IMS.Dtos.OrderDtos
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "Total order price amount is required.")]
         [Range(0, double.MaxValue)]
-        public double TotalAmount { get; set; } = 0.0;
+        public decimal TotalAmount { get; set; } = 0.0m;
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
-        public double Discount { get; set; } = 0.0;
+        public decimal Discount { get; set; } = 0.0m;
         [Required(ErrorMessage = "Net amount is required.")]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
-        public double NetAmount { get; set; } = 0.0;
+        public decimal NetAmount { get; set; } = 0.0m;
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal PaidAmount { get; set; } = 0.0m;
         [Required(ErrorMessage = "Payment status is required.")]
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
         [Required(ErrorMessage = "UserId is required.")]

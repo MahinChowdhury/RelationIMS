@@ -273,7 +273,9 @@ export default function OrdersPage() {
                         {/* Discount */}
                         <div className="flex items-center justify-between lg:block lg:w-[90px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Discount</span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">৳{order.Discount.toFixed(2)}</span>
+                            <span className={`text-sm ${order.Discount > 0 ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                                {order.Discount > 0 ? '-' : ''}৳{order.Discount.toFixed(2)}
+                            </span>
                         </div>
 
                         {/* Net Amount */}
@@ -286,7 +288,7 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Paid Amt</span>
                             <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                ৳{(order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0).toFixed(2)}
+                                ৳{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(2)}
                             </span>
                         </div>
 
@@ -294,7 +296,7 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Due Amt</span>
                             <span className="text-sm font-medium text-red-500 dark:text-red-400">
-                                ৳{(order.PaymentStatus === PaymentStatus.Paid ? 0 : order.NetAmount).toFixed(2)}
+                                ৳{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
                             </span>
                         </div>
 

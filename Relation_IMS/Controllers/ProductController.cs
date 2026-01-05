@@ -55,6 +55,8 @@ namespace Relation_IMS.Controllers
                 Name = productFormDto.Name,
                 Description = productFormDto.Description,
                 BasePrice = productFormDto.BasePrice,
+                CostPrice = productFormDto.CostPrice,
+                MSRP = productFormDto.MSRP,
                 BrandId = productFormDto.BrandId,
                 CategoryId = productFormDto.CategoryId,
                 ImageUrls = new List<string>() // Initially empty, will be updated by background job

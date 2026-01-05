@@ -244,6 +244,19 @@ export default function CreateOrder() {
         setCart(prev => prev.filter(item => item.Id !== id));
     };
 
+    const updatePrice = (id: number, newPrice: number) => {
+        setCart(prev => prev.map(item => {
+            if (item.Id === id) {
+                return {
+                    ...item,
+                    Price: newPrice,
+                    Subtotal: newPrice * item.Quantity
+                };
+            }
+            return item;
+        }));
+    };
+
 
     // --- Order Submission ---
     const handleSubmit = async () => {
@@ -264,6 +277,7 @@ export default function CreateOrder() {
                 TotalAmount: subtotal,
                 Discount: discount,
                 NetAmount: netAmount,
+                PaidAmount: paidAmount,
                 PaymentStatus: paidAmount >= netAmount ? 2 : (paidAmount > 0 ? 1 : 0),
                 UserId: 1, // Hardcoded
                 Remarks: notes
@@ -515,7 +529,17 @@ export default function CreateOrder() {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-right text-text-main dark:text-gray-200 font-medium">${item.Price.toFixed(2)}</td>
+                                                <td className="px-6 py-4 text-right text-text-main dark:text-gray-200 font-medium">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        <span className="text-gray-400 text-xs">$</span>
+                                                        <input
+                                                            type="number"
+                                                            className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none"
+                                                            value={item.Price}
+                                                            onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
+                                                        />
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {/* Lock Quantity to 1 for unique items per row, or assume we can't change it for unique scans without removing */}

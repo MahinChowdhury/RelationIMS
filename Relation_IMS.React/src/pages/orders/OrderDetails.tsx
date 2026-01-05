@@ -103,7 +103,7 @@ export default function OrderDetailsPage() {
         );
     }
 
-    const paidAmount = order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : (order.PaymentStatus === PaymentStatus.Partial ? order.NetAmount / 2 : 0);
+    const paidAmount = order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : (order.PaymentStatus === PaymentStatus.Partial ? order.NetAmount / 2 : 0));
     const dueAmount = order.NetAmount - paidAmount;
     const paidPercentage = order.NetAmount > 0 ? (paidAmount / order.NetAmount) * 100 : 0;
 
@@ -262,7 +262,9 @@ export default function OrderDetailsPage() {
                             <thead className="bg-[#f8fcf9] dark:bg-white/5 text-text-secondary font-medium">
                                 <tr>
                                     <th className="px-6 py-3">Product</th>
-                                    <th className="px-6 py-3">Price</th>
+                                    <th className="px-6 py-3">List Price</th>
+                                    <th className="px-6 py-3">Sold Price</th>
+                                    <th className="px-6 py-3">Discount</th>
                                     <th className="px-6 py-3 text-center">Quantity</th>
                                     <th className="px-6 py-3 text-right">Total</th>
                                 </tr>
@@ -290,7 +292,15 @@ export default function OrderDetailsPage() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-text-main dark:text-gray-200 font-medium">৳{item.UnitPrice.toFixed(2)}</td>
+                                            <td className="px-6 py-4 text-text-secondary">
+                                                <div className="flex flex-col">
+                                                    <span className="line-through text-xs">৳{(item.UnitPrice + (item.Discount || 0)).toFixed(2)}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-text-main dark:text-gray-200 font-bold">৳{item.UnitPrice.toFixed(2)}</td>
+                                            <td className="px-6 py-4 text-red-500 font-medium">
+                                                {item.Discount > 0 ? `-৳${item.Discount.toFixed(2)}` : '-'}
+                                            </td>
                                             <td className="px-6 py-4 text-center text-text-main dark:text-gray-200">{item.Quantity}</td>
                                             <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">৳{item.Subtotal.toFixed(2)}</td>
                                         </tr>

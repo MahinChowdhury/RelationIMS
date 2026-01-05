@@ -69,7 +69,9 @@ namespace Relation_IMS.Datas.Repositories
 
         public async Task<Order?> GetOrderByIdAsync(int id)
         {
-            var order = await _context.Orders.Include(x => x.OrderItems)
+            var order = await _context.Orders
+                .Include(x => x.OrderItems)
+                .Include(x => x.Customer)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (order == null) return null;

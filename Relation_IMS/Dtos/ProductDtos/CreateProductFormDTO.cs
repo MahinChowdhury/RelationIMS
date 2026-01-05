@@ -12,7 +12,13 @@ namespace Relation_IMS.Dtos.ProductDtos
         public string? Description { get; set; }
         
         [Range(0, double.MaxValue)]
-        public double BasePrice { get; set; } = 0.0;
+        public decimal BasePrice { get; set; } = 0.0m;
+
+        [Range(0, double.MaxValue)]
+        public decimal CostPrice { get; set; } = 0.0m;
+
+        [Range(0, double.MaxValue)]
+        public decimal MSRP { get; set; } = 0.0m;
         
         [Required(ErrorMessage = "Category Id is required.")]
         public int CategoryId { get; set; }

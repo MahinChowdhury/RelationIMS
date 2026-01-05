@@ -12,7 +12,13 @@ namespace Relation_IMS.Dtos.ProductDtos
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
         [Required(ErrorMessage = "Product Price is required.")]
-        public double BasePrice { get; set; }
+        public decimal BasePrice { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal CostPrice { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal MSRP { get; set; }
         [Required(ErrorMessage = "Category Id is required.")]
         public int CategoryId { get; set; }
         [Required(ErrorMessage = "Brand Id is required.")]

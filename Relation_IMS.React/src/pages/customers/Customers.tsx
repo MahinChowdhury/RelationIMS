@@ -96,10 +96,8 @@ export default function CustomersPage() {
     const getStats = (c: Customer) => {
         const orders = c.Orders || [];
         const totalSpent = orders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
-        // Assuming PaymentStatus 'Paid' is 2.
-        const dueAmount = orders
-            .filter(o => o.PaymentStatus !== 2)
-            .reduce((sum, o) => sum + (o.NetAmount || 0), 0);
+        const dueAmount = orders.reduce((sum, o) =>
+            sum + (o.NetAmount - (o.PaidAmount ?? (o.PaymentStatus === 2 ? o.NetAmount : 0))), 0);
 
         return { totalSpent, dueAmount, orderCount: orders.length };
     };

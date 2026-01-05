@@ -5,11 +5,40 @@ export interface StockItem {
     quantity: number;
 }
 
+export interface ProductColor {
+    Id: number;
+    Name: string;
+    HexCode: string;
+}
+
+export interface ProductSize {
+    Id: number;
+    Name: string;
+    CategoryId: number;
+}
+
+export interface ProductVariant {
+    Id: number;
+    ProductId: number;
+    ProductColorId: number;
+    Color?: ProductColor;
+    ProductSizeId: number;
+    Size?: ProductSize;
+    VariantPrice: number;
+    CostPrice: number;
+    MSRP: number;
+    Quantity: number;
+    Defects: number;
+    ProductItems?: any[];
+}
+
 export interface Product {
     Id: number;
     Name: string;
     Description: string;
     BasePrice: number;
+    CostPrice: number;
+    MSRP: number;
     CategoryId: number; // API refs suggest numbers but safe to handle strings
     BrandId: number;
     ImageUrls?: string[];
@@ -22,7 +51,7 @@ export interface Product {
         Id: number;
         Name: string;
     };
-    Variants?: any[]; // Using any[] for now to avoid circular deps or complex typing here, or bring in Variant type
+    Variants?: ProductVariant[];
 }
 // --- Customers ---
 export const PaymentStatus = {
@@ -40,6 +69,8 @@ export interface OrderItem {
     Product?: Product;
     Quantity: number;
     UnitPrice: number;
+    CostPrice?: number;
+    Discount?: number;
     Subtotal: number;
 }
 
@@ -51,6 +82,7 @@ export interface Order {
     TotalAmount: number;
     Discount: number;
     NetAmount: number;
+    PaidAmount: number;
     PaymentStatus: PaymentStatus;
     UserId: number;
     User?: any;
@@ -78,6 +110,13 @@ export interface InventoryStock {
         ProductItems: any[];
     };
     Quantity: number;
+}
+
+export interface Inventory {
+    Id: number;
+    Name: string;
+    Description?: string;
+    ProductItems?: any[];
 }
 export interface ScannedItem {
     id: string; // unique scan id

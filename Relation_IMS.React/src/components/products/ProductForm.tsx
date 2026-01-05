@@ -137,6 +137,28 @@ export function ProductForm({
                             placeholder="0.00"
                         />
                     </div>
+                    <div>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Cost Price ($)</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={product.CostPrice}
+                            onChange={(e) => onChange('CostPrice', parseFloat(e.target.value))}
+                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
+                            placeholder="0.00"
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">MSRP ($)</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={product.MSRP}
+                            onChange={(e) => onChange('MSRP', parseFloat(e.target.value))}
+                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
+                            placeholder="0.00"
+                        />
+                    </div>
                 </div>
             </div>
 

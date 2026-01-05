@@ -346,8 +346,11 @@ namespace Relation_IMS.Datas.Repositories
                 {
                     Id = pi.Id,
                     Code = pi.Code,
+                    ProductId = pi.ProductVariant!.ProductId,
                     ProductVariantId = pi.ProductVariantId,
                     ProductName = pi.ProductVariant!.Product!.Name,
+                    CategoryName = pi.ProductVariant.Product.Category != null ? pi.ProductVariant.Product.Category.Name : "Uncategorized",
+                    Price = pi.ProductVariant.Product.BasePrice,
                     ColorName = pi.ProductVariant.Color!.Name,
                     SizeName = pi.ProductVariant.Size!.Name,
                     ProductImageUrl = pi.ProductVariant.Product.ImageUrls != null ? pi.ProductVariant.Product.ImageUrls.FirstOrDefault() : null,

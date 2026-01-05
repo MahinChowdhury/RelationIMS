@@ -42,9 +42,8 @@ export default function CustomerDetailsPage() {
 
     // --- Derived Logic ---
     const totalSpent = orders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
-    const totalDue = orders
-        .filter(o => o.PaymentStatus !== 2) // Assuming 2 is Paid
-        .reduce((sum, o) => sum + (o.NetAmount || 0), 0);
+    const totalDue = orders.reduce((sum, o) =>
+        sum + (o.NetAmount - (o.PaidAmount ?? (o.PaymentStatus === 2 ? o.NetAmount : 0))), 0);
 
     const lastOrderDate = orders.length > 0
         ? new Date(Math.max(...orders.map(o => new Date(o.CreatedAt).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -303,6 +302,7 @@ export default function CustomerDetailsPage() {
                                             <th className="px-6 py-4 font-bold" scope="col">Date</th>
                                             {/* <th className="px-6 py-4 font-bold" scope="col">Items</th> -- Skipped as Order model doesn't always populate items deeply here */}
                                             <th className="px-6 py-4 font-bold" scope="col">Status</th>
+                                            <th className="px-6 py-4 font-bold text-right" scope="col">Discount</th>
                                             <th className="px-6 py-4 font-bold text-right" scope="col">Amount</th>
                                             <th className="px-6 py-4 font-bold text-center" scope="col">Action</th>
                                         </tr>
@@ -314,6 +314,9 @@ export default function CustomerDetailsPage() {
                                                 <td className="px-6 py-4 whitespace-nowrap text-text-secondary">{formatFullDate(order.CreatedAt)}</td>
                                                 <td className="px-6 py-4">
                                                     {getPaymentStatusBadge(order.PaymentStatus)}
+                                                </td>
+                                                <td className="px-6 py-4 font-medium text-right text-red-500">
+                                                    {(order.Discount || 0) > 0 ? `-${order.Discount.toFixed(2)}` : '-'}
                                                 </td>
                                                 <td className="px-6 py-4 font-bold text-right">${order.NetAmount.toFixed(2)}</td>
                                                 <td className="px-6 py-4 text-center">

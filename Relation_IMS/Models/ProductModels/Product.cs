@@ -14,7 +14,13 @@ namespace Relation_IMS.Models.ProductModels
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "Product Price is required.")]
         [Range(0, double.MaxValue)]
-        public double BasePrice { get; set; } = 0.0;
+        public decimal BasePrice { get; set; } = 0.0m;
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal CostPrice { get; set; } = 0.0m;
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal MSRP { get; set; } = 0.0m;
         [Range(0, int.MaxValue)]
         public int TotalQuantity { get; set; } = 0;
         [Required(ErrorMessage = "Category Id is required.")]

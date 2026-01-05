@@ -48,6 +48,8 @@ export default function ProductsPage() {
         Name: '',
         Description: '',
         BasePrice: 0,
+        CostPrice: 0,
+        MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
         ImageUrls: []
@@ -241,6 +243,8 @@ export default function ProductsPage() {
                     ProductColorId: colorId,
                     ProductSizeId: sizeId,
                     VariantPrice: currentProduct.BasePrice,
+                    CostPrice: currentProduct.CostPrice,
+                    MSRP: currentProduct.MSRP,
                     Quantity: item.quantity
                 };
 
@@ -281,6 +285,8 @@ export default function ProductsPage() {
             formData.append('Name', currentProduct.Name);
             formData.append('Description', currentProduct.Description || '');
             formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
+            formData.append('CostPrice', currentProduct.CostPrice?.toString() || '0');
+            formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
 
@@ -308,6 +314,8 @@ export default function ProductsPage() {
                             ProductColorId: colorId,
                             ProductSizeId: sizeId,
                             VariantPrice: currentProduct.BasePrice,
+                            CostPrice: currentProduct.CostPrice,
+                            MSRP: currentProduct.MSRP,
                             Quantity: stock.quantity,
                             DefaultInventoryId: 1
                         });

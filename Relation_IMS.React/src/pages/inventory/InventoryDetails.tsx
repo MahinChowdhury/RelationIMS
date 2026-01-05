@@ -4,18 +4,13 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 
-interface InventoryDetail {
-    Id: number;
-    Name: string;
-    // Add other fields as they appear in API or UI req
-    // Since we don't know exact shape, we'll try to map common fields
-}
+import { type Inventory, type Product } from '../../types';
 
 interface ProductAggregated {
     ProductId: number;
     VariantId: number;
     Name: string;
-    Sku: string; // From Code or ProductCode
+    Sku: string;
     CategoryName: string;
     ImageUrl?: string;
     Quantity: number;
@@ -29,7 +24,7 @@ export default function InventoryDetails() {
     const inventoryId = Number(id);
 
     // State
-    const [inventory, setInventory] = useState<InventoryDetail | null>(null);
+    const [inventory, setInventory] = useState<Inventory | null>(null);
     const [allItems, setAllItems] = useState<any[]>([]); // Raw items from API
     const [aggregatedProducts, setAggregatedProducts] = useState<ProductAggregated[]>([]);
     const [displayedProducts, setDisplayedProducts] = useState<ProductAggregated[]>([]);
@@ -52,36 +47,49 @@ export default function InventoryDetails() {
 
     // Apply Search & Aggregation
     useEffect(() => {
-        if (!allItems.length) return;
+        if (!allItems.length && !loading) {
+            setAggregatedProducts([]);
+            setDisplayedProducts([]);
+            return;
+        }
 
         // 1. Aggregate Items by Product/Variant
         const aggMap = new Map<string, ProductAggregated>();
 
         allItems.forEach(item => {
-            // Logic to identify unique product variants. 
-            // Assuming item has ProductId, ColorId, SizeId OR ProductVariantId
-            // fallback to just ProductId if no variants
-            const product = item.Product;
-            if (!product) return;
+            // Backend returns a flat DTO, not nested. properties are camelCase.
+            // Check DTO: Id, Code, ProductId, ProductVariantId, ProductName, ColorName, SizeName, ProductImageUrl...
 
-            const key = `${product.Id}-${item.ProductColorId || 0}-${item.ProductSizeId || 0}`;
+            if (!item.ProductId && !item.productVariantId) return; // Basic validation
+
+            // Key combines ProductId to denote a unique variant
+            // We use camelCase properties as that's typically how .NET serializes by default
+            const productId = item.productId || item.ProductId;
+            // const variantId = item.productVariantId || item.ProductVariantId;
+            const productName = item.productName || item.ProductName;
+            const itemCode = item.code || item.Code;
+            const categoryName = item.categoryName || item.CategoryName || 'Uncategorized'; // DTO might differ, check if category is sent
+            const imageUrl = item.productImageUrl || item.ProductImageUrl || '';
+            const price = item.price || item.Price || 0; // Price might not be in summary DTO!
+
+            const key = `${productId}`;
 
             if (!aggMap.has(key)) {
                 aggMap.set(key, {
-                    ProductId: product.Id,
-                    VariantId: item.ProductVariantId || 0,
-                    Name: product.Name,
-                    Sku: item.Code || `SKU-${product.Id}`, // Fallback
-                    CategoryName: product.Category?.Name || 'Uncategorized',
-                    ImageUrl: product.ImageUrls?.[0] || 'https://via.placeholder.com/150',
+                    ProductId: productId,
+                    VariantId: 0,
+                    Name: productName,
+                    Sku: itemCode, // We'll just use the first code we see as display SKU
+                    CategoryName: categoryName,
+                    ImageUrl: imageUrl,
                     Quantity: 0,
-                    Price: product.BasePrice || 0,
+                    Price: price,
                     Status: 'In Stock'
                 });
             }
 
             const agg = aggMap.get(key)!;
-            agg.Quantity += 1; // Assuming each item in list is 1 unit
+            agg.Quantity += 1;
         });
 
         let result = Array.from(aggMap.values());
@@ -120,7 +128,7 @@ export default function InventoryDetails() {
         try {
             // Parallel fetch
             const [invRes, itemsRes] = await Promise.all([
-                api.get(`/Inventory/${inventoryId}`).catch(() => ({ data: { Id: inventoryId, Name: 'Inventory Location' } })), // Fallback if 404
+                api.get<Inventory>(`/Inventory/${inventoryId}`),
                 api.get(`/Inventory/${inventoryId}/items`)
             ]);
 

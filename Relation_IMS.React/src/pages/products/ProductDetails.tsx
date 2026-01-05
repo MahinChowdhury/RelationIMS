@@ -2,52 +2,10 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import InventoryStockModal from '../../components/products/InventoryStockModal';
-import type { InventoryStock } from '../../types';
 
 // ---------- Interfaces ----------
-interface Color {
-    Id: number;
-    Name: string;
-    HexCode: string;
-}
-interface Size {
-    Id: number;
-    Name: string;
-    CategoryId: number;
-}
-interface Brand {
-    Id: number;
-    Name: string;
-}
-interface Variant {
-    Id: number;
-    ProductId: number;
-    ProductColorId: number;
-    ProductSizeId: number;
-    Quantity: number;
-    Defects: number;
-    VariantPrice: number;
-    Color?: Color;
-    Size?: Size;
-}
-interface Category {
-    Id: number;
-    Name: string;
-    Description: string;
-}
-interface Product {
-    Id: number;
-    Name: string;
-    Description: string;
-    BasePrice: number;
-    CategoryId: number;
-    Category: Category;
-    TotalQuantity: number;
-    BrandId: number;
-    Brand: Brand;
-    ImageUrls: string[];
-    Variants: Variant[];
-}
+// Imported from ../../types
+import type { Product, InventoryStock, ProductVariant } from '../../types';
 
 export default function ProductDetails() {
     const { id } = useParams<{ id: string }>();
@@ -102,9 +60,9 @@ export default function ProductDetails() {
 
     // Group variants by Color ID
     const groupedVariants = useMemo(() => {
-        if (!productDetail?.Variants) return new Map<number | undefined, Variant[]>();
+        if (!productDetail?.Variants) return new Map<number | undefined, ProductVariant[]>();
 
-        const map = new Map<number | undefined, Variant[]>();
+        const map = new Map<number | undefined, ProductVariant[]>();
         for (const item of productDetail.Variants) {
             const key = item.Color?.Id;
             const group = map.get(key) ?? [];
@@ -282,12 +240,30 @@ export default function ProductDetails() {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-primary/20">
+                                    <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-primary/20">
                                         <span className="material-symbols-outlined text-[20px]">attach_money</span>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Last Price</span>
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Selling Price</span>
                                         <span className="text-sm font-bold text-text-main dark:text-white">${productDetail.BasePrice.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20">
+                                        <span className="material-symbols-outlined text-[20px]">price_check</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">MSRP</span>
+                                        <span className="text-sm font-bold text-text-main dark:text-white">${(productDetail.MSRP || 0).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-orange-500 text-white p-1 rounded-md shadow-sm shadow-orange-500/20">
+                                        <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
+                                        <span className="text-sm font-bold text-text-main dark:text-white">${(productDetail.CostPrice || 0).toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
