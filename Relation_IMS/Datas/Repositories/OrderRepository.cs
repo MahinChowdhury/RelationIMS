@@ -5,6 +5,7 @@ using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Models.PaymentModels;
 
 namespace Relation_IMS.Datas.Repositories
 {
@@ -21,6 +22,30 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto)
         {
             var newOrder = _mapper.Map<Order>(orderDto);
+
+            // Calculate Paid Amount from Payments if any
+            if (newOrder.Payments != null && newOrder.Payments.Any())
+            {
+                newOrder.PaidAmount = newOrder.Payments.Sum(p => p.Amount);
+            }
+            else
+            {
+                newOrder.PaidAmount = 0;
+            }
+
+            // Determine Payment Status
+            if (newOrder.PaidAmount >= newOrder.NetAmount)
+            {
+                newOrder.PaymentStatus = PaymentStatus.Paid;
+            }
+            else if (newOrder.PaidAmount > 0)
+            {
+                newOrder.PaymentStatus = PaymentStatus.Partial;
+            }
+            else
+            {
+                newOrder.PaymentStatus = PaymentStatus.Pending;
+            }
 
             await _context.Orders.AddAsync(newOrder);
             await _context.SaveChangesAsync();
@@ -72,6 +97,7 @@ namespace Relation_IMS.Datas.Repositories
             var order = await _context.Orders
                 .Include(x => x.OrderItems)
                 .Include(x => x.Customer)
+                .Include(x => x.Payments)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (order == null) return null;

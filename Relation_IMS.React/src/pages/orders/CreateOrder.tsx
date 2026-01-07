@@ -47,6 +47,15 @@ interface CartItem {
     OriginalItemIds: number[]; // Track all ItemIDs in this group
 }
 
+// Payment Types
+type PaymentMethodType = 'Cash' | 'Bank' | 'Bkash';
+
+interface PaymentEntry {
+    method: PaymentMethodType;
+    amount: number;
+    note?: string;
+}
+
 export default function CreateOrder() {
     const navigate = useNavigate();
 
@@ -67,8 +76,14 @@ export default function CreateOrder() {
 
     // Order Summaries
     const [discount, setDiscount] = useState<number>(0);
-    const [paidAmount, setPaidAmount] = useState<number>(0);
-    const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card'>('Cash');
+    // const [paidAmount, setPaidAmount] = useState<number>(0); // Replaced by computed from payments
+    // const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card'>('Cash'); // Replaced by list
+    const [payments, setPayments] = useState<PaymentEntry[]>([]);
+
+    // Payment Input State
+    const [currentMethod, setCurrentMethod] = useState<PaymentMethodType>('Cash');
+    const [currentAmount, setCurrentAmount] = useState<string>('');
+
     const [notes, setNotes] = useState('');
 
     // Refs
@@ -78,6 +93,7 @@ export default function CreateOrder() {
     // --- Computed Values ---
     const subtotal = cart.reduce((acc, item) => acc + item.Subtotal, 0);
     const netAmount = Math.max(0, subtotal - discount);
+    const paidAmount = payments.reduce((sum, p) => sum + p.amount, 0);
     const dueAmount = Math.max(0, netAmount - paidAmount);
 
     // --- Customer Search ---
@@ -280,7 +296,12 @@ export default function CreateOrder() {
                 PaidAmount: paidAmount,
                 PaymentStatus: paidAmount >= netAmount ? 2 : (paidAmount > 0 ? 1 : 0),
                 UserId: 1, // Hardcoded
-                Remarks: notes
+                Remarks: notes,
+                Payments: payments.map(p => ({
+                    PaymentMethod: p.method === 'Cash' ? 0 : p.method === 'Bank' ? 1 : 2,
+                    Amount: p.amount,
+                    Note: p.note
+                }))
             };
 
             const orderRes = await api.post('/Order', orderPayload);
@@ -607,10 +628,10 @@ export default function CreateOrder() {
                                     <div className="flex items-center w-28 relative">
                                         <span className="absolute left-2 text-sm text-green-600 font-bold">$</span>
                                         <input
-                                            className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-right text-sm py-1 px-2 pl-4 focus:border-primary focus:ring-primary font-bold text-green-600"
+                                            className="block w-full rounded border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-right text-sm py-1 px-2 pl-4 font-bold text-green-600 cursor-not-allowed"
                                             type="number"
                                             value={paidAmount}
-                                            onChange={(e) => setPaidAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                                            readOnly
                                         />
                                     </div>
                                 </div>
@@ -622,23 +643,76 @@ export default function CreateOrder() {
                         </div>
 
                         <div className="mb-6">
-                            <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Payment Method</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                <button
-                                    onClick={() => setPaymentMethod('Card')}
-                                    className={`flex flex-col items-center justify-center p-3 border-2 font-bold rounded-lg text-xs transition-all shadow-sm ${paymentMethod === 'Card' ? 'border-primary bg-green-50 dark:bg-primary/20 text-primary ring-1 ring-primary/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50'}`}
-                                >
-                                    <span className="material-symbols-outlined text-2xl mb-1">credit_card</span>
-                                    Card
-                                </button>
-                                <button
-                                    onClick={() => setPaymentMethod('Cash')}
-                                    className={`flex flex-col items-center justify-center p-3 border-2 font-bold rounded-lg text-xs transition-all shadow-sm ${paymentMethod === 'Cash' ? 'border-primary bg-green-50 dark:bg-primary/20 text-primary ring-1 ring-primary/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50'}`}
-                                >
-                                    <span className="material-symbols-outlined text-2xl mb-1">payments</span>
-                                    Cash
-                                </button>
+                            <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Payment Details (Split Payment)</label>
+
+                            <div className="bg-[#f8fcf9] dark:bg-gray-800/50 p-3 rounded-lg border border-[#e7f3eb] dark:border-gray-700 mb-3">
+                                <div className="flex gap-2 mb-2">
+                                    <select
+                                        className="block w-28 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium focus:border-primary focus:ring-primary"
+                                        value={currentMethod}
+                                        onChange={(e) => setCurrentMethod(e.target.value as PaymentMethodType)}
+                                    >
+                                        <option value="Cash">Cash</option>
+                                        <option value="Bank">Bank</option>
+                                        <option value="Bkash">Bkash</option>
+                                    </select>
+                                    <input
+                                        type="number"
+                                        className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm px-3 focus:border-primary focus:ring-primary"
+                                        placeholder="Amount"
+                                        value={currentAmount}
+                                        onChange={(e) => setCurrentAmount(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && currentAmount) {
+                                                const amt = parseFloat(currentAmount);
+                                                if (amt > 0) {
+                                                    setPayments([...payments, { method: currentMethod, amount: amt }]);
+                                                    setCurrentAmount('');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const amt = parseFloat(currentAmount);
+                                            if (amt > 0) {
+                                                setPayments([...payments, { method: currentMethod, amount: amt }]);
+                                                setCurrentAmount('');
+                                            }
+                                        }}
+                                        disabled={!currentAmount || parseFloat(currentAmount) <= 0}
+                                        className="bg-primary text-white rounded-lg px-3 py-1 font-bold text-sm hover:bg-primary-dark disabled:opacity-50"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                                {dueAmount > 0 && <p className="text-xs text-red-500 font-medium text-right">Remaining Due: ${dueAmount.toFixed(2)}</p>}
                             </div>
+
+                            {/* Payment List */}
+                            {payments.length > 0 && (
+                                <div className="space-y-2 mb-2">
+                                    {payments.map((p, idx) => (
+                                        <div key={idx} className="flex justify-between items-center text-sm p-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded shadow-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`material-symbols-outlined text-lg ${p.method === 'Cash' ? 'text-green-500' : p.method === 'Bank' ? 'text-blue-500' : 'text-pink-500'}`}>
+                                                    {p.method === 'Cash' ? 'payments' : p.method === 'Bank' ? 'account_balance' : 'smartphone'}
+                                                </span>
+                                                <span className="font-bold text-gray-700 dark:text-gray-300">{p.method}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-bold text-text-main dark:text-white">${p.amount.toFixed(2)}</span>
+                                                <button
+                                                    onClick={() => setPayments(payments.filter((_, i) => i !== idx))}
+                                                    className="text-gray-400 hover:text-red-500"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">close</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className="mb-6">

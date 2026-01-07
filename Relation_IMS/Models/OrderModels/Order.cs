@@ -32,6 +32,7 @@ namespace Relation_IMS.Models.OrderModels
         [Required(ErrorMessage = "UserId is required.")]
         public int UserId { get; set; }
         public User? User { get; set; }
+        public ICollection<OrderPayment>? Payments { get; set; }
         public string? Remarks { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

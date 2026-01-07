@@ -4,6 +4,7 @@ using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.InventoryModels;
 using Relation_IMS.Models.JWTModels;
 using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Models.PaymentModels;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Entities;
@@ -87,4 +88,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<InventoryTransferRecord> InventoryTransferRecords { get; set; }
     public DbSet<InventoryTransferRecordItem> InventoryTransferRecordItems { get; set; }
+    public DbSet<OrderPayment> OrderPayments { get; set; }
 }

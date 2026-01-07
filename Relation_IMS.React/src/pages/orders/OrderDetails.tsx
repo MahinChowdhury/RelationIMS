@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
-import { type Order, PaymentStatus, type Product } from '../../types';
+import { type Order, type OrderPayment, PaymentStatus, type Product } from '../../types';
 
 export default function OrderDetailsPage() {
     const { id } = useParams<{ id: string }>();
@@ -214,11 +214,29 @@ export default function OrderDetailsPage() {
                     <div className="flex-1 flex flex-col justify-between">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
-                                <p className="text-xs text-text-secondary mb-1">Payment Method</p>
-                                <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-text-main dark:text-white">credit_card</span>
-                                    <span className="font-bold text-sm text-text-main dark:text-white">Cash / POS</span>
-                                </div>
+                                <p className="text-xs text-text-secondary mb-1">Payment Method(s)</p>
+                                {order.Payments && order.Payments.length > 0 ? (
+                                    <div className="space-y-1">
+                                        {order.Payments.map((p: OrderPayment, idx: number) => (
+                                            <div key={idx} className="flex justify-between items-center text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`material-symbols-outlined text-base ${p.PaymentMethod === 0 ? 'text-green-500' : p.PaymentMethod === 1 ? 'text-blue-500' : 'text-pink-500'}`}>
+                                                        {p.PaymentMethod === 0 ? 'payments' : p.PaymentMethod === 1 ? 'account_balance' : 'smartphone'}
+                                                    </span>
+                                                    <span className="font-medium text-text-main dark:text-white">
+                                                        {p.PaymentMethod === 0 ? 'Cash' : p.PaymentMethod === 1 ? 'Bank' : 'Bkash'}
+                                                    </span>
+                                                </div>
+                                                <span className="font-bold text-text-main dark:text-white">৳{p.Amount.toFixed(2)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-text-main dark:text-white">credit_card</span>
+                                        <span className="font-bold text-sm text-text-main dark:text-white">Standard</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
                                 <p className="text-xs text-text-secondary mb-1">Order Type</p>
@@ -299,7 +317,7 @@ export default function OrderDetailsPage() {
                                             </td>
                                             <td className="px-6 py-4 text-text-main dark:text-gray-200 font-bold">৳{item.UnitPrice.toFixed(2)}</td>
                                             <td className="px-6 py-4 text-red-500 font-medium">
-                                                {item.Discount > 0 ? `-৳${item.Discount.toFixed(2)}` : '-'}
+                                                {(item.Discount || 0) > 0 ? `-৳${item.Discount?.toFixed(2)}` : '-'}
                                             </td>
                                             <td className="px-6 py-4 text-center text-text-main dark:text-gray-200">{item.Quantity}</td>
                                             <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">৳{item.Subtotal.toFixed(2)}</td>

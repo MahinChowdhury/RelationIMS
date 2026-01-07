@@ -5,7 +5,7 @@ import api from '../../services/api';
 interface Brand { Id: number; Name: string; }
 interface Category { Id: number; Name: string; }
 interface Color { id: number; name: string; hex: string; }
-interface Size { id: number; name: string; }
+interface Size { id: number; name: string; categoryId?: number; }
 
 // --- Types for API Payloads ---
 // Note: Backend might expect different casing, usually PascalCase for .NET, but axios/json interaction often handles standard interactions.
@@ -45,7 +45,7 @@ export default function Configuration() {
                 api.get('/Brand'),
                 api.get('/Category'),
                 api.get('/ProductVariantColors'),
-                api.get('/ProductVariantSizes') // We added this GetAll endpoint
+                api.get('/ProductVariantSizes')
             ]);
 
             setBrands(brandRes.data);
@@ -56,7 +56,7 @@ export default function Configuration() {
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
 
             // Backend returns: { Id, Name, CategoryId }
-            setSizes(sizeRes.data.map((s: any) => ({ id: s.Id, name: s.Name })));
+            setSizes(sizeRes.data.map((s: any) => ({ id: s.Id, name: s.Name, categoryId: s.CategoryId })));
 
         } catch (error) {
             console.error("Failed to load configuration data", error);
@@ -174,10 +174,10 @@ export default function Configuration() {
                 )}
                 <div className="min-w-0">
                     <h3 className="font-semibold text-sm text-[#0e1b12] dark:text-white truncate">{title}</h3>
-                    {subtitle && <p className="text-[10px] text-gray-400 truncate">{subtitle}</p>}
+                    {subtitle && <p className="text-[10px] text-gray-400">{subtitle}</p>}
                 </div>
             </div>
-            <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                 <button
                     onClick={() => openModal(type, item)}
                     className="p-1 text-gray-400 hover:text-[#17cf54] transition-colors"
@@ -304,7 +304,17 @@ export default function Configuration() {
                             <div className="p-4">
                                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
                                     {sizes.length > 0 ? (
-                                        sizes.map(s => renderCard(s.name, null, 'size', s))
+                                        [...sizes]
+                                            .sort((a, b) => {
+                                                const catA = categories.find(c => c.Id === a.categoryId)?.Name || 'Generic';
+                                                const catB = categories.find(c => c.Id === b.categoryId)?.Name || 'Generic';
+                                                if (catA !== catB) return catA.localeCompare(catB);
+                                                return a.name.localeCompare(b.name);
+                                            })
+                                            .map(s => {
+                                                const categoryName = categories.find(c => c.Id === s.categoryId)?.Name;
+                                                return renderCard(s.name, categoryName || 'Generic', 'size', s);
+                                            })
                                     ) : (
                                         <p className="text-xs text-gray-400 col-span-full py-4 text-center">No sizes configured yet.</p>
                                     )}

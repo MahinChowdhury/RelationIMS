@@ -62,6 +62,22 @@ export const PaymentStatus = {
 
 export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus];
 
+export interface OrderPayment {
+    Id: number;
+    OrderId: number;
+    PaymentMethod: PaymentMethodType;
+    Amount: number;
+    Note?: string;
+}
+
+export const PaymentMethodType = {
+    Cash: 0,
+    Bank: 1,
+    Bkash: 2
+} as const;
+
+export type PaymentMethodType = typeof PaymentMethodType[keyof typeof PaymentMethodType];
+
 export interface OrderItem {
     Id: number;
     OrderId: number;
@@ -87,6 +103,7 @@ export interface Order {
     UserId: number;
     User?: any;
     Remarks?: string;
+    Payments?: OrderPayment[];
     CreatedAt: string;
     date?: string;
 }
