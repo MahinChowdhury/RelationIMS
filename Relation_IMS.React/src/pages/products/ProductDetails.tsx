@@ -210,7 +210,7 @@ export default function ProductDetails() {
                         </div>
                         <div className="text-right hidden sm:block">
                             <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">Retail Price</p>
-                            <p className="text-3xl font-black text-text-main dark:text-white">${productDetail.BasePrice.toFixed(2)}</p>
+                            <p className="text-3xl font-black text-text-main dark:text-white">${productDetail.MSRP.toFixed(2)}</p>
                         </div>
                     </div>
 
@@ -240,15 +240,6 @@ export default function ProductDetails() {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-primary/20">
-                                        <span className="material-symbols-outlined text-[20px]">attach_money</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Selling Price</span>
-                                        <span className="text-sm font-bold text-text-main dark:text-white">${productDetail.BasePrice.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
                                     <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20">
                                         <span className="material-symbols-outlined text-[20px]">price_check</span>
                                     </div>
@@ -258,12 +249,21 @@ export default function ProductDetails() {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-orange-500 text-white p-1 rounded-md shadow-sm shadow-orange-500/20">
+                                    <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-primary/20">
+                                        <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Base Price</span>
+                                        <span className="text-sm font-bold text-red-500 dark:text-white">${productDetail.BasePrice.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-orange-500/20">
                                         <span className="material-symbols-outlined text-[20px]">inventory</span>
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
-                                        <span className="text-sm font-bold text-text-main dark:text-white">${(productDetail.CostPrice || 0).toFixed(2)}</span>
+                                        <span className="text-sm font-bold text-blue-500 dark:text-white">${(productDetail.CostPrice || 0).toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">

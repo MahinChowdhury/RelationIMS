@@ -274,7 +274,7 @@ export default function DefectItems() {
                                         <span className="text-text-main dark:text-gray-300">{defect.Reason}</span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`text-xs font-bold px-2 py-1 rounded ${defect.Status === 'Pending Review' ? 'text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400' :
+                                        <span className={`text-xs font-bold px-2 py-1 rounded ${defect.Status === 'Pending' ? 'text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400' :
                                             defect.Status === 'Processing Return' ? 'text-orange-600 bg-orange-50 dark:bg-orange-900/30 dark:text-orange-400' :
                                                 defect.Status === 'Discarded' ? 'text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300' :
                                                     'text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400'

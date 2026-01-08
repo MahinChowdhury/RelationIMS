@@ -70,9 +70,10 @@ namespace Relation_IMS.Datas.Repositories
             if (customer == null) return null;
 
             customer.Name = updateDto.Name;
-            customer.Email = updateDto.Email;
             customer.Phone = updateDto.Phone;
             customer.Address = updateDto.Address;
+            customer.ShopAddress = updateDto.ShopAddress;
+            customer.ShopName = updateDto.ShopName;
 
             await _context.SaveChangesAsync();
 

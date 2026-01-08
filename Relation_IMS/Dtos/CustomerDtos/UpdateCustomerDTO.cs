@@ -9,8 +9,12 @@ namespace Relation_IMS.Dtos.CustomerDtos
         [Required(ErrorMessage = "Phone number is required.")]
         [Phone(ErrorMessage = "Not a valid phone number")]
         public string Phone { get; set; } = null!;
-        public string? Email { get; set; }
+
         [Required(ErrorMessage = "Customer Address is required.")]
         public string Address { get; set; } = null!;
+        [Required(ErrorMessage = "Shop name is required.")]
+        public string ShopName { get; set; } = null!;
+        [Required(ErrorMessage = "Shop address is required.")]
+        public string ShopAddress { get; set; } = null!;
     }
 }

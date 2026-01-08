@@ -13,7 +13,7 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251208093659_Mig1")]
+    [Migration("20260108180930_Mig1")]
     partial class Mig1
     {
         /// <inheritdoc />
@@ -41,14 +41,34 @@ namespace Relation_IMS.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
+                    b.Property<bool>("IsDueAllowed")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("NidNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReferenceName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReferencePhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShopAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShopName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -57,7 +77,7 @@ namespace Relation_IMS.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("Relation_IMS.Models.Inventory", b =>
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.Inventory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -75,6 +95,60 @@ namespace Relation_IMS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Inventories");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DestinationInventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SourceInventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DestinationInventoryId");
+
+                    b.HasIndex("SourceInventoryId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("InventoryTransferRecords");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecordItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InventoryTransferRecordId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductItemId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryTransferRecordId");
+
+                    b.HasIndex("ProductItemId");
+
+                    b.ToTable("InventoryTransferRecordItems");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.JWTModels.Client", b =>
@@ -258,10 +332,13 @@ namespace Relation_IMS.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
-                    b.Property<double>("Discount")
+                    b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<double>("NetAmount")
+                    b.Property<decimal>("NetAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PaidAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PaymentStatus")
@@ -271,7 +348,7 @@ namespace Relation_IMS.Migrations
                     b.Property<string>("Remarks")
                         .HasColumnType("text");
 
-                    b.Property<double>("TotalAmount")
+                    b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
@@ -294,6 +371,12 @@ namespace Relation_IMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("CostPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");
 
@@ -306,7 +389,7 @@ namespace Relation_IMS.Migrations
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<double>("UnitPrice")
+                    b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -316,6 +399,33 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.PaymentModels.OrderPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderPayments");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Brand", b =>
@@ -363,7 +473,7 @@ namespace Relation_IMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("BasePrice")
+                    b.Property<decimal>("BasePrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("BrandId")
@@ -372,11 +482,17 @@ namespace Relation_IMS.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("CostPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
                     b.Property<List<string>>("ImageUrls")
                         .HasColumnType("text[]");
+
+                    b.Property<decimal>("MSRP")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -413,6 +529,46 @@ namespace Relation_IMS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductColors");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductDefect", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DefectDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProductItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ReportedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ResolutionAction")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ResolutionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductItemId");
+
+                    b.HasIndex("ReportedByUserId");
+
+                    b.ToTable("ProductDefects");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductItem", b =>
@@ -485,9 +641,6 @@ namespace Relation_IMS.Migrations
                     b.Property<int>("ProductSizeId")
                         .HasColumnType("integer");
 
-                    b.Property<double>("VariantPrice")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductColorId");
@@ -534,6 +687,52 @@ namespace Relation_IMS.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecord", b =>
+                {
+                    b.HasOne("Relation_IMS.Models.InventoryModels.Inventory", "DestinationInventory")
+                        .WithMany()
+                        .HasForeignKey("DestinationInventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Relation_IMS.Models.InventoryModels.Inventory", "SourceInventory")
+                        .WithMany()
+                        .HasForeignKey("SourceInventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Relation_IMS.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DestinationInventory");
+
+                    b.Navigation("SourceInventory");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecordItem", b =>
+                {
+                    b.HasOne("Relation_IMS.Models.InventoryModels.InventoryTransferRecord", "InventoryTransferRecord")
+                        .WithMany("TransferItems")
+                        .HasForeignKey("InventoryTransferRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Relation_IMS.Models.ProductModels.ProductItem", "ProductItem")
+                        .WithMany()
+                        .HasForeignKey("ProductItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InventoryTransferRecord");
+
+                    b.Navigation("ProductItem");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.JWTModels.RefreshToken", b =>
@@ -612,6 +811,17 @@ namespace Relation_IMS.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Relation_IMS.Models.PaymentModels.OrderPayment", b =>
+                {
+                    b.HasOne("Relation_IMS.Models.OrderModels.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Product", b =>
                 {
                     b.HasOne("Relation_IMS.Models.ProductModels.Brand", "Brand")
@@ -631,9 +841,26 @@ namespace Relation_IMS.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductDefect", b =>
+                {
+                    b.HasOne("Relation_IMS.Models.ProductModels.ProductItem", "ProductItem")
+                        .WithMany()
+                        .HasForeignKey("ProductItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Relation_IMS.Models.User", "ReportedByUser")
+                        .WithMany()
+                        .HasForeignKey("ReportedByUserId");
+
+                    b.Navigation("ProductItem");
+
+                    b.Navigation("ReportedByUser");
+                });
+
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductItem", b =>
                 {
-                    b.HasOne("Relation_IMS.Models.Inventory", "Inventory")
+                    b.HasOne("Relation_IMS.Models.InventoryModels.Inventory", "Inventory")
                         .WithMany("ProductItems")
                         .HasForeignKey("InventoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -682,9 +909,14 @@ namespace Relation_IMS.Migrations
                     b.Navigation("Orders");
                 });
 
-            modelBuilder.Entity("Relation_IMS.Models.Inventory", b =>
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.Inventory", b =>
                 {
                     b.Navigation("ProductItems");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecord", b =>
+                {
+                    b.Navigation("TransferItems");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.JWTModels.Role", b =>
@@ -695,6 +927,8 @@ namespace Relation_IMS.Migrations
             modelBuilder.Entity("Relation_IMS.Models.OrderModels.Order", b =>
                 {
                     b.Navigation("OrderItems");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Brand", b =>

@@ -143,7 +143,6 @@ namespace Relation_IMS.Datas.Repositories
                     {
                         existing.ProductColorId = dtoVar.ProductColorId;
                         existing.ProductSizeId = dtoVar.ProductSizeId;
-                        existing.VariantPrice = dtoVar.VariantPrice;
                     }
                     else
                     {
@@ -152,7 +151,6 @@ namespace Relation_IMS.Datas.Repositories
                             ProductId = product.Id,
                             ProductColorId = dtoVar.ProductColorId,
                             ProductSizeId = dtoVar.ProductSizeId,
-                            VariantPrice = dtoVar.VariantPrice,
                         });
                     }
                 }

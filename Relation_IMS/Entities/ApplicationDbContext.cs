@@ -64,6 +64,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Order>()
                 .Property(i => i.PaymentStatus)
                 .HasConversion<string>();
+        modelBuilder.Entity<ProductDefect>()
+            .Property(i => i.Status)
+            .HasConversion<string>();
     }
 
     //For JWT

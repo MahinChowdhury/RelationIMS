@@ -7,7 +7,6 @@ export default function CustomerDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const customerId = Number(id);
-
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -191,15 +190,7 @@ export default function CustomerDetailsPage() {
                             <hr className="border-gray-100 dark:border-[#2a4032] mb-6" />
 
                             <div className="flex flex-col gap-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
-                                        <span className="material-symbols-outlined text-[20px]">mail</span>
-                                    </div>
-                                    <div className="overflow-hidden">
-                                        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Email Address</p>
-                                        <p className="text-sm font-medium text-text-main dark:text-gray-200 truncate" title={customer.Email}>{customer.Email || 'N/A'}</p>
-                                    </div>
-                                </div>
+                                
                                 <div className="flex items-start gap-3">
                                     <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
                                         <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
@@ -218,6 +209,24 @@ export default function CustomerDetailsPage() {
                                         <p className="text-sm font-medium text-text-main dark:text-gray-200 break-words">
                                             {customer.Address}
                                         </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                        <span className="material-symbols-outlined text-[20px]">mail</span>
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Shop Name</p>
+                                        <p className="text-sm font-medium text-text-main dark:text-gray-200 truncate" title={customer.ShopName}>{customer.ShopName || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                        <span className="material-symbols-outlined text-[20px]">mail</span>
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Shop Address</p>
+                                        <p className="text-sm font-medium text-text-main dark:text-gray-200 truncate" title={customer.ShopAddress}>{customer.ShopAddress || 'N/A'}</p>
                                     </div>
                                 </div>
                             </div>

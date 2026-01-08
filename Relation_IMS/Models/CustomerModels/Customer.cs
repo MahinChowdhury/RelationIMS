@@ -11,10 +11,17 @@ namespace Relation_IMS.Models.CustomerModels
         [Required(ErrorMessage = "Phone number is required.")]
         [Phone(ErrorMessage = "Not a valid phone number")]
         public string Phone { get; set; } = null!;
-        public string? Email { get; set; }
-        [Required(ErrorMessage = "Customer Address is required.")]
+        [Required(ErrorMessage = "Address is required.")]
         public string Address { get; set; } = null!;
+        [Required(ErrorMessage = "Shop name is required.")]
+        public string ShopName { get; set; } = null!;
+        [Required(ErrorMessage = "Shop address is required.")]
+        public string ShopAddress { get; set; } = null!;
         public List<Order>? Orders { get; set; }
         public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
+        public bool IsDueAllowed { get; set; } = false;
+        public string NidNumber { get; set; } = string.Empty;
+        public string ReferenceName { get; set; } = string.Empty;
+        public string ReferencePhoneNumber { get; set; } = string.Empty;
     }
 }

@@ -112,8 +112,9 @@ export interface Customer {
     Id: number;
     Name: string;
     Phone: string;
-    Email?: string;
     Address: string;
+    ShopName:string;
+    ShopAddress:string;
     Orders?: Order[];
     CreatedDate?: string;
 }

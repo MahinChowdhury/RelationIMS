@@ -16,7 +16,7 @@ namespace Relation_IMS.Models.ProductModels
         public ProductItem? ProductItem { get; set; }
 
         public string Reason { get; set; } = "Unknown";
-        public string Status { get; set; } = "Pending Review"; // e.g., Pending Review, Discarded, Returned, Sold, Restored
+        public DefectStatus Status { get; set; } = DefectStatus.Pending;
 
         public int? ReportedByUserId { get; set; }
 
@@ -27,5 +27,12 @@ namespace Relation_IMS.Models.ProductModels
 
         public string? ResolutionAction { get; set; } // e.g., "Sold", "Restored"
         public DateTime? ResolutionDate { get; set; }
+    }
+    public enum DefectStatus { 
+        Pending,
+        Discarded,
+        Returned,
+        Sold,
+        Restored
     }
 }

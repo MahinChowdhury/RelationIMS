@@ -176,10 +176,7 @@ export default function OrderDetailsPage() {
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
                                     <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Contact Info</p>
-                                    <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200 mb-1">
-                                        <span className="material-symbols-outlined text-primary text-base">mail</span>
-                                        <a className="hover:underline" href={`mailto:${order.Customer?.Email || ''}`}>{order.Customer?.Email || 'N/A'}</a>
-                                    </div>
+                                    
                                     <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base">call</span>
                                         <a className="hover:underline" href={`tel:${order.Customer?.Phone || ''}`}>{order.Customer?.Phone || 'N/A'}</a>
@@ -191,6 +188,14 @@ export default function OrderDetailsPage() {
                                         <span className="material-symbols-outlined text-primary text-base mt-0.5">location_on</span>
                                         <span className="whitespace-pre-wrap">{order.Customer?.Address || 'No shipping address provided.'}</span>
                                     </div>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200 mb-1">
+                                        <span className="material-symbols-outlined text-primary text-base">Shop name</span>
+                                        <a className="hover:underline" href={`mailto:${order.Customer?.ShopName || ''}`}>{order.Customer?.ShopName || 'N/A'}</a>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200 mb-1">
+                                        <span className="material-symbols-outlined text-primary text-base">Shop Address</span>
+                                        <a className="hover:underline" href={`mailto:${order.Customer?.ShopAddress || ''}`}>{order.Customer?.ShopAddress || 'N/A'}</a>
                                 </div>
                             </div>
                         </div>

@@ -94,21 +94,6 @@ export function CustomerFormModal({
                                 />
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-bold text-text-main dark:text-gray-300">Email</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                                    <span className="material-symbols-outlined text-[20px]">mail</span>
-                                </div>
-                                <input
-                                    type="email"
-                                    value={customer.Email}
-                                    onChange={(e) => onChange('Email', e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
-                                    placeholder="michael@example.com"
-                                />
-                            </div>
-                        </div>
                     </div>
 
                     {/* Address */}
@@ -123,7 +108,37 @@ export function CustomerFormModal({
                                 onChange={(e) => onChange('Address', e.target.value)}
                                 rows={3}
                                 className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
-                                placeholder="Enter full delivery address"
+                                placeholder="Enter customer address"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Shop Name</label>
+                        <div className="relative">
+                            <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
+                                <span className="material-symbols-outlined text-[20px]">location_on</span>
+                            </div>
+                            <textarea
+                                value={customer.ShopName}
+                                onChange={(e) => onChange('ShopName', e.target.value)}
+                                rows={3}
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                placeholder="Enter Shop name"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Shop Address</label>
+                        <div className="relative">
+                            <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
+                                <span className="material-symbols-outlined text-[20px]">location_on</span>
+                            </div>
+                            <textarea
+                                value={customer.ShopAddress}
+                                onChange={(e) => onChange('ShopAddress', e.target.value)}
+                                rows={3}
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                placeholder="Enter shop address"
                             ></textarea>
                         </div>
                     </div>

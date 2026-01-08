@@ -14,18 +14,6 @@ public class ProductVariant
     [Required(ErrorMessage = "Size id is required.")]
     public int ProductSizeId { get; set; }
     public ProductSize? Size { get; set; }
-    [Required(ErrorMessage = "Variant Price is required.")]
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, double.MaxValue)]
-    public decimal VariantPrice { get; set; }
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, double.MaxValue)]
-    public decimal CostPrice { get; set; } = 0.0m;
-    [Column(TypeName = "decimal(18,2)")]
-    [Range(0, double.MaxValue)]
-    public decimal MSRP { get; set; } = 0.0m;
-    [Required(ErrorMessage = "Quantity is required.")]
-    [Range(0, int.MaxValue)]
     public int Quantity => ProductItems?
             .Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0;
     public int Defects => ProductItems?

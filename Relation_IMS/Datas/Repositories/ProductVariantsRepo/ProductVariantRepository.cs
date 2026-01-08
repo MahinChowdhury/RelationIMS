@@ -91,7 +91,6 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
             variant.ProductColorId = variantDTO.ProductColorId;
             variant.ProductSizeId = variantDTO.ProductSizeId;
-            variant.VariantPrice = variantDTO.VariantPrice;
 
             await _context.SaveChangesAsync();
             return variant;

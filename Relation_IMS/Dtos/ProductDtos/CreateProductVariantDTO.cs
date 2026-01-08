@@ -7,19 +7,10 @@ namespace Relation_IMS.Dtos.ProductDtos
     public class CreateProductVariantDTO
     {
         public int ProductId { get; set; }
+        [Required(ErrorMessage = "ProductColor Id is required.")]
         public int ProductColorId { get; set; }
-
+        [Required(ErrorMessage = "ProductSize Id is required.")]
         public int ProductSizeId { get; set; }
-        [Required(ErrorMessage = "Variant Price is required.")]
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue)]
-        public decimal VariantPrice { get; set; }
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue)]
-        public decimal CostPrice { get; set; } = 0.0m;
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0, double.MaxValue)]
-        public decimal MSRP { get; set; } = 0.0m;
 
         [Range(0,int.MaxValue)]
         [Required(ErrorMessage = "Quantity is required.")]

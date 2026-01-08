@@ -38,14 +38,34 @@ namespace Relation_IMS.Migrations
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
+                    b.Property<bool>("IsDueAllowed")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("NidNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReferenceName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReferencePhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShopAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShopName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -609,12 +629,6 @@ namespace Relation_IMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("CostPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MSRP")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("ProductColorId")
                         .HasColumnType("integer");
 
@@ -623,9 +637,6 @@ namespace Relation_IMS.Migrations
 
                     b.Property<int>("ProductSizeId")
                         .HasColumnType("integer");
-
-                    b.Property<decimal>("VariantPrice")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

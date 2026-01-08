@@ -52,7 +52,7 @@ namespace Relation_IMS.Services.AzureServices
              using var image = await Image.LoadAsync(stream);
 
              using var outputStream = new MemoryStream();
-             var encoder = new WebpEncoder { Quality = 75 };
+             var encoder = new WebpEncoder { Quality = 50 };
              await image.SaveAsync(outputStream, encoder);
              outputStream.Position = 0;
 

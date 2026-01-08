@@ -32,7 +32,8 @@ export default function CustomersPage() {
         Id: 0,
         Name: '',
         Phone: '',
-        Email: '',
+        ShopName: '',
+        ShopAddress:'',
         Address: ''
     });
 
@@ -171,7 +172,7 @@ export default function CustomersPage() {
     };
 
     const openCreate = () => {
-        setEditingCustomer({ Id: 0, Name: '', Phone: '', Email: '', Address: '' });
+        setEditingCustomer({ Id: 0, Name: '', Phone: '', ShopName: '',ShopAddress: '', Address: '' });
         setShowCreateModal(true);
     };
 
@@ -280,7 +281,7 @@ export default function CustomersPage() {
             {/* List Header (Desktop) */}
             <div className="hidden lg:flex px-4 text-xs font-bold text-text-secondary uppercase tracking-wider gap-3">
                 <div className="w-[180px] xl:w-[220px]">Customer</div>
-                <div className="flex-1 min-w-[140px]">Email</div>
+                <div className="flex-1 min-w-[140px]">Shop Name</div>
                 <div className="w-[115px] xl:w-[130px]">Mobile</div>
                 {/* Skipped Last Order Column */}
                 <div className="w-[80px] xl:w-[100px] text-right">Total Spent</div>
@@ -316,10 +317,10 @@ export default function CustomersPage() {
 
                             {/* Email */}
                             <div className="col-span-2 flex flex-col lg:flex-1 min-w-[140px]">
-                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Email</span>
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Shop Name</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">mail</span>
-                                    <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.Email}>{c.Email || '-'}</span>
+                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">shopname</span>
+                                    <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.ShopName}>{c.ShopName || '-'}</span>
                                 </div>
                             </div>
 

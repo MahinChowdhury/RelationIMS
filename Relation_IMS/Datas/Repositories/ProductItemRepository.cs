@@ -140,7 +140,7 @@ namespace Relation_IMS.Datas.Repositories
             {
                 ProductItemId = item.Id,
                 Reason = defectDto.Reason,
-                Status = "Pending Review",
+                Status = DefectStatus.Pending,
                 ReportedByUserId = userId,
                 DefectDate = DateTime.UtcNow
             };

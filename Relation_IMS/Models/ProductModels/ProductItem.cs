@@ -6,6 +6,7 @@ namespace Relation_IMS.Models.ProductModels
 {
     public class ProductItem
     {
+        [Key]
         public int Id { get; set; }
 
         [Required]
