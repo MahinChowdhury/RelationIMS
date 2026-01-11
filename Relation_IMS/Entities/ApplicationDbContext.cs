@@ -91,5 +91,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<InventoryTransferRecord> InventoryTransferRecords { get; set; }
     public DbSet<InventoryTransferRecordItem> InventoryTransferRecordItems { get; set; }
+    public DbSet<ProductLot> ProductLots { get; set; }
     public DbSet<OrderPayment> OrderPayments { get; set; }
 }

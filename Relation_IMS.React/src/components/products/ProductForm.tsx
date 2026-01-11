@@ -29,6 +29,7 @@ interface ProductFormProps {
     startStockEdit: (index: number, stock: StockItem) => void;
 
     getColorHex: (name: string) => string | null;
+    isLotMode?: boolean;
 }
 
 export function ProductForm({
@@ -37,7 +38,7 @@ export function ProductForm({
     onImagesSelected, removeImage,
     newStock, setNewStock, addStock, removeStock,
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
-    getColorHex
+    getColorHex, isLotMode = false
 }: ProductFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -183,7 +184,7 @@ export function ProductForm({
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-[#4e9767]">inventory</span>
-                        Initial Stock Levels
+                        {isLotMode ? 'Define Lot Variants' : 'Initial Stock Levels'}
                     </h3>
                 </div>
 
@@ -221,16 +222,18 @@ export function ProductForm({
                         </select>
                     </div>
 
-                    <div>
-                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Quantity</label>
-                        <input
-                            type="number"
-                            value={newStock.quantity}
-                            onChange={(e) => setNewStock({ ...newStock, quantity: parseInt(e.target.value) })}
-                            min="0"
-                            className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
-                        />
-                    </div>
+                    {!isLotMode && (
+                        <div>
+                            <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Quantity</label>
+                            <input
+                                type="number"
+                                value={newStock.quantity}
+                                onChange={(e) => setNewStock({ ...newStock, quantity: parseInt(e.target.value) })}
+                                min="0"
+                                className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
+                            />
+                        </div>
+                    )}
 
                     <div className="flex items-end">
                         <button
@@ -238,7 +241,7 @@ export function ProductForm({
                             onClick={addStock}
                             className="w-full px-4 py-2 bg-[#4e9767] hover:bg-[#3d7a52] text-white rounded-lg font-bold transition-all"
                         >
-                            + Add Variant
+                            + Add {isLotMode ? 'Variant' : 'Variant'}
                         </button>
                     </div>
                 </div>
@@ -249,12 +252,14 @@ export function ProductForm({
                         <div key={i} className="bg-white/40 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/10 p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 transition-colors group relative">
                             {/* Actions Overlay */}
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <button
-                                    onClick={() => startStockEdit(i, s)}
-                                    className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-[#4e9767]"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                                </button>
+                                {!isLotMode && (
+                                    <button
+                                        onClick={() => startStockEdit(i, s)}
+                                        className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-[#4e9767]"
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => removeStock(i)}
                                     className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-red-500"
@@ -273,30 +278,32 @@ export function ProductForm({
                                 <span className="text-[10px] uppercase tracking-wider text-text-secondary bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">{s.color}</span>
                             </div>
 
-                            {editingStockIndex === i ? (
-                                <div className="flex items-center gap-2 mt-1">
-                                    <input
-                                        type="number"
-                                        value={editedStock.quantity}
-                                        onChange={(e) => setEditedStock({ ...editedStock, quantity: parseInt(e.target.value) })}
-                                        className="w-full text-center text-xl font-bold p-1 rounded-lg border-gray-200 bg-white"
-                                    />
-                                    <button onClick={() => saveStockEdit(i)} className="text-green-600 font-bold text-xs">OK</button>
-                                    <button onClick={cancelStockEdit} className="text-red-500 font-bold text-xs">X</button>
-                                </div>
-                            ) : (
-                                <div className="mt-1">
-                                    <div className="w-full text-center text-xl font-bold p-2 text-[#0e1b12] dark:text-white">
-                                        {s.quantity} <span className="text-xs font-normal text-gray-500">Units</span>
+                            {(!isLotMode) ? (
+                                editingStockIndex === i ? (
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <input
+                                            type="number"
+                                            value={editedStock.quantity}
+                                            onChange={(e) => setEditedStock({ ...editedStock, quantity: parseInt(e.target.value) })}
+                                            className="w-full text-center text-xl font-bold p-1 rounded-lg border-gray-200 bg-white"
+                                        />
+                                        <button onClick={() => saveStockEdit(i)} className="text-green-600 font-bold text-xs">OK</button>
+                                        <button onClick={cancelStockEdit} className="text-red-500 font-bold text-xs">X</button>
                                     </div>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="mt-1">
+                                        <div className="w-full text-center text-xl font-bold p-2 text-[#0e1b12] dark:text-white">
+                                            {s.quantity} <span className="text-xs font-normal text-gray-500">Units</span>
+                                        </div>
+                                    </div>
+                                )
+                            ) : null}
                         </div>
                     ))}
 
                     {stockItems.length === 0 && (
                         <div className="col-span-full py-8 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-                            No stock variants added yet. Add a variant above.
+                            No variants configured yet. Add a variant above.
                         </div>
                     )}
                 </div>

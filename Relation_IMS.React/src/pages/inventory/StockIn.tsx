@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function StockIn() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
+    const [activeTab, setActiveTab] = useState<'existing' | 'new' | 'lot'>('existing');
 
     // --- Product Form State (Copied from Products.tsx / ProductModals logic) ---
     // In a real app, this should be a custom hook "useProductForm"
@@ -16,6 +16,8 @@ export default function StockIn() {
         Name: '',
         Description: '',
         BasePrice: 0,
+        CostPrice: 0,
+        MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
         ImageUrls: []
@@ -34,12 +36,16 @@ export default function StockIn() {
     // Existing Product State
     const [foundProduct, setFoundProduct] = useState<Product | null>(null);
     const [loadingProduct, setLoadingProduct] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [addStockQuantities, setAddStockQuantities] = useState<{ [variantId: number]: number }>({});
 
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [showScanner, setShowScanner] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [lotQuantity, setLotQuantity] = useState<number>(0);
+    const [isExistingLotMode, setIsExistingLotMode] = useState(false);
+    const [existingLotQuantity, setExistingLotQuantity] = useState<number>(0);
 
     const handleScan = async (code: string) => {
         setSearchQuery(code);
@@ -108,49 +114,110 @@ export default function StockIn() {
         setAddStockQuantities(prev => ({ ...prev, [variantId]: val }));
     };
 
+
+
     const submitAddStock = async () => {
         if (!foundProduct) return;
 
         const updates = Object.entries(addStockQuantities).filter(([_, qty]) => qty > 0);
 
-        if (updates.length === 0 && newVariantsToCreate.length === 0) {
+        if (updates.length === 0 && newVariantsToCreate.length === 0 && !isExistingLotMode) {
             alert("No changes to save.");
             return;
         }
 
-        try {
-            setLoadingProduct(true);
+        if (isExistingLotMode && existingLotQuantity <= 0) {
+            alert("Please enter a valid lot quantity.");
+            return;
+        }
 
-            // 1. Update existing variants
-            for (const [variantIdStr, qty] of updates) {
-                const variantId = parseInt(variantIdStr);
-                await api.post(`/ProductVariants/${variantId}/stock`, {
-                    Quantity: qty,
-                    InventoryId: 1
-                });
+        try {
+            setIsSaving(true);
+
+            // 1. Update existing variants (using Bulk Endpoint for performance)
+            const bulkItems = [];
+
+            // 1. Prepare Bulk Update
+            let lotId = null;
+
+            if (isExistingLotMode) {
+                // Create a Lot Record first for tracking
+                try {
+                    const lotRes = await api.post('/ProductLot/existing', {
+                        ProductId: foundProduct.Id,
+                        LotQuantity: existingLotQuantity
+                    });
+                    lotId = lotRes.data.LotId;
+                } catch (e) {
+                    console.error("Failed to create lot record", e);
+                    // Proceed anyway? Or stop? Let's stop to ensure traceability.
+                    alert("Failed to initialize Lot. Please try again.");
+                    return;
+                }
+
+                // Bulk update ALL variants with the lot quantity
+                if (foundProduct.Variants) {
+                    for (const variant of foundProduct.Variants) {
+                        bulkItems.push({
+                            VariantId: variant.Id,
+                            Quantity: existingLotQuantity,
+                            InventoryId: 1
+                        });
+                    }
+                }
+            } else {
+                // Manual Mode - process specific updates
+                for (const [variantIdStr, qty] of updates) {
+                    bulkItems.push({
+                        VariantId: parseInt(variantIdStr),
+                        Quantity: qty,
+                        InventoryId: 1
+                    });
+                }
             }
 
-            // 2. Create new variants
-            for (const v of newVariantsToCreate) {
-                await api.post('/ProductVariants', {
-                    ProductId: foundProduct.Id,
-                    ProductColorId: v.colorId,
-                    ProductSizeId: v.sizeId,
-                    VariantPrice: foundProduct.BasePrice,
-                    Quantity: v.quantity,
-                    DefaultInventoryId: 1
-                });
+            if (bulkItems.length > 0) {
+                // Pass LotId if available
+                await api.post('/ProductVariants/stock/bulk', { Items: bulkItems, LotId: lotId });
+            }
+
+            // 2. Create new variants / Handle buffered new variants
+            // Note: New variants must be created individually as they don't have IDs yet
+            if (isExistingLotMode) {
+                // Also handle any new variants in the buffer for Lot Mode
+                for (const v of newVariantsToCreate) {
+                    await api.post('/ProductVariants', {
+                        ProductId: foundProduct.Id,
+                        ProductColorId: v.colorId,
+                        ProductSizeId: v.sizeId,
+                        VariantPrice: foundProduct.BasePrice,
+                        Quantity: existingLotQuantity, // Override with Lot Qty
+                        DefaultInventoryId: 1
+                    });
+                }
+            } else {
+                // Manual Mode - Create new variants
+                for (const v of newVariantsToCreate) {
+                    await api.post('/ProductVariants', {
+                        ProductId: foundProduct.Id,
+                        ProductColorId: v.colorId,
+                        ProductSizeId: v.sizeId,
+                        VariantPrice: foundProduct.BasePrice,
+                        Quantity: v.quantity,
+                        DefaultInventoryId: 1
+                    });
+                }
             }
 
             alert("Updates saved successfully!");
             setAddStockQuantities({});
             setNewVariantsToCreate([]);
-            handleSearch(searchQuery, true);
+            await handleSearch(searchQuery, true);
         } catch (err) {
             console.error(err);
             alert("Failed to save updates.");
         } finally {
-            setLoadingProduct(false);
+            setIsSaving(false);
         }
     };
 
@@ -277,6 +344,47 @@ export default function StockIn() {
         }
     };
 
+    const createLot = async () => {
+        if (!currentProduct.Name || !currentProduct.CategoryId || lotQuantity <= 0) {
+            alert('Please fill in required fields and enter a valid Lot Quantity');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('Name', currentProduct.Name);
+            formData.append('Description', currentProduct.Description || '');
+            formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
+            formData.append('CostPrice', currentProduct.CostPrice?.toString() || '0');
+            formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
+            formData.append('CategoryId', currentProduct.CategoryId.toString());
+            formData.append('BrandId', currentProduct.BrandId.toString());
+            formData.append('LotQuantity', lotQuantity.toString());
+
+            stockItems.forEach((s, index) => {
+                const colorId = colors.find(c => c.name === s.color)?.id;
+                const sizeId = availableSizes.find(sz => sz.name === s.size)?.id;
+                if (colorId && sizeId) {
+                    formData.append(`Variants[${index}].ColorId`, colorId.toString());
+                    formData.append(`Variants[${index}].SizeId`, sizeId.toString());
+                }
+            });
+
+            imageFiles.forEach(file => formData.append('Images', file));
+
+            await api.post('/ProductLot', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            alert('Lot created successfully!');
+            navigate('/products');
+
+        } catch (e) {
+            console.error(e);
+            alert('Failed to create lot');
+        }
+    };
+
     const [newVariant, setNewVariant] = useState({ colorId: 0, sizeId: 0, quantity: 1 });
 
     const addVariantToCreate = () => {
@@ -378,10 +486,20 @@ export default function StockIn() {
                             <span className="material-symbols-outlined text-[20px]">add_circle</span>
                             New Product
                         </button>
+                        <button
+                            onClick={() => setActiveTab('lot')}
+                            className={`flex-1 py-4 text-sm font-medium transition-all flex justify-center items-center gap-2
+                                ${activeTab === 'lot'
+                                    ? 'text-[#17cf54] border-b-2 border-[#17cf54] bg-[#17cf54]/5 dark:bg-[#17cf54]/10 font-bold'
+                                    : 'text-gray-500 hover:text-[#17cf54] hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
+                        >
+                            <span className="material-symbols-outlined text-[20px]">dataset</span>
+                            Custom Lot
+                        </button>
                     </div>
 
                     <div className="p-6 md:p-8">
-                        {activeTab === 'existing' ? (
+                        {activeTab === 'existing' && (
                             <div className="flex flex-col gap-6 animate-fadeIn">
                                 {/* Search Section */}
                                 <div className="flex flex-col gap-4 relative">
@@ -416,17 +534,71 @@ export default function StockIn() {
                                 {loadingProduct && <div className="text-center py-10 font-bold text-gray-400">Loading Product...</div>}
 
                                 {foundProduct && (
-                                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 animate-fadeIn">
+                                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 animate-fadeIn relative overflow-hidden">
+                                        {/* Progress Bar Overlay */}
+                                        {isSaving && (
+                                            <>
+                                                <style>{`
+                                                    @keyframes progress-slide {
+                                                        0% { transform: translateX(-100%); }
+                                                        100% { transform: translateX(400%); }
+                                                    }
+                                                `}</style>
+                                                <div className="absolute top-0 left-0 w-full h-1 bg-gray-100 dark:bg-gray-700 z-20">
+                                                    <div
+                                                        className="h-full bg-[#17cf54] w-1/3"
+                                                        style={{ animation: 'progress-slide 1s infinite linear' }}
+                                                    ></div>
+                                                </div>
+                                            </>
+                                        )}
                                         <div className="flex justify-between items-start mb-6">
                                             <div>
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
                                                 <p className="text-sm text-gray-500">{foundProduct.Category?.Name} • {foundProduct.Brand?.Name}</p>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-xs uppercase font-bold text-gray-400">Total Stock</p>
-                                                <p className="text-2xl font-black text-[#17cf54]">{foundProduct.TotalQuantity}</p>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <div className="text-right">
+                                                    <p className="text-xs uppercase font-bold text-gray-400">Total Stock</p>
+                                                    <p className="text-2xl font-black text-[#17cf54]">{foundProduct.TotalQuantity}</p>
+                                                </div>
+
+                                                {/* Toggle Mode */}
+                                                <div className="flex items-center bg-gray-100 dark:bg-black/20 p-1 rounded-lg">
+                                                    <button
+                                                        onClick={() => setIsExistingLotMode(false)}
+                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isExistingLotMode ? 'bg-white shadow text-[#17cf54]' : 'text-gray-400'}`}
+                                                    >
+                                                        Manual
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setIsExistingLotMode(true)}
+                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${isExistingLotMode ? 'bg-white shadow text-[#17cf54]' : 'text-gray-400'}`}
+                                                    >
+                                                        By Lot
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
+
+                                        {isExistingLotMode && (
+                                            <div className="mb-6 bg-[#17cf54]/10 dark:bg-[#17cf54]/20 rounded-xl p-4 border border-[#17cf54]/20 flex items-center gap-4">
+                                                <div className="w-32">
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Lot Quantity</label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={existingLotQuantity}
+                                                        onChange={(e) => setExistingLotQuantity(parseInt(e.target.value) || 0)}
+                                                        className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-lg font-bold rounded-lg p-2 text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 text-sm text-gray-600 dark:text-gray-300">
+                                                    Enter the Lot Quantity to add to <strong>ALL</strong> variants below.
+                                                </div>
+                                            </div>
+                                        )}
 
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm text-left">
@@ -435,7 +607,9 @@ export default function StockIn() {
                                                         <th className="px-4 py-3 rounded-l-lg">Variant</th>
                                                         <th className="px-4 py-3 text-center">Current Stock</th>
                                                         <th className="px-4 py-3 text-center">Defects</th>
-                                                        <th className="px-4 py-3 text-center rounded-r-lg w-48">Add Stock</th>
+                                                        <th className="px-4 py-3 text-center rounded-r-lg w-48">
+                                                            {isExistingLotMode ? 'Resulting Add' : 'Add Stock'}
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100 dark:divide-white/10">
@@ -454,15 +628,23 @@ export default function StockIn() {
                                                             </td>
                                                             <td className="px-4 py-3 text-center font-mono font-bold">{variant.Quantity}</td>
                                                             <td className="px-4 py-3 text-center text-red-400">{variant.Defects}</td>
-                                                            <td className="px-4 py-3">
-                                                                <input
-                                                                    type="number"
-                                                                    min="0"
-                                                                    className="w-full bg-[#f8fcf9] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-center font-bold focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                                                    placeholder="+0"
-                                                                    value={addStockQuantities[variant.Id] || ''}
-                                                                    onChange={(e) => handleAddStockChange(variant.Id, e.target.value)}
-                                                                />
+                                                            <td className="px-4 py-3 text-center rounded-r-lg w-48">
+                                                                <div className="flex items-center gap-2">
+                                                                    {isExistingLotMode ? (
+                                                                        <div className="w-full bg-[#17cf54]/10 border border-[#17cf54]/20 rounded-lg px-3 py-1.5 text-center font-bold text-[#17cf54]">
+                                                                            +{existingLotQuantity}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            className="w-full bg-[#f8fcf9] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-center font-bold focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                                            placeholder="+0"
+                                                                            value={addStockQuantities[variant.Id] || ''}
+                                                                            onChange={(e) => handleAddStockChange(variant.Id, e.target.value)}
+                                                                        />
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -480,7 +662,9 @@ export default function StockIn() {
                                                             <td className="px-4 py-3 text-center font-mono text-gray-400">—</td>
                                                             <td className="px-4 py-3 text-center text-gray-400">—</td>
                                                             <td className="px-4 py-3 flex items-center gap-2">
-                                                                <div className="flex-1 text-center font-black text-[#17cf54] text-lg">+{v.quantity}</div>
+                                                                <div className="flex-1 text-center font-black text-[#17cf54] text-lg">
+                                                                    +{isExistingLotMode ? existingLotQuantity : v.quantity}
+                                                                </div>
                                                                 <button
                                                                     onClick={() => removeNewVariant(idx)}
                                                                     className="p-1 text-gray-400 hover:text-red-500 transition-colors"
@@ -578,8 +762,8 @@ export default function StockIn() {
                                     />
                                 )}
                             </div>
-                        ) : (
-                            // New Product Form
+                        )}
+                        {activeTab === 'new' && (
                             <div className="flex flex-col gap-8 animate-fadeIn">
                                 <ProductForm
                                     product={currentProduct}
@@ -626,8 +810,90 @@ export default function StockIn() {
                                 </div>
                             </div>
                         )}
+
+                        {activeTab === 'lot' && (
+                            // Custom Lot Form
+                            <div className="flex flex-col gap-8 animate-fadeIn">
+                                <ProductForm
+                                    product={currentProduct}
+                                    categories={categories}
+                                    brands={brands}
+                                    colors={colors}
+                                    availableSizes={availableSizes}
+                                    stockItems={stockItems}
+                                    selectedImages={selectedImages}
+                                    onChange={handleProductChange}
+                                    onCategoryChange={onCategoryChange}
+                                    onImagesSelected={onImagesSelected}
+                                    removeImage={removeImage}
+                                    newStock={newStock}
+                                    setNewStock={setNewStock}
+                                    addStock={addStock}
+                                    removeStock={removeStock}
+                                    editingStockIndex={editingStockIndex}
+                                    editedStock={editedStock}
+                                    setEditedStock={setEditedStock}
+                                    saveStockEdit={saveStockEdit}
+                                    cancelStockEdit={() => setEditingStockIndex(null)}
+                                    startStockEdit={startStockEdit}
+                                    getColorHex={getColorHex}
+                                    isLotMode={true}
+                                />
+
+                                <div className="border-t border-gray-200/50 dark:border-white/10 pt-6">
+                                    <div className="bg-[#17cf54]/10 dark:bg-[#17cf54]/20 rounded-xl p-6 border border-[#17cf54]/20">
+                                        <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white mb-2 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-[#17cf54]">layers</span>
+                                            Lot Configuration
+                                        </h3>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                                            Define the total quantity for this lot. This quantity will be applied to <strong>each</strong> variant defined above.
+                                            <br />
+                                            <span className="text-xs opacity-75">Example: 2 Variants x Lot Quantity 10 = 20 Total Items generated.</span>
+                                        </p>
+
+                                        <div className="flex flex-col md:flex-row gap-4 items-end">
+                                            <div className="w-full md:w-48">
+                                                <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Lot Quantity</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={lotQuantity}
+                                                    onChange={(e) => setLotQuantity(parseInt(e.target.value))}
+                                                    className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-lg font-bold rounded-lg p-3 text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                            <div className="flex-1 text-sm text-[#4e9767] font-bold pb-3">
+                                                Total Items to Generate: <span className="text-xl ml-1 text-[#0e1b12] dark:text-white">{lotQuantity * stockItems.length}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-3 mt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/inventory')}
+                                        className="px-5 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={createLot}
+                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#17cf54] hover:bg-[#12a542] rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                        disabled={stockItems.length === 0 || lotQuantity <= 0}
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">save</span>
+                                        Create Custom Lot
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
+
             </div>
         </div>
     );

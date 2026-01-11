@@ -9,6 +9,9 @@ namespace Relation_IMS.Models.ProductModels
         [Key]
         public int Id { get; set; }
 
+        public int? ProductLotId { get; set; }
+        public ProductLot? ProductLot { get; set; }
+
         [Required]
         public int ProductVariantId { get; set; }
         public ProductVariant? ProductVariant { get; set; }

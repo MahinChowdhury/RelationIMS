@@ -18,5 +18,7 @@ public class ProductVariant
             .Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0;
     public int Defects => ProductItems?
             .Count(pi => pi.IsDefected) ?? 0;
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal VariantPrice { get; set; }
     public List<ProductItem>? ProductItems { get; set; }
 }
