@@ -90,8 +90,7 @@ export default function OrdersPage() {
                 order.Id.toString().includes(term) ||
                 order.CustomerId.toString().includes(term) ||
                 order.Customer?.Name?.toLowerCase().includes(term) ||
-                order.Customer?.Phone?.includes(term) ||
-                order.Customer?.Email?.toLowerCase().includes(term)
+                order.Customer?.Phone?.includes(term)
             );
         }
 
@@ -140,7 +139,7 @@ export default function OrdersPage() {
             <nav aria-label="Breadcrumb" className="flex">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
                     <li className="inline-flex items-center">
-                        <Link to="/" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
+                        <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
                             <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
                             Dashboard
                         </Link>
@@ -148,7 +147,7 @@ export default function OrdersPage() {
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400">Orders</span>
+                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">Orders</span>
                         </div>
                     </li>
                     <li aria-current="page">
@@ -260,7 +259,7 @@ export default function OrdersPage() {
                                         {order.Customer?.Name || `Customer #${order.CustomerId}`}
                                     </Link>
                                 </div>
-                                <p className="text-[11px] text-text-secondary font-medium mt-0.5">{order.Customer?.Email || 'No email'}</p>
+                                <p className="text-[11px] text-text-secondary font-medium mt-0.5">{order.Customer?.ShopName || 'No email'}</p>
                             </div>
                         </div>
 

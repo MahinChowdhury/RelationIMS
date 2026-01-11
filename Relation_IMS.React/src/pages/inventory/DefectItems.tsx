@@ -217,7 +217,7 @@ export default function DefectItems() {
                         ) : (
                             <span className="material-symbols-outlined text-[24px]">arrow_forward</span>
                         )}
-                        <span className="md:hidden">{registering ? 'Processing...' : 'Done adding'}</span>
+                        <span className="md:hidden">{registering ? 'Processing...' : 'Mark As Defected'}</span>
                     </button>
                 </div>
             </div>

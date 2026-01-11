@@ -196,7 +196,7 @@ export default function CustomersPage() {
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <a href="#" className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white">Customers</a>
+                            <span className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white cursor-pointer">Customers</span>
                         </div>
                     </li>
                     <li aria-current="page">
@@ -282,6 +282,7 @@ export default function CustomersPage() {
             <div className="hidden lg:flex px-4 text-xs font-bold text-text-secondary uppercase tracking-wider gap-3">
                 <div className="w-[180px] xl:w-[220px]">Customer</div>
                 <div className="flex-1 min-w-[140px]">Shop Name</div>
+                <div className="flex-1 min-w-[140px]">Shop Address</div>
                 <div className="w-[115px] xl:w-[130px]">Mobile</div>
                 {/* Skipped Last Order Column */}
                 <div className="w-[80px] xl:w-[100px] text-right">Total Spent</div>
@@ -315,12 +316,20 @@ export default function CustomersPage() {
                                 </div>
                             </div>
 
-                            {/* Email */}
+                            {/* ShopName */}
                             <div className="col-span-2 flex flex-col lg:flex-1 min-w-[140px]">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Shop Name</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">shopname</span>
+                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">Mobile</span>
                                     <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.ShopName}>{c.ShopName || '-'}</span>
+                                </div>
+                            </div>
+                            {/* Shop Address */}
+                            <div className="col-span-2 flex flex-col lg:flex-1 min-w-[140px]">
+                                <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">shopaddress</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">location_on</span>
+                                    <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.ShopAddress}>{c.ShopAddress || '-'}</span>
                                 </div>
                             </div>
 
