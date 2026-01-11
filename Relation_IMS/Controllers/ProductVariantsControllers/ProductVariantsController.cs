@@ -87,6 +87,16 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             return Ok(items);
         }
 
+        [HttpPost("stock/bulk")]
+        public async Task<ActionResult<List<ProductItem>>> AddStockBulk([FromBody] BulkAddStockDTO bulkDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var items = await _repo.AddStockBulkAsync(bulkDto);
+            return Ok(items);
+        }
+
 
     }
 }

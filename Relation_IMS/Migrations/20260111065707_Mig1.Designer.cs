@@ -13,7 +13,7 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260108180930_Mig1")]
+    [Migration("20260111065707_Mig1")]
     partial class Mig1
     {
         /// <inheritdoc />
@@ -482,6 +482,9 @@ namespace Relation_IMS.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("CostPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -592,6 +595,9 @@ namespace Relation_IMS.Migrations
                     b.Property<bool>("IsSold")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("ProductLotId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("ProductVariantId")
                         .HasColumnType("integer");
 
@@ -599,9 +605,42 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("InventoryId");
 
+                    b.HasIndex("ProductLotId");
+
                     b.HasIndex("ProductVariantId");
 
                     b.ToTable("ProductItems");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductLot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("LotQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("ProductLots");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductSize", b =>
@@ -640,6 +679,9 @@ namespace Relation_IMS.Migrations
 
                     b.Property<int>("ProductSizeId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("VariantPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -866,6 +908,10 @@ namespace Relation_IMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Relation_IMS.Models.ProductModels.ProductLot", "ProductLot")
+                        .WithMany()
+                        .HasForeignKey("ProductLotId");
+
                     b.HasOne("Relation_IMS.Models.ProductModels.ProductVariant", "ProductVariant")
                         .WithMany("ProductItems")
                         .HasForeignKey("ProductVariantId")
@@ -874,7 +920,20 @@ namespace Relation_IMS.Migrations
 
                     b.Navigation("Inventory");
 
+                    b.Navigation("ProductLot");
+
                     b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductLot", b =>
+                {
+                    b.HasOne("Relation_IMS.Models.ProductModels.Product", "Product")
+                        .WithOne("Lot")
+                        .HasForeignKey("Relation_IMS.Models.ProductModels.ProductLot", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductVariant", b =>
@@ -943,6 +1002,8 @@ namespace Relation_IMS.Migrations
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Product", b =>
                 {
+                    b.Navigation("Lot");
+
                     b.Navigation("OrderItems");
 
                     b.Navigation("Variants");

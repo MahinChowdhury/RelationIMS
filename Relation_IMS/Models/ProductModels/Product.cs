@@ -7,6 +7,7 @@ namespace Relation_IMS.Models.ProductModels
     public class Product
     {
         public int Id { get; set; }
+        public string? Code { get; set; } 
         [Required(ErrorMessage = "Product name is required.")]
         public string Name { get; set; } = null!;
         public List<string>? ImageUrls { get; set; }
@@ -30,6 +31,7 @@ namespace Relation_IMS.Models.ProductModels
         public int BrandId { get; set; }
         public Brand? Brand { get; set; }
         public List<ProductVariant>? Variants { get; set; } = new();
+        public ProductLot? Lot { get; set; }
         public List<OrderItem>? OrderItems { get; set; }
     }
 }

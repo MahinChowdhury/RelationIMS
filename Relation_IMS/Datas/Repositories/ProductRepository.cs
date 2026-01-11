@@ -5,6 +5,7 @@ using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 using System;
 
 namespace Relation_IMS.Datas.Repositories
@@ -13,18 +14,37 @@ namespace Relation_IMS.Datas.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public ProductRepository(ApplicationDbContext context, IMapper mapper)
+        private readonly ProductCodeGenerator _codeGenerator;
+        public ProductRepository(ApplicationDbContext context, IMapper mapper, ProductCodeGenerator codeGenerator)
         {
             _context = context;
             _mapper = mapper;
+            _codeGenerator = codeGenerator;
         }
 
         public async Task<Product?> CreateProductAsync(CreateNewProductDTO productDto)
         {
             var product = _mapper.Map<Product>(productDto);
             Console.WriteLine($"Mapped Product: {product.Name}, CategoryId: {product.CategoryId}");
+            
+            // Get category to generate code
+            var category = await _context.Categories.FindAsync(product.CategoryId);
+            if (category == null)
+                throw new InvalidOperationException($"Category with ID {product.CategoryId} not found");
+            
+            // Ensure category has a code
+            if (string.IsNullOrEmpty(category.Code))
+            {
+                category.Code = _codeGenerator.GenerateCategoryCode(category.Name);
+            }
+            
             var created = await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
+            
+            // Generate product code: {CategoryFirstLetter}{ProductId:D4}
+            product.Code = _codeGenerator.GenerateProductCode(category.Code, product.Id);
+            await _context.SaveChangesAsync();
+            
             return product;
         }
 

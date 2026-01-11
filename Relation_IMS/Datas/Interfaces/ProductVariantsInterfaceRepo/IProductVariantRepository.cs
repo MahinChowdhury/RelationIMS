@@ -15,5 +15,6 @@ namespace Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo
         Task<ProductVariant?> DeleteProductVariantAsync(int id);
         Task<List<ProductVariant>> GetProductVariantsByProductIdAsync(int id);
         Task<List<ProductItem>> AddStockAsync(int variantId, int quantity, int inventoryId);
+        Task<List<ProductItem>> AddStockBulkAsync(BulkAddStockDTO bulkDto);
     }
 }
