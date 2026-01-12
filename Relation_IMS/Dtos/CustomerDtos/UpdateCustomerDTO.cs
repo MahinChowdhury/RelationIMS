@@ -16,5 +16,9 @@ namespace Relation_IMS.Dtos.CustomerDtos
         public string ShopName { get; set; } = null!;
         [Required(ErrorMessage = "Shop address is required.")]
         public string ShopAddress { get; set; } = null!;
+        public bool IsDueAllowed { get; set; } = false;
+        public string NidNumber { get; set; } = string.Empty;
+        public string ReferenceName { get; set; } = string.Empty;
+        public string ReferencePhoneNumber { get; set; } = string.Empty;
     }
 }

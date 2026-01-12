@@ -74,6 +74,10 @@ namespace Relation_IMS.Datas.Repositories
             customer.Address = updateDto.Address;
             customer.ShopAddress = updateDto.ShopAddress;
             customer.ShopName = updateDto.ShopName;
+            customer.IsDueAllowed = updateDto.IsDueAllowed;
+            customer.NidNumber = updateDto.NidNumber;
+            customer.ReferenceName = updateDto.ReferenceName;
+            customer.ReferencePhoneNumber = updateDto.ReferencePhoneNumber;
 
             await _context.SaveChangesAsync();
 

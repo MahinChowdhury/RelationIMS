@@ -9,6 +9,13 @@ interface Customer {
     Name: string;
     Phone: string;
     Email: string;
+    Address: string;
+    ShopName: string;
+    ShopAddress: string;
+    IsDueAllowed: boolean;
+    NidNumber?: string;
+    ReferenceName?: string;
+    ReferencePhoneNumber?: string;
 }
 
 // Updated ProductItem Interface to match Backend Models
@@ -69,6 +76,12 @@ export default function CreateOrder() {
     const [customerSearch, setCustomerSearch] = useState('');
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+    // Allow Due Logic
+    const [allowDue, setAllowDue] = useState(false);
+    const [nidNumber, setNidNumber] = useState('');
+    const [referenceName, setReferenceName] = useState('');
+    const [referencePhone, setReferencePhone] = useState('');
 
     // Product Item Cache (Since no search API) - REMOVED
     const [productSearch, setProductSearch] = useState('');
@@ -275,6 +288,25 @@ export default function CreateOrder() {
 
 
     // --- Order Submission ---
+    const updateCustomerForDue = async () => {
+        if (!selectedCustomer) return true; // Should not happen
+
+        try {
+            await api.put(`/Customer/${selectedCustomer.Id}`, {
+                ...selectedCustomer,
+                IsDueAllowed: true,
+                NidNumber: nidNumber,
+                ReferenceName: referenceName,
+                ReferencePhoneNumber: referencePhone
+            });
+            return true;
+        } catch (error) {
+            console.error("Failed to update customer due info", error);
+            alert("Failed to update customer information for Due. Order creation aborted.");
+            return false;
+        }
+    };
+
     const handleSubmit = async () => {
         if (!selectedCustomer) {
             alert('Please select a customer.');
@@ -285,8 +317,35 @@ export default function CreateOrder() {
             return;
         }
 
+        // Check if Due is allowed versus Due Amount
+        const computedDue = Math.max(0, netAmount - paidAmount);
+
+        if (computedDue > 0) {
+            if (!allowDue) {
+                alert("This order has a due amount but 'Allow Due' is not checked. Please clear the due or enable 'Allow Due'.");
+                return;
+            }
+            // If allowDue is true, we must have the required fields (Checked next)
+        }
+
+        if (allowDue) {
+            if (!nidNumber || !referenceName || !referencePhone) {
+                alert('Please provide NID, Reference Name and Reference Number for allowing due.');
+                return;
+            }
+        }
+
         setSubmitLoading(true);
         try {
+            // Update Customer if Allow Due is checked
+            if (allowDue) {
+                const success = await updateCustomerForDue();
+                if (!success) {
+                    setSubmitLoading(false);
+                    return;
+                }
+            }
+
             // 1. Create Order Header
             const orderPayload = {
                 CustomerId: selectedCustomer.Id,
@@ -295,7 +354,7 @@ export default function CreateOrder() {
                 NetAmount: netAmount,
                 PaidAmount: paidAmount,
                 PaymentStatus: paidAmount >= netAmount ? 2 : (paidAmount > 0 ? 1 : 0),
-                UserId: 1, // Hardcoded
+                UserId: 1, // Hardcoded as per user request
                 Remarks: notes,
                 Payments: payments.map(p => ({
                     PaymentMethod: p.method === 'Cash' ? 0 : p.method === 'Bank' ? 1 : 2,
@@ -399,6 +458,10 @@ export default function CreateOrder() {
                                 onChange={(e) => {
                                     setCustomerSearch(e.target.value);
                                     setSelectedCustomer(null); // Clear selection on edit
+                                    setAllowDue(false);
+                                    setNidNumber('');
+                                    setReferenceName('');
+                                    setReferencePhone('');
                                 }}
                                 onFocus={() => setShowCustomerDropdown(true)}
                                 onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 200)} // Delay to allow click
@@ -422,6 +485,19 @@ export default function CreateOrder() {
                                             onClick={() => {
                                                 setSelectedCustomer(c);
                                                 setShowCustomerDropdown(false);
+                                                // Pre-fill Logic
+                                                if (c.IsDueAllowed || c.NidNumber || c.ReferenceName || c.ReferencePhoneNumber) {
+                                                    setAllowDue(c.IsDueAllowed || false);
+                                                    setNidNumber(c.NidNumber || '');
+                                                    setReferenceName(c.ReferenceName || '');
+                                                    setReferencePhone(c.ReferencePhoneNumber || '');
+                                                } else {
+                                                    // Reset if new customer doesn't have data
+                                                    setAllowDue(false);
+                                                    setNidNumber('');
+                                                    setReferenceName('');
+                                                    setReferencePhone('');
+                                                }
                                             }}
                                         >
                                             <div>
@@ -434,6 +510,9 @@ export default function CreateOrder() {
                             )}
                         </div>
                     </div>
+
+                    {/* Allow Due Section */}
+
 
                     {/* Scan Section */}
                     <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-3 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden">
@@ -643,6 +722,59 @@ export default function CreateOrder() {
                         </div>
 
                         <div className="mb-6">
+                            {/* Allow Due Section Moved Here */}
+                            {selectedCustomer && (
+                                <div className={`rounded-xl shadow-sm border p-4 mb-4 transition-colors ${allowDue ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800' : 'bg-[#f8fcf9] dark:bg-gray-800/30 border-[#e7f3eb] dark:border-gray-700'}`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id="allowDueSummary"
+                                                checked={allowDue}
+                                                onChange={(e) => setAllowDue(e.target.checked)}
+                                                className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500 border-gray-300 dark:border-gray-600"
+                                            />
+                                            <label htmlFor="allowDueSummary" className="font-bold text-sm text-text-main dark:text-white cursor-pointer select-none">
+                                                Allow Due
+                                            </label>
+                                        </div>
+                                        {allowDue && <span className="text-[10px] bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Required</span>}
+                                    </div>
+
+                                    {allowDue && (
+                                        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-1 duration-200 mt-3 pt-3 border-t border-orange-100 dark:border-white/10">
+                                            <div>
+                                                <input
+                                                    type="text"
+                                                    className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-1.5 px-2 text-xs focus:border-orange-500 focus:ring-orange-500"
+                                                    placeholder="National ID Number"
+                                                    value={nidNumber}
+                                                    onChange={(e) => setNidNumber(e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="text"
+                                                    className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-1.5 px-2 text-xs focus:border-orange-500 focus:ring-orange-500"
+                                                    placeholder="Ref. Person Name"
+                                                    value={referenceName}
+                                                    onChange={(e) => setReferenceName(e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <input
+                                                    type="text"
+                                                    className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-1.5 px-2 text-xs focus:border-orange-500 focus:ring-orange-500"
+                                                    placeholder="Ref. Phone Number"
+                                                    value={referencePhone}
+                                                    onChange={(e) => setReferencePhone(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Payment Details (Split Payment)</label>
 
                             <div className="bg-[#f8fcf9] dark:bg-gray-800/50 p-3 rounded-lg border border-[#e7f3eb] dark:border-gray-700 mb-3">
