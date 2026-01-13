@@ -63,7 +63,7 @@ namespace Relation_IMS.Datas.Repositories
             return item;
         }
 
-        public async Task<ProductItem?> GetProductItemByCodeAsync(string code)
+        public async Task<ProductItemResponseDTO?> GetProductItemByCodeAsync(string code)
         {
             var item = await _context.ProductItems
                 .Include(x => x.ProductVariant)
@@ -75,7 +75,24 @@ namespace Relation_IMS.Datas.Repositories
                 .Include(x => x.Inventory)
                 .FirstOrDefaultAsync(x => x.Code == code);
 
-            return item;
+            if (item == null) return null;
+
+            // Map to DTO to ensure all price fields are included
+            return new ProductItemResponseDTO
+            {
+                Id = item.Id,
+                Code = item.Code,
+                ProductVariantId = item.ProductVariantId,
+                IsDefected = item.IsDefected,
+                IsSold = item.IsSold,
+                VariantPrice = item.ProductVariant?.VariantPrice ?? 0,
+                ColorName = item.ProductVariant?.Color?.Name,
+                SizeName = item.ProductVariant?.Size?.Name,
+                ProductId = item.ProductVariant?.Product?.Id ?? 0,
+                ProductName = item.ProductVariant?.Product?.Name ?? "Unknown",
+                BasePrice = item.ProductVariant?.Product?.BasePrice ?? 0,
+                ImageUrls = item.ProductVariant?.Product?.ImageUrls
+            };
         }
 
         public async Task<ProductItem> CreateProductItemAsync(CreateProductItemDTO itemDto)

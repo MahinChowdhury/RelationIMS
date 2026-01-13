@@ -9,7 +9,7 @@ namespace Relation_IMS.Datas.Interfaces
         Task<List<ProductItem>> GetAllProductItemsAsync();
         Task<List<DefectItemResDTO>> GetAllDefectedProductItemsAsync();
         Task<ProductItem?> GetProductItemByIdAsync(int id);
-        Task<ProductItem?> GetProductItemByCodeAsync(string code);
+        Task<ProductItemResponseDTO?> GetProductItemByCodeAsync(string code);
         Task<ProductItem> CreateProductItemAsync(CreateProductItemDTO itemDto);
         Task<ProductItem?> UpdateProductItemAsync(int id, CreateProductItemDTO itemDto);
         Task<ProductItem?> DeleteProductItemAsync(int id);

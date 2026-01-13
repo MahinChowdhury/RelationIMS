@@ -39,7 +39,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("code/{code}")]
-        public async Task<ActionResult<ProductItem?>> GetProductItemByCode([FromRoute] string code)
+        public async Task<ActionResult<ProductItemResponseDTO?>> GetProductItemByCode([FromRoute] string code)
         {
             var item = await _repo.GetProductItemByCodeAsync(code);
             if (item == null) return NotFound(new { message = $"ProductItem with code {code} not found." });
