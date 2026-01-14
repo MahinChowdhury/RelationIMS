@@ -17,8 +17,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         { name: 'Products', path: '/products', icon: 'shopping_bag' },
         { name: 'Orders', path: '/orders', icon: 'receipt_long' },
         { name: 'Customers', path: '/customers', icon: 'group' },
-        { name: 'Inventory', path: '/inventory', icon: 'inventory_2', filled: true },
-        { name: 'Reports', path: '/reports', icon: 'bar_chart' },
+        { name: 'Inventory', path: '/inventory', icon: 'inventory_2'},
+        { name: 'Accounts', path: '/accounts', icon: 'bar_chart' },
     ];
 
     return (
@@ -92,8 +92,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                         <div className="flex items-center gap-3 px-3 py-2.5 mt-2">
                             <div className="size-8 rounded-full bg-gray-200 bg-center bg-cover" style={{ backgroundImage: 'url("https://ui-avatars.com/api/?name=Jane+Doe&background=random")' }}></div>
                             <div className="flex flex-col">
-                                <p className="text-sm font-bold text-text-main dark:text-white">Jane Doe</p>
-                                <p className="text-xs text-text-secondary">Stock Manager</p>
+                                <p className="text-sm font-bold text-text-main dark:text-white">Md Nasir</p>
+                                <p className="text-xs text-text-secondary">Manager</p>
                             </div>
                         </div>
                     </div>

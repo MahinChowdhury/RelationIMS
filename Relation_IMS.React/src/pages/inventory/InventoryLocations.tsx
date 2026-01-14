@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { type Inventory } from '../../types';
 
 export default function InventoryLocations() {
     const [inventories, setInventories] = useState<Inventory[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         loadInventories();
@@ -81,7 +82,8 @@ export default function InventoryLocations() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {inventories.map((inv) => (
-                        <div key={inv.Id} className="group bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/50 transition-all duration-300 overflow-hidden relative">
+                        <div key={inv.Id} className="group bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/50 transition-all duration-300 overflow-hidden relative cursor-pointer"
+                        onClick={() => navigate(`/inventory/locations/${inv.Id}`)}>
                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                             <div className="p-6 flex flex-col gap-5 relative z-10">
                                 <div className="flex justify-between items-start">

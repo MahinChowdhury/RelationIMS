@@ -144,7 +144,7 @@ export default function InventoryDetails() {
     // Calculation Stats
     const totalSkus = aggregatedProducts.length;
     const totalUnits = aggregatedProducts.reduce((sum, p) => sum + p.Quantity, 0);
-    const lowStockCount = aggregatedProducts.filter(p => p.Quantity < 10).length; // Threshold example
+    const lowStockCount = aggregatedProducts.filter(p => p.Quantity < 10).length;
     const stockValue = aggregatedProducts.reduce((sum, p) => sum + (p.Quantity * p.Price), 0);
 
     return (
@@ -197,29 +197,6 @@ export default function InventoryDetails() {
                                         <span className="material-symbols-outlined text-[16px]">pin_drop</span>
                                         Location ID: #{inventoryId} • Main Storage
                                     </p>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-6 pt-3 border-t border-gray-100 dark:border-[#2a4032] mt-1">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-text-secondary uppercase font-semibold">Manager</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-gray-400 text-[16px]">person</span>
-                                            <span className="text-sm font-medium text-text-main dark:text-white">N/A</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-text-secondary uppercase font-semibold">Capacity</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-gray-400 text-[16px]">deployed_code</span>
-                                            <span className="text-sm font-medium text-text-main dark:text-white">--</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-text-secondary uppercase font-semibold">Last Audit</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-gray-400 text-[16px]">fact_check</span>
-                                            <span className="text-sm font-medium text-text-main dark:text-white">--</span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -354,10 +331,12 @@ export default function InventoryDetails() {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2">
-                                                <button className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors" title="Stock In">
+                                                <button className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors" title="Stock In"
+                                                onClick={() => navigate(`/inventory/stock-in`)}>
                                                     <span className="material-symbols-outlined text-[20px]">add_box</span>
                                                 </button>
-                                                <button className="p-2 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 transition-colors" title="View Detail">
+                                                <button className="p-2 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 transition-colors" title="View Detail"
+                                                onClick={() => navigate(`/products/${p.ProductId}`)}>
                                                     <span className="material-symbols-outlined text-[20px]">visibility</span>
                                                 </button>
                                             </div>

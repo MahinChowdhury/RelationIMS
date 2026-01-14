@@ -23,6 +23,7 @@ namespace Relation_IMS.Services.AzureServices
                 throw new ArgumentException("File is empty");
 
             var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+            fileNameWithoutExt = string.Concat(fileNameWithoutExt.Where(c => !char.IsWhiteSpace(c)));
             var fileName = fileNameWithoutExt + ".webp";
 
             var blobClient = _blobClient.GetBlobClient(fileName);
@@ -43,7 +44,8 @@ namespace Relation_IMS.Services.AzureServices
 
         public async Task<string> UploadImageStreamAsync(Stream stream, string fileName)
         {
-             var blobClient = _blobClient.GetBlobClient(fileName);
+            var fileNameWithoutSpaces = string.Concat(fileName.Where(c => !char.IsWhiteSpace(c)));
+            var blobClient = _blobClient.GetBlobClient(fileNameWithoutSpaces);
 
              // Load and convert image to WebP
              // Reset stream position if needed, but usually we expect it to be at start

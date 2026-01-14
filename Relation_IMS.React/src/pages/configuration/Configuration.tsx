@@ -8,14 +8,6 @@ interface Color { id: number; name: string; hex: string; }
 interface Size { id: number; name: string; categoryId?: number; }
 
 // --- Types for API Payloads ---
-// Note: Backend might expect different casing, usually PascalCase for .NET, but axios/json interaction often handles standard interactions.
-// Checking backend DTOs:
-// CreateBrandDTO: { Name }
-// CreateCategoryDTO: { Name }
-// CreateNewProductColorDTO: { Name, HexCode }
-// CreateNewProductSizeDTO: { Name, CategoryId? } -> CategoryId is likely needed for size if sizes are category dependent, but for generic sizes maybe not? 
-// Checking Size Repo: AddSizeForProductAsync takes DTO. Model has CategoryId. 
-// If generic sizes are allowed, CategoryId might be nullable? Let's assume standard behavior for now.
 
 export default function Configuration() {
     // --- State ---
@@ -29,7 +21,7 @@ export default function Configuration() {
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState<'brand' | 'category' | 'color' | 'size'>('brand');
-    const [editingItem, setEditingItem] = useState<any>(null); // If null, it's create mode
+    const [editingItem, setEditingItem] = useState<any>(null); 
 
     // Form State
     const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0 });
@@ -50,9 +42,7 @@ export default function Configuration() {
 
             setBrands(brandRes.data);
             setCategories(catRes.data);
-
-            // Map colors to frontend friendly format if needed, or stick to backend structure
-            // Backend returns: { Id, Name, HexCode }
+            
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
 
             // Backend returns: { Id, Name, CategoryId }
@@ -144,25 +134,6 @@ export default function Configuration() {
         }
     };
 
-    // --- Render Helpers ---
-
-    const renderSectionHeader = (title: string, type: 'brand' | 'category' | 'color' | 'size') => (
-        <div className="flex justify-between items-center mb-4 sticky top-0 bg-[#f6f8f6] dark:bg-[#112116] z-10 py-2 border-b border-gray-200 dark:border-white/10">
-            <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#17cf54]">
-                    {type === 'brand' ? 'verified' : type === 'category' ? 'category' : type === 'color' ? 'palette' : 'straighten'}
-                </span>
-                {title}
-            </h2>
-            <button
-                onClick={() => openModal(type)}
-                className="px-4 py-2 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-sm flex items-center gap-2 transition-colors"
-            >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                Add {title}
-            </button>
-        </div>
-    );
 
     const renderCard = (title: string, subtitle: string | null, type: 'brand' | 'category' | 'color' | 'size', item: any, colorHex?: string) => (
         <div className="bg-white dark:bg-[#1a2e22] border border-gray-100 dark:border-[#2a4032] rounded-lg p-2 flex justify-between items-center group hover:bg-gray-50 dark:hover:bg-white/5 transition-all">

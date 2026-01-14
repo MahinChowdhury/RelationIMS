@@ -21,7 +21,7 @@ import Configuration from './pages/configuration/Configuration';
 
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;
-const Reports = () => <div className="p-4">Reports Page Coming Soon</div>;
+const Accounts = () => <div className="p-4">Accounts Page Coming Soon</div>;
 
 function App() {
   return (
@@ -36,7 +36,7 @@ function App() {
         <Route path="orders/:id" element={<OrderDetails />} />
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<CustomerDetails />} />
-        <Route path="reports" element={<Reports />} />
+        <Route path="accounts" element={<Accounts />} />
         <Route path="inventory" element={<InventoryOptions />} />
         <Route path="inventory/transfer" element={<InventoryTransfer />} />
         <Route path="inventory/defects" element={<DefectItems />} />
