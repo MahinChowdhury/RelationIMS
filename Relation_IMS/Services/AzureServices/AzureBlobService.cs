@@ -25,7 +25,8 @@ namespace Relation_IMS.Services.AzureServices
 
             // Clean and normalize filename
             var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
-            var safeFileName = CleanFileName(fileNameWithoutExt) + ".webp";
+            fileNameWithoutExt = string.Concat(fileNameWithoutExt.Where(c => !char.IsWhiteSpace(c)));
+            var fileName = fileNameWithoutExt + ".webp";
 
             var blobClient = _blobClient.GetBlobClient(safeFileName);
 
@@ -45,18 +46,8 @@ namespace Relation_IMS.Services.AzureServices
 
         public async Task<string> UploadImageStreamAsync(Stream stream, string fileName)
         {
-            // Clean the provided filename (remove extension if present, then sanitize)
-            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
-            var safeFileName = CleanFileName(fileNameWithoutExt) + ".webp";
-
-            var blobClient = _blobClient.GetBlobClient(safeFileName);
-
-            // Make sure stream is at beginning
-            if (stream.Position != 0 && stream.CanSeek)
-                stream.Position = 0;
-
-            using var image = await Image.LoadAsync(stream);
-            using var outputStream = new MemoryStream();
+            var fileNameWithoutSpaces = string.Concat(fileName.Where(c => !char.IsWhiteSpace(c)));
+            var blobClient = _blobClient.GetBlobClient(fileNameWithoutSpaces);
 
             var encoder = new WebpEncoder { Quality = 50 };
             await image.SaveAsync(outputStream, encoder);

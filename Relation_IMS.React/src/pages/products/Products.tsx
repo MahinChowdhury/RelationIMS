@@ -597,8 +597,9 @@ export default function ProductsPage() {
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         >
                             <option value="">Default</option>
-                            <option value="Ascending">Ascending</option>
-                            <option value="Descending">Descending</option>
+                            <option value="in-stock">in-stock</option>
+                            <option value="low-stock">low-stock</option>
+                            <option value="out-of-stock">out-of-stock</option>
                         </select>
                     </div>
                 </div>

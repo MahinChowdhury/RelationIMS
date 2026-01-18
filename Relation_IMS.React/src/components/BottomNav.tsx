@@ -80,14 +80,14 @@ export default function BottomNav() {
             </NavLink>
 
             <NavLink
-                to="/reports"
+                to="/accounts"
                 className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
             >
-                <span className={`material-symbols-outlined text-[24px] ${isActive('/reports') ? 'active-icon text-primary' : 'text-text-secondary'}`}>
+                <span className={`material-symbols-outlined text-[24px] ${isActive('/accounts') ? 'active-icon text-primary' : 'text-text-secondary'}`}>
                     leaderboard
                 </span>
-                <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/reports') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Reports
+                <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/accounts') ? 'text-primary' : 'text-text-secondary'}`}>
+                    Accounts
                 </span>
             </NavLink>
         </nav>

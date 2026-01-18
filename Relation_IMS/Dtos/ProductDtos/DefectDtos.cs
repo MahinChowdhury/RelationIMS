@@ -1,4 +1,5 @@
 using Relation_IMS.Models.ProductModels;
+using System.Text.Json.Serialization;
 
 namespace Relation_IMS.Dtos.ProductDtos
 {
@@ -14,6 +15,7 @@ namespace Relation_IMS.Dtos.ProductDtos
         public string Code { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public DefectStatus Status { get; set; } = DefectStatus.Pending;
         public string ReportedBy { get; set; } = string.Empty;
         public DateTime DefectDate { get; set; }

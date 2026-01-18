@@ -4,7 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 
-import { type Inventory, type Product } from '../../types';
+import { type Inventory } from '../../types';
 
 interface ProductAggregated {
     ProductId: number;
@@ -36,6 +36,7 @@ export default function InventoryDetails() {
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
+    const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low-stock'>('all');
 
     // Infinite Scroll
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 1.0 });
@@ -103,12 +104,16 @@ export default function InventoryDetails() {
             );
         }
 
+        if (stockStatusFilter === 'low-stock') {
+            result = result.filter(p => p.Quantity < 10);
+        }
+
         setAggregatedProducts(result);
         setPage(1);
         setDisplayedProducts(result.slice(0, ITEMS_PER_PAGE));
         setHasMore(result.length > ITEMS_PER_PAGE);
 
-    }, [allItems, searchTerm]);
+    }, [allItems, searchTerm, stockStatusFilter]);
 
     // Handle Infinite Scroll
     useEffect(() => {
@@ -144,7 +149,7 @@ export default function InventoryDetails() {
     // Calculation Stats
     const totalSkus = aggregatedProducts.length;
     const totalUnits = aggregatedProducts.reduce((sum, p) => sum + p.Quantity, 0);
-    const lowStockCount = aggregatedProducts.filter(p => p.Quantity < 10).length; // Threshold example
+    const lowStockCount = aggregatedProducts.filter(p => p.Quantity < 10).length;
     const stockValue = aggregatedProducts.reduce((sum, p) => sum + (p.Quantity * p.Price), 0);
 
     return (
@@ -198,29 +203,6 @@ export default function InventoryDetails() {
                                         Location ID: #{inventoryId} • Main Storage
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-6 pt-3 border-t border-gray-100 dark:border-[#2a4032] mt-1">
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-text-secondary uppercase font-semibold">Manager</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-gray-400 text-[16px]">person</span>
-                                            <span className="text-sm font-medium text-text-main dark:text-white">N/A</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-text-secondary uppercase font-semibold">Capacity</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-gray-400 text-[16px]">deployed_code</span>
-                                            <span className="text-sm font-medium text-text-main dark:text-white">--</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-text-secondary uppercase font-semibold">Last Audit</span>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <span className="material-symbols-outlined text-gray-400 text-[16px]">fact_check</span>
-                                            <span className="text-sm font-medium text-text-main dark:text-white">--</span>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 self-start md:self-start mt-2">
@@ -231,7 +213,7 @@ export default function InventoryDetails() {
                                 <span>Transfer Stock</span>
                             </button>
                             <button
-                                onClick={() => navigate('/products')}
+                                onClick={() => navigate('/inventory/stock-in')}
                                 className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-green-600 transition-all shadow-sm">
                                 <span className="material-symbols-outlined text-[20px]">add</span>
                                 <span>Add Product</span>
@@ -259,7 +241,9 @@ export default function InventoryDetails() {
                                 <p className="text-xl font-bold text-text-main dark:text-white">{totalUnits.toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm flex items-center gap-4 relative overflow-hidden group">
+                        <div
+                            onClick={() => setStockStatusFilter(prev => prev === 'low-stock' ? 'all' : 'low-stock')}
+                            className={`bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm flex items-center gap-4 relative overflow-hidden group cursor-pointer transition-all ${stockStatusFilter === 'low-stock' ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-900/10' : ''}`}>
                             <div className="absolute right-0 top-0 w-16 h-full bg-gradient-to-l from-orange-50 to-transparent dark:from-orange-900/10 opacity-50"></div>
                             <div className="size-12 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
                                 <span className="material-symbols-outlined">warning</span>
@@ -354,10 +338,12 @@ export default function InventoryDetails() {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2">
-                                                <button className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors" title="Stock In">
+                                                <button className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors" title="Stock In"
+                                                    onClick={() => navigate(`/inventory/stock-in?productId=${p.ProductId}`)}>
                                                     <span className="material-symbols-outlined text-[20px]">add_box</span>
                                                 </button>
-                                                <button className="p-2 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 transition-colors" title="View Detail">
+                                                <button className="p-2 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 transition-colors" title="View Detail"
+                                                    onClick={() => navigate(`/products/${p.ProductId}`)}>
                                                     <span className="material-symbols-outlined text-[20px]">visibility</span>
                                                 </button>
                                             </div>
