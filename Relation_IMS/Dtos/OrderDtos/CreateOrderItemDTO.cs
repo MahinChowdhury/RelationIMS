@@ -2,6 +2,7 @@
 using Relation_IMS.Models.ProductModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace Relation_IMS.Dtos.OrderDtos
 {
@@ -25,5 +26,7 @@ namespace Relation_IMS.Dtos.OrderDtos
         [Required(ErrorMessage = "SubTotal amount is required.")]
         [Range(0, double.MaxValue)]
         public decimal Subtotal { get; set; }
+        
+        public List<int>? ProductItemIds { get; set; }
     }
 }

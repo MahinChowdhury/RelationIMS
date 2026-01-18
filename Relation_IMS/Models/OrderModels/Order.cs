@@ -35,6 +35,8 @@ namespace Relation_IMS.Models.OrderModels
         public ICollection<OrderPayment>? Payments { get; set; }
         public string? Remarks { get; set; }
 
+        public DateTime? NextPaymentDate { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

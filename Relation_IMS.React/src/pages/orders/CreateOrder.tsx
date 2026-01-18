@@ -88,6 +88,7 @@ export default function CreateOrder() {
     // const [paidAmount, setPaidAmount] = useState<number>(0); // Replaced by computed from payments
     // const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card'>('Cash'); // Replaced by list
     const [payments, setPayments] = useState<PaymentEntry[]>([]);
+    const [nextPaymentDate, setNextPaymentDate] = useState<string>('');
 
     // Payment Input State
     const [currentMethod, setCurrentMethod] = useState<PaymentMethodType>('Cash');
@@ -349,6 +350,7 @@ export default function CreateOrder() {
                 PaymentStatus: paidAmount >= netAmount ? 2 : (paidAmount > 0 ? 1 : 0),
                 UserId: 1, // Hardcoded as per user request
                 Remarks: notes,
+                NextPaymentDate: nextPaymentDate ? new Date(nextPaymentDate).toISOString() : null,
                 Payments: payments.map(p => ({
                     PaymentMethod: p.method === 'Cash' ? 0 : p.method === 'Bank' ? 1 : 2,
                     Amount: p.amount,
@@ -388,7 +390,8 @@ export default function CreateOrder() {
                     ProductId: item.ProductId,
                     Quantity: item.Quantity,
                     UnitPrice: item.Price,
-                    Subtotal: item.Subtotal
+                    Subtotal: item.Subtotal,
+                    ProductItemIds: item.OriginalItemIds // Send list of Item IDs to mark as Sold
                 });
             });
 
@@ -769,7 +772,6 @@ export default function CreateOrder() {
                             )}
 
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Payment Details (Split Payment)</label>
-
                             <div className="bg-[#f8fcf9] dark:bg-gray-800/50 p-3 rounded-lg border border-[#e7f3eb] dark:border-gray-700 mb-3">
                                 <div className="flex gap-2 mb-2">
                                     <select
@@ -839,6 +841,20 @@ export default function CreateOrder() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Next Payment Date Picker - Show if there is a due amount AND allowDue is checked */}
+                        {dueAmount > 0 && allowDue && (
+                            <div className="mb-4 animate-fadeIn">
+                                <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Next Payment Date</label>
+                                <input
+                                    type="date"
+                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:border-primary focus:ring-primary"
+                                    value={nextPaymentDate}
+                                    onChange={(e) => setNextPaymentDate(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                />
+                            </div>
+                        )}
 
                         <div className="mb-6">
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-2 flex items-center justify-between">

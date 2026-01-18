@@ -89,17 +89,13 @@ namespace Relation_IMS.Services
         }
 
         /// <summary>
-        /// Generates a product item code: {ProductCode}{LotCode}{VariantId:Base36(2)}{SequentialNumber:Base36(3)}
-        /// Example: E0016001053F (12 chars)
-        /// Use "000" as lotCode for items not in a lot
+        /// Generates a product item code: {ProductCode}{VariantId:Base36(2)}{SequentialNumber:Base36(3)}
+        /// Example: E016053F (9 chars)
         /// </summary>
-        public string GenerateProductItemCode(string productCode, string lotCode, int variantId, int sequentialNumber)
+        public string GenerateProductItemCode(string productCode, int variantId, int sequentialNumber)
         {
             if (string.IsNullOrWhiteSpace(productCode))
                 throw new ArgumentException("Product code cannot be empty", nameof(productCode));
-
-            if (string.IsNullOrWhiteSpace(lotCode))
-                throw new ArgumentException("Lot code cannot be empty", nameof(lotCode));
 
             if (variantId <= 0)
                 throw new ArgumentException("Variant ID must be greater than 0", nameof(variantId));
@@ -107,13 +103,13 @@ namespace Relation_IMS.Services
             if (sequentialNumber < 0)
                 throw new ArgumentException("Sequential number cannot be negative", nameof(sequentialNumber));
 
-            return $"{productCode}{lotCode}{ToBase36(variantId, 2)}{ToBase36(sequentialNumber, 3)}";
+            return $"{productCode}{ToBase36(variantId, 2)}{ToBase36(sequentialNumber, 3)}";
         }
 
         /// <summary>
         /// Parses a product item code to extract hierarchy information
-        /// Format: {C}{PPP}{LLL}{VV}{III} = 12 characters
-        /// Example: E0016001053F
+        /// Format: {C}{PPP}{VV}{III} = 9 characters
+        /// Example: E016053F
         /// </summary>
         public ProductCodeInfo ParseProductItemCode(string code)
         {
@@ -122,21 +118,20 @@ namespace Relation_IMS.Services
 
             code = code.ToUpper().Trim();
 
-            // Pattern: {C}{PPP}{LLL}{VV}{III}
-            // C = 1 letter, PPP = 3 base36, LLL = 3 base36, VV = 2 base36, III = 3 base36
-            var pattern = @"^([A-Z])([0-9A-Z]{3})([0-9A-Z]{3})([0-9A-Z]{2})([0-9A-Z]{3})$";
+            // Pattern: {C}{PPP}{VV}{III}
+            // C = 1 letter, PPP = 3 base36, VV = 2 base36, III = 3 base36
+            var pattern = @"^([A-Z])([0-9A-Z]{3})([0-9A-Z]{2})([0-9A-Z]{3})$";
             var match = Regex.Match(code, pattern);
 
             if (!match.Success)
-                throw new ArgumentException($"Invalid product item code format: {code}. Expected format: {{C}}{{PPP}}{{LLL}}{{VV}}{{III}} (12 chars)", nameof(code));
+                throw new ArgumentException($"Invalid product item code format: {code}. Expected format: {{C}}{{PPP}}{{VV}}{{III}} (9 chars)", nameof(code));
 
             return new ProductCodeInfo
             {
                 CategoryLetter = match.Groups[1].Value,
                 ProductId = FromBase36(match.Groups[2].Value),
-                LotId = FromBase36(match.Groups[3].Value), // Will be 0 for items without lot
-                VariantId = FromBase36(match.Groups[4].Value),
-                SequentialNumber = FromBase36(match.Groups[5].Value)
+                VariantId = FromBase36(match.Groups[3].Value),
+                SequentialNumber = FromBase36(match.Groups[4].Value)
             };
         }
 
@@ -145,8 +140,10 @@ namespace Relation_IMS.Services
         /// </summary>
         public bool IsLotlessItem(string code)
         {
-            var info = ParseProductItemCode(code);
-            return info.LotId == 0;
+            // With new format, we don't track lot in code, so effectively all are "lotless" in terms of code structure
+            // But we can check via Parse if needed, currently this concept might be obsolete 
+            // or we just return true as "Lot ID" isn't in the code anymore.
+            return true; 
         }
     }
 

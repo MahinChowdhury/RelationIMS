@@ -105,7 +105,6 @@ namespace Relation_IMS.Controllers
                     {
                         var itemCode = _codeGenerator.GenerateProductItemCode(
                             product.Code!, 
-                            lot.Code!, 
                             variant.Id, 
                             i);
                         

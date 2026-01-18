@@ -73,8 +73,8 @@ export default function StockIn() {
                 // Try to find by Item Code first
                 try {
                     const itemRes = await api.get<any>(`/ProductItem/code/${term}`);
-                    if (itemRes.data && itemRes.data.ProductVariant) {
-                        productId = itemRes.data.ProductVariant.ProductId;
+                    if (itemRes.data && itemRes.data.ProductId) {
+                        productId = itemRes.data.ProductId;
                     }
                 } catch (e) {
                     console.log("Not found by item code");

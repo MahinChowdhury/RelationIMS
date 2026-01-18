@@ -31,6 +31,7 @@ namespace Relation_IMS.Dtos.OrderDtos
         [Required(ErrorMessage = "UserId is required.")]
         public int UserId { get; set; }
         public string? Remarks { get; set; }
+        public DateTime? NextPaymentDate { get; set; }
         
         public List<OrderPaymentDTO>? Payments { get; set; }
     }

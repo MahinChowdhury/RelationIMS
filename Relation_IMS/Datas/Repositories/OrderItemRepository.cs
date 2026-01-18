@@ -3,6 +3,8 @@ using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.OrderModels;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Datas.Repositories
 {
@@ -30,6 +32,19 @@ namespace Relation_IMS.Datas.Repositories
                 if (orderItem.Discount == 0 && orderItem.UnitPrice < product.BasePrice)
                 {
                     orderItem.Discount = product.BasePrice - orderItem.UnitPrice;
+                }
+            }
+
+            // Mark specific ProductItems as Sold
+            if (orderItemDto.ProductItemIds != null && orderItemDto.ProductItemIds.Any())
+            {
+                var productItems = await _context.ProductItems
+                    .Where(p => orderItemDto.ProductItemIds.Contains(p.Id))
+                    .ToListAsync();
+                
+                foreach (var item in productItems)
+                {
+                    item.IsSold = true;
                 }
             }
 

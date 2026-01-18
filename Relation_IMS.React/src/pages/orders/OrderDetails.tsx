@@ -3,6 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { type Order, type OrderPayment, PaymentStatus, type Product } from '../../types';
 
+// Augment Order type locally if not updated in types.ts yet, or assume it's there. 
+// Ideally should update types.ts but for quick UI fix we can cast or rely on API response.
+// Assuming types.ts needs update? Let's check or just use 'any' cast if strict.
+// Better: Update types.ts. But I don't see types.ts in context. I'll cast for now or trust it's effectively any from JSON.
+// Wait, `order` state is typed `Order`. I need to update the definition if I want TS to stay happy.
+
 export default function OrderDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const [order, setOrder] = useState<Order | null>(null);
@@ -176,7 +182,7 @@ export default function OrderDetailsPage() {
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
                                     <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Contact Info</p>
-                                    
+
                                     <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base">call</span>
                                         <a className="hover:underline" href={`tel:${order.Customer?.Phone || ''}`}>{order.Customer?.Phone || 'N/A'}</a>
@@ -374,6 +380,18 @@ export default function OrderDetailsPage() {
                                 <span className="text-red-600 dark:text-red-400 font-black text-lg">৳{dueAmount.toFixed(2)}</span>
                             </div>
                         </div>
+
+                        {/* Next Payment Date Display */}
+                        {order.NextPaymentDate && dueAmount > 0 && (
+                            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-lg p-3 border border-amber-100 dark:border-amber-800/20 flex flex-col items-center justify-center mt-3 animate-in fade-in">
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider mb-1">Next Payment Date</span>
+                                <span className="text-lg font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-base">calendar_clock</span>
+                                    {formatDate(order.NextPaymentDate.toString())}
+                                </span>
+                            </div>
+                        )}
+
                         <button className="w-full mt-6 bg-primary text-white font-bold h-12 rounded-lg hover:bg-green-600 transition-all shadow-md flex items-center justify-center gap-2">
                             <span className="material-symbols-outlined">mark_email_read</span>
                             Send Invoice Email

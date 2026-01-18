@@ -1,8 +1,8 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
 using System.Text.RegularExpressions;
 
 namespace Relation_IMS.Services.AzureServices
@@ -23,14 +23,11 @@ namespace Relation_IMS.Services.AzureServices
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");
 
-            // Clean and normalize filename
-            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
-            fileNameWithoutExt = string.Concat(fileNameWithoutExt.Where(c => !char.IsWhiteSpace(c)));
-            var fileName = fileNameWithoutExt + ".webp";
+            var baseName = Path.GetFileNameWithoutExtension(file.FileName);
+            var safeFileName = CleanFileName(baseName) + ".webp";
 
             var blobClient = _blobClient.GetBlobClient(safeFileName);
 
-            // Load and convert image to WebP
             using var inputStream = file.OpenReadStream();
             using var image = await Image.LoadAsync(inputStream);
             using var outputStream = new MemoryStream();
@@ -46,8 +43,16 @@ namespace Relation_IMS.Services.AzureServices
 
         public async Task<string> UploadImageStreamAsync(Stream stream, string fileName)
         {
-            var fileNameWithoutSpaces = string.Concat(fileName.Where(c => !char.IsWhiteSpace(c)));
-            var blobClient = _blobClient.GetBlobClient(fileNameWithoutSpaces);
+            if (stream == null || stream.Length == 0)
+                throw new ArgumentException("Stream is empty");
+
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var safeFileName = CleanFileName(baseName) + ".webp";
+
+            var blobClient = _blobClient.GetBlobClient(safeFileName);
+
+            using var image = await Image.LoadAsync(stream);
+            using var outputStream = new MemoryStream();
 
             var encoder = new WebpEncoder { Quality = 50 };
             await image.SaveAsync(outputStream, encoder);
@@ -57,21 +62,23 @@ namespace Relation_IMS.Services.AzureServices
 
             return blobClient.Uri.ToString();
         }
+
         private static string CleanFileName(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
-                return "image-" + DateTime.UtcNow.Ticks; // fallback
+                return "image-" + DateTime.UtcNow.Ticks;
 
-            // Replace multiple whitespaces with single hyphen
-            // Remove or replace other problematic characters
-            var cleaned = Regex.Replace(input.Trim(), @"\s+", "-");
-            cleaned = Regex.Replace(cleaned, @"[^a-zA-Z0-9\-_]", ""); 
+            // Remove ALL whitespaces
+            var cleaned = Regex.Replace(input, @"\s+", "");
 
-            // Optional: lowercase (common convention for blob names)
+            // Remove invalid characters
+            cleaned = Regex.Replace(cleaned, @"[^a-zA-Z0-9\-_]", "");
+
+            // Lowercase for consistency
             cleaned = cleaned.ToLowerInvariant();
 
-            // Avoid empty result
             return string.IsNullOrEmpty(cleaned) ? "unnamed" : cleaned;
         }
+
     }
 }

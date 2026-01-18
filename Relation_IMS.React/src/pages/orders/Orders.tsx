@@ -297,6 +297,12 @@ export default function OrdersPage() {
                             <span className="text-sm font-medium text-red-500 dark:text-red-400">
                                 ৳{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
                             </span>
+                            {/* Next Payment Date */}
+                            {order.NextPaymentDate && (order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))) > 0 && (
+                                <div className="text-[10px] text-text-secondary mt-0.5" title="Next Payment Date">
+                                    Next: {formatDate(order.NextPaymentDate.toString())}
+                                </div>
+                            )}
                         </div>
 
                         {/* Status */}

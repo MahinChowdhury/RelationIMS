@@ -105,6 +105,7 @@ export interface Order {
     Remarks?: string;
     Payments?: OrderPayment[];
     CreatedAt: string;
+    NextPaymentDate?: string; // or Date if transformed
     date?: string;
 }
 
@@ -113,8 +114,8 @@ export interface Customer {
     Name: string;
     Phone: string;
     Address: string;
-    ShopName:string;
-    ShopAddress:string;
+    ShopName: string;
+    ShopAddress: string;
     Orders?: Order[];
     CreatedDate?: string;
 }

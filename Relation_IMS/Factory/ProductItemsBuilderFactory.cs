@@ -16,7 +16,7 @@ namespace Relation_IMS.Factory
         /// Builds product items with hierarchical codes
         /// </summary>
         /// <param name="productCode">Product code (e.g., "E0042")</param>
-        /// <param name="lotCode">Lot code (e.g., "0001") or "0000" for items without lot</param>
+        /// <param name="lotCode">Legacy parameter, ignored.</param>
         /// <param name="variantId">Variant ID</param>
         /// <param name="quantity">Number of items to create</param>
         /// <param name="defaultInventoryId">Default inventory ID</param>
@@ -36,7 +36,8 @@ namespace Relation_IMS.Factory
             for (int i = 0; i < quantity; i++)
             {
                 var sequenceNumber = startingSequence + i;
-                var itemCode = _codeGenerator.GenerateProductItemCode(productCode, lotCode, variantId, sequenceNumber);
+                // Updated to not use lotCode
+                var itemCode = _codeGenerator.GenerateProductItemCode(productCode, variantId, sequenceNumber);
 
                 items.Add(new ProductItem
                 {
