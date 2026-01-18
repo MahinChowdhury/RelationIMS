@@ -18,25 +18,21 @@ interface Customer {
     ReferencePhoneNumber?: string;
 }
 
-// Updated ProductItem Interface to match Backend Models
+// Updated ProductItem Interface to match Backend DTO
 interface ProductItem {
     Id: number;
     Code: string;
     ProductVariantId: number;
-    ProductVariant?: {
-        Id: number;
-        VariantPrice: number;
-        Product?: {
-            Id: number;
-            Name: string;
-            BasePrice: number;
-            ImageUrls?: string[];
-        };
-        Color?: { Name: string };
-        Size?: { Name: string };
-    };
     IsDefected: boolean;
     IsSold: boolean;
+    // Price fields from DTO
+    VariantPrice: number;
+    ColorName?: string;
+    SizeName?: string;
+    ProductId: number;
+    ProductName: string;
+    BasePrice: number;
+    ImageUrls?: string[];
 }
 
 interface CartItem {
@@ -186,16 +182,13 @@ export default function CreateOrder() {
                 return;
             }
 
-            // Map to Cart Item
-            const product = found.ProductVariant?.Product;
-            const variant = found.ProductVariant;
+            // Map to Cart Item using the new flat DTO structure
+            const price = found.VariantPrice || found.BasePrice || 0;
+            const name = found.ProductName || "Unknown Product";
+            const imageUrl = (found.ImageUrls && found.ImageUrls.length > 0) ? found.ImageUrls[0] : undefined;
 
-            const price = variant?.VariantPrice ?? product?.BasePrice ?? 0;
-            const name = product?.Name || "Unknown Product";
-            const imageUrl = (product?.ImageUrls && product.ImageUrls.length > 0) ? product.ImageUrls[0] : undefined;
-
-            const color = variant?.Color?.Name || "";
-            const size = variant?.Size?.Name || "";
+            const color = found.ColorName || "";
+            const size = found.SizeName || "";
             const details = [color, size].filter(Boolean).join(" / ");
 
             // Grouping Logic: 
@@ -211,7 +204,7 @@ export default function CreateOrder() {
             // So I will Aggregate in the Cart State using a unique Key (e.g. VariantId).
             // I'll keep a list of `OriginalItemIds` in the cart item to track which specific items make up this quantity.
 
-            const groupKey = variant?.Id ? `v-${variant.Id}` : `p-${product?.Id}`;
+            const groupKey = found.ProductVariantId ? `v-${found.ProductVariantId}` : `p-${found.ProductId}`;
 
             setCart(prev => {
                 const existingIndex = prev.findIndex(item => item.VariantKey === groupKey);
@@ -238,7 +231,7 @@ export default function CreateOrder() {
                     // Add new
                     const newItem: CartItem = {
                         Id: found.Id, // Primary ID (arbitrary one of them)
-                        ProductId: product?.Id || 0,
+                        ProductId: found.ProductId || 0,
                         Code: found.Code, // Display code of the first one
                         Name: name,
                         VariantDetails: details,

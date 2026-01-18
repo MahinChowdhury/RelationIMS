@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import Products from './pages/products/Products';
 import Customers from './pages/customers/Customers';
 import CustomerDetails from './pages/customers/CustomerDetails';
@@ -26,6 +28,8 @@ const Accounts = () => <div className="p-4">Accounts Page Coming Soon</div>;
 function App() {
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/" element={<Layout />}>
         <Route path="/" element={<Welcome />} />
         <Route path="welcome" element={<Welcome />} />
