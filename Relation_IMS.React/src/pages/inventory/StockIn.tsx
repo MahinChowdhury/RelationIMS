@@ -3,7 +3,7 @@ import { ProductForm } from '../../components/products/ProductForm';
 import BarcodeScanner from '../../components/BarcodeScanner';
 import type { Product, StockItem } from '../../types';
 import api from '../../services/api';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function StockIn() {
     const navigate = useNavigate();
@@ -221,9 +221,21 @@ export default function StockIn() {
         }
     };
 
+    const location = useLocation();
+
     useEffect(() => {
         loadMetadata();
-    }, []);
+
+        // Auto-fill from query param
+        const params = new URLSearchParams(location.search);
+        const pid = params.get('productId');
+        if (pid) {
+            handleSearch(pid);
+            // Optionally clear the query param so refresh doesn't stick? 
+            // Better to keep it for shared links.
+            setSearchQuery(pid); // Update UI search box too
+        }
+    }, [location.search]);
 
     const loadMetadata = async () => {
         try {

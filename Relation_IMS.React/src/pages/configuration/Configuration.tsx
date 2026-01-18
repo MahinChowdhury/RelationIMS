@@ -21,7 +21,7 @@ export default function Configuration() {
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState<'brand' | 'category' | 'color' | 'size'>('brand');
-    const [editingItem, setEditingItem] = useState<any>(null); 
+    const [editingItem, setEditingItem] = useState<any>(null);
 
     // Form State
     const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0 });
@@ -33,16 +33,21 @@ export default function Configuration() {
     const loadAllData = async () => {
         setLoading(true);
         try {
+            // Helper to safe load so one failure doesn't break the page
+            const safeGet = async (url: string) => {
+                try { return await api.get(url); } catch (e) { console.error(`Failed to load ${url}`, e); return { data: [] }; }
+            };
+
             const [brandRes, catRes, colorRes, sizeRes] = await Promise.all([
-                api.get('/Brand'),
-                api.get('/Category'),
-                api.get('/ProductVariantColors'),
-                api.get('/ProductVariantSizes')
+                safeGet('/Brand'),
+                safeGet('/Category'),
+                safeGet('/ProductVariantColors'),
+                safeGet('/ProductVariantSizes')
             ]);
 
             setBrands(brandRes.data);
             setCategories(catRes.data);
-            
+
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
 
             // Backend returns: { Id, Name, CategoryId }

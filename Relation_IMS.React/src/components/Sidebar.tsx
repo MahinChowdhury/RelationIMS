@@ -12,7 +12,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         return location.pathname.startsWith(path);
     };
 
-    const navItems = [
+    interface NavItem {
+        name: string;
+        path: string;
+        icon: string;
+        filled?: boolean;
+    }
+
+    const navItems: NavItem[] = [
         { name: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
         { name: 'Products', path: '/products', icon: 'shopping_bag' },
         { name: 'Orders', path: '/orders', icon: 'receipt_long' },

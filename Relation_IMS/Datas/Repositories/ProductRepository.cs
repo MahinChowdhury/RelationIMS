@@ -97,6 +97,11 @@ namespace Relation_IMS.Datas.Repositories
             {
                 if (stockOrder.Equals("Ascending")) query = query.OrderBy(p => p.TotalQuantity);
                 if (stockOrder.Equals("Descending")) query = query.OrderByDescending(p => p.TotalQuantity);
+
+                // Filter Logic
+                if (stockOrder.Equals("in-stock")) query = query.Where(p => p.TotalQuantity > 0);
+                if (stockOrder.Equals("out-of-stock")) query = query.Where(p => p.TotalQuantity == 0);
+                if (stockOrder.Equals("low-stock")) query = query.Where(p => p.TotalQuantity > 0 && p.TotalQuantity < 10);
             }
 
             var products = await query
