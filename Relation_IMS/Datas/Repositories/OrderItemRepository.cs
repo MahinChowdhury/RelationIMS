@@ -28,14 +28,24 @@ namespace Relation_IMS.Datas.Repositories
             {
                 orderItem.CostPrice = product.CostPrice;
                 
-                // If Discount was not provided (0) but UnitPrice is less than BasePrice, calculate it
+            // If Discount was not provided (0) but UnitPrice is less than BasePrice, calculate it
                 if (orderItem.Discount == 0 && orderItem.UnitPrice < product.BasePrice)
                 {
                     orderItem.Discount = product.BasePrice - orderItem.UnitPrice;
                 }
             }
+            
+            // Set Variant ID if provided
+            if (orderItemDto.ProductVariantId.HasValue)
+            {
+                orderItem.ProductVariantId = orderItemDto.ProductVariantId.Value;
+            }
 
-            // Mark specific ProductItems as Sold
+            // We must save OrderItem first to get its ID before linking ProductItems
+            await _context.OrderItems.AddAsync(orderItem);
+            await _context.SaveChangesAsync();
+
+            // Mark specific ProductItems as Sold AND Link them to this OrderItem
             if (orderItemDto.ProductItemIds != null && orderItemDto.ProductItemIds.Any())
             {
                 var productItems = await _context.ProductItems
@@ -45,11 +55,19 @@ namespace Relation_IMS.Datas.Repositories
                 foreach (var item in productItems)
                 {
                     item.IsSold = true;
+                    item.OrderItemId = orderItem.Id; // Link physical item to order line
                 }
+                
+                // If items were provided during creation, we assume they are "Arranged" immediately?
+                // The new workflow implies "Arranging" happens LATER. 
+                // However, the existing flow (CreateOrder.tsx) sends ProductItemIds.
+                // If the user selects specific items at creation, they are effectively "Arranged".
+                // But the requirement says "Show only orders where InternalStatus != Confirmed... Default statuses shown: Created, Arranging".
+                // We should count them as arranged if they are linked.
+                orderItem.ArrangedQuantity = productItems.Count;
+                
+                await _context.SaveChangesAsync();
             }
-
-            await _context.OrderItems.AddAsync(orderItem);
-            await _context.SaveChangesAsync();
 
             return orderItem;
         }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import VariantSelectionModal from './VariantSelectionModal';
 
 // Types matching the API DTOs and Logic
 interface Customer {
@@ -47,7 +48,7 @@ interface CartItem {
     ImageUrl?: string;
     // New fields for grouping
     VariantKey?: string;
-    OriginalItemIds: number[]; // Track all ItemIDs in this group
+    ProductVariantId?: number;
 }
 
 // Payment Types
@@ -99,6 +100,11 @@ export default function CreateOrder() {
     // Refs
     const videoRef = useRef<HTMLVideoElement>(null);
     const codeReader = useRef<BrowserMultiFormatReader | null>(null);
+
+    // --- Variant Modal State ---
+    const [showVariantModal, setShowVariantModal] = useState(false);
+    const [modalProduct, setModalProduct] = useState<any | null>(null);
+    const [modalVariants, setModalVariants] = useState<any[]>([]);
 
     // --- Computed Values ---
     const subtotal = cart.reduce((acc, item) => acc + item.Subtotal, 0);
@@ -162,6 +168,43 @@ export default function CreateOrder() {
 
 
     // --- Product Search Logic (Server Side) ---
+    const handleVariantConfirm = (variant: any, qty: number, price: number) => {
+        // Logic to add to cart
+        setCart(prev => {
+            const groupKey = `v-${variant.Id}`;
+            const existingIndex = prev.findIndex(item => item.VariantKey === groupKey);
+
+            if (existingIndex >= 0) {
+                const updatedItems = [...prev];
+                const existing = prev[existingIndex];
+                updatedItems[existingIndex] = {
+                    ...existing,
+                    Quantity: existing.Quantity + qty,
+                    Subtotal: (existing.Quantity + qty) * price,
+                    Price: price
+                };
+                return updatedItems;
+            } else {
+                // New Item
+                const newItem: CartItem = {
+                    Id: variant.Id, // Use Variant ID as unique ID
+                    ProductId: variant.ProductId,
+                    Code: "GENERIC", // Variant ID tracking
+                    Name: modalProduct?.Name || "Unknown",
+                    VariantDetails: `${variant.Color?.Name || ''} ${variant.Size?.Name || ''}`.trim(),
+                    Price: price,
+                    Quantity: qty,
+                    Subtotal: price * qty,
+                    ImageUrl: modalProduct?.ImageUrls?.[0],
+                    VariantKey: groupKey,
+                    ProductVariantId: variant.Id
+                };
+                return [newItem, ...prev];
+            }
+        });
+    };
+
+    // --- Product Search Logic (Server Side) ---
     const handleProductSearch = async (term: string) => {
         if (!term) return;
 
@@ -169,89 +212,31 @@ export default function CreateOrder() {
         setItemLoading(true);
 
         try {
-            // 1. Check if specific item already scanned? 
-            // The requirement says "if multiple productItems of a same product scanned.. it should be grouped together and increase quantity"
-            // So we need to fetch the item details first to know its Product/Variant.
-
+            // 1. Fetch Item to identify Product
             const res = await api.get<ProductItem>(`/ProductItem/code/${code}`);
-            const found = res.data;
+            const foundItem = res.data;
+            const productId = foundItem.ProductId;
 
-            if (found.IsSold || found.IsDefected) {
-                alert(`Item with code '${code}' is already Sold or Defected.`);
-                setItemLoading(false);
-                setProductSearch('');
-                return;
-            }
+            // 2. Fetch All Variants for this Product
+            const variantsRes = await api.get<any[]>(`/ProductVariants/product/${productId}`);
+            const variants = variantsRes.data;
 
-            // Map to Cart Item using the new flat DTO structure
-            const price = found.VariantPrice || found.BasePrice || 0;
-            const name = found.ProductName || "Unknown Product";
-            const imageUrl = (found.ImageUrls && found.ImageUrls.length > 0) ? found.ImageUrls[0] : undefined;
+            // 3. Construct Product Object for Modal
+            const productObj = {
+                Id: productId,
+                Name: foundItem.ProductName,
+                Description: "Select variant for this product",
+                BasePrice: foundItem.BasePrice,
+                ImageUrls: foundItem.ImageUrls || []
+            };
 
-            const color = found.ColorName || "";
-            const size = found.SizeName || "";
-            const details = [color, size].filter(Boolean).join(" / ");
-
-            // Grouping Logic: 
-            // We group by ProductVariantId (or ProductId if no variants used).
-            // But wait, the CartItem needs to track WHICH specific items were added if we want to mark them sold?
-            // "if multiple productItems of a same product scanned.. it should be grouped together"
-            // This implies the Order Items view is AGGREGATED.
-            // But we must remember the individual Item Ids to handle the transaction if needed?
-            // The User Request says "add that product item in the orderitems api".
-            // If the Order API only takes `ProductId`, we lose the specific Item Serial.
-            // However, for the display in "Order Items section.. it must show detail of the product.. grouped together".
-
-            // So I will Aggregate in the Cart State using a unique Key (e.g. VariantId).
-            // I'll keep a list of `OriginalItemIds` in the cart item to track which specific items make up this quantity.
-
-            const groupKey = found.ProductVariantId ? `v-${found.ProductVariantId}` : `p-${found.ProductId}`;
-
-            setCart(prev => {
-                const existingIndex = prev.findIndex(item => item.VariantKey === groupKey);
-
-                if (existingIndex >= 0) {
-                    // Update existing
-                    const existing = prev[existingIndex];
-
-                    // Check if this specific serial is already in the aggregated list (prevent double scan of same item)
-                    if (existing.OriginalItemIds.includes(found.Id)) {
-                        alert(`Item ${code} is already in the cart.`);
-                        return prev;
-                    }
-
-                    const updatedItems = [...prev];
-                    updatedItems[existingIndex] = {
-                        ...existing,
-                        Quantity: existing.Quantity + 1,
-                        Subtotal: (existing.Quantity + 1) * existing.Price,
-                        OriginalItemIds: [...existing.OriginalItemIds, found.Id]
-                    };
-                    return updatedItems;
-                } else {
-                    // Add new
-                    const newItem: CartItem = {
-                        Id: found.Id, // Primary ID (arbitrary one of them)
-                        ProductId: found.ProductId || 0,
-                        Code: found.Code, // Display code of the first one
-                        Name: name,
-                        VariantDetails: details,
-                        Price: price,
-                        Quantity: 1,
-                        Subtotal: price,
-                        ImageUrl: imageUrl,
-                        VariantKey: groupKey,
-                        OriginalItemIds: [found.Id]
-                    };
-                    return [newItem, ...prev];
-                }
-            });
-
+            setModalProduct(productObj);
+            setModalVariants(variants);
+            setShowVariantModal(true);
             setProductSearch('');
 
         } catch (err) {
             console.error("Product lookup failed", err);
-            // Check for 404
             if ((err as any)?.response?.status === 404) {
                 alert(`Item with code '${code}' not found.`);
             } else {
@@ -261,6 +246,10 @@ export default function CreateOrder() {
             setItemLoading(false);
         }
     };
+
+    // function removed
+
+
 
 
     const removeFromCart = (id: number) => {
@@ -391,7 +380,7 @@ export default function CreateOrder() {
                     Quantity: item.Quantity,
                     UnitPrice: item.Price,
                     Subtotal: item.Subtotal,
-                    ProductItemIds: item.OriginalItemIds // Send list of Item IDs to mark as Sold
+                    ProductVariantId: item.ProductVariantId
                 });
             });
 
@@ -895,6 +884,14 @@ export default function CreateOrder() {
                     </div>
                 </div>
             </div>
+            {/* Variant Selection Modal */}
+            <VariantSelectionModal
+                isOpen={showVariantModal}
+                onClose={() => setShowVariantModal(false)}
+                product={modalProduct}
+                variants={modalVariants}
+                onConfirm={handleVariantConfirm}
+            />
         </div>
     );
 }
