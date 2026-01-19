@@ -129,6 +129,9 @@ export interface InventoryStock {
         ProductItems: any[];
     };
     Quantity: number;
+    DefectQuantity: number;
+    AvailableItemCodes: string[];
+    DefectItemCodes: string[];
 }
 
 export interface Inventory {

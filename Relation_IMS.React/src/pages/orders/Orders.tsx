@@ -300,7 +300,7 @@ export default function OrdersPage() {
                             {/* Next Payment Date */}
                             {order.NextPaymentDate && (order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))) > 0 && (
                                 <div className="text-[10px] text-text-secondary mt-0.5" title="Next Payment Date">
-                                    Next: {formatDate(order.NextPaymentDate.toString())}
+                                    {formatDate(order.NextPaymentDate.toString())}
                                 </div>
                             )}
                         </div>

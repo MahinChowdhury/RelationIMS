@@ -455,16 +455,37 @@ namespace Relation_IMS.Datas.Repositories
         // Get variant stock across all inventories
         public async Task<List<VariantStockDTO>> GetVariantStockAcrossInventoriesAsync(int variantId)
         {
-            var result = await _context.Inventories
-                .Select(inv => new VariantStockDTO
+            var items = await _context.ProductItems
+                .AsNoTracking()
+                .Where(pi => pi.ProductVariantId == variantId && !pi.IsSold)
+                .Select(pi => new 
+                { 
+                    pi.InventoryId, 
+                    pi.Code, 
+                    pi.IsDefected 
+                })
+                .ToListAsync();
+
+            var inventoryIds = items.Select(i => i.InventoryId).Distinct().ToList();
+            
+            var inventories = await _context.Inventories
+                .AsNoTracking()
+                .Where(i => inventoryIds.Contains(i.Id))
+                .ToListAsync();
+
+            var result = inventories.Select(inv => 
+            {
+                var invItems = items.Where(i => i.InventoryId == inv.Id).ToList();
+                return new VariantStockDTO
                 {
                     InventoryId = inv.Id,
                     Inventory = inv,
-                    Quantity = inv.ProductItems!
-                        .Where(pi => pi.ProductVariantId == variantId && !pi.IsDefected && !pi.IsSold)
-                        .Count()
-                })
-                .ToListAsync();
+                    Quantity = invItems.Count(i => !i.IsDefected),
+                    DefectQuantity = invItems.Count(i => i.IsDefected),
+                    AvailableItemCodes = invItems.Where(i => !i.IsDefected).Select(i => i.Code).ToList(),
+                    DefectItemCodes = invItems.Where(i => i.IsDefected).Select(i => i.Code).ToList()
+                };
+            }).ToList();
 
             return result;
         }

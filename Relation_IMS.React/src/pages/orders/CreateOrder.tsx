@@ -766,6 +766,19 @@ export default function CreateOrder() {
                                                     onChange={(e) => setReferencePhone(e.target.value)}
                                                 />
                                             </div>
+                                            {/* Next Payment Date Picker - Show if there is a due amount AND allowDue is checked */}
+                                            {allowDue && (
+                                                <div className="mb-4 animate-fadeIn">
+                                                    <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Next Payment Date</label>
+                                                    <input
+                                                        type="date"
+                                                        className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:border-primary focus:ring-primary"
+                                                        value={nextPaymentDate}
+                                                        onChange={(e) => setNextPaymentDate(e.target.value)}
+                                                        min={new Date().toISOString().split('T')[0]}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -841,20 +854,6 @@ export default function CreateOrder() {
                                 </div>
                             )}
                         </div>
-
-                        {/* Next Payment Date Picker - Show if there is a due amount AND allowDue is checked */}
-                        {dueAmount > 0 && allowDue && (
-                            <div className="mb-4 animate-fadeIn">
-                                <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Next Payment Date</label>
-                                <input
-                                    type="date"
-                                    className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:border-primary focus:ring-primary"
-                                    value={nextPaymentDate}
-                                    onChange={(e) => setNextPaymentDate(e.target.value)}
-                                    min={new Date().toISOString().split('T')[0]}
-                                />
-                            </div>
-                        )}
 
                         <div className="mb-6">
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-2 flex items-center justify-between">

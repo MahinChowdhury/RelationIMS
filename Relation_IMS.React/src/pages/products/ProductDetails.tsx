@@ -17,6 +17,7 @@ export default function ProductDetails() {
     const [inventoryLoading, setInventoryLoading] = useState(false);
     const [stockData, setStockData] = useState<InventoryStock[]>([]);
     const [selectedVariantName, setSelectedVariantName] = useState('');
+    const [stockModalMode, setStockModalMode] = useState<'available' | 'defect'>('available');
 
     useEffect(() => {
         if (id) {
@@ -37,10 +38,11 @@ export default function ProductDetails() {
         }
     };
 
-    const fetchInventoryStock = async (variantId: number, colorName: string, sizeName: string) => {
+    const fetchInventoryStock = async (variantId: number, colorName: string, sizeName: string, mode: 'available' | 'defect') => {
         setInventoryLoading(true);
         setStockData([]);
         setSelectedVariantName(`${colorName} - ${sizeName}`);
+        setStockModalMode(mode);
         setShowInventoryModal(true);
 
         try {
@@ -174,16 +176,19 @@ export default function ProductDetails() {
                                                     <td className="py-3 px-4 text-text-main dark:text-gray-300">{variant.Size?.Name || 'N/A'}</td>
                                                     <td className="py-3 px-4">
                                                         <button
-                                                            onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '')}
+                                                            onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'available')}
                                                             className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold dark:bg-green-900/40 dark:text-green-300 hover:underline cursor-pointer"
                                                         >
                                                             {variant.Quantity}
                                                         </button>
                                                     </td>
                                                     <td className="py-3 px-4">
-                                                        <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${variant.Defects > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'}`}>
+                                                        <button
+                                                            onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'defect')}
+                                                            className={`inline-block px-2 py-1 rounded text-xs font-bold hover:underline cursor-pointer ${variant.Defects > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'}`}
+                                                        >
                                                             {variant.Defects}
-                                                        </span>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
@@ -288,6 +293,7 @@ export default function ProductDetails() {
                 stockData={stockData}
                 loading={inventoryLoading}
                 variantName={selectedVariantName}
+                mode={stockModalMode}
             />
         </div>
     );
