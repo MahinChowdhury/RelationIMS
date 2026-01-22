@@ -70,6 +70,7 @@ namespace Relation_IMS.Datas.Repositories
             var query = _context.Orders.AsQueryable();
 
             var orders = await query
+                .OrderByDescending(o => o.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Include(c => c.Customer)

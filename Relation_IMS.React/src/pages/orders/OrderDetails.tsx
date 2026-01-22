@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
-import { type Order, type OrderPayment, PaymentStatus, type Product } from '../../types';
+import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus } from '../../types';
+import InternalOrderCycle from './InternalOrderCycle';
 
-// Augment Order type locally if not updated in types.ts yet, or assume it's there. 
-// Ideally should update types.ts but for quick UI fix we can cast or rely on API response.
-// Assuming types.ts needs update? Let's check or just use 'any' cast if strict.
-// Better: Update types.ts. But I don't see types.ts in context. I'll cast for now or trust it's effectively any from JSON.
-// Wait, `order` state is typed `Order`. I need to update the definition if I want TS to stay happy.
+// ... (existing imports or keep them if they were already there, but careful not to duplicate)
 
 export default function OrderDetailsPage() {
     const { id } = useParams<{ id: string }>();
+    const [searchParams] = useSearchParams();
+    const viewMode = searchParams.get('view');
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -61,6 +60,31 @@ export default function OrderDetailsPage() {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-background-light dark:bg-background-dark">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary"></div>
+                <p className="mt-4 text-text-secondary font-medium">Loading order details...</p>
+            </div>
+        );
+    }
+
+    if (error || !order) return <div>{error || 'Order not found'}</div>;
+
+    // GATEWAY LOGIC
+    const isConfirmed = order.InternalStatus === OrderInternalStatus.Confirmed;
+
+    // Show cycle if explicitly requested OR (status is not Confirmed AND view is not forced to details)
+    if (viewMode === 'cycle' || (!isConfirmed && viewMode !== 'details')) {
+        return <InternalOrderCycle order={order} />;
+    }
+
+    // ... (rest of the existing Order details render)
+
+
+
+
 
     const formatDate = (dateString: string) => {
         if (!dateString || dateString.startsWith('0001-01-01')) return 'N/A';
@@ -138,6 +162,15 @@ export default function OrderDetailsPage() {
                                     'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800'}`}>
                             {getPaymentStatusText(order.PaymentStatus)}
                         </span>
+
+                        {order.InternalStatus !== OrderInternalStatus.Confirmed && (
+                            <Link to={`/arrangement/${order.Id}`} className="ml-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                                <span className="material-symbols-outlined text-xs">conveyor_belt</span>
+                                {order.InternalStatus === OrderInternalStatus.Created ? 'Pending Arrangement' :
+                                    order.InternalStatus === OrderInternalStatus.Arranging ? 'Arranging' :
+                                        order.InternalStatus === OrderInternalStatus.Arranged ? 'Arranged (Confirm Now)' : 'Unknown'}
+                            </Link>
+                        )}
                     </div>
                     <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base">Placed on {formatDate(order.CreatedAt)}</p>
                 </div>

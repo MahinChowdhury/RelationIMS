@@ -88,6 +88,9 @@ export interface OrderItem {
     CostPrice?: number;
     Discount?: number;
     Subtotal: number;
+    ProductVariantId?: number;
+    ProductVariant?: ProductVariant;
+    ArrangedQuantity: number;
 }
 
 export interface Order {
@@ -104,10 +107,20 @@ export interface Order {
     User?: any;
     Remarks?: string;
     Payments?: OrderPayment[];
+    InternalStatus: OrderInternalStatus;
     CreatedAt: string;
     NextPaymentDate?: string; // or Date if transformed
     date?: string;
 }
+
+export const OrderInternalStatus = {
+    Created: 0,
+    Arranging: 1,
+    Arranged: 2,
+    Confirmed: 3
+} as const;
+
+export type OrderInternalStatus = typeof OrderInternalStatus[keyof typeof OrderInternalStatus];
 
 export interface Customer {
     Id: number;
@@ -133,6 +146,7 @@ export interface InventoryStock {
     AvailableItemCodes: string[];
     DefectItemCodes: string[];
 }
+
 
 export interface Inventory {
     Id: number;

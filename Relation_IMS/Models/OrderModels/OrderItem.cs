@@ -14,6 +14,9 @@ namespace Relation_IMS.Models.OrderModels
         public int ProductId { get; set; }
         public Product? Product { get; set; }
 
+        public int? ProductVariantId { get; set; }
+        public ProductVariant? ProductVariant { get; set; }
+
         [Required(ErrorMessage = "Item quantity is required.")]
         [Range(0,int.MaxValue)]
         public int Quantity { get; set; }
@@ -32,6 +35,7 @@ namespace Relation_IMS.Models.OrderModels
         [Required(ErrorMessage = "SubTotal amount is required.")]
         [Range(0, double.MaxValue)]
         public decimal Subtotal { get; set; }
+        public int ArrangedQuantity { get; set; } = 0;
         public DateTime CreatedAt = DateTime.UtcNow;
     }
 }

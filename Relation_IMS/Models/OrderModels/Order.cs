@@ -36,6 +36,7 @@ namespace Relation_IMS.Models.OrderModels
         public string? Remarks { get; set; }
 
         public DateTime? NextPaymentDate { get; set; }
+        public OrderInternalStatus InternalStatus { get; set; } = OrderInternalStatus.Created;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

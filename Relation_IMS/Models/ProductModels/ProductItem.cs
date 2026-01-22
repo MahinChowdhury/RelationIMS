@@ -22,5 +22,8 @@ namespace Relation_IMS.Models.ProductModels
         [Required]
         public int InventoryId { get; set; }
         public Inventory? Inventory { get; set; }
+
+        public int? OrderItemId { get; set; }
+        public Models.OrderModels.OrderItem? OrderItem { get; set; }
     }
 }

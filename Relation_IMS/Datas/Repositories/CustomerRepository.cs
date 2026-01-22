@@ -48,6 +48,7 @@ namespace Relation_IMS.Datas.Repositories
 
 
             var customers = await query
+                .OrderByDescending(c => c.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Include(o => o.Orders)

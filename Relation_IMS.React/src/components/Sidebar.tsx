@@ -24,7 +24,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         { name: 'Products', path: '/products', icon: 'shopping_bag' },
         { name: 'Orders', path: '/orders', icon: 'receipt_long' },
         { name: 'Customers', path: '/customers', icon: 'group' },
-        { name: 'Inventory', path: '/inventory', icon: 'inventory_2'},
+        { name: 'Inventory', path: '/inventory', icon: 'inventory_2' },
+        { name: 'Arrangement', path: '/arrangement', icon: 'conveyor_belt' },
         { name: 'Accounts', path: '/accounts', icon: 'bar_chart' },
     ];
 

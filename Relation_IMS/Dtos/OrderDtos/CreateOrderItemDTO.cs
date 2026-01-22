@@ -11,6 +11,7 @@ namespace Relation_IMS.Dtos.OrderDtos
         public int OrderId { get; set; }
         [Required(ErrorMessage = "Product id is required.")]
         public int ProductId { get; set; }
+        public int? ProductVariantId { get; set; }
 
         [Required(ErrorMessage = "Item quantity is required.")]
         [Range(0, int.MaxValue)]
