@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import api from '../../services/api';
 import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
@@ -419,15 +419,6 @@ export default function ProductsPage() {
             const product = products.find(p => p.Id === productId);
             if (!product) return;
 
-            // We need to fetch variants to get codes
-            // If the backend `GetProductVariantsByProductId` returns ProductItems inside, we can use that.
-            // But `ProductVariantsController` returns `List<ProductVariant>`.
-            // Does `ProductVariant` contain `ProductItems`?
-            // Let's check `ProductVariant.cs` (it should).
-            // Actually, `ProductRepository` includes `ProductItems` in `GetProductById`.
-            // `GetAllProducts` usually doesn't include deep nested variants for performance.
-            // So let's fetch the full product details first.
-
             const res = await api.get<Product>(`/Product/${productId}`);
             const fullProduct = res.data as any; // Cast to any to access nested Variants and ProductItems
 
@@ -466,6 +457,30 @@ export default function ProductsPage() {
 
     return (
         <div className="container mx-auto max-w-screen-2xl px-4 py-4 md:px-6 md:py-6 flex flex-col gap-4">
+
+            {/* Breadcrumb */}
+            <nav aria-label="Breadcrumb" className="flex">
+                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li className="inline-flex items-center">
+                        <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
+                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                            Dashboard
+                        </Link>
+                    </li>
+                    <li>
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">Products</span>
+                        </div>
+                    </li>
+                    <li aria-current="page">
+                        <div className="flex items-center">
+                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">All Products</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
 
             {/* Print Modal Overlay (Using a simple full screen div for now to support @media print) */}
             {showPrintModal && (
