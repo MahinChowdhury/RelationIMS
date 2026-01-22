@@ -81,6 +81,13 @@ const InventoryOptions = () => {
                     <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">Defected Items</h3>
                 </Link>
 
+                <Link to="/inventory/customer-return" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-pink-600/50 transition-all">
+                    <div className="p-3 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400 group-hover:scale-110 transition-transform duration-300">
+                        <span className="material-symbols-outlined text-3xl">keyboard_return</span>
+                    </div>
+                    <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">Customer Return</h3>
+                </Link>
+
                 <Link to="#" className="col-span-2 md:col-span-1 group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] hover:shadow-md hover:border-teal-600/50 transition-all">
                     <div className="p-3 rounded-full bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400 group-hover:scale-110 transition-transform duration-300">
                         <span className="material-symbols-outlined text-3xl">plagiarism</span>

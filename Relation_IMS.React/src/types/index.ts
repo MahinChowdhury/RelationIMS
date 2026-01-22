@@ -131,6 +131,7 @@ export interface Customer {
     ShopAddress: string;
     Orders?: Order[];
     CreatedDate?: string;
+    Balance?: number;
 }
 
 export interface InventoryStock {

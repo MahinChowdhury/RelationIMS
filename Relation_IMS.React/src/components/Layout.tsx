@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import { useState } from 'react';
+import GlobalSearch from './GlobalSearch';
 
 export default function Layout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -14,6 +15,9 @@ export default function Layout() {
 
     return (
         <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30">
+            {/* Global Search Bar */}
+            <GlobalSearch />
+
             {/* Sidebar (Desktop Only) */}
             <div className="hidden lg:flex h-full">
                 <Sidebar

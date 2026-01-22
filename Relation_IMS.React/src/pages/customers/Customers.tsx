@@ -33,7 +33,7 @@ export default function CustomersPage() {
         Name: '',
         Phone: '',
         ShopName: '',
-        ShopAddress:'',
+        ShopAddress: '',
         Address: ''
     });
 
@@ -172,7 +172,7 @@ export default function CustomersPage() {
     };
 
     const openCreate = () => {
-        setEditingCustomer({ Id: 0, Name: '', Phone: '', ShopName: '',ShopAddress: '', Address: '' });
+        setEditingCustomer({ Id: 0, Name: '', Phone: '', ShopName: '', ShopAddress: '', Address: '' });
         setShowCreateModal(true);
     };
 

@@ -190,7 +190,7 @@ export default function CustomerDetailsPage() {
                             <hr className="border-gray-100 dark:border-[#2a4032] mb-6" />
 
                             <div className="flex flex-col gap-4">
-                                
+
                                 <div className="flex items-start gap-3">
                                     <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
                                         <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
@@ -274,6 +274,15 @@ export default function CustomerDetailsPage() {
                                 </p>
                             </div>
                             <div className={`size-10 rounded-full flex items-center justify-center ${totalDue > 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
+                                <span className="material-symbols-outlined">account_balance_wallet</span>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-text-secondary mb-1">Current Balance</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">${customer.Balance?.toFixed(2) || '0.00'}</p>
+                            </div>
+                            <div className="size-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 dark:bg-green-900/20">
                                 <span className="material-symbols-outlined">account_balance_wallet</span>
                             </div>
                         </div>

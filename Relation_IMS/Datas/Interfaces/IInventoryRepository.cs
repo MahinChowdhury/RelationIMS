@@ -18,6 +18,8 @@ namespace Relation_IMS.Datas.Interfaces
         Task<List<ProductItemSummaryDTO>> GetInventoryProductItemsAsync(int inventoryId);
         Task<TransferResultDTO> TransferProductItemsByCodesAsync(List<string> productItemCodes, int sourceInventoryId, int destinationInventoryId, int userId);
         Task<List<InventoryTransferHistoryDTO>> GetInventoryTransferRecordsAsync(int pageNumber = 1, int pageSize = 20, string? search = null, DateTime? date = null, int? sourceId = null, int? destinationId = null, int? userId = null);
+        Task<TransferResultDTO> ProcessCustomerReturnAsync(CustomerReturnRequestDTO returnDto);
+        Task<List<CustomerReturnHistoryDTO>> GetCustomerReturnRecordsAsync(int pageNumber = 1, int pageSize = 20);
 
         // Stock summary operations
         Task<List<InventoryStockDTO>> GetInventoryStockSummaryAsync(int inventoryId);
