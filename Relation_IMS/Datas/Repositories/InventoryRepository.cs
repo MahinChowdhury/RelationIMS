@@ -489,5 +489,143 @@ namespace Relation_IMS.Datas.Repositories
 
             return result;
         }
+
+
+        // Process Customer Return (Batch)
+        public async Task<TransferResultDTO> ProcessCustomerReturnAsync(CustomerReturnRequestDTO returnDto)
+        {
+            var result = new TransferResultDTO
+            {
+                Success = false,
+                InvalidCodes = new List<string>(),
+                TransferDetails = new List<TransferItemDetail>() // We reuse this DTO for response details
+            };
+
+            // 1. Validate Customer
+            var customer = await _context.Customers.FindAsync(returnDto.CustomerId);
+            if (customer == null)
+            {
+                result.Message = "Customer not found.";
+                return result;
+            }
+
+            // 2. Validate Target Inventory
+            var inventory = await _context.Inventories.FindAsync(returnDto.TargetInventoryId);
+            if (inventory == null)
+            {
+                result.Message = "Target inventory not found.";
+                return result;
+            }
+
+            // 3. Find and Validate All Products
+            // Fetch potential items first
+            var products = await _context.ProductItems
+                .Where(pi => returnDto.ProductCodes.Contains(pi.Code))
+                .ToListAsync();
+
+            var validItems = new List<ProductItem>();
+            var errors = new List<string>();
+
+            foreach (var code in returnDto.ProductCodes)
+            {
+                // Logic to pick correct item instance essentially same as transfer logic, 
+                // but checking IsSold = true
+                
+                // Find sold item with this code
+                var item = products.FirstOrDefault(p => p.Code == code && p.IsSold);
+                
+                // If not found in loaded products, check if it's there but unsold?
+                if (item == null)
+                {
+                    // Maybe it exists but is NOT sold?
+                    var unsold = products.FirstOrDefault(p => p.Code == code && !p.IsSold);
+                    if (unsold != null)
+                    {
+                        result.InvalidCodes.Add(code);
+                        errors.Add($"Item '{code}' is not marked as sold.");
+                    }
+                    else
+                    {
+                        // Not found at all
+                        result.InvalidCodes.Add(code);
+                        errors.Add($"Item '{code}' not found.");
+                    }
+                    continue;
+                }
+
+                // Found valid item. Remove from pool if duplicate codes existed (unlikely for unique items but safe)
+                products.Remove(item);
+                validItems.Add(item);
+            }
+
+            if (result.InvalidCodes.Any())
+            {
+                result.Message = $"Return failed. Invalid items: {string.Join(", ", errors)}";
+                return result;
+            }
+
+            // 4. Create Return Record
+            var returnRecord = new CustomerReturnRecord
+            {
+                CustomerId = returnDto.CustomerId,
+                RefundAmount = returnDto.RefundAmount,
+                ReturnDate = DateTime.UtcNow,
+                UserId = returnDto.UserId
+            };
+
+            // 5. Process Each Item
+            foreach (var item in validItems)
+            {
+                // Update item status
+                item.IsSold = false;
+                item.InventoryId = returnDto.TargetInventoryId;
+                
+                // Add to return record
+                returnRecord.ReturnItems.Add(new CustomerReturnItem
+                {
+                    ProductItem = item
+                });
+            }
+
+            // 6. Update Customer Balance
+            customer.Balance += returnDto.RefundAmount;
+            
+            // 7. Save changes
+            await _context.CustomerReturnRecords.AddAsync(returnRecord);
+            await _context.SaveChangesAsync();
+
+            result.Success = true;
+            result.Message = $"Successfully returned {validItems.Count} items. Customer balance increased by {returnDto.RefundAmount}.";
+            result.TransferredCount = validItems.Count;
+
+            return result;
+        }
+
+        public async Task<List<CustomerReturnHistoryDTO>> GetCustomerReturnRecordsAsync(int pageNumber = 1, int pageSize = 20)
+        {
+             var query = _context.CustomerReturnRecords
+                .Include(r => r.Customer)
+                .Include(r => r.ReturnItems)
+                //.Include(r => r.User) // If User navigation exists. It might not be set up in DbContext yet based on context, so I'll be safe or assume it works if UserId is there. Actually User might be null.
+                .AsNoTracking();
+
+             // Order by date desc
+             var records = await query
+                .OrderByDescending(r => r.ReturnDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new CustomerReturnHistoryDTO
+                {
+                    Id = r.Id,
+                    ReturnDate = r.ReturnDate,
+                    CustomerName = r.Customer != null ? r.Customer.Name : "Unknown",
+                    ItemsCount = r.ReturnItems.Count,
+                    RefundAmount = r.RefundAmount,
+                    ProcessedBy = "System" // Placeholder until User claim/nav is fully linked
+                })
+                .ToListAsync();
+
+             return records;
+        }
     }
 }

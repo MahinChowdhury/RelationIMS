@@ -158,5 +158,32 @@ namespace Relation_IMS.Controllers
             var records = await _inventoryRepo.GetInventoryTransferRecordsAsync(pageNumber, pageSize, search, date, sourceId, destinationId, userId);
             return Ok(records);
         }
+
+        // POST: api/Inventory/customer-return
+        [HttpPost("customer-return")]
+        public async Task<IActionResult> ProcessCustomerReturn([FromBody] CustomerReturnRequestDTO returnDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _inventoryRepo.ProcessCustomerReturnAsync(returnDto);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message, invalidCodes = result.InvalidCodes });
+            }
+
+            return Ok(new { message = result.Message });
+        }
+
+        // GET: api/Inventory/customer-return/history
+        [HttpGet("customer-return/history")]
+        public async Task<IActionResult> GetCustomerReturnHistory([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            var history = await _inventoryRepo.GetCustomerReturnRecordsAsync(pageNumber, pageSize);
+            return Ok(history);
+        }
     }
 }

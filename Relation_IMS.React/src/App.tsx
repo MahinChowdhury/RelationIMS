@@ -14,6 +14,7 @@ import CreateOrder from './pages/orders/CreateOrder';
 import InventoryOptions from './pages/inventory/InventoryOptions';
 import InventoryTransfer from './pages/inventory/InventoryTransfer';
 import DefectItems from './pages/inventory/DefectItems';
+import CustomerReturn from './pages/inventory/CustomerReturn';
 import InventoryLocations from './pages/inventory/InventoryLocations';
 import InventoryDetails from './pages/inventory/InventoryDetails';
 import StockIn from './pages/inventory/StockIn';
@@ -46,6 +47,7 @@ function App() {
         <Route path="inventory" element={<InventoryOptions />} />
         <Route path="inventory/transfer" element={<InventoryTransfer />} />
         <Route path="inventory/defects" element={<DefectItems />} />
+        <Route path="inventory/customer-return" element={<CustomerReturn />} />
         <Route path="inventory/locations" element={<InventoryLocations />} />
         <Route path="inventory/locations/:id" element={<InventoryDetails />} />
         <Route path="inventory/stock-in" element={<StockIn />} />
