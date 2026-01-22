@@ -58,9 +58,9 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
     // Update price when variant options change
     useEffect(() => {
         if (selectedVariant) {
-            setPrice(selectedVariant.VariantPrice);
+            setPrice(selectedVariant.VariantPrice || product?.BasePrice || 0);
         }
-    }, [selectedVariant]);
+    }, [selectedVariant, product]);
 
     if (!isOpen || !product) return null;
 
