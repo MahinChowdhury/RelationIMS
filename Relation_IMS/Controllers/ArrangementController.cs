@@ -158,7 +158,7 @@ namespace Relation_IMS.Controllers
                 item.IsSold = true;
             }
 
-            order.InternalStatus = OrderInternalStatus.Confirmed;  
+            order.InternalStatus = OrderInternalStatus.Arranged;  
             // NOTE: Status flow might be Created -> Arranging -> Arranged -> Confirmed (Payment/Delivery?)
             // If "Confirm Arrangement" means moving to "Arranged", then this is correct.
 

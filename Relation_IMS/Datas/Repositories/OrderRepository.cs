@@ -117,6 +117,10 @@ namespace Relation_IMS.Datas.Repositories
             order.NetAmount = updateDto.NetAmount;
             order.UserId = updateDto.UserId;
             order.Remarks = updateDto.Remarks;
+            if (updateDto.InternalStatus.HasValue)
+            {
+                order.InternalStatus = updateDto.InternalStatus.Value;
+            }
 
             await _context.SaveChangesAsync();
 
