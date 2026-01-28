@@ -49,6 +49,8 @@ interface CartItem {
     // New fields for grouping
     VariantKey?: string;
     ProductVariantId?: number;
+    ColorName?: string;
+    SizeName?: string;
 }
 
 // Payment Types
@@ -168,39 +170,47 @@ export default function CreateOrder() {
 
 
     // --- Product Search Logic (Server Side) ---
-    const handleVariantConfirm = (variant: any, qty: number, price: number) => {
-        // Logic to add to cart
+    const handleVariantConfirm = (items: any[]) => {
+        // items is array of { variant, quantity, price, subtotal }
         setCart(prev => {
-            const groupKey = `v-${variant.Id}`;
-            const existingIndex = prev.findIndex(item => item.VariantKey === groupKey);
+            let updatedCart = [...prev];
 
-            if (existingIndex >= 0) {
-                const updatedItems = [...prev];
-                const existing = prev[existingIndex];
-                updatedItems[existingIndex] = {
-                    ...existing,
-                    Quantity: existing.Quantity + qty,
-                    Subtotal: (existing.Quantity + qty) * price,
-                    Price: price
-                };
-                return updatedItems;
-            } else {
-                // New Item
-                const newItem: CartItem = {
-                    Id: variant.Id, // Use Variant ID as unique ID
-                    ProductId: variant.ProductId,
-                    Code: "GENERIC", // Variant ID tracking
-                    Name: modalProduct?.Name || "Unknown",
-                    VariantDetails: `${variant.Color?.Name || ''} ${variant.Size?.Name || ''}`.trim(),
-                    Price: price,
-                    Quantity: qty,
-                    Subtotal: price * qty,
-                    ImageUrl: modalProduct?.ImageUrls?.[0],
-                    VariantKey: groupKey,
-                    ProductVariantId: variant.Id
-                };
-                return [newItem, ...prev];
-            }
+            items.forEach(stagedItem => {
+                const { variant, quantity, price } = stagedItem;
+                const groupKey = `v-${variant.Id}`;
+                const existingIndex = updatedCart.findIndex(item => item.VariantKey === groupKey);
+
+                if (existingIndex >= 0) {
+                    const existing = updatedCart[existingIndex];
+                    updatedCart[existingIndex] = {
+                        ...existing,
+                        Quantity: existing.Quantity + quantity,
+                        Subtotal: (existing.Quantity + quantity) * price,
+                        Price: price
+                    };
+                } else {
+                    // New Item
+                    const newItem: CartItem = {
+                        Id: variant.Id, // Use Variant ID as unique ID
+                        ProductId: variant.ProductId,
+                        Code: "GENERIC", // Variant ID tracking
+                        Name: modalProduct?.Name || "Unknown",
+                        VariantDetails: `${variant.Color?.Name || ''} ${variant.Size?.Name || ''}`.trim(),
+                        Price: price,
+                        Quantity: quantity,
+                        Subtotal: price * quantity,
+                        ImageUrl: modalProduct?.ImageUrls?.[0],
+                        VariantKey: groupKey,
+                        ProductVariantId: variant.Id,
+                        // Add Color/Size info for Grouping
+                        ColorName: variant.Color?.Name,
+                        SizeName: variant.Size?.Name
+                    } as any; // Cast to any to add extra fields if CartItem interface is strict
+                    updatedCart = [newItem, ...updatedCart];
+                }
+            });
+
+            return updatedCart.sort((a, b) => (b.Id - a.Id)); // Simple sort, or invalid sort if Id string, but let's just keep FIFO or LIFO
         });
     };
 
@@ -387,7 +397,7 @@ export default function CreateOrder() {
             await Promise.all(itemPromises);
 
             alert('Order created successfully!');
-            navigate('/orders');
+            navigate(`/orders/${orderId}?view=cycle`);
 
         } catch (err) {
             console.error("Failed to create order", err);
@@ -599,48 +609,77 @@ export default function CreateOrder() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        cart.map((item, index) => (
-                                            <tr key={index} className="hover:bg-green-50/50 dark:hover:bg-green-900/10 transition-colors group">
-                                                <td className="px-6 py-4 text-gray-400 font-mono">{index + 1}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="size-10 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-[#e7f3eb] dark:border-gray-600" style={{ backgroundImage: `url('${item.ImageUrl || 'https://via.placeholder.com/100'}')` }}></div>
-                                                        <div>
-                                                            <p className="font-bold text-text-main dark:text-white">{item.Name}</p>
-                                                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                                                {item.VariantDetails && <span className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{item.VariantDetails}</span>}
-                                                                <span className="font-mono text-gray-400">{item.Code}</span>
+                                        // Grouping Logic Implementation
+                                        Object.values(cart.reduce((groups, item) => {
+                                            const key = `${item.ProductId}-${item.ColorName || 'NoColor'}`;
+                                            if (!groups[key]) groups[key] = { items: [], product: item };
+                                            groups[key].items.push(item);
+                                            return groups;
+                                        }, {} as Record<string, { items: CartItem[], product: CartItem }>)).map((group, groupIdx) => (
+                                            <>
+                                                {/* Group Header */}
+                                                <tr key={`group-${groupIdx}`} className="bg-gray-100/50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700">
+                                                    <td colSpan={6} className="px-6 py-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="size-8 rounded bg-white dark:bg-gray-600 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-500"
+                                                                style={{ backgroundImage: `url('${group.product.ImageUrl || 'https://via.placeholder.com/100'}')` }}>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-sm text-gray-800 dark:text-gray-200">
+                                                                    {group.product.Name}
+                                                                    {group.product.ColorName && (
+                                                                        <span className="ml-2 px-2 py-0.5 rounded-full bg-white dark:bg-gray-600 text-xs border border-gray-200 dark:border-gray-500 font-normal">
+                                                                            {group.product.ColorName}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-right text-text-main dark:text-gray-200 font-medium">
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <span className="text-gray-400 text-xs">$</span>
-                                                        <input
-                                                            type="number"
-                                                            className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none"
-                                                            value={item.Price}
-                                                            onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
-                                                        />
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        {/* Lock Quantity to 1 for unique items per row, or assume we can't change it for unique scans without removing */}
-                                                        <span className="font-bold w-6 text-center text-text-main dark:text-white">{item.Quantity}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">${item.Subtotal.toFixed(2)}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => removeFromCart(item.Id)}
-                                                        className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg">delete</span>
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                </tr>
+
+                                                {/* Group Items (Variants) */}
+                                                {group.items.map((item) => (
+                                                    <tr key={item.Id} className="hover:bg-green-50/50 dark:hover:bg-green-900/10 transition-colors group">
+                                                        <td className="px-6 py-3 pl-12 text-gray-400 font-mono text-xs border-l-4 border-transparent hover:border-green-400/30">
+                                                            <span className="material-symbols-outlined text-sm text-gray-300">subdirectory_arrow_right</span>
+                                                        </td>
+                                                        <td className="px-6 py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
+                                                                    {item.SizeName || 'Default Size'}
+                                                                </span>
+                                                                <span className="font-mono text-[10px] text-gray-400 border border-gray-100 dark:border-gray-700 px-1 rounded">{item.Code}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-3 text-right text-text-main dark:text-gray-200 font-medium">
+                                                            <div className="flex items-center justify-end gap-1">
+                                                                <span className="text-gray-400 text-xs">$</span>
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none text-sm"
+                                                                    value={item.Price}
+                                                                    onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-3">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <span className="font-bold w-6 text-center text-text-main dark:text-white text-sm">{item.Quantity}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white text-sm">${item.Subtotal.toFixed(2)}</td>
+                                                        <td className="px-6 py-3 text-center">
+                                                            <button
+                                                                onClick={() => removeFromCart(item.Id)}
+                                                                className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <span className="material-symbols-outlined text-base">delete</span>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
                                         ))
                                     )}
                                 </tbody>
