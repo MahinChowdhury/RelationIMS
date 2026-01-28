@@ -263,9 +263,14 @@ export default function ArrangementDetails() {
                                             >
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-[#e7f3eb] dark:border-gray-600 overflow-hidden flex items-center justify-center">
+                                                        <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0 border border-[#e7f3eb] dark:border-gray-600 overflow-hidden flex items-center justify-center relative group/image">
                                                             {item.Product?.ImageUrls?.[0] ?
-                                                                <img src={item.Product.ImageUrls[0]} className="w-full h-full object-cover" />
+                                                                <>
+                                                                    <img src={item.Product.ImageUrls[0]} className="w-full h-full object-cover transition-all duration-300 group-hover/image:blur-sm transform group-hover/image:scale-110" />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 bg-black/20">
+                                                                        <span className="material-symbols-outlined text-white drop-shadow-md text-xl">visibility</span>
+                                                                    </div>
+                                                                </>
                                                                 : <span className="material-symbols-outlined text-gray-400">image_not_supported</span>
                                                             }
                                                         </div>

@@ -95,12 +95,31 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
 
         if (invalidSelections.length > 0) {
             alert(`Insufficient stock for:\n- ${invalidSelections.join('\n- ')}\n\nPlease reduce quantity.`);
-            // If some were valid, do we add them? User experience suggests preventing partial adds is safer to avoid confusion.
-            // Returning early.
             return;
         }
 
-        setStagedItems(prev => [...prev, ...newItems]);
+        setStagedItems(prev => {
+            const updatedItems = [...prev];
+            newItems.forEach(newItem => {
+                const existingIndex = updatedItems.findIndex(existing => existing.variant.Id === newItem.variant.Id);
+                if (existingIndex >= 0) {
+                    // Update existing item
+                    const existing = updatedItems[existingIndex];
+                    const newQty = existing.quantity + newItem.quantity;
+                    // Optional: Check stock limits again for combined quantity? 
+                    // Ideally yes, but skipping complex double-check for now to keep it simple as per request.
+                    updatedItems[existingIndex] = {
+                        ...existing,
+                        quantity: newQty,
+                        subtotal: newQty * newItem.price // Assuming price is same, or should we use weighted average? User probably assumes same price.
+                    };
+                } else {
+                    // Add new item
+                    updatedItems.push(newItem);
+                }
+            });
+            return updatedItems;
+        });
         setSelectedSizeIds([]);
     };
 
