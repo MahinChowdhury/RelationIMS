@@ -23,16 +23,11 @@ namespace Relation_IMS.Controllers
         public async Task<IActionResult> GetPendingArrangementOrders()
         {
             // Show only orders where InternalStatus != Confirmed
+            // Removed deep includes (Product, Variant, Color, Size) as they are not needed for the list view
+            // and cause Object Cycles / Performance issues.
             var orders = await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Product)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.ProductVariant)
-                        .ThenInclude(pv => pv.Size)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.ProductVariant)
-                        .ThenInclude(pv => pv.Color)
                 .Where(o => o.InternalStatus != OrderInternalStatus.Confirmed)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
@@ -52,12 +47,17 @@ namespace Relation_IMS.Controllers
             // Find the item by barcode
             var productItem = await _context.ProductItems
                 .Include(pi => pi.ProductVariant)
-                    .ThenInclude(pv => pv.Product)
+                    .ThenInclude(pv => pv!.Product)
                 .FirstOrDefaultAsync(pi => pi.Code == request.Barcode);
 
             if (productItem == null)
             {
                 return NotFound($"Item with barcode '{request.Barcode}' not found.");
+            }
+
+            if (productItem.ProductVariant == null)
+            {
+                 return BadRequest($"Item '{request.Barcode}' is missing variant data.");
             }
 
             if (productItem.IsSold || productItem.IsDefected)
@@ -138,6 +138,8 @@ namespace Relation_IMS.Controllers
 
             if (order == null) return NotFound("Order not found");
 
+            if (order.OrderItems == null) return BadRequest("Order items are missing.");
+
             // Check if all items are fully arranged
             bool allArranged = order.OrderItems.All(oi => oi.ArrangedQuantity >= oi.Quantity);
 
@@ -170,15 +172,27 @@ namespace Relation_IMS.Controllers
         [HttpGet("items/{orderId}")]
         public async Task<IActionResult> GetArrangedItems(int orderId)
         {
+            // Get IDs of items returned for this order
+            var returnedItemIds = await _context.CustomerReturnItems
+                .Where(cri => cri.CustomerReturnRecord!.OrderId == orderId)
+                .Select(cri => cri.ProductItemId)
+                .ToListAsync();
+
             var items = await _context.ProductItems
                 .Include(pi => pi.ProductVariant)
-                .Where(pi => pi.OrderItemId != null && pi.OrderItem!.OrderId == orderId)
+                    .ThenInclude(pv => pv!.Product)
+                .Include(pi => pi.ProductVariant)
+                    .ThenInclude(pv => pv!.Color)
+                .Include(pi => pi.ProductVariant)
+                    .ThenInclude(pv => pv!.Size)
+                .Where(pi => (pi.OrderItemId != null && pi.OrderItem!.OrderId == orderId) || returnedItemIds.Contains(pi.Id))
                 .Select(pi => new
                 {
                     pi.Code,
                     ProductName = pi.ProductVariant!.Product!.Name,
                     Variant = pi.ProductVariant,
-                    pi.IsSold
+                    pi.IsSold,
+                    IsReturned = returnedItemIds.Contains(pi.Id)
                 })
                 .ToListAsync();
 

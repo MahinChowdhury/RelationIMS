@@ -30,21 +30,21 @@ namespace Relation_IMS.Datas.Repositories
         {
             var defects = await _context.ProductDefects
                 .Include(d => d.ProductItem)
-                    .ThenInclude(pi => pi.ProductVariant)
-                        .ThenInclude(pv => pv.Product)
+                    .ThenInclude(pi => pi!.ProductVariant)
+                        .ThenInclude(pv => pv!.Product)
                 .Include(d => d.ReportedByUser)
                 .OrderByDescending(d => d.DefectDate)
                 .Select(d => new DefectItemResDTO
                 {
                     Id = d.Id,
                     ProductItemId = d.ProductItemId,
-                    Code = d.ProductItem.Code,
-                    ProductName = d.ProductItem.ProductVariant.Product.Name,
+                    Code = d.ProductItem!.Code,
+                    ProductName = d.ProductItem.ProductVariant!.Product!.Name,
                     Reason = d.Reason,
                     Status = d.Status,
                     ReportedBy = d.ReportedByUser != null ? d.ReportedByUser.Firstname + " " + (d.ReportedByUser.Lastname ?? "") : "Unknown",
                     DefectDate = d.DefectDate,
-                    ProductImageUrl = d.ProductItem.ProductVariant.Product.ImageUrls.FirstOrDefault() // Helper or logic might be needed if list is stored as string
+                    ProductImageUrl = d.ProductItem.ProductVariant.Product.ImageUrls != null ? d.ProductItem.ProductVariant.Product.ImageUrls.FirstOrDefault() : null 
                 })
                 .ToListAsync();
 
@@ -144,7 +144,7 @@ namespace Relation_IMS.Datas.Repositories
         {
             var item = await _context.ProductItems
                 .Include(i => i.ProductVariant)
-                .ThenInclude(pv => pv.Product)
+                .ThenInclude(pv => pv!.Product)
                 .FirstOrDefaultAsync(x => x.Code == code);
 
             if (item == null) return null;

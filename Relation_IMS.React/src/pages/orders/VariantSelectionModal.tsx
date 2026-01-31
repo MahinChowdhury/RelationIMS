@@ -192,7 +192,14 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                     {uniqueColors.map(color => (
                                         <button
                                             key={color.Id}
-                                            onClick={() => setSelectedColorId(color.Id)}
+                                            onClick={() => {
+                                                setSelectedColorId(color.Id);
+                                                const relevantSizeIds = variants
+                                                    .filter(v => v.ProductColorId === color.Id && v.ProductSizeId)
+                                                    .map(v => v.ProductSizeId);
+                                                // @ts-ignore
+                                                setSelectedSizeIds([...new Set(relevantSizeIds)]);
+                                            }}
                                             className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all flex items-center gap-2
                                                 ${selectedColorId === color.Id
                                                     ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
