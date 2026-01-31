@@ -96,7 +96,12 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Order?> GetOrderByIdAsync(int id)
         {
             var order = await _context.Orders
-                .Include(x => x.OrderItems)
+                .Include(x => x.OrderItems!)
+                    .ThenInclude(oi => oi.ProductVariant!)
+                        .ThenInclude(pv => pv!.Size)
+                .Include(x => x.OrderItems!)
+                    .ThenInclude(oi => oi.ProductVariant!)
+                        .ThenInclude(pv => pv!.Color)
                 .Include(x => x.Customer)
                 .Include(x => x.Payments)
                 .FirstOrDefaultAsync(x => x.Id == id);
@@ -108,18 +113,72 @@ namespace Relation_IMS.Datas.Repositories
 
         public async Task<Order?> UpdateOrderByIdAsync(int id, UpdateOrderDTO updateDto)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .Include(o => o.Payments)
+                .FirstOrDefaultAsync(o => o.Id == id);
+            
             if (order == null) return null;
 
+            // Update Basic Info
             order.CustomerId = updateDto.CustomerId;
             order.TotalAmount = updateDto.TotalAmount;
             order.Discount = updateDto.Discount;
             order.NetAmount = updateDto.NetAmount;
             order.UserId = updateDto.UserId;
             order.Remarks = updateDto.Remarks;
+            // Only update InternalStatus if not confirming via this generic update, usually handled separately, but kept for flexibility
             if (updateDto.InternalStatus.HasValue)
             {
                 order.InternalStatus = updateDto.InternalStatus.Value;
+            }
+
+            // Update Order Items if Provided
+            if (updateDto.OrderItems != null)
+            {
+                // Remove existing items
+                _context.OrderItems.RemoveRange(order.OrderItems!);
+                
+                // Add new items
+                var newItems = _mapper.Map<List<OrderItem>>(updateDto.OrderItems);
+                foreach (var item in newItems)
+                {
+                    item.OrderId = order.Id; // Ensure link
+                    // Reset IDs to 0 to ensure EF treats them as new additions if mapper kept IDs
+                    item.Id = 0; 
+                }
+                await _context.OrderItems.AddRangeAsync(newItems);
+            }
+
+            // Update Payments if Provided
+            if (updateDto.Payments != null)
+            {
+                // Remove existing payments
+                _context.OrderPayments.RemoveRange(order.Payments!);
+
+                // Add new payments
+                var newPayments = _mapper.Map<List<OrderPayment>>(updateDto.Payments);
+                foreach(var payment in newPayments)
+                {
+                    payment.OrderId = order.Id;
+                    payment.Id = 0;
+                }
+                await _context.OrderPayments.AddRangeAsync(newPayments);
+
+                // Recalculate Payment Status
+                order.PaidAmount = newPayments.Sum(p => p.Amount);
+                if (order.PaidAmount >= order.NetAmount)
+                {
+                    order.PaymentStatus = PaymentStatus.Paid;
+                }
+                else if (order.PaidAmount > 0)
+                {
+                    order.PaymentStatus = PaymentStatus.Partial;
+                }
+                else
+                {
+                    order.PaymentStatus = PaymentStatus.Pending;
+                }
             }
 
             await _context.SaveChangesAsync();

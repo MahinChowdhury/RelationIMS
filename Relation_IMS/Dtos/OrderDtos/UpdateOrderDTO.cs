@@ -29,5 +29,8 @@ namespace Relation_IMS.Dtos.OrderDtos
         public int UserId { get; set; }
         public string? Remarks { get; set; }
         public Models.OrderModels.OrderInternalStatus? InternalStatus { get; set; }
+        
+        public List<CreateOrderItemDTO>? OrderItems { get; set; }
+        public List<OrderPaymentDTO>? Payments { get; set; }
     }
 }

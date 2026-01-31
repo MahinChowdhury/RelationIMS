@@ -16,10 +16,20 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
     const finalizeOrder = async () => {
         setLoading(true);
         try {
-            await api.put(`/Order/${order.Id}`, {
-                ...order,
+            // Fix 413 Error: Only send necessary update DTO fields, not the entire Order object
+            const updatePayload = {
+                CustomerId: order.CustomerId,
+                TotalAmount: order.TotalAmount,
+                Discount: order.Discount,
+                NetAmount: order.NetAmount,
+                PaidAmount: order.PaidAmount,
+                PaymentStatus: order.PaymentStatus,
+                UserId: order.UserId,
+                Remarks: order.Remarks,
                 InternalStatus: OrderInternalStatus.Confirmed
-            });
+            };
+
+            await api.put(`/Order/${order.Id}`, updatePayload);
             setShowConfirmModal(false);
             setShowPrintModal(true);
         } catch (err) {

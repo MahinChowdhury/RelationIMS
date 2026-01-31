@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import VariantSelectionModal from './VariantSelectionModal';
@@ -65,10 +65,13 @@ interface PaymentEntry {
 export default function CreateOrder() {
     const navigate = useNavigate();
 
+    const { id } = useParams<{ id: string }>(); // Edit Mode ID
+
     // UI State
     const [isScanning, setIsScanning] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [itemLoading, setItemLoading] = useState(false);
+    const [loadingOrder, setLoadingOrder] = useState(false); // New state for loading edit data
 
     // Data State
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -108,11 +111,84 @@ export default function CreateOrder() {
     const [modalProduct, setModalProduct] = useState<any | null>(null);
     const [modalVariants, setModalVariants] = useState<any[]>([]);
 
+    // --- Print Prompt State ---
+    const [showPrintPrompt, setShowPrintPrompt] = useState(false);
+    const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+
     // --- Computed Values ---
     const subtotal = cart.reduce((acc, item) => acc + item.Subtotal, 0);
     const netAmount = Math.max(0, subtotal - discount);
     const paidAmount = payments.reduce((sum, p) => sum + p.amount, 0);
     const dueAmount = Math.max(0, netAmount - paidAmount);
+
+    // --- Load Order for Edit ---
+    useEffect(() => {
+        if (id) {
+            loadOrderForEdit(Number(id));
+        }
+    }, [id]);
+
+    const loadOrderForEdit = async (orderId: number) => {
+        setLoadingOrder(true);
+        try {
+            const res = await api.get<any>(`/Order/${orderId}`);
+            const order = res.data;
+
+            // Populate Customer
+            if (order.Customer) {
+                setSelectedCustomer(order.Customer);
+                if (order.Customer.IsDueAllowed) {
+                    setAllowDue(true);
+                    setNidNumber(order.Customer.NidNumber || '');
+                    setReferenceName(order.Customer.ReferenceName || '');
+                    setReferencePhone(order.Customer.ReferencePhoneNumber || '');
+                }
+            }
+
+            // Populate Cart (Types need adjustment based on what API returns in OrderItem)
+            if (order.OrderItems) {
+                const mappedCart: CartItem[] = order.OrderItems.map((item: any) => ({
+                    Id: item.ProductVariantId || item.ProductId, // Fallback
+                    ProductId: item.ProductId,
+                    Code: item.ProductVariant ? 'GENERIC' : 'UNKNOWN', // We don't have the specific item code here usually unless arranged
+                    Name: item.Product?.Name || "Unknown Product",
+                    VariantDetails: `${item.ProductVariant?.Color?.Name || ''} ${item.ProductVariant?.Size?.Name || ''}`.trim(),
+                    Price: item.UnitPrice,
+                    Quantity: item.Quantity,
+                    Subtotal: item.Subtotal,
+                    ImageUrl: item.Product?.ImageUrls?.[0],
+                    VariantKey: `v-${item.ProductVariantId}`,
+                    ProductVariantId: item.ProductVariantId,
+                    ColorName: item.ProductVariant?.Color?.Name,
+                    SizeName: item.ProductVariant?.Size?.Name,
+                }));
+                setCart(mappedCart);
+            }
+
+            // Populate Payments
+            if (order.Payments) {
+                setPayments(order.Payments.map((p: any) => ({
+                    method: p.PaymentMethod === 0 ? 'Cash' : p.PaymentMethod === 1 ? 'Bank' : 'Bkash',
+                    amount: p.Amount,
+                    note: p.Note || ''
+                })));
+            }
+
+            // Other fields
+            setDiscount(order.Discount);
+            setNotes(order.Remarks || '');
+            if (order.NextPaymentDate) {
+                setNextPaymentDate(order.NextPaymentDate.split('T')[0]);
+            }
+
+        } catch (err) {
+            console.error("Failed to load order for edit", err);
+            alert("Failed to load order.");
+            navigate('/orders');
+        } finally {
+            setLoadingOrder(false);
+        }
+    };
 
     // --- Customer Search ---
     useEffect(() => {
@@ -340,6 +416,7 @@ export default function CreateOrder() {
             }
 
             // 1. Create Order Header
+            // 1. Create Order UPDATE Header
             const orderPayload = {
                 CustomerId: selectedCustomer.Id,
                 TotalAmount: subtotal,
@@ -354,50 +431,49 @@ export default function CreateOrder() {
                     PaymentMethod: p.method === 'Cash' ? 0 : p.method === 'Bank' ? 1 : 2,
                     Amount: p.amount,
                     Note: p.note
-                }))
-            };
-
-            const orderRes = await api.post('/Order', orderPayload);
-            const orderId = orderRes.data.Id;
-
-            // 2. Create Order Items
-            // For Product Items, we need to know what API endpoint handles mapping them
-            // The existing `POST /OrderItem` uses `ProductId`, `Quantity`, `UnitPrice`.
-            // Does it support `ProductItemId`?
-            // The user wanted to add "ProductItems". 
-            // If the OrderItem logic assumes Generic Product + Qty, then we have a mismatch if we want to track specific Serial Numbers in the Order.
-            // However, the `CreateOrderItemDTO` has `ProductId`. It does NOT have `ProductItemId`.
-            // This suggests the Order system relies on generic products.
-            // BUT, the `InventoryTransfer` moves specific items.
-            // If we sell a specific item `PV-1-abc`, we should mark that item as Sold.
-            // DOES `POST /OrderItem` handle marking ProductItem as sold? 
-            // Likely NOT if it only takes `ProductId`.
-
-            // CRITICAL: We might need to just link the generic Product ID for the Order Record 
-            // AND separately mark the ProductItem as Sold/Defected? 
-            // OR the Backend logic creates generic OrderItems.
-
-            // Given I cannot see a "SellProductItem" endpoint, I will use the standard `POST /OrderItem` 
-            // using the `ProductVariant.ProductId`. 
-            // NOTE: This might mean the specific serial code isn't stored in the order, 
-            // which might be a gap in the current API vs User Requirement.
-            // I will implement using the existing API but pass the ProductID.
-
-            const itemPromises = cart.map(item => {
-                return api.post('/OrderItem', {
-                    OrderId: orderId,
+                })),
+                OrderItems: id ? cart.map(item => ({
+                    // For Edit, we send items in the payload
+                    OrderId: Number(id),
                     ProductId: item.ProductId,
                     Quantity: item.Quantity,
                     UnitPrice: item.Price,
                     Subtotal: item.Subtotal,
                     ProductVariantId: item.ProductVariantId
+                })) : undefined
+            };
+
+            let orderId = createdOrderId;
+
+            if (id) {
+                // UPDATE Mode
+                await api.put(`/Order/${id}`, orderPayload);
+                orderId = Number(id);
+                // For Edit, we included items in payload, so no need for separate calls
+            } else {
+                // CREATE Mode
+                const orderRes = await api.post('/Order', orderPayload);
+                orderId = orderRes.data.Id;
+
+                // 2. Create Order Items (POST Separate)
+                const itemPromises = cart.map(item => {
+                    return api.post('/OrderItem', {
+                        OrderId: orderId,
+                        ProductId: item.ProductId,
+                        Quantity: item.Quantity,
+                        UnitPrice: item.Price,
+                        Subtotal: item.Subtotal,
+                        ProductVariantId: item.ProductVariantId
+                    });
                 });
-            });
 
-            await Promise.all(itemPromises);
+                await Promise.all(itemPromises);
+            }
 
-            alert('Order created successfully!');
-            navigate(`/orders/${orderId}?view=cycle`);
+            // alert('Order created/updated successfully!'); // Replaced by print prompt
+            setCreatedOrderId(orderId);
+            setShowPrintPrompt(true);
+            // navigate(`/orders/${orderId}?view=cycle`);
 
         } catch (err) {
             console.error("Failed to create order", err);
@@ -407,6 +483,18 @@ export default function CreateOrder() {
         }
     };
 
+    const handlePrintInvoice = () => {
+        if (!createdOrderId) return;
+        // Open details view in new tab with autoPrint
+        window.open(`/orders/${createdOrderId}?view=details&autoPrint=true`, '_blank');
+        // Navigate current tab to cycle (default behavior)
+        navigate(`/orders/${createdOrderId}?view=cycle`);
+    };
+
+    const handleNoPrint = () => {
+        if (!createdOrderId) return;
+        navigate(`/orders/${createdOrderId}?view=cycle`);
+    };
 
     return (
         <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 font-display text-text-main dark:text-gray-100">
@@ -426,11 +514,11 @@ export default function CreateOrder() {
                         <span className="material-symbols-outlined text-4xl text-primary">qr_code_scanner</span>
                         Create New Order
                     </h1>
-                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">Streamlined scan & add process</p>
+
                 </div>
-                {itemLoading && (
+                {(itemLoading || loadingOrder) && (
                     <div className="text-sm text-primary animate-pulse font-bold">
-                        Loading product database...
+                        {loadingOrder ? 'Loading Order...' : 'Loading product database...'}
                     </div>
                 )}
             </div>
@@ -931,6 +1019,38 @@ export default function CreateOrder() {
                 variants={modalVariants}
                 onConfirm={handleVariantConfirm}
             />
+
+            {/* Print Invoice Prompt Modal */}
+            {showPrintPrompt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex flex-col items-center text-center mb-6">
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-4xl text-primary">receipt_long</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Order Created! 🎉</h3>
+                            <p className="text-text-secondary dark:text-gray-400 text-sm">
+                                Do you want to print the invoice now?
+                            </p>
+                        </div>
+                        <div className="flex gap-3 flex-col">
+                            <button
+                                onClick={handlePrintInvoice}
+                                className="w-full px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined">print</span>
+                                Yes, Print Invoice
+                            </button>
+                            <button
+                                onClick={handleNoPrint}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 font-medium transition-colors"
+                            >
+                                No, thanks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

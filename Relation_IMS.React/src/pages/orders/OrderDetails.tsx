@@ -1,10 +1,50 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus } from '../../types';
 import InternalOrderCycle from './InternalOrderCycle';
+import EditPaymentModal from './EditPaymentModal';
 
 // ... (existing imports or keep them if they were already there, but careful not to duplicate)
+
+const CopyableBarcode = ({ code, isReturned }: { code: string, isReturned?: boolean }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    if (isReturned) {
+        return (
+            <button
+                onClick={handleCopy}
+                className="font-mono text-xs text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-md bg-red-50 dark:bg-red-900/20 shadow-sm flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-800/40 hover:border-red-300 dark:hover:border-red-700 transition-all active:scale-95 group/code"
+                title="Returned Item (Click to copy)"
+            >
+                {code}
+                <span className={`material-symbols-outlined text-[14px] transition-all duration-300 ${copied ? 'text-blue-500 scale-110' : 'text-red-500 opacity-60 group-hover/code:opacity-100'}`}>
+                    {copied ? 'done_all' : 'assignment_return'}
+                </span>
+            </button>
+        );
+    }
+
+    return (
+        <button
+            onClick={handleCopy}
+            className="font-mono text-xs text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 px-2.5 py-1 rounded-md bg-green-50 dark:bg-green-900/20 shadow-sm flex items-center gap-1.5 hover:bg-green-100 dark:hover:bg-green-800/40 hover:border-green-300 dark:hover:border-green-700 transition-all active:scale-95 group/code"
+            title="Sold Item (Click to copy)"
+        >
+            {code}
+            <span className={`material-symbols-outlined text-[14px] transition-all duration-300 ${copied ? 'text-blue-500 scale-110' : 'text-green-500 opacity-60 group-hover/code:opacity-100'}`}>
+                {copied ? 'done_all' : 'check_circle'}
+            </span>
+        </button>
+    );
+};
 
 export default function OrderDetailsPage() {
     const { id } = useParams<{ id: string }>();
@@ -14,11 +54,54 @@ export default function OrderDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const navigate = useNavigate();
+    const [showPaymentEditModal, setShowPaymentEditModal] = useState(false);
+
+    const handleEditOrder = () => {
+        if (!order) return;
+        if (order.InternalStatus === OrderInternalStatus.Confirmed) {
+            setShowPaymentEditModal(true);
+        } else {
+            navigate(`/orders/edit/${order.Id}`);
+        }
+    };
+
+    const [arrangedItems, setArrangedItems] = useState<any[]>([]);
+    const [expandedVariants, setExpandedVariants] = useState<Set<number>>(new Set());
+
+    const toggleVariantExpand = (itemId: number) => {
+        const newSet = new Set(expandedVariants);
+        if (newSet.has(itemId)) {
+            newSet.delete(itemId);
+        } else {
+            newSet.add(itemId);
+        }
+        setExpandedVariants(newSet);
+    };
+
     useEffect(() => {
         if (id) {
             loadOrderDetails(Number(id));
+            loadArrangedItems(Number(id));
         }
     }, [id]);
+
+    useEffect(() => {
+        if (order && !loading && searchParams.get('autoPrint') === 'true') {
+            setTimeout(() => {
+                window.print();
+            }, 1000); // Slight delay to ensure render
+        }
+    }, [order, loading, searchParams]);
+
+    const loadArrangedItems = async (orderId: number) => {
+        try {
+            const res = await api.get(`/Arrangement/items/${orderId}`);
+            setArrangedItems(res.data);
+        } catch (err) {
+            console.error("Failed to load arranged items", err);
+        }
+    }
 
     const loadOrderDetails = async (orderId: number) => {
         if (isNaN(orderId)) {
@@ -183,9 +266,9 @@ export default function OrderDetailsPage() {
                         <span className="material-symbols-outlined text-lg">download</span>
                         Download PDF
                     </button>
-                    <button className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
+                    <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
                         <span className="material-symbols-outlined text-lg">edit</span>
-                        Edit Order
+                        {order.InternalStatus === OrderInternalStatus.Confirmed ? 'Edit Payment' : 'Edit Order'}
                     </button>
                 </div>
             </div>
@@ -329,10 +412,9 @@ export default function OrderDetailsPage() {
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-[#f8fcf9] dark:bg-white/5 text-text-secondary font-medium">
                                 <tr>
-                                    <th className="px-6 py-3">Product</th>
-                                    <th className="px-6 py-3">List Price</th>
-                                    <th className="px-6 py-3">Sold Price</th>
-                                    <th className="px-6 py-3">Discount</th>
+                                    <th className="px-6 py-3 w-12">#</th>
+                                    <th className="px-6 py-3">Product Details</th>
+                                    <th className="px-6 py-3 text-right">Unit Price</th>
                                     <th className="px-6 py-3 text-center">Quantity</th>
                                     <th className="px-6 py-3 text-right">Total</th>
                                 </tr>
@@ -340,38 +422,111 @@ export default function OrderDetailsPage() {
                             <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
                                 {(!order.OrderItems || order.OrderItems.length === 0) ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-8 text-center text-text-secondary">No items found in this order.</td>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-text-secondary">No items found in this order.</td>
                                     </tr>
                                 ) : (
-                                    order.OrderItems.map((item) => (
-                                        <tr key={item.Id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-[#e7f3eb] dark:border-gray-600 flex items-center justify-center overflow-hidden">
-                                                        {item.Product?.ImageUrls?.[0] ? (
-                                                            <img src={item.Product.ImageUrls[0]} alt={item.Product.Name} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <span className="material-symbols-outlined text-gray-400">image</span>
+                                    // Grouping Logic: Group by ProductId + ColorId
+                                    Object.values(order.OrderItems.reduce((groups, item) => {
+                                        const key = `${item.ProductId}-${item.ProductVariant?.ProductColorId || 'NoColor'}`;
+                                        if (!groups[key]) groups[key] = { items: [], product: item.Product, color: item.ProductVariant?.Color };
+                                        groups[key].items.push(item);
+                                        return groups;
+                                    }, {} as Record<string, { items: typeof order.OrderItems, product: Product | undefined, color: any }>)).map((group, groupIdx) => (
+                                        <>
+                                            {/* Group Header */}
+                                            <tr key={`group-${groupIdx}`} className="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100 dark:border-gray-700">
+                                                <td colSpan={5} className="px-6 py-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="size-10 rounded-lg bg-white dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                                                            {group.product?.ImageUrls?.[0] ? (
+                                                                <img src={group.product.ImageUrls[0]} alt={group.product.Name} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="material-symbols-outlined text-gray-400">image</span>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-sm text-text-main dark:text-white flex items-center gap-2">
+                                                                {group.product?.Name || 'Unknown Product'}
+                                                                {group.color && (
+                                                                    <span className="px-2 py-0.5 rounded-full bg-white dark:bg-gray-600 text-xs border border-gray-200 dark:border-gray-500 font-normal flex items-center gap-1">
+                                                                        <span className="size-2 rounded-full border border-gray-300" style={{ backgroundColor: group.color.HexCode }}></span>
+                                                                        {group.color.Name}
+                                                                    </span>
+                                                                )}
+                                                            </p>
+                                                            {group.product?.Category && <p className="text-xs text-text-secondary">{group.product.Category.Name}</p>}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            {/* Variant Items */}
+                                            {group.items.map((item) => {
+                                                const variantArrangedItems = arrangedItems.filter((ai: any) =>
+                                                    ai.Variant?.Id === item.ProductVariantId && (ai.IsSold || ai.IsReturned || ai.isReturned)
+                                                );
+                                                const hasCodes = variantArrangedItems.length > 0;
+                                                const isExpanded = expandedVariants.has(item.Id);
+
+                                                return (
+                                                    <React.Fragment key={item.Id}>
+                                                        <tr
+                                                            className={`hover:bg-green-50/30 dark:hover:bg-white/5 transition-colors group ${hasCodes ? 'cursor-pointer' : ''}`}
+                                                            onClick={() => hasCodes && toggleVariantExpand(item.Id)}
+                                                        >
+                                                            <td className="px-6 py-3 pl-12 text-gray-400 font-mono text-xs border-l-4 border-transparent hover:border-green-400/30">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="material-symbols-outlined text-sm text-gray-300 rotate-90">subdirectory_arrow_right</span>
+                                                                    {hasCodes && (
+                                                                        <span className={`material-symbols-outlined text-sm text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                                                            expand_more
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-3">
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="font-bold text-sm text-text-main dark:text-gray-300">
+                                                                            {item.ProductVariant?.Size?.Name || item.ProductVariant?.Size?.Name || 'One Size'}
+                                                                        </span>
+                                                                        {hasCodes && !isExpanded && (
+                                                                            <span className="text-[10px] text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-800 px-1.5 rounded-full">
+                                                                                <span className="material-symbols-outlined text-[10px]">qr_code_2</span>
+                                                                                {variantArrangedItems.length}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-right text-text-main dark:text-gray-200">
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="font-medium">৳{item.UnitPrice.toFixed(2)}</span>
+                                                                    {(item.Discount || 0) > 0 && <span className="text-xs text-red-500">Disc: -৳{item.Discount?.toFixed(2)}</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-center text-text-main dark:text-gray-200 font-bold">{item.Quantity}</td>
+                                                            <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white">৳{item.Subtotal.toFixed(2)}</td>
+                                                        </tr>
+                                                        {/* Expanded Barcodes Row */}
+                                                        {isExpanded && hasCodes && (
+                                                            <tr className="bg-gray-50/30 dark:bg-black/20 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                                <td colSpan={5} className="px-6 py-2 pl-16">
+                                                                    <div className="flex items-start gap-2">
+                                                                        <span className="material-symbols-outlined text-green-600 text-lg mt-0.5">qr_code_scanner</span>
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {variantArrangedItems.map((ai: any, idx: number) => (
+                                                                                <CopyableBarcode key={idx} code={ai.Code} isReturned={ai.IsReturned} />
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
                                                         )}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-text-main dark:text-white truncate max-w-[200px]">{item.Product?.Name || `Item #${item.ProductId}`}</p>
-                                                        {item.Product?.Category && <p className="text-xs text-text-secondary">{item.Product.Category.Name}</p>}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-text-secondary">
-                                                <div className="flex flex-col">
-                                                    <span className="line-through text-xs">৳{(item.UnitPrice + (item.Discount || 0)).toFixed(2)}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-text-main dark:text-gray-200 font-bold">৳{item.UnitPrice.toFixed(2)}</td>
-                                            <td className="px-6 py-4 text-red-500 font-medium">
-                                                {(item.Discount || 0) > 0 ? `-৳${item.Discount?.toFixed(2)}` : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 text-center text-text-main dark:text-gray-200">{item.Quantity}</td>
-                                            <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">৳{item.Subtotal.toFixed(2)}</td>
-                                        </tr>
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </>
                                     ))
                                 )}
                             </tbody>
@@ -446,6 +601,15 @@ export default function OrderDetailsPage() {
                     </div>
                 </div>
             </div>
+            {/* Modal */}
+            <EditPaymentModal
+                isOpen={showPaymentEditModal}
+                onClose={() => setShowPaymentEditModal(false)}
+                order={order}
+                onPaymentUpdated={() => {
+                    loadOrderDetails(order.Id);
+                }}
+            />
         </div>
     );
 }
