@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -10,9 +11,11 @@ namespace Relation_IMS.Controllers
     public class OrderItemController : ControllerBase
     {
         private readonly IOrderItemRepository _repo;
-        public OrderItemController(IOrderItemRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+        public OrderItemController(IOrderItemRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet("{id:int}")]
@@ -28,29 +31,54 @@ namespace Relation_IMS.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<OrderItem>> DeleteOrderItemsById([FromRoute] int id)
         {
-            var orderItem = await _repo.DeleteOrderItemsByIdAsync(id);
-
-            if (orderItem == null)
+            // Fetch first to get OrderId
+            var item = await _repo.GetOrderItemsByIdAsync(id);
+            if (item == null)
             {
                 return NotFound(new { message = $"orderItem with id : {id} not found." });
             }
 
-            return Ok(orderItem);
+            using (await _lockService.AcquireLockAsync($"order:{item.OrderId}"))
+            {
+                 // Re-check existence? optional but safer if deleted concurrently
+                 // But repository delete usually handles null check too.
+                var orderItem = await _repo.DeleteOrderItemsByIdAsync(id);
+
+                if (orderItem == null) // Should not happen if item existed above, unless concurrent delete won
+                {
+                    return NotFound(new { message = $"orderItem with id : {id} not found." });
+                }
+
+                return Ok(orderItem);
+            }
         }
         [HttpPost]
         public async Task<ActionResult<OrderItem>> CreateNewOrderItem(CreateOrderItemDTO orderItemDto) {
-            var created = await _repo.CreateNewOrderItemAsync(orderItemDto);
+            using (await _lockService.AcquireLockAsync($"order:{orderItemDto.OrderId}"))
+            {
+                var created = await _repo.CreateNewOrderItemAsync(orderItemDto);
 
-            return CreatedAtAction(nameof(GetOrderItemById), new { id = created.Id }, created);
+                return CreatedAtAction(nameof(GetOrderItemById), new { id = created.Id }, created);
+            }
         }
         [HttpPut("{id:int}")]
         public async Task<ActionResult<OrderItem>> UpdateOrderItemById([FromRoute] int id, UpdateOrderItemDTO updateDto) {
-            var updated = await _repo.UpdateOrderItemByIdAsync(id, updateDto);
-            if (updated == null) {
-                return NotFound(new { message = $"order Item by Id : {id} not found."});
+             // Fetch first to get OrderId
+            var item = await _repo.GetOrderItemsByIdAsync(id);
+            if (item == null)
+            {
+                return NotFound(new { message = $"order Item by Id : {id} not found." });
             }
+            
+            using (await _lockService.AcquireLockAsync($"order:{item.OrderId}"))
+            {
+                var updated = await _repo.UpdateOrderItemByIdAsync(id, updateDto);
+                if (updated == null) {
+                    return NotFound(new { message = $"order Item by Id : {id} not found."});
+                }
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
     }

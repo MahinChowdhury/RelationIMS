@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers.ProductVariantsControllers
 {
@@ -10,9 +11,12 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
     public class ProductVariantSizesController : ControllerBase
     {
         private readonly IProductVariantSizeRepository _repo;
-        public ProductVariantSizesController(IProductVariantSizeRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+
+        public ProductVariantSizesController(IProductVariantSizeRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
         //For Product Size and Color
         [HttpPost]
@@ -50,12 +54,15 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ProductSize?>> DeleteProductSizeByIdAsync([FromRoute] int id) {
-            var deleted = await _repo.DeleteProductSizeByIdAsync(id);
+            using (await _lockService.AcquireLockAsync($"size:{id}"))
+            {
+                var deleted = await _repo.DeleteProductSizeByIdAsync(id);
 
-            if (deleted == null) {
-                return NotFound(ModelState);
+                if (deleted == null) {
+                    return NotFound(ModelState);
+                }
+                return Ok(deleted);
             }
-            return Ok(deleted);
         }
 
         [HttpGet]
@@ -72,14 +79,17 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _repo.UpdateSizeForProductAsync(id, sizeDTO);
-
-            if (updated == null)
+            using (await _lockService.AcquireLockAsync($"size:{id}"))
             {
-                return NotFound();
-            }
+                var updated = await _repo.UpdateSizeForProductAsync(id, sizeDTO);
 
-            return Ok(updated);
+                if (updated == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(updated);
+            }
         }
     }
 }

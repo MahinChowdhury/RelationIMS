@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -10,9 +11,12 @@ namespace Relation_IMS.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderRepository _repo;
-        public OrderController(IOrderRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+
+        public OrderController(IOrderRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
@@ -32,13 +36,16 @@ namespace Relation_IMS.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<Order>> DeleteOrderByIdAsync([FromRoute] int id)
         {
-            var order = await _repo.DeleteOrderByIdAsync(id);
-            if (order == null)
+            using (await _lockService.AcquireLockAsync($"order:{id}"))
             {
-                return NotFound(new { message = $"Orders with id : {id} not found." });
-            }
+                var order = await _repo.DeleteOrderByIdAsync(id);
+                if (order == null)
+                {
+                    return NotFound(new { message = $"Orders with id : {id} not found." });
+                }
 
-            return Ok(order);
+                return Ok(order);
+            }
         }
 
         [HttpPost]
@@ -50,9 +57,12 @@ namespace Relation_IMS.Controllers
 
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Order>> UpdateOrderByIdAsync([FromRoute] int id, UpdateOrderDTO updateDto) {
-            var updated = await _repo.UpdateOrderByIdAsync(id, updateDto);
+            using (await _lockService.AcquireLockAsync($"order:{id}"))
+            {
+                var updated = await _repo.UpdateOrderByIdAsync(id, updateDto);
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
         [HttpGet("{id:int}/items")]

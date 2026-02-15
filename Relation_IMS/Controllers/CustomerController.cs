@@ -6,6 +6,7 @@ using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.CustomerDtos;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -14,9 +15,11 @@ namespace Relation_IMS.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerRepository _repo;
-        public CustomerController(ICustomerRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+        public CustomerController(ICustomerRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
@@ -37,12 +40,15 @@ namespace Relation_IMS.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<Customer?>> DeleteCustomerByIdAsync([FromRoute] int id)
         {
-            var customer = await _repo.DeleteCustomerByIdAsync(id);
-            if (customer == null)
+            using (await _lockService.AcquireLockAsync($"customer:{id}"))
             {
-                return NotFound(new { message = $"Customer with id : {id} not found." });
+                var customer = await _repo.DeleteCustomerByIdAsync(id);
+                if (customer == null)
+                {
+                    return NotFound(new { message = $"Customer with id : {id} not found." });
+                }
+                return Ok(customer);
             }
-            return Ok(customer);
         }
 
         [HttpPost]
@@ -63,9 +69,13 @@ namespace Relation_IMS.Controllers
         public async Task<ActionResult<Customer>> UpdateCustomerAsync(int id,UpdateCustomerDTO updateDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var updated = await _repo.UpdateCustomerByIdAsync(id,updateDto);
+            
+            using (await _lockService.AcquireLockAsync($"customer:{id}"))
+            {
+                var updated = await _repo.UpdateCustomerByIdAsync(id,updateDto);
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
     }

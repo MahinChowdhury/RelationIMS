@@ -5,6 +5,7 @@ using Relation_IMS.Entities;
 using Relation_IMS.Models.OrderModels;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Datas.Repositories
 {
@@ -12,10 +13,13 @@ namespace Relation_IMS.Datas.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public OrderItemRepository(ApplicationDbContext context , IMapper mapper)
+        private readonly IConcurrencyLockService _lockService;
+
+        public OrderItemRepository(ApplicationDbContext context , IMapper mapper, IConcurrencyLockService lockService)
         {
             _context = context;
             _mapper = mapper;
+            _lockService = lockService;
         }
 
         public async Task<OrderItem> CreateNewOrderItemAsync(CreateOrderItemDTO orderItemDto)
@@ -48,25 +52,56 @@ namespace Relation_IMS.Datas.Repositories
             // Mark specific ProductItems as Sold AND Link them to this OrderItem
             if (orderItemDto.ProductItemIds != null && orderItemDto.ProductItemIds.Any())
             {
-                var productItems = await _context.ProductItems
-                    .Where(p => orderItemDto.ProductItemIds.Contains(p.Id))
-                    .ToListAsync();
+                // CRITICAL: Lock each product item to prevent concurrent assignment to multiple orders
+                // We need to lock items in a consistent order to prevent deadlocks
+                var sortedItemIds = orderItemDto.ProductItemIds.OrderBy(id => id).ToList();
                 
-                foreach (var item in productItems)
+                // Acquire locks for all items (sorted to prevent deadlock)
+                var lockDisposables = new List<IDisposable>();
+                try
                 {
-                    item.IsSold = true;
-                    item.OrderItemId = orderItem.Id; // Link physical item to order line
+                    foreach (var itemId in sortedItemIds)
+                    {
+                        var lockDisposable = await _lockService.AcquireLockAsync($"productitem:{itemId}");
+                        lockDisposables.Add(lockDisposable);
+                    }
+
+                    var productItems = await _context.ProductItems
+                        .Where(p => orderItemDto.ProductItemIds.Contains(p.Id))
+                        .ToListAsync();
+                    
+                    // Validate that none of the items are already assigned
+                    var alreadyAssigned = productItems.Where(p => p.OrderItemId != null).ToList();
+                    if (alreadyAssigned.Any())
+                    {
+                        throw new InvalidOperationException(
+                            $"Product items already assigned to orders: {string.Join(", ", alreadyAssigned.Select(p => p.Code))}");
+                    }
+                    
+                    foreach (var item in productItems)
+                    {
+                        item.IsSold = true;
+                        item.OrderItemId = orderItem.Id; // Link physical item to order line
+                    }
+                    
+                    // If items were provided during creation, we assume they are "Arranged" immediately?
+                    // The new workflow implies "Arranging" happens LATER. 
+                    // However, the existing flow (CreateOrder.tsx) sends ProductItemIds.
+                    // If the user selects specific items at creation, they are effectively "Arranged".
+                    // But the requirement says "Show only orders where InternalStatus != Confirmed... Default statuses shown: Created, Arranging".
+                    // We should count them as arranged if they are linked.
+                    orderItem.ArrangedQuantity = productItems.Count;
+                    
+                    await _context.SaveChangesAsync();
                 }
-                
-                // If items were provided during creation, we assume they are "Arranged" immediately?
-                // The new workflow implies "Arranging" happens LATER. 
-                // However, the existing flow (CreateOrder.tsx) sends ProductItemIds.
-                // If the user selects specific items at creation, they are effectively "Arranged".
-                // But the requirement says "Show only orders where InternalStatus != Confirmed... Default statuses shown: Created, Arranging".
-                // We should count them as arranged if they are linked.
-                orderItem.ArrangedQuantity = productItems.Count;
-                
-                await _context.SaveChangesAsync();
+                finally
+                {
+                    // Release all locks in reverse order
+                    for (int i = lockDisposables.Count - 1; i >= 0; i--)
+                    {
+                        lockDisposables[i].Dispose();
+                    }
+                }
             }
 
             return orderItem;

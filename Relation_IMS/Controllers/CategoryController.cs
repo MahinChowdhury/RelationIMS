@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.CategoryDtos;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -10,10 +11,12 @@ namespace Relation_IMS.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IConcurrencyLockService _lockService;
 
-        public CategoryController(ICategoryRepository categoryRepository)
+        public CategoryController(ICategoryRepository categoryRepository, IConcurrencyLockService lockService)
         {
             _categoryRepository = categoryRepository;
+            _lockService = lockService;
         }
 
         // Create Category
@@ -62,24 +65,30 @@ namespace Relation_IMS.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _categoryRepository.UpdateCategoryAsync(id,dto);
+            using (await _lockService.AcquireLockAsync($"category:{id}"))
+            {
+                var updated = await _categoryRepository.UpdateCategoryAsync(id,dto);
 
-            if (updated == null)
-                return NotFound(new { message = $"Category with ID {id} not found." });
+                if (updated == null)
+                    return NotFound(new { message = $"Category with ID {id} not found." });
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
         // Delete Category
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteCategory([FromRoute] int id)
         {
-            var deleted = await _categoryRepository.DeleteCategoryAsync(id);
+            using (await _lockService.AcquireLockAsync($"category:{id}"))
+            {
+                var deleted = await _categoryRepository.DeleteCategoryAsync(id);
 
-            if (deleted == null)
-                return NotFound(new { message = $"Category with ID {id} not found." });
+                if (deleted == null)
+                    return NotFound(new { message = $"Category with ID {id} not found." });
 
-            return Ok(new { message = $"Category '{deleted.Name}' deleted successfully." });
+                return Ok(new { message = $"Category '{deleted.Name}' deleted successfully." });
+            }
         }
     }
 }

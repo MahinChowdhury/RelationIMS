@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -11,9 +12,11 @@ namespace Relation_IMS.Controllers
     public class BrandController : ControllerBase
     {
         private readonly IBrandRepository _repo;
-        public BrandController(IBrandRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+        public BrandController(IBrandRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
@@ -36,14 +39,17 @@ namespace Relation_IMS.Controllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<Brand?>> DeleteBrandByIdAsync([FromRoute] int id)
         {
-            var brand = await _repo.DeleteBrandByIdAsync(id);
-
-            if (brand == null)
+            using (await _lockService.AcquireLockAsync($"brand:{id}"))
             {
-                return NotFound(new { Message = $"Brand with Id : {id} not found" });
-            }
+                var brand = await _repo.DeleteBrandByIdAsync(id);
 
-            return Ok(brand);
+                if (brand == null)
+                {
+                    return NotFound(new { Message = $"Brand with Id : {id} not found" });
+                }
+
+                return Ok(brand);
+            }
         }
 
         [HttpPost]
@@ -63,14 +69,17 @@ namespace Relation_IMS.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _repo.UpdateBrandAsync(id, brandDTO);
-
-            if (updated == null)
+            using (await _lockService.AcquireLockAsync($"brand:{id}"))
             {
-                return NotFound(new { Message = $"Brand with Id : {id} not found" });
-            }
+                var updated = await _repo.UpdateBrandAsync(id, brandDTO);
 
-            return Ok(updated);
+                if (updated == null)
+                {
+                    return NotFound(new { Message = $"Brand with Id : {id} not found" });
+                }
+
+                return Ok(updated);
+            }
         }
 
     }

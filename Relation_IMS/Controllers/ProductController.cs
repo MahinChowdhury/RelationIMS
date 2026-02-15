@@ -4,6 +4,7 @@ using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -12,9 +13,11 @@ namespace Relation_IMS.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _repo;
-        public ProductController(IProductRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+        public ProductController(IProductRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
@@ -36,12 +39,15 @@ namespace Relation_IMS.Controllers
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProductByIdAsync([FromRoute] int id) {
-            var product = await _repo.DeleteProductByIdAsync(id);
-            if (product == null) {
-                return NotFound();
+            using (await _lockService.AcquireLockAsync($"product:{id}"))
+            {
+                var product = await _repo.DeleteProductByIdAsync(id);
+                if (product == null) {
+                    return NotFound();
+                }
+    
+                return Ok(product);
             }
-
-            return Ok(product);
         }
 
         [HttpPost]
@@ -110,8 +116,11 @@ namespace Relation_IMS.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var product = await _repo.UpdateProductByIdAsync(id,updateDto);
-            return Ok(product);
+            using (await _lockService.AcquireLockAsync($"product:{id}"))
+            {
+                var product = await _repo.UpdateProductByIdAsync(id,updateDto);
+                return Ok(product);
+            }
         }
     }
 }

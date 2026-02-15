@@ -64,6 +64,9 @@ builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
+// Concurrency Service
+builder.Services.AddSingleton<IConcurrencyLockService, ConcurrencyLockService>();
+
 // Background Services
 builder.Services.AddHostedService<BackgroundProductImageUploader>();
 builder.Services.AddSingleton(System.Threading.Channels.Channel.CreateUnbounded<ProductImageUploadTask>());

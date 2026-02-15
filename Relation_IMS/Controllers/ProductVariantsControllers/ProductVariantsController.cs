@@ -3,6 +3,7 @@ using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers.ProductVariantsControllers
 {
@@ -11,9 +12,12 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
     public class ProductVariantsController : ControllerBase
     {
         private readonly IProductVariantRepository _repo;
-        public ProductVariantsController(IProductVariantRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+
+        public ProductVariantsController(IProductVariantRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         // For Adding Actual Product Variants
@@ -51,23 +55,29 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _repo.UpdateProductVariantAsync(id,variantDTO);
-            if (updated == null)
+            using (await _lockService.AcquireLockAsync($"productvariant:{id}"))
             {
-                return BadRequest();
-            }
+                var updated = await _repo.UpdateProductVariantAsync(id,variantDTO);
+                if (updated == null)
+                {
+                    return BadRequest();
+                }
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ProductVariant>> DeleteProductVariantAsync([FromRoute] int id) {
-            var deleted = await _repo.DeleteProductVariantAsync(id);
-            if (deleted == null) {
-                return NotFound();
-            }
+            using (await _lockService.AcquireLockAsync($"productvariant:{id}"))
+            {
+                var deleted = await _repo.DeleteProductVariantAsync(id);
+                if (deleted == null) {
+                    return NotFound();
+                }
 
-            return Ok(deleted);
+                return Ok(deleted);
+            }
         }
 
         [HttpGet("product/{id:int}")]
@@ -83,8 +93,13 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var items = await _repo.AddStockAsync(id, stockDto.Quantity, stockDto.InventoryId);
-            return Ok(items);
+            // Lock both variant and inventory to prevent concurrent stock additions
+            using (await _lockService.AcquireLockAsync($"productvariant:{id}"))
+            using (await _lockService.AcquireLockAsync($"inventory:{stockDto.InventoryId}"))
+            {
+                var items = await _repo.AddStockAsync(id, stockDto.Quantity, stockDto.InventoryId);
+                return Ok(items);
+            }
         }
 
         [HttpPost("stock/bulk")]
@@ -93,8 +108,34 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var items = await _repo.AddStockBulkAsync(bulkDto);
-            return Ok(items);
+            // Lock all variants and inventories (sorted to prevent deadlocks)
+            var variantIds = bulkDto.Items.Select(i => i.VariantId).Distinct().OrderBy(id => id).ToList();
+            var inventoryIds = bulkDto.Items.Select(i => i.InventoryId).Distinct().OrderBy(id => id).ToList();
+            
+            var lockDisposables = new List<IDisposable>();
+            try
+            {
+                // Acquire all locks in sorted order
+                foreach (var variantId in variantIds)
+                {
+                    lockDisposables.Add(await _lockService.AcquireLockAsync($"productvariant:{variantId}"));
+                }
+                foreach (var inventoryId in inventoryIds)
+                {
+                    lockDisposables.Add(await _lockService.AcquireLockAsync($"inventory:{inventoryId}"));
+                }
+
+                var items = await _repo.AddStockBulkAsync(bulkDto);
+                return Ok(items);
+            }
+            finally
+            {
+                // Release all locks in reverse order
+                for (int i = lockDisposables.Count - 1; i >= 0; i--)
+                {
+                    lockDisposables[i].Dispose();
+                }
+            }
         }
 
 

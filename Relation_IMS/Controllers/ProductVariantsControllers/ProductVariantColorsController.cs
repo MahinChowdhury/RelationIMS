@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers.ProductVariantsControllers
 {
@@ -10,9 +11,12 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
     public class ProductVariantColorsController : ControllerBase
     {
         private readonly IProductVariantColorRepository _repo;
-        public ProductVariantColorsController(IProductVariantColorRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+
+        public ProductVariantColorsController(IProductVariantColorRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpPost]
@@ -50,13 +54,16 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ProductColor?>> DeleteProductColorById([FromRoute] int id)
         {
-            var deleted = await _repo.DeleteProductColorByIdAsync(id);
+            using (await _lockService.AcquireLockAsync($"color:{id}"))
+            {
+                var deleted = await _repo.DeleteProductColorByIdAsync(id);
 
-            if (deleted == null) {
-                return NotFound(ModelState);
+                if (deleted == null) {
+                    return NotFound(ModelState);
+                }
+
+                return Ok(deleted);
             }
-
-            return Ok(deleted);
         }
 
         [HttpPut("{id:int}")]
@@ -65,14 +72,17 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _repo.UpdateColorForProductAsync(id, colorDTO);
-
-            if (updated == null)
+            using (await _lockService.AcquireLockAsync($"color:{id}"))
             {
-                return NotFound();
-            }
+                var updated = await _repo.UpdateColorForProductAsync(id, colorDTO);
 
-            return Ok(updated);
+                if (updated == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(updated);
+            }
         }
     }
 }
