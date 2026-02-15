@@ -18,6 +18,10 @@ interface Customer {
 interface ScannedItem {
     id: string; // unique scan id
     code: string;
+    productName: string;
+    variantInfo: string;
+    price: number;
+    isValidOrderReturn: boolean;
 }
 
 interface ReturnRecord {
@@ -50,6 +54,11 @@ export default function CustomerReturn() {
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
+    // Order Tracking State
+    const [orderId, setOrderId] = useState('');
+    const [orderData, setOrderData] = useState<any | null>(null);
+    const [loadingOrder, setLoadingOrder] = useState(false);
+
     // Fetch Inventories & Customers (Initial)
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -73,6 +82,42 @@ export default function CustomerReturn() {
         }
     };
 
+    // Load Order Handler
+    const handleLoadOrder = async () => {
+        if (!orderId) return;
+        setLoadingOrder(true);
+        setOrderData(null);
+        setErrorMsg('');
+
+        try {
+            const res = await api.get(`/Order/${orderId}`);
+            setOrderData(res.data);
+
+            // Auto-select customer if not selected
+            if (res.data.Customer && !selectedCustomer) {
+                setSelectedCustomer(res.data.Customer);
+            } else if (selectedCustomer && res.data.CustomerId !== selectedCustomer.Id) {
+                // Warn mismatched customer?
+                setErrorMsg(`Warning: Order belongs to ${res.data.Customer?.Name}, but you selected ${selectedCustomer.Name}.`);
+            }
+
+        } catch (err) {
+            console.error(err);
+            setErrorMsg('Order not found.');
+        } finally {
+            setLoadingOrder(false);
+        }
+    };
+
+    // Auto-load order when Order ID changes
+    useEffect(() => {
+        if (orderId && orderId.trim() !== '') {
+            handleLoadOrder();
+        } else {
+            setOrderData(null);
+        }
+    }, [orderId]);
+
     // Search Customers
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -93,24 +138,105 @@ export default function CustomerReturn() {
     }, [customerSearch, selectedCustomer]);
 
 
-    const handleAddProduct = () => {
-        if (!productCodeInput.trim()) return;
-        const code = productCodeInput.trim();
-        // Prevent duplicate codes if needed, OR allow if they have multiple same items (unique instance will be handled by backend, but here logic implies unique codes usually refer to unique items or at least distinct scans)
-        // With simple ProductCode, we might process multiple of same SKU which means multiple instances.
-        // Let's allow unique entries for now.
+    // Calculate Refund Amount automatically
+    useEffect(() => {
+        const total = scannedItems.reduce((sum, item) => sum + item.price, 0);
+        setRefundAmount(total.toFixed(2));
+    }, [scannedItems]);
+
+    const handleAddProduct = async (codeOverride?: string) => {
+        const rawCode = codeOverride || productCodeInput;
+        if (!rawCode || !rawCode.trim()) return;
+        const code = rawCode.trim();
 
         if (scannedItems.some(i => i.code === code)) {
             alert('This code is already in the list.');
             return;
         }
 
-        setScannedItems(prev => [...prev, { id: crypto.randomUUID(), code }]);
-        setProductCodeInput('');
+        setProcessing(true); // Reuse processing state for spinner or add local loading state
+        try {
+            // 1. Fetch Item Details
+            const itemRes = await api.get(`/ProductItem/code/${code}`);
+            const item = itemRes.data;
+
+            if (!item || !item.Code) throw new Error("Invalid item data received");
+
+            let itemPrice = 0;
+            let isValidOrderReturn = true;
+
+            // 2. Validate against Order (if loaded)
+            if (orderData) {
+                // Try to find exact match on Variant
+                const orderItem = orderData.OrderItems.find((oi: any) => oi.ProductVariantId === item.ProductVariantId);
+
+                if (orderItem) {
+                    // Use UnitPrice directly (it already reflects the sold price)
+                    itemPrice = orderItem.UnitPrice;
+                } else {
+                    // Try Generic Product Match
+                    const genericMatch = orderData.OrderItems.find((oi: any) => oi.ProductId === item.ProductId);
+                    if (genericMatch) {
+                        itemPrice = genericMatch.UnitPrice;
+                    } else {
+                        // NOT IN ORDER
+                        isValidOrderReturn = false;
+                        const confirmAdd = window.confirm(`WARNING: Item '${code}' (${item.ProductVariant?.Product?.Name}) is NOT part of Order #${orderId}. \n\nDo you want to add it anyway? (Price will be 0)`);
+                        if (!confirmAdd) {
+                            setProcessing(false);
+                            return;
+                        }
+                        // User insisted to add, but it didn't come from this order so price relies on fallback or just 0?
+                        itemPrice = item.VariantPrice || item.BasePrice || 0;
+                    }
+                }
+            } else {
+                // No Order Mode: Use Validation or Standard Price
+                itemPrice = item.VariantPrice || item.BasePrice || 0;
+            }
+
+            const newItem: ScannedItem = {
+                id: crypto.randomUUID(),
+                code: item.Code, // Use confirmed code from API
+                productName: item.ProductName || 'Unknown Product',
+                variantInfo: `${item.ColorName || ''} ${item.SizeName || ''}`.trim(),
+                price: itemPrice,
+                isValidOrderReturn
+            };
+
+            setScannedItems(prev => [...prev, newItem]);
+            setProductCodeInput('');
+            if (isScannerOpen) setIsScannerOpen(false); // Close scanner if successful
+
+        } catch (err: any) {
+            console.error("Failed to fetch item", err);
+            // Verify failure logic
+            if (err.response && err.response.status === 404) {
+                alert(`Product with code '${code}' not found in system.`);
+            } else {
+                const confirmAdd = window.confirm(`Failed to verify item '${code}'. Add manual entry?`);
+                if (confirmAdd) {
+                    setScannedItems(prev => [...prev, {
+                        id: crypto.randomUUID(),
+                        code: code,
+                        productName: 'Manual Entry',
+                        variantInfo: '-',
+                        price: 0,
+                        isValidOrderReturn: false
+                    }]);
+                    setProductCodeInput('');
+                    if (isScannerOpen) setIsScannerOpen(false);
+                }
+            }
+        } finally {
+            setProcessing(false);
+        }
     };
 
     const removeScannedItem = (id: string) => {
         setScannedItems(prev => prev.filter(i => i.id !== id));
+        // Note: Removing item does not auto-subtract price because we don't track which item added how much. 
+        // User has to adjust manually if they remove. (Simplification for now)
     };
 
     const handleProcessReturn = async () => {
@@ -125,7 +251,8 @@ export default function CustomerReturn() {
                 ProductCodes: scannedItems.map(i => i.code),
                 TargetInventoryId: selectedInventoryId,
                 CustomerId: selectedCustomer.Id,
-                RefundAmount: parseFloat(refundAmount) || 0
+                RefundAmount: parseFloat(refundAmount) || 0,
+                OrderId: orderData ? orderData.Id : undefined
             });
 
             setSuccessMsg('Return processed successfully! Customer balance updated.');
@@ -134,6 +261,8 @@ export default function CustomerReturn() {
             // Keep customer selected or clear? Maybe clear for next customer
             // setSelectedCustomer(null);
             // setCustomerSearch('');
+            setOrderId('');
+            setOrderData(null);
 
             fetchHistory(); // Reload history
 
@@ -157,6 +286,35 @@ export default function CustomerReturn() {
                 {/* Left Column: Settings & Input */}
                 <div className="md:col-span-1 flex flex-col gap-6">
 
+                    {/* Order Selection (Optional) */}
+                    <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">
+                            Order ID <span className="text-secondary font-normal">(Optional)</span>
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={orderId}
+                                onChange={(e) => setOrderId(e.target.value)}
+                                placeholder="Order #"
+                                className="flex-1 bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white font-mono"
+                                onKeyDown={(e) => e.key === 'Enter' && handleLoadOrder()}
+                            />
+                            <button
+                                onClick={handleLoadOrder}
+                                disabled={loadingOrder || !orderId}
+                                className="p-2.5 bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-lg transition disabled:opacity-50"
+                            >
+                                {loadingOrder ? <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span> : <span className="material-symbols-outlined">check</span>}
+                            </button>
+                        </div>
+                        {orderData && (
+                            <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded text-xs flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm">verified</span>
+                                <b>Order #{orderData.Id} Loaded</b>
+                            </div>
+                        )}
+                    </div>
                     {/* Inventory Selection */}
                     <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
                         <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Target Inventory</label>
@@ -234,7 +392,7 @@ export default function CustomerReturn() {
                             </button>
                         </div>
                         <button
-                            onClick={handleAddProduct}
+                            onClick={() => handleAddProduct()}
                             disabled={!productCodeInput.trim()}
                             className="mt-2 w-full py-2 bg-secondary/10 text-secondary font-bold text-sm rounded-lg hover:bg-secondary/20 transition disabled:opacity-50"
                         >
@@ -261,14 +419,23 @@ export default function CustomerReturn() {
                         ) : (
                             <div className="flex flex-col gap-2">
                                 {scannedItems.map((item, idx) => (
-                                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#112116] rounded-lg border border-gray-100 dark:border-[#2a4032] animate-in slide-in-from-left-2 fade-in duration-300">
+                                    <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border animate-in slide-in-from-left-2 fade-in duration-300 ${item.isValidOrderReturn ? 'bg-gray-50 dark:bg-[#112116] border-gray-100 dark:border-[#2a4032]' : 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-700/30'}`}>
                                         <div className="flex items-center gap-3">
                                             <span className="flex items-center justify-center size-6 bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300">{idx + 1}</span>
-                                            <span className="font-mono text-sm font-bold text-text-main dark:text-white">{item.code}</span>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-sm font-bold text-text-main dark:text-white">{item.code}</span>
+                                                    {!item.isValidOrderReturn && orderData && <span className="text-[10px] font-bold text-yellow-600 bg-yellow-100 px-1.5 rounded">Ex-Order</span>}
+                                                </div>
+                                                <p className="text-xs text-text-secondary dark:text-gray-400">{item.productName} <span className="opacity-50 mx-1">|</span> {item.variantInfo}</p>
+                                            </div>
                                         </div>
-                                        <button onClick={() => removeScannedItem(item.id)} className="text-gray-400 hover:text-red-500 transition">
-                                            <span className="material-symbols-outlined">delete</span>
-                                        </button>
+                                        <div className="flex items-center gap-4">
+                                            <span className="font-mono font-bold text-green-600 dark:text-green-400">${item.price.toFixed(2)}</span>
+                                            <button onClick={() => removeScannedItem(item.id)} className="text-gray-400 hover:text-red-500 transition">
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -286,7 +453,8 @@ export default function CustomerReturn() {
                                     step="0.01"
                                     value={refundAmount}
                                     onChange={(e) => setRefundAmount(e.target.value)}
-                                    className="w-full pl-8 p-3 bg-white dark:bg-[#1a2e22] border border-gray-300 dark:border-[#2a4032] rounded-lg font-bold text-lg text-green-600 focus:ring-primary focus:border-primary"
+                                    readOnly={scannedItems.length > 0} // Make read-only if auto-calculated to prevent confusion, or allow override but it will be reset on list change.
+                                    className={`w-full pl-8 p-3 bg-white dark:bg-[#1a2e22] border border-gray-300 dark:border-[#2a4032] rounded-lg font-bold text-lg text-green-600 focus:ring-primary focus:border-primary ${scannedItems.length > 0 ? 'bg-gray-50 cursor-not-allowed opacity-80' : ''}`}
                                 />
                             </div>
                         </div>
@@ -379,8 +547,7 @@ export default function CustomerReturn() {
                     enabled={true}
                     onScanned={(code) => {
                         setProductCodeInput(code);
-                        handleAddProduct();
-                        setIsScannerOpen(false);
+                        handleAddProduct(code);
                     }}
                     onClose={() => setIsScannerOpen(false)}
                     onError={() => setIsScannerOpen(false)}

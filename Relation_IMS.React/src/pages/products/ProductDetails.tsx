@@ -7,8 +7,13 @@ import InventoryStockModal from '../../components/products/InventoryStockModal';
 // Imported from ../../types
 import type { Product, InventoryStock, ProductVariant } from '../../types';
 
-export default function ProductDetails() {
+interface ProductDetailsProps {
+    productId?: string;
+}
+
+export default function ProductDetails({ productId }: ProductDetailsProps) {
     const { id } = useParams<{ id: string }>();
+    const activeId = productId || id;
     const [productDetail, setProductDetail] = useState<Product | null>(null);
     const [selectedImage, setSelectedImage] = useState<string>('');
 
@@ -20,10 +25,10 @@ export default function ProductDetails() {
     const [stockModalMode, setStockModalMode] = useState<'available' | 'defect'>('available');
 
     useEffect(() => {
-        if (id) {
-            loadProductDetail(id);
+        if (activeId) {
+            loadProductDetail(activeId);
         }
-    }, [id]);
+    }, [activeId]);
 
     const loadProductDetail = async (productId: string) => {
         try {

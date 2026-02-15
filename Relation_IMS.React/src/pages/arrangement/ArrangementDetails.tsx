@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import api from '../../services/api';
 import { type Order, OrderInternalStatus } from '../../types';
+import ProductDetails from '../products/ProductDetails';
 
 interface ScannedItemRecord {
     sku: string;
@@ -21,6 +22,7 @@ export default function ArrangementDetails() {
     const [isScanning, setIsScanning] = useState(false);
     const [manualSku, setManualSku] = useState('');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedRequiredItemProductId, setSelectedRequiredItemProductId] = useState<number | null>(null);
 
     // Scanner refs
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -169,6 +171,8 @@ export default function ArrangementDetails() {
         if (!order) return;
 
         try {
+            // Call the dedicated endpoint to confirm arrangement
+            // This expects the backend to transition status to "Arranged" (2)
             await api.post(`/Arrangement/confirm/${order.Id}`);
             setShowConfirmModal(false);
 
@@ -176,7 +180,7 @@ export default function ArrangementDetails() {
             navigate(`/orders/${order.Id}?view=cycle`);
         } catch (err: any) {
             console.error("Confirmation Failed", err);
-            alert(err.response?.data || "Failed to confirm order.");
+            alert(err.response?.data || "Failed to confirm arrangement.");
             setShowConfirmModal(false);
         }
     };
@@ -251,12 +255,22 @@ export default function ArrangementDetails() {
                                     </thead>
                                     <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
                                         {order.OrderItems && order.OrderItems.map(item => (
-                                            <tr key={item.Id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                            <tr
+                                                key={item.Id}
+                                                className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+                                                onClick={() => setSelectedRequiredItemProductId(item.ProductId)}
+                                                title="Click to view product details"
+                                            >
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-[#e7f3eb] dark:border-gray-600 overflow-hidden flex items-center justify-center">
+                                                        <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0 border border-[#e7f3eb] dark:border-gray-600 overflow-hidden flex items-center justify-center relative group/image">
                                                             {item.Product?.ImageUrls?.[0] ?
-                                                                <img src={item.Product.ImageUrls[0]} className="w-full h-full object-cover" />
+                                                                <>
+                                                                    <img src={item.Product.ImageUrls[0]} className="w-full h-full object-cover transition-all duration-300 group-hover/image:blur-sm transform group-hover/image:scale-110" />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 bg-black/20">
+                                                                        <span className="material-symbols-outlined text-white drop-shadow-md text-xl">visibility</span>
+                                                                    </div>
+                                                                </>
                                                                 : <span className="material-symbols-outlined text-gray-400">image_not_supported</span>
                                                             }
                                                         </div>
@@ -441,10 +455,10 @@ export default function ArrangementDetails() {
                                     ? 'bg-gray-400 cursor-not-allowed text-gray-200 shadow-none'
                                     : 'bg-primary hover:bg-primary-dark text-white shadow-green-400/20 dark:shadow-green-900/30'}`
                             }
-                            disabled={order.InternalStatus >= OrderInternalStatus.Confirmed}
+                            disabled={order.InternalStatus >= OrderInternalStatus.Arranged}
                         >
                             <span className="material-symbols-outlined text-2xl">check_circle</span>
-                            {order.InternalStatus >= OrderInternalStatus.Confirmed ? 'Order Confirmed' : 'Confirm Arrangement'}
+                            {order.InternalStatus >= OrderInternalStatus.Arranged ? 'Arrangement Completed' : 'Confirm Arrangement'}
                         </button>
                     </div>
                 </div>
@@ -456,11 +470,11 @@ export default function ArrangementDetails() {
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                                <span className="material-symbols-outlined text-4xl text-primary">assignment_turned_in</span>
+                                <span className="material-symbols-outlined text-4xl text-primary">fact_check</span>
                             </div>
-                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Confirm Order Completion?</h3>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Complete Arrangement?</h3>
                             <p className="text-text-secondary dark:text-gray-400 text-sm leading-relaxed">
-                                Are you sure all items have been arranged, transferred to the customer, and payment received? This will mark the order as <strong className="text-primary">Confirmed</strong>.
+                                Are you sure all items have been verified and arranged? This will mark the order as <strong className="text-primary">Arranged</strong> and proceed to final confirmation.
                             </p>
                         </div>
                         <div className="flex gap-3">
@@ -474,8 +488,26 @@ export default function ArrangementDetails() {
                                 onClick={handleFinalConfirm}
                                 className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-green-200/50 dark:shadow-none"
                             >
-                                Yes, Complete Order
+                                Yes, Complete
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Product Details Modal (80% Screen) */}
+            {selectedRequiredItemProductId && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#1a2e22] w-[90%] h-[90%] md:w-[80%] md:h-[80%] rounded-2xl shadow-2xl overflow-hidden relative border border-[#e7f3eb] dark:border-[#2a4032] flex flex-col">
+                        <div className="absolute top-4 right-4 z-10">
+                            <button
+                                onClick={() => setSelectedRequiredItemProductId(null)}
+                                className="p-2 bg-white/80 dark:bg-black/50 backdrop-blur rounded-full text-gray-500 hover:text-white hover:bg-red-500 transition-all shadow-lg border border-gray-100 dark:border-gray-700"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="overflow-y-auto h-full custom-scrollbar">
+                            <ProductDetails productId={selectedRequiredItemProductId.toString()} />
                         </div>
                     </div>
                 </div>

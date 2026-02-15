@@ -6,6 +6,7 @@ using Relation_IMS.Dtos.InventoryDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models;
 using Relation_IMS.Models.InventoryModels;
+using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Datas.Repositories
@@ -371,17 +372,17 @@ namespace Relation_IMS.Datas.Repositories
                 .Include(r => r.User)
                 // Include navigation through Join Table
                 .Include(r => r.TransferItems)
-                    .ThenInclude(ti => ti.ProductItem)
-                        .ThenInclude(pi => pi.ProductVariant)
-                            .ThenInclude(pv => pv.Product)
+                    .ThenInclude(ti => ti.ProductItem!)
+                        .ThenInclude(pi => pi.ProductVariant!)
+                            .ThenInclude(pv => pv!.Product)
                 .Include(r => r.TransferItems)
-                    .ThenInclude(ti => ti.ProductItem)
-                        .ThenInclude(pi => pi.ProductVariant)
-                            .ThenInclude(pv => pv.Color)
+                    .ThenInclude(ti => ti.ProductItem!)
+                        .ThenInclude(pi => pi.ProductVariant!)
+                            .ThenInclude(pv => pv!.Color)
                 .Include(r => r.TransferItems)
-                    .ThenInclude(ti => ti.ProductItem)
-                        .ThenInclude(pi => pi.ProductVariant)
-                            .ThenInclude(pv => pv.Size)
+                    .ThenInclude(ti => ti.ProductItem!)
+                        .ThenInclude(pi => pi.ProductVariant!)
+                            .ThenInclude(pv => pv!.Size)
                 .AsNoTracking();
 
             // Apply filters based on search term (Updated to check TransferItems)
@@ -494,6 +495,14 @@ namespace Relation_IMS.Datas.Repositories
         // Process Customer Return (Batch)
         public async Task<TransferResultDTO> ProcessCustomerReturnAsync(CustomerReturnRequestDTO returnDto)
         {
+            // 0. Sanitize Input
+            if (returnDto.ProductCodes == null || !returnDto.ProductCodes.Any())
+            {
+                 return new TransferResultDTO { Success = false, Message = "No items to return." };
+            }
+            // Remove empty strings
+            returnDto.ProductCodes = returnDto.ProductCodes.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+
             var result = new TransferResultDTO
             {
                 Success = false,
@@ -515,6 +524,31 @@ namespace Relation_IMS.Datas.Repositories
             {
                 result.Message = "Target inventory not found.";
                 return result;
+            }
+
+            // 2b. Validate Order (if provided)
+            Order? linkedOrder = null;
+            List<OrderItem>? orderItems = null;
+
+            if (returnDto.OrderId.HasValue)
+            {
+                linkedOrder = await _context.Orders
+                    .Include(o => o.OrderItems)
+                    .FirstOrDefaultAsync(o => o.Id == returnDto.OrderId.Value);
+
+                if (linkedOrder == null)
+                {
+                    result.Message = $"Order #{returnDto.OrderId} not found.";
+                    return result;
+                }
+
+                if (linkedOrder.CustomerId != returnDto.CustomerId)
+                {
+                    result.Message = $"Order #{returnDto.OrderId} does not belong to this customer.";
+                    return result;
+                }
+
+                orderItems = linkedOrder.OrderItems;
             }
 
             // 3. Find and Validate All Products
@@ -553,6 +587,26 @@ namespace Relation_IMS.Datas.Repositories
                     continue;
                 }
 
+                // VALIDATE AGAINST ORDER (if OrderId provided)
+                if (orderItems != null)
+                {
+                    // Check if this item's Variant exists in the Order's Items
+                    var inOrder = orderItems.Any(oi => oi.ProductVariantId == item.ProductVariantId);
+                    
+                    // If strict generic product match only (fallback)
+                    if (!inOrder)
+                    {
+                         inOrder = orderItems.Any(oi => oi.ProductId == item.ProductVariant?.ProductId);
+                    }
+
+                    if (!inOrder)
+                    {
+                        result.InvalidCodes.Add(code);
+                        errors.Add($"Item '{code}' (Variant {item.ProductVariantId}) is not part of Order #{returnDto.OrderId}.");
+                        continue;
+                    }
+                }
+
                 // Found valid item. Remove from pool if duplicate codes existed (unlikely for unique items but safe)
                 products.Remove(item);
                 validItems.Add(item);
@@ -570,7 +624,8 @@ namespace Relation_IMS.Datas.Repositories
                 CustomerId = returnDto.CustomerId,
                 RefundAmount = returnDto.RefundAmount,
                 ReturnDate = DateTime.UtcNow,
-                UserId = returnDto.UserId
+                UserId = returnDto.UserId,
+                OrderId = returnDto.OrderId
             };
 
             // 5. Process Each Item
@@ -595,7 +650,7 @@ namespace Relation_IMS.Datas.Repositories
             await _context.SaveChangesAsync();
 
             result.Success = true;
-            result.Message = $"Successfully returned {validItems.Count} items. Customer balance increased by {returnDto.RefundAmount}.";
+            result.Message = $"Successfully returned {validItems.Count} items. Customer balance increased by {returnDto.RefundAmount:C}.";
             result.TransferredCount = validItems.Count;
 
             return result;

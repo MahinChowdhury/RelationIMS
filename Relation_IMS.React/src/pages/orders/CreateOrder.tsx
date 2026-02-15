@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import VariantSelectionModal from './VariantSelectionModal';
@@ -49,6 +49,8 @@ interface CartItem {
     // New fields for grouping
     VariantKey?: string;
     ProductVariantId?: number;
+    ColorName?: string;
+    SizeName?: string;
 }
 
 // Payment Types
@@ -63,10 +65,13 @@ interface PaymentEntry {
 export default function CreateOrder() {
     const navigate = useNavigate();
 
+    const { id } = useParams<{ id: string }>(); // Edit Mode ID
+
     // UI State
     const [isScanning, setIsScanning] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [itemLoading, setItemLoading] = useState(false);
+    const [loadingOrder, setLoadingOrder] = useState(false); // New state for loading edit data
 
     // Data State
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -106,11 +111,84 @@ export default function CreateOrder() {
     const [modalProduct, setModalProduct] = useState<any | null>(null);
     const [modalVariants, setModalVariants] = useState<any[]>([]);
 
+    // --- Print Prompt State ---
+    const [showPrintPrompt, setShowPrintPrompt] = useState(false);
+    const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+
     // --- Computed Values ---
     const subtotal = cart.reduce((acc, item) => acc + item.Subtotal, 0);
     const netAmount = Math.max(0, subtotal - discount);
     const paidAmount = payments.reduce((sum, p) => sum + p.amount, 0);
     const dueAmount = Math.max(0, netAmount - paidAmount);
+
+    // --- Load Order for Edit ---
+    useEffect(() => {
+        if (id) {
+            loadOrderForEdit(Number(id));
+        }
+    }, [id]);
+
+    const loadOrderForEdit = async (orderId: number) => {
+        setLoadingOrder(true);
+        try {
+            const res = await api.get<any>(`/Order/${orderId}`);
+            const order = res.data;
+
+            // Populate Customer
+            if (order.Customer) {
+                setSelectedCustomer(order.Customer);
+                if (order.Customer.IsDueAllowed) {
+                    setAllowDue(true);
+                    setNidNumber(order.Customer.NidNumber || '');
+                    setReferenceName(order.Customer.ReferenceName || '');
+                    setReferencePhone(order.Customer.ReferencePhoneNumber || '');
+                }
+            }
+
+            // Populate Cart (Types need adjustment based on what API returns in OrderItem)
+            if (order.OrderItems) {
+                const mappedCart: CartItem[] = order.OrderItems.map((item: any) => ({
+                    Id: item.ProductVariantId || item.ProductId, // Fallback
+                    ProductId: item.ProductId,
+                    Code: item.ProductVariant ? 'GENERIC' : 'UNKNOWN', // We don't have the specific item code here usually unless arranged
+                    Name: item.Product?.Name || "Unknown Product",
+                    VariantDetails: `${item.ProductVariant?.Color?.Name || ''} ${item.ProductVariant?.Size?.Name || ''}`.trim(),
+                    Price: item.UnitPrice,
+                    Quantity: item.Quantity,
+                    Subtotal: item.Subtotal,
+                    ImageUrl: item.Product?.ImageUrls?.[0],
+                    VariantKey: `v-${item.ProductVariantId}`,
+                    ProductVariantId: item.ProductVariantId,
+                    ColorName: item.ProductVariant?.Color?.Name,
+                    SizeName: item.ProductVariant?.Size?.Name,
+                }));
+                setCart(mappedCart);
+            }
+
+            // Populate Payments
+            if (order.Payments) {
+                setPayments(order.Payments.map((p: any) => ({
+                    method: p.PaymentMethod === 0 ? 'Cash' : p.PaymentMethod === 1 ? 'Bank' : 'Bkash',
+                    amount: p.Amount,
+                    note: p.Note || ''
+                })));
+            }
+
+            // Other fields
+            setDiscount(order.Discount);
+            setNotes(order.Remarks || '');
+            if (order.NextPaymentDate) {
+                setNextPaymentDate(order.NextPaymentDate.split('T')[0]);
+            }
+
+        } catch (err) {
+            console.error("Failed to load order for edit", err);
+            alert("Failed to load order.");
+            navigate('/orders');
+        } finally {
+            setLoadingOrder(false);
+        }
+    };
 
     // --- Customer Search ---
     useEffect(() => {
@@ -168,39 +246,47 @@ export default function CreateOrder() {
 
 
     // --- Product Search Logic (Server Side) ---
-    const handleVariantConfirm = (variant: any, qty: number, price: number) => {
-        // Logic to add to cart
+    const handleVariantConfirm = (items: any[]) => {
+        // items is array of { variant, quantity, price, subtotal }
         setCart(prev => {
-            const groupKey = `v-${variant.Id}`;
-            const existingIndex = prev.findIndex(item => item.VariantKey === groupKey);
+            let updatedCart = [...prev];
 
-            if (existingIndex >= 0) {
-                const updatedItems = [...prev];
-                const existing = prev[existingIndex];
-                updatedItems[existingIndex] = {
-                    ...existing,
-                    Quantity: existing.Quantity + qty,
-                    Subtotal: (existing.Quantity + qty) * price,
-                    Price: price
-                };
-                return updatedItems;
-            } else {
-                // New Item
-                const newItem: CartItem = {
-                    Id: variant.Id, // Use Variant ID as unique ID
-                    ProductId: variant.ProductId,
-                    Code: "GENERIC", // Variant ID tracking
-                    Name: modalProduct?.Name || "Unknown",
-                    VariantDetails: `${variant.Color?.Name || ''} ${variant.Size?.Name || ''}`.trim(),
-                    Price: price,
-                    Quantity: qty,
-                    Subtotal: price * qty,
-                    ImageUrl: modalProduct?.ImageUrls?.[0],
-                    VariantKey: groupKey,
-                    ProductVariantId: variant.Id
-                };
-                return [newItem, ...prev];
-            }
+            items.forEach(stagedItem => {
+                const { variant, quantity, price } = stagedItem;
+                const groupKey = `v-${variant.Id}`;
+                const existingIndex = updatedCart.findIndex(item => item.VariantKey === groupKey);
+
+                if (existingIndex >= 0) {
+                    const existing = updatedCart[existingIndex];
+                    updatedCart[existingIndex] = {
+                        ...existing,
+                        Quantity: existing.Quantity + quantity,
+                        Subtotal: (existing.Quantity + quantity) * price,
+                        Price: price
+                    };
+                } else {
+                    // New Item
+                    const newItem: CartItem = {
+                        Id: variant.Id, // Use Variant ID as unique ID
+                        ProductId: variant.ProductId,
+                        Code: "GENERIC", // Variant ID tracking
+                        Name: modalProduct?.Name || "Unknown",
+                        VariantDetails: `${variant.Color?.Name || ''} ${variant.Size?.Name || ''}`.trim(),
+                        Price: price,
+                        Quantity: quantity,
+                        Subtotal: price * quantity,
+                        ImageUrl: modalProduct?.ImageUrls?.[0],
+                        VariantKey: groupKey,
+                        ProductVariantId: variant.Id,
+                        // Add Color/Size info for Grouping
+                        ColorName: variant.Color?.Name,
+                        SizeName: variant.Size?.Name
+                    } as any; // Cast to any to add extra fields if CartItem interface is strict
+                    updatedCart = [newItem, ...updatedCart];
+                }
+            });
+
+            return updatedCart.sort((a, b) => (b.Id - a.Id)); // Simple sort, or invalid sort if Id string, but let's just keep FIFO or LIFO
         });
     };
 
@@ -330,6 +416,7 @@ export default function CreateOrder() {
             }
 
             // 1. Create Order Header
+            // 1. Create Order UPDATE Header
             const orderPayload = {
                 CustomerId: selectedCustomer.Id,
                 TotalAmount: subtotal,
@@ -344,50 +431,49 @@ export default function CreateOrder() {
                     PaymentMethod: p.method === 'Cash' ? 0 : p.method === 'Bank' ? 1 : 2,
                     Amount: p.amount,
                     Note: p.note
-                }))
-            };
-
-            const orderRes = await api.post('/Order', orderPayload);
-            const orderId = orderRes.data.Id;
-
-            // 2. Create Order Items
-            // For Product Items, we need to know what API endpoint handles mapping them
-            // The existing `POST /OrderItem` uses `ProductId`, `Quantity`, `UnitPrice`.
-            // Does it support `ProductItemId`?
-            // The user wanted to add "ProductItems". 
-            // If the OrderItem logic assumes Generic Product + Qty, then we have a mismatch if we want to track specific Serial Numbers in the Order.
-            // However, the `CreateOrderItemDTO` has `ProductId`. It does NOT have `ProductItemId`.
-            // This suggests the Order system relies on generic products.
-            // BUT, the `InventoryTransfer` moves specific items.
-            // If we sell a specific item `PV-1-abc`, we should mark that item as Sold.
-            // DOES `POST /OrderItem` handle marking ProductItem as sold? 
-            // Likely NOT if it only takes `ProductId`.
-
-            // CRITICAL: We might need to just link the generic Product ID for the Order Record 
-            // AND separately mark the ProductItem as Sold/Defected? 
-            // OR the Backend logic creates generic OrderItems.
-
-            // Given I cannot see a "SellProductItem" endpoint, I will use the standard `POST /OrderItem` 
-            // using the `ProductVariant.ProductId`. 
-            // NOTE: This might mean the specific serial code isn't stored in the order, 
-            // which might be a gap in the current API vs User Requirement.
-            // I will implement using the existing API but pass the ProductID.
-
-            const itemPromises = cart.map(item => {
-                return api.post('/OrderItem', {
-                    OrderId: orderId,
+                })),
+                OrderItems: id ? cart.map(item => ({
+                    // For Edit, we send items in the payload
+                    OrderId: Number(id),
                     ProductId: item.ProductId,
                     Quantity: item.Quantity,
                     UnitPrice: item.Price,
                     Subtotal: item.Subtotal,
                     ProductVariantId: item.ProductVariantId
+                })) : undefined
+            };
+
+            let orderId = createdOrderId;
+
+            if (id) {
+                // UPDATE Mode
+                await api.put(`/Order/${id}`, orderPayload);
+                orderId = Number(id);
+                // For Edit, we included items in payload, so no need for separate calls
+            } else {
+                // CREATE Mode
+                const orderRes = await api.post('/Order', orderPayload);
+                orderId = orderRes.data.Id;
+
+                // 2. Create Order Items (POST Separate)
+                const itemPromises = cart.map(item => {
+                    return api.post('/OrderItem', {
+                        OrderId: orderId,
+                        ProductId: item.ProductId,
+                        Quantity: item.Quantity,
+                        UnitPrice: item.Price,
+                        Subtotal: item.Subtotal,
+                        ProductVariantId: item.ProductVariantId
+                    });
                 });
-            });
 
-            await Promise.all(itemPromises);
+                await Promise.all(itemPromises);
+            }
 
-            alert('Order created successfully!');
-            navigate('/orders');
+            // alert('Order created/updated successfully!'); // Replaced by print prompt
+            setCreatedOrderId(orderId);
+            setShowPrintPrompt(true);
+            // navigate(`/orders/${orderId}?view=cycle`);
 
         } catch (err) {
             console.error("Failed to create order", err);
@@ -397,6 +483,18 @@ export default function CreateOrder() {
         }
     };
 
+    const handlePrintInvoice = () => {
+        if (!createdOrderId) return;
+        // Open details view in new tab with autoPrint
+        window.open(`/orders/${createdOrderId}?view=details&autoPrint=true`, '_blank');
+        // Navigate current tab to cycle (default behavior)
+        navigate(`/orders/${createdOrderId}?view=cycle`);
+    };
+
+    const handleNoPrint = () => {
+        if (!createdOrderId) return;
+        navigate(`/orders/${createdOrderId}?view=cycle`);
+    };
 
     return (
         <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 font-display text-text-main dark:text-gray-100">
@@ -416,11 +514,11 @@ export default function CreateOrder() {
                         <span className="material-symbols-outlined text-4xl text-primary">qr_code_scanner</span>
                         Create New Order
                     </h1>
-                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">Streamlined scan & add process</p>
+
                 </div>
-                {itemLoading && (
+                {(itemLoading || loadingOrder) && (
                     <div className="text-sm text-primary animate-pulse font-bold">
-                        Loading product database...
+                        {loadingOrder ? 'Loading Order...' : 'Loading product database...'}
                     </div>
                 )}
             </div>
@@ -599,48 +697,77 @@ export default function CreateOrder() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        cart.map((item, index) => (
-                                            <tr key={index} className="hover:bg-green-50/50 dark:hover:bg-green-900/10 transition-colors group">
-                                                <td className="px-6 py-4 text-gray-400 font-mono">{index + 1}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="size-10 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-[#e7f3eb] dark:border-gray-600" style={{ backgroundImage: `url('${item.ImageUrl || 'https://via.placeholder.com/100'}')` }}></div>
-                                                        <div>
-                                                            <p className="font-bold text-text-main dark:text-white">{item.Name}</p>
-                                                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                                                {item.VariantDetails && <span className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{item.VariantDetails}</span>}
-                                                                <span className="font-mono text-gray-400">{item.Code}</span>
+                                        // Grouping Logic Implementation
+                                        Object.values(cart.reduce((groups, item) => {
+                                            const key = `${item.ProductId}-${item.ColorName || 'NoColor'}`;
+                                            if (!groups[key]) groups[key] = { items: [], product: item };
+                                            groups[key].items.push(item);
+                                            return groups;
+                                        }, {} as Record<string, { items: CartItem[], product: CartItem }>)).map((group, groupIdx) => (
+                                            <>
+                                                {/* Group Header */}
+                                                <tr key={`group-${groupIdx}`} className="bg-gray-100/50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700">
+                                                    <td colSpan={6} className="px-6 py-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="size-8 rounded bg-white dark:bg-gray-600 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-500"
+                                                                style={{ backgroundImage: `url('${group.product.ImageUrl || 'https://via.placeholder.com/100'}')` }}>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-sm text-gray-800 dark:text-gray-200">
+                                                                    {group.product.Name}
+                                                                    {group.product.ColorName && (
+                                                                        <span className="ml-2 px-2 py-0.5 rounded-full bg-white dark:bg-gray-600 text-xs border border-gray-200 dark:border-gray-500 font-normal">
+                                                                            {group.product.ColorName}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-right text-text-main dark:text-gray-200 font-medium">
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <span className="text-gray-400 text-xs">$</span>
-                                                        <input
-                                                            type="number"
-                                                            className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none"
-                                                            value={item.Price}
-                                                            onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
-                                                        />
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        {/* Lock Quantity to 1 for unique items per row, or assume we can't change it for unique scans without removing */}
-                                                        <span className="font-bold w-6 text-center text-text-main dark:text-white">{item.Quantity}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">${item.Subtotal.toFixed(2)}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => removeFromCart(item.Id)}
-                                                        className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                                    >
-                                                        <span className="material-symbols-outlined text-lg">delete</span>
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                </tr>
+
+                                                {/* Group Items (Variants) */}
+                                                {group.items.map((item) => (
+                                                    <tr key={item.Id} className="hover:bg-green-50/50 dark:hover:bg-green-900/10 transition-colors group">
+                                                        <td className="px-6 py-3 pl-12 text-gray-400 font-mono text-xs border-l-4 border-transparent hover:border-green-400/30">
+                                                            <span className="material-symbols-outlined text-sm text-gray-300">subdirectory_arrow_right</span>
+                                                        </td>
+                                                        <td className="px-6 py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
+                                                                    {item.SizeName || 'Default Size'}
+                                                                </span>
+                                                                <span className="font-mono text-[10px] text-gray-400 border border-gray-100 dark:border-gray-700 px-1 rounded">{item.Code}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-3 text-right text-text-main dark:text-gray-200 font-medium">
+                                                            <div className="flex items-center justify-end gap-1">
+                                                                <span className="text-gray-400 text-xs">$</span>
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none text-sm"
+                                                                    value={item.Price}
+                                                                    onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
+                                                                />
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-3">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <span className="font-bold w-6 text-center text-text-main dark:text-white text-sm">{item.Quantity}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white text-sm">${item.Subtotal.toFixed(2)}</td>
+                                                        <td className="px-6 py-3 text-center">
+                                                            <button
+                                                                onClick={() => removeFromCart(item.Id)}
+                                                                className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <span className="material-symbols-outlined text-base">delete</span>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
                                         ))
                                     )}
                                 </tbody>
@@ -892,6 +1019,38 @@ export default function CreateOrder() {
                 variants={modalVariants}
                 onConfirm={handleVariantConfirm}
             />
+
+            {/* Print Invoice Prompt Modal */}
+            {showPrintPrompt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex flex-col items-center text-center mb-6">
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-4xl text-primary">receipt_long</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Order Created! 🎉</h3>
+                            <p className="text-text-secondary dark:text-gray-400 text-sm">
+                                Do you want to print the invoice now?
+                            </p>
+                        </div>
+                        <div className="flex gap-3 flex-col">
+                            <button
+                                onClick={handlePrintInvoice}
+                                className="w-full px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined">print</span>
+                                Yes, Print Invoice
+                            </button>
+                            <button
+                                onClick={handleNoPrint}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 font-medium transition-colors"
+                            >
+                                No, thanks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
