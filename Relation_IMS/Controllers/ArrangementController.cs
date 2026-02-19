@@ -13,10 +13,12 @@ namespace Relation_IMS.Controllers
     public class ArrangementController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConcurrencyLockService _lockService;
 
-        public ArrangementController(ApplicationDbContext context)
+        public ArrangementController(ApplicationDbContext context, IConcurrencyLockService lockService)
         {
             _context = context;
+            _lockService = lockService;
         }
 
         [HttpGet("orders")]
@@ -43,7 +45,10 @@ namespace Relation_IMS.Controllers
         [HttpPost("scan")]
         public async Task<IActionResult> ScanItemForArrangement([FromBody] ArrangementScanRequestDTO request)
         {
-            var order = await _context.Orders.FindAsync(request.OrderId);
+            // Lock the order to prevent concurrent scans
+            using (await _lockService.AcquireLockAsync($"order:{request.OrderId}"))
+            {
+                var order = await _context.Orders.FindAsync(request.OrderId);
             if (order == null) return NotFound("Order not found");
 
             if (order.InternalStatus == OrderInternalStatus.Confirmed)
@@ -120,19 +125,22 @@ namespace Relation_IMS.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                Message = "Item verified and reserved.",
-                OrderItemId = matchingOrderItem.Id,
-                ArrangedQuantity = matchingOrderItem.ArrangedQuantity,
-                RequiredQuantity = matchingOrderItem.Quantity
-            });
+                return Ok(new
+                {
+                    Message = "Item verified and reserved.",
+                    OrderItemId = matchingOrderItem.Id,
+                    ArrangedQuantity = matchingOrderItem.ArrangedQuantity,
+                    RequiredQuantity = matchingOrderItem.Quantity
+                });
+            }
         }
 
         [HttpPost("confirm/{orderId}")]
         public async Task<IActionResult> ConfirmArrangement(int orderId)
         {
-            var order = await _context.Orders
+            using (await _lockService.AcquireLockAsync($"order:{orderId}"))
+            {
+                var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
@@ -147,24 +155,14 @@ namespace Relation_IMS.Controllers
                 return BadRequest("Cannot confirm arrangement. Not all items are fully arranged.");
             }
 
-            // Mark all reserved items as Sold
-            var reservedItems = await _context.ProductItems
-                .Include(pi => pi.OrderItem)
-                .Where(pi => pi.OrderItem != null && pi.OrderItem.OrderId == orderId)
-                .ToListAsync();
+            // Set status to Arranged (not Confirmed yet)
+            // Items will be marked as sold only when order is finally confirmed with payment
+            order.InternalStatus = OrderInternalStatus.Arranged;
 
-            foreach (var item in reservedItems)
-            {
-                item.IsSold = true;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Order arrangement completed. Ready for final confirmation.", InternalStatus = order.InternalStatus });
             }
-
-            order.InternalStatus = OrderInternalStatus.Confirmed;  
-            // NOTE: Status flow might be Created -> Arranging -> Arranged -> Confirmed (Payment/Delivery?)
-            // If "Confirm Arrangement" means moving to "Arranged", then this is correct.
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Order arrangement confirmed. Items marked as sold.", InternalStatus = order.InternalStatus });
         }
 
         [HttpGet("items/{orderId}")]
@@ -183,6 +181,42 @@ namespace Relation_IMS.Controllers
                 .ToListAsync();
 
             return Ok(items);
+        }
+
+        [HttpPost("finalize/{orderId}")]
+        public async Task<IActionResult> FinalizeOrder(int orderId)
+        {
+            using (await _lockService.AcquireLockAsync($"order:{orderId}"))
+            {
+                var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null) return NotFound("Order not found");
+
+            if (order.InternalStatus != OrderInternalStatus.Arranged)
+            {
+                return BadRequest("Order must be in 'Arranged' status to finalize. Current status: " + order.InternalStatus);
+            }
+
+            // Mark all reserved items as Sold
+            var reservedItems = await _context.ProductItems
+                .Include(pi => pi.OrderItem)
+                .Where(pi => pi.OrderItem != null && pi.OrderItem.OrderId == orderId)
+                .ToListAsync();
+
+            foreach (var item in reservedItems)
+            {
+                item.IsSold = true;
+            }
+
+            // Set final status to Confirmed
+            order.InternalStatus = OrderInternalStatus.Confirmed;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Order finalized successfully. All items marked as sold.", InternalStatus = order.InternalStatus });
+            }
         }
     }
 

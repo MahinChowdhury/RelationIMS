@@ -89,7 +89,7 @@ export function CustomerFormModal({
                                     value={customer.Phone}
                                     onChange={(e) => onChange('Phone', e.target.value)}
                                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
-                                    placeholder="+1 (555) 000-0000"
+                                    placeholder="0177......."
                                     required
                                 />
                             </div>

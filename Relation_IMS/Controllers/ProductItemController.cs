@@ -54,9 +54,13 @@ namespace Relation_IMS.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductItem>> CreateNewProductItem(CreateProductItemDTO itemDto)
         {
-            var created = await _repo.CreateProductItemAsync(itemDto);
+            // Lock the variant to prevent concurrent item creation
+            using (await _lockService.AcquireLockAsync($"productvariant:{itemDto.ProductVariantId}"))
+            {
+                var created = await _repo.CreateProductItemAsync(itemDto);
 
-            return CreatedAtAction(nameof(GetProductItemById), new { id = created.Id }, created);
+                return CreatedAtAction(nameof(GetProductItemById), new { id = created.Id }, created);
+            }
         }
 
         [HttpPut("{id:int}")]

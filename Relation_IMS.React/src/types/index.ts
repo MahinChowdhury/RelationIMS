@@ -50,6 +50,7 @@ export interface Product {
     Brand?: {
         Id: number;
         Name: string;
+        CategoryId: number;
     };
     Variants?: ProductVariant[];
 }

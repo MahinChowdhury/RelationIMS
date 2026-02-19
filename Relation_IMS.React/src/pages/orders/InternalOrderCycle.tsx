@@ -16,20 +16,8 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
     const finalizeOrder = async () => {
         setLoading(true);
         try {
-            // Fix 413 Error: Only send necessary update DTO fields, not the entire Order object
-            const updatePayload = {
-                CustomerId: order.CustomerId,
-                TotalAmount: order.TotalAmount,
-                Discount: order.Discount,
-                NetAmount: order.NetAmount,
-                PaidAmount: order.PaidAmount,
-                PaymentStatus: order.PaymentStatus,
-                UserId: order.UserId,
-                Remarks: order.Remarks,
-                InternalStatus: OrderInternalStatus.Confirmed
-            };
-
-            await api.put(`/Order/${order.Id}`, updatePayload);
+            // Call the new finalize endpoint which marks items as sold and confirms the order
+            await api.post(`/Arrangement/finalize/${order.Id}`);
             setShowConfirmModal(false);
             setShowPrintModal(true);
         } catch (err) {
@@ -237,8 +225,10 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                             </div>
                             <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Final Confirmation</h3>
                             <p className="text-text-secondary dark:text-gray-400 text-sm leading-relaxed">
-                                Are you sure you want to mark this order as <strong className="text-primary">Fully Confirmed</strong>?
+                                <strong className="text-primary">Have you received the payments?</strong>
                                 <br />
+                                <br />
+                                Confirming this order will mark it as complete and all items as sold.
                                 This action is irreversible.
                             </p>
                         </div>

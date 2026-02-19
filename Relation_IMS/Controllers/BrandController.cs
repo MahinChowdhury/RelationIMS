@@ -82,5 +82,12 @@ namespace Relation_IMS.Controllers
             }
         }
 
+        [HttpGet("category/{categoryId:int}")]
+        public async Task<ActionResult<List<Brand>>> GetBrandsByCategory([FromRoute] int categoryId)
+        {
+            var brands = await _repo.GetBrandsByCategoryIdAsync(categoryId);
+            return Ok(brands);
+        }
+
     }
 }

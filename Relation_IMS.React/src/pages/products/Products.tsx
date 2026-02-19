@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate,Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
@@ -146,7 +146,7 @@ export default function ProductsPage() {
     const loadBrands = async () => {
         try {
             const res = await api.get('/Brand');
-            setBrands(res.data.map((b: any) => ({ Id: b.Id, Name: b.Name })));
+            setBrands(res.data.map((b: any) => ({ Id: b.Id, Name: b.Name, CategoryId: b.CategoryId })));
         } catch (err) { console.error(err); }
     };
 
@@ -325,7 +325,6 @@ export default function ProductsPage() {
 
             setShowCreateModal(false);
             loadProducts(true);
-            alert('Product created! Images are uploading in the background.');
 
         } catch (e) {
             console.error(e);

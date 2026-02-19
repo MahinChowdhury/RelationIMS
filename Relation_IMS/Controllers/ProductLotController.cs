@@ -30,7 +30,10 @@ namespace Relation_IMS.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            // Lock the category to prevent concurrent code generation issues
+            using (await _lockService.AcquireLockAsync($"category:{lotDto.CategoryId}"))
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -159,6 +162,7 @@ namespace Relation_IMS.Controllers
             {
                 await transaction.RollbackAsync();
                 return StatusCode(500, new { Message = "An error occurred while creating the lot.", Error = ex.Message });
+            }
             }
         }
 

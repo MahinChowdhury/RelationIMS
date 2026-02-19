@@ -50,9 +50,13 @@ namespace Relation_IMS.Controllers
 
         [HttpPost]
         public async Task<ActionResult<Order>> CreateNewOrderAsync(CreateOrderDTO orderDto) {
-            var created = await _repo.CreateNewOrderAsync(orderDto);
+            // Lock the customer to prevent concurrent order creation issues
+            using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
+            {
+                var created = await _repo.CreateNewOrderAsync(orderDto);
 
-            return CreatedAtAction(nameof(GetOrderById), new { id = created!.Id }, created);
+                return CreatedAtAction(nameof(GetOrderById), new { id = created!.Id }, created);
+            }
         }
 
         [HttpPut("{id:int}")]

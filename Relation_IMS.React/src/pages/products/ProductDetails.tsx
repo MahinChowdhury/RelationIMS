@@ -240,52 +240,84 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary">
-                                        <span className="material-symbols-outlined text-[20px]">category</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Category</span>
-                                        <span className="text-sm font-bold text-text-main dark:text-white">{productDetail.Category?.Name}</span>
-                                    </div>
+
+                        {/* LEFT SIDE – PRODUCT META */}
+                        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                            {/* Category */}
+                            <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary">
+                                    <span className="material-symbols-outlined text-[20px]">category</span>
                                 </div>
-                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20">
-                                        <span className="material-symbols-outlined text-[20px]">price_check</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">MSRP</span>
-                                        <span className="text-sm font-bold text-text-main dark:text-white">${(productDetail.MSRP || 0).toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-primary/20">
-                                        <span className="material-symbols-outlined text-[20px]">attach_money</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Base Price</span>
-                                        <span className="text-sm font-bold text-red-500 dark:text-white">${productDetail.BasePrice.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-orange-500/20">
-                                        <span className="material-symbols-outlined text-[20px]">inventory</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
-                                        <span className="text-sm font-bold text-blue-500 dark:text-white">${(productDetail.CostPrice || 0).toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                    <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary">
-                                        <span className="material-symbols-outlined text-[20px]">verified</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold uppercase text-text-secondary">Brand</span>
-                                        <span className="text-sm font-bold text-text-main dark:text-white">{productDetail.Brand?.Name}</span>
-                                    </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold uppercase text-text-secondary">Category</span>
+                                    <span className="text-sm font-bold text-text-main dark:text-white">
+                                        {productDetail.Category?.Name}
+                                    </span>
                                 </div>
                             </div>
+
+                            {/* Brand */}
+                            <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary">
+                                    <span className="material-symbols-outlined text-[20px]">verified</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold uppercase text-text-secondary">Brand</span>
+                                    <span className="text-sm font-bold text-text-main dark:text-white">
+                                        {productDetail.Brand?.Name}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* RIGHT SIDE – SINGLE PRICE COLUMN */}
+                        <div className="flex flex-col gap-4">
+
+                            {/* MSRP */}
+                            <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20">
+                                    <span className="material-symbols-outlined text-[20px]">price_check</span>
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold uppercase text-text-secondary">MSRP</span>
+                                    <span className="text-lg font-extrabold text-text-main dark:text-white">
+                                        ${(productDetail.MSRP || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Base Price */}
+                            <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-red-500/20">
+                                    <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold uppercase text-text-secondary">Base Price</span>
+                                    <span className="text-lg font-extrabold text-red-500 dark:text-white">
+                                        ${(productDetail.BasePrice || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Cost Price */}
+                            <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-green-500/20">
+                                    <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
+                                    <span className="text-lg font-extrabold text-blue-500 dark:text-white">
+                                        ${(productDetail.CostPrice || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
                         </div>
                     </div>
 

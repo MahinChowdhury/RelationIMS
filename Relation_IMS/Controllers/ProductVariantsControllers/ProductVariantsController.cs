@@ -41,12 +41,16 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var created = await _repo.CreateProductVariantAsync(variantDTO);
-            if (created == null) { 
-                return BadRequest();
-            }
+            // Lock the product to prevent concurrent variant creation
+            using (await _lockService.AcquireLockAsync($"product:{variantDTO.ProductId}"))
+            {
+                var created = await _repo.CreateProductVariantAsync(variantDTO);
+                if (created == null) { 
+                    return BadRequest();
+                }
 
-            return CreatedAtAction(nameof(GetProductVariantById), new { id = created.Id }, created);
+                return CreatedAtAction(nameof(GetProductVariantById), new { id = created.Id }, created);
+            }
         }
 
         [HttpPut("{id:int}")]

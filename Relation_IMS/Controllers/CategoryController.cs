@@ -19,19 +19,22 @@ namespace Relation_IMS.Controllers
             _lockService = lockService;
         }
 
-        // Create Category
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var created = await _categoryRepository.CreateCategoryAsync(dto);
+            // Lock to prevent concurrent category code generation
+            using (await _lockService.AcquireLockAsync("category:create"))
+            {
+                var created = await _categoryRepository.CreateCategoryAsync(dto);
 
-            if (created == null)
-                return Conflict(new { message = $"Category '{dto.Name}' already exists." });
+                if (created == null)
+                    return Conflict(new { message = $"Category '{dto.Name}' already exists." });
 
-            return CreatedAtAction(nameof(GetCategoryById), new { id = created.Id }, created);
+                return CreatedAtAction(nameof(GetCategoryById), new { id = created.Id }, created);
+            }
         }
 
         // Get All Categories
