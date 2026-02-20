@@ -485,10 +485,8 @@ export default function CreateOrder() {
 
     const handlePrintInvoice = () => {
         if (!createdOrderId) return;
-        // Open details view in new tab with autoPrint
-        window.open(`/orders/${createdOrderId}?view=details&autoPrint=true`, '_blank');
         // Navigate current tab to cycle (default behavior)
-        navigate(`/orders/${createdOrderId}?view=cycle`);
+        navigate(`/orders/${createdOrderId}/invoice`);
     };
 
     const handleNoPrint = () => {

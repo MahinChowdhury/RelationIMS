@@ -329,10 +329,9 @@ export default function OrdersPage() {
                                 title="View Details">
                                 <span className="material-symbols-outlined text-[16px]">visibility</span>
                             </button>
-                            <button className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Edit Order">
-                                <span className="material-symbols-outlined text-[16px]">edit</span>
-                            </button>
-                            <button className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
+                            <button 
+                                onClick={() => navigate(`/orders/${order.Id}/invoice`)}
+                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
                                 <span className="material-symbols-outlined text-[16px]">print</span>
                             </button>
                         </div>

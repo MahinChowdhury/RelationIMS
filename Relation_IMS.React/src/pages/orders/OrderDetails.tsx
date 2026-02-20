@@ -258,14 +258,10 @@ export default function OrderDetailsPage() {
                     <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base">Placed on {formatDate(order.CreatedAt)}</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <button className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
+                    <Link to={`/orders/${order.Id}/invoice`} className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
                         <span className="material-symbols-outlined text-lg">print</span>
                         Print Invoice
-                    </button>
-                    <button className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
-                        <span className="material-symbols-outlined text-lg">download</span>
-                        Download PDF
-                    </button>
+                    </Link>
                     <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
                         <span className="material-symbols-outlined text-lg">edit</span>
                         {order.InternalStatus === OrderInternalStatus.Confirmed ? 'Edit Payment' : 'Edit Order'}

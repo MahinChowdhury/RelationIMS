@@ -31,7 +31,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
     const handlePrintInvoice = () => {
         setShowPrintModal(false);
         // Simple print trigger, ideally this would link to a printable view or PDF generation
-        window.print();
+        navigate(`/orders/${order.Id}/invoice`);
         navigate(0);
     };
 
