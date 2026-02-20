@@ -110,6 +110,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                     </select>
                                     <input
                                         type="number"
+                                        onFocus={(e) => e.target.select()}
                                         value={payment.amount}
                                         onChange={(e) => handlePaymentChange(index, 'amount', Number(e.target.value))}
                                         className="h-10 flex-1 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"

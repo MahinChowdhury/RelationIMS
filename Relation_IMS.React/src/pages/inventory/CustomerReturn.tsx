@@ -451,6 +451,7 @@ export default function CustomerReturn() {
                                     type="number"
                                     min="0"
                                     step="0.01"
+                                    onFocus={(e) => e.target.select()}
                                     value={refundAmount}
                                     onChange={(e) => setRefundAmount(e.target.value)}
                                     readOnly={scannedItems.length > 0} // Make read-only if auto-calculated to prevent confusion, or allow override but it will be reset on list change.

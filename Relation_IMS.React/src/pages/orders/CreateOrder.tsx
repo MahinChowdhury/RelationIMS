@@ -781,6 +781,7 @@ export default function CreateOrder() {
                                                                 <span className="text-gray-400 text-xs">$</span>
                                                                 <input
                                                                     type="number"
+                                                                    onFocus={(e) => e.target.select()}
                                                                     className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none text-sm"
                                                                     value={item.Price}
                                                                     onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
@@ -837,6 +838,7 @@ export default function CreateOrder() {
                                             className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-right text-sm py-1.5 px-2 pl-5 focus:border-primary focus:ring-primary text-red-500 font-medium placeholder-gray-300"
                                             placeholder="0.00"
                                             type="number"
+                                            onFocus={(e) => e.target.select()}
                                             value={discount}
                                             onChange={(e) => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))}
                                         />
@@ -950,6 +952,7 @@ export default function CreateOrder() {
                                     </select>
                                     <input
                                         type="number"
+                                        onFocus={(e) => e.target.select()}
                                         className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm px-3 focus:border-primary focus:ring-primary"
                                         placeholder="Amount"
                                         value={currentAmount}
