@@ -109,6 +109,14 @@ namespace Relation_IMS.Services
                             
                             await productRepo.UpdateProductByIdAsync(product.Id, updateDto);
                              _logger.LogInformation("Updated Product ID {ProductId} with {Count} new images.", task.ProductId, uploadedUrls.Count);
+
+                            // Invalidate product caching so that the product list is refreshed
+                            var redisCacheService = scope.ServiceProvider.GetService<IRedisCacheService>();
+                            if (redisCacheService != null)
+                            {
+                                await redisCacheService.InvalidateCacheByPrefixAsync("product");
+                                _logger.LogInformation("Invalidated 'product' cache prefix for Product ID {ProductId}.", task.ProductId);
+                            }
                         }
                     }
                 }

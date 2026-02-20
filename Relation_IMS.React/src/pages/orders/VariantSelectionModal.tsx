@@ -101,20 +101,22 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
         setStagedItems(prev => {
             const updatedItems = [...prev];
             newItems.forEach(newItem => {
-                const existingIndex = updatedItems.findIndex(existing => existing.variant.Id === newItem.variant.Id);
+                // Only merge if BOTH variant AND price match
+                const existingIndex = updatedItems.findIndex(
+                    existing => existing.variant.Id === newItem.variant.Id && existing.price === newItem.price
+                );
+
                 if (existingIndex >= 0) {
-                    // Update existing item
+                    // Update existing item with same variant and same price
                     const existing = updatedItems[existingIndex];
                     const newQty = existing.quantity + newItem.quantity;
-                    // Optional: Check stock limits again for combined quantity? 
-                    // Ideally yes, but skipping complex double-check for now to keep it simple as per request.
                     updatedItems[existingIndex] = {
                         ...existing,
                         quantity: newQty,
-                        subtotal: newQty * newItem.price // Assuming price is same, or should we use weighted average? User probably assumes same price.
+                        subtotal: newQty * existing.price // Use existing price since they match
                     };
                 } else {
-                    // Add new item
+                    // Add as new item (different variant or different price)
                     updatedItems.push(newItem);
                 }
             });

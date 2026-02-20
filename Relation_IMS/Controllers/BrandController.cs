@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -11,18 +13,22 @@ namespace Relation_IMS.Controllers
     public class BrandController : ControllerBase
     {
         private readonly IBrandRepository _repo;
-        public BrandController(IBrandRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+        public BrandController(IBrandRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
+        [RedisCache("brand")]
         public async Task<ActionResult<List<Brand>>> GetAllBrandsAsync() {
             var brands = await _repo.GetAllBrandsAsync();
 
             return Ok(brands);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("brand")]
         public async Task<ActionResult<Brand?>> GetBrandById([FromRoute] int id) {
             var brand = await _repo.GetBrandByIdAsync(id);
 
@@ -34,19 +40,24 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("brand", "product")]
         public async Task<ActionResult<Brand?>> DeleteBrandByIdAsync([FromRoute] int id)
         {
-            var brand = await _repo.DeleteBrandByIdAsync(id);
-
-            if (brand == null)
+            using (await _lockService.AcquireLockAsync($"brand:{id}"))
             {
-                return NotFound(new { Message = $"Brand with Id : {id} not found" });
-            }
+                var brand = await _repo.DeleteBrandByIdAsync(id);
 
-            return Ok(brand);
+                if (brand == null)
+                {
+                    return NotFound(new { Message = $"Brand with Id : {id} not found" });
+                }
+
+                return Ok(brand);
+            }
         }
 
         [HttpPost]
+        [InvalidateCache("brand", "product")]
         public async Task<ActionResult<Brand>> CreateBrandAsync(CreateBrandDTO brandDTO)
         {
             if (!ModelState.IsValid)
@@ -58,19 +69,31 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("brand", "product")]
         public async Task<ActionResult<Brand>> UpdateBrand([FromRoute] int id, [FromBody] CreateBrandDTO brandDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _repo.UpdateBrandAsync(id, brandDTO);
-
-            if (updated == null)
+            using (await _lockService.AcquireLockAsync($"brand:{id}"))
             {
-                return NotFound(new { Message = $"Brand with Id : {id} not found" });
-            }
+                var updated = await _repo.UpdateBrandAsync(id, brandDTO);
 
-            return Ok(updated);
+                if (updated == null)
+                {
+                    return NotFound(new { Message = $"Brand with Id : {id} not found" });
+                }
+
+                return Ok(updated);
+            }
+        }
+
+        [HttpGet("category/{categoryId:int}")]
+        [RedisCache("brand")]
+        public async Task<ActionResult<List<Brand>>> GetBrandsByCategory([FromRoute] int categoryId)
+        {
+            var brands = await _repo.GetBrandsByCategoryIdAsync(categoryId);
+            return Ok(brands);
         }
 
     }

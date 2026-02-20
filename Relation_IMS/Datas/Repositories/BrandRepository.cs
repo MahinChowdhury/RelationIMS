@@ -63,5 +63,14 @@ namespace Relation_IMS.Datas.Repositories
 
             return brand;
         }
+
+        public async Task<List<Brand>> GetBrandsByCategoryIdAsync(int categoryId)
+        {
+            var brands = await _context.Brands
+                .Where(b => b.CategoryId == categoryId)
+                .ToListAsync();
+
+            return brands;
+        }
     }
 }

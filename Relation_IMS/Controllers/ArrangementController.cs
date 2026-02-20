@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Entities;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Controllers
@@ -13,21 +15,29 @@ namespace Relation_IMS.Controllers
     public class ArrangementController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConcurrencyLockService _lockService;
 
-        public ArrangementController(ApplicationDbContext context)
+        public ArrangementController(ApplicationDbContext context, IConcurrencyLockService lockService)
         {
             _context = context;
+            _lockService = lockService;
         }
 
         [HttpGet("orders")]
+        [RedisCache("arrangement")]
         public async Task<IActionResult> GetPendingArrangementOrders()
         {
             // Show only orders where InternalStatus != Confirmed
-            // Removed deep includes (Product, Variant, Color, Size) as they are not needed for the list view
-            // and cause Object Cycles / Performance issues.
             var orders = await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv.Size)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(pv => pv.Color)
                 .Where(o => o.InternalStatus != OrderInternalStatus.Confirmed)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
@@ -36,9 +46,13 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("scan")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory")]
         public async Task<IActionResult> ScanItemForArrangement([FromBody] ArrangementScanRequestDTO request)
         {
-            var order = await _context.Orders.FindAsync(request.OrderId);
+            // Lock the order to prevent concurrent scans
+            using (await _lockService.AcquireLockAsync($"order:{request.OrderId}"))
+            {
+                var order = await _context.Orders.FindAsync(request.OrderId);
             if (order == null) return NotFound("Order not found");
 
             if (order.InternalStatus == OrderInternalStatus.Confirmed)
@@ -47,17 +61,12 @@ namespace Relation_IMS.Controllers
             // Find the item by barcode
             var productItem = await _context.ProductItems
                 .Include(pi => pi.ProductVariant)
-                    .ThenInclude(pv => pv!.Product)
+                    .ThenInclude(pv => pv.Product)
                 .FirstOrDefaultAsync(pi => pi.Code == request.Barcode);
 
             if (productItem == null)
             {
                 return NotFound($"Item with barcode '{request.Barcode}' not found.");
-            }
-
-            if (productItem.ProductVariant == null)
-            {
-                 return BadRequest($"Item '{request.Barcode}' is missing variant data.");
             }
 
             if (productItem.IsSold || productItem.IsDefected)
@@ -120,25 +129,27 @@ namespace Relation_IMS.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                Message = "Item verified and reserved.",
-                OrderItemId = matchingOrderItem.Id,
-                ArrangedQuantity = matchingOrderItem.ArrangedQuantity,
-                RequiredQuantity = matchingOrderItem.Quantity
-            });
+                return Ok(new
+                {
+                    Message = "Item verified and reserved.",
+                    OrderItemId = matchingOrderItem.Id,
+                    ArrangedQuantity = matchingOrderItem.ArrangedQuantity,
+                    RequiredQuantity = matchingOrderItem.Quantity
+                });
+            }
         }
 
         [HttpPost("confirm/{orderId}")]
+        [InvalidateCache("arrangement", "order", "orderitem")]
         public async Task<IActionResult> ConfirmArrangement(int orderId)
         {
-            var order = await _context.Orders
+            using (await _lockService.AcquireLockAsync($"order:{orderId}"))
+            {
+                var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null) return NotFound("Order not found");
-
-            if (order.OrderItems == null) return BadRequest("Order items are missing.");
 
             // Check if all items are fully arranged
             bool allArranged = order.OrderItems.All(oi => oi.ArrangedQuantity >= oi.Quantity);
@@ -147,6 +158,52 @@ namespace Relation_IMS.Controllers
             if (!allArranged)
             {
                 return BadRequest("Cannot confirm arrangement. Not all items are fully arranged.");
+            }
+
+            // Set status to Arranged (not Confirmed yet)
+            // Items will be marked as sold only when order is finally confirmed with payment
+            order.InternalStatus = OrderInternalStatus.Arranged;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Order arrangement completed. Ready for final confirmation.", InternalStatus = order.InternalStatus });
+            }
+        }
+
+        [HttpGet("items/{orderId}")]
+        [RedisCache("arrangement")]
+        public async Task<IActionResult> GetArrangedItems(int orderId)
+        {
+            var items = await _context.ProductItems
+                .Include(pi => pi.ProductVariant)
+                .Where(pi => pi.OrderItemId != null && pi.OrderItem!.OrderId == orderId)
+                .Select(pi => new
+                {
+                    pi.Code,
+                    ProductName = pi.ProductVariant!.Product!.Name,
+                    Variant = pi.ProductVariant,
+                    pi.IsSold
+                })
+                .ToListAsync();
+
+            return Ok(items);
+        }
+
+        [HttpPost("finalize/{orderId}")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory")]
+        public async Task<IActionResult> FinalizeOrder(int orderId)
+        {
+            using (await _lockService.AcquireLockAsync($"order:{orderId}"))
+            {
+                var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null) return NotFound("Order not found");
+
+            if (order.InternalStatus != OrderInternalStatus.Arranged)
+            {
+                return BadRequest("Order must be in 'Arranged' status to finalize. Current status: " + order.InternalStatus);
             }
 
             // Mark all reserved items as Sold
@@ -160,43 +217,13 @@ namespace Relation_IMS.Controllers
                 item.IsSold = true;
             }
 
-            order.InternalStatus = OrderInternalStatus.Arranged;  
-            // NOTE: Status flow might be Created -> Arranging -> Arranged -> Confirmed (Payment/Delivery?)
-            // If "Confirm Arrangement" means moving to "Arranged", then this is correct.
+            // Set final status to Confirmed
+            order.InternalStatus = OrderInternalStatus.Confirmed;
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-            return Ok(new { Message = "Order arrangement confirmed. Items marked as sold.", InternalStatus = order.InternalStatus });
-        }
-
-        [HttpGet("items/{orderId}")]
-        public async Task<IActionResult> GetArrangedItems(int orderId)
-        {
-            // Get IDs of items returned for this order
-            var returnedItemIds = await _context.CustomerReturnItems
-                .Where(cri => cri.CustomerReturnRecord!.OrderId == orderId)
-                .Select(cri => cri.ProductItemId)
-                .ToListAsync();
-
-            var items = await _context.ProductItems
-                .Include(pi => pi.ProductVariant)
-                    .ThenInclude(pv => pv!.Product)
-                .Include(pi => pi.ProductVariant)
-                    .ThenInclude(pv => pv!.Color)
-                .Include(pi => pi.ProductVariant)
-                    .ThenInclude(pv => pv!.Size)
-                .Where(pi => (pi.OrderItemId != null && pi.OrderItem!.OrderId == orderId) || returnedItemIds.Contains(pi.Id))
-                .Select(pi => new
-                {
-                    pi.Code,
-                    ProductName = pi.ProductVariant!.Product!.Name,
-                    Variant = pi.ProductVariant,
-                    pi.IsSold,
-                    IsReturned = returnedItemIds.Contains(pi.Id)
-                })
-                .ToListAsync();
-
-            return Ok(items);
+                return Ok(new { Message = "Order finalized successfully. All items marked as sold.", InternalStatus = order.InternalStatus });
+            }
         }
     }
 

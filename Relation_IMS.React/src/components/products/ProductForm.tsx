@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { StockItem, Product } from '../../types';
 
 interface ProductFormProps {
@@ -41,6 +41,24 @@ export function ProductForm({
     getColorHex, isLotMode = false
 }: ProductFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Filter brands by selected category
+    const [filteredBrands, setFilteredBrands] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (product.CategoryId && product.CategoryId !== 0) {
+            const filtered = brands.filter(b => Number(b.CategoryId) === Number(product.CategoryId));
+            setFilteredBrands(filtered);
+
+            // Reset brand selection if current brand doesn't match category
+            if (product.BrandId && !filtered.some(b => b.Id === product.BrandId)) {
+                onChange('BrandId', 0);
+            }
+        } else {
+            setFilteredBrands(brands);
+        }
+    }, [product.CategoryId, brands]);
+
 
     return (
         <div className="flex flex-col gap-6">
@@ -104,9 +122,9 @@ export function ProductForm({
                         <select
                             value={product.CategoryId}
                             onChange={(e) => {
-                                const val = e.target.value;
+                                const val = Number(e.target.value);
                                 onChange('CategoryId', val);
-                                onCategoryChange(Number(val));
+                                onCategoryChange(val);
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                         >
@@ -121,9 +139,10 @@ export function ProductForm({
                             value={product.BrandId}
                             onChange={(e) => onChange('BrandId', e.target.value)}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
+                            disabled={!product.CategoryId || product.CategoryId === 0}
                         >
-                            <option value={0}>Select Brand</option>
-                            {brands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
+                            <option value={0}>{!product.CategoryId || product.CategoryId === 0 ? 'Select Category First' : 'Select Brand'}</option>
+                            {filteredBrands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
                         </select>
                     </div>
 
@@ -149,7 +168,7 @@ export function ProductForm({
                             placeholder="0.00"
                         />
                     </div>
-                    
+
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">MSRP ($)</label>
                         <input

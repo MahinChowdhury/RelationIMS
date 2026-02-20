@@ -245,7 +245,7 @@ export default function StockIn() {
                 api.get('/ProductVariantColors')
             ]);
             setCategories(catRes.data.map((c: any) => ({ id: c.Id, name: c.Name })));
-            setBrands(brandRes.data.map((b: any) => ({ Id: b.Id, Name: b.Name })));
+            setBrands(brandRes.data.map((b: any) => ({ Id: b.Id, Name: b.Name, CategoryId: b.CategoryId })));
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
         } catch (err) { console.error(err); }
     };

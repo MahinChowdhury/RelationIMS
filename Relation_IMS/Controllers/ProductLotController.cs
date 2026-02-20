@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Entities;
 using Relation_IMS.Dtos.ProductModels;
+using Relation_IMS.Filters;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Models.InventoryModels;
@@ -15,20 +16,26 @@ namespace Relation_IMS.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ProductCodeGenerator _codeGenerator;
+        private readonly IConcurrencyLockService _lockService;
 
-        public ProductLotController(ApplicationDbContext context, ProductCodeGenerator codeGenerator)
+        public ProductLotController(ApplicationDbContext context, ProductCodeGenerator codeGenerator, IConcurrencyLockService lockService)
         {
             _context = context;
             _codeGenerator = codeGenerator;
+            _lockService = lockService;
         }
 
         [HttpPost]
+        [InvalidateCache("product", "productvariant", "productitem", "inventory")]
         public async Task<IActionResult> CreateProductLot([FromForm] CreateProductLotDto lotDto, [FromServices] System.Threading.Channels.Channel<Relation_IMS.Services.ProductImageUploadTask> channel)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            // Lock the category to prevent concurrent code generation issues
+            using (await _lockService.AcquireLockAsync($"category:{lotDto.CategoryId}"))
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -158,58 +165,63 @@ namespace Relation_IMS.Controllers
                 await transaction.RollbackAsync();
                 return StatusCode(500, new { Message = "An error occurred while creating the lot.", Error = ex.Message });
             }
+            }
         }
 
         [HttpPost("existing")]
+        [InvalidateCache("product", "productvariant", "productitem", "inventory")]
         public async Task<IActionResult> CreateLotForExistingProduct([FromBody] CreateExistingProductLotDto lotDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            using (await _lockService.AcquireLockAsync($"product:{lotDto.ProductId}"))
             {
-                var product = await _context.Products.FindAsync(lotDto.ProductId);
-                if (product == null) return NotFound("Product not found");
-
-                // Ensure Product has a code (migration support)
-                if (string.IsNullOrEmpty(product.Code))
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var category = await _context.Categories.FindAsync(product.CategoryId);
-                    if (category == null)
-                        return BadRequest(new { Message = "Category not found" });
-                    
-                    if (string.IsNullOrEmpty(category.Code))
+                    var product = await _context.Products.FindAsync(lotDto.ProductId);
+                    if (product == null) return NotFound("Product not found");
+
+                    // Ensure Product has a code (migration support)
+                    if (string.IsNullOrEmpty(product.Code))
                     {
-                        category.Code = _codeGenerator.GenerateCategoryCode(category.Name);
+                        var category = await _context.Categories.FindAsync(product.CategoryId);
+                        if (category == null)
+                            return BadRequest(new { Message = "Category not found" });
+                        
+                        if (string.IsNullOrEmpty(category.Code))
+                        {
+                            category.Code = _codeGenerator.GenerateCategoryCode(category.Name);
+                        }
+                        
+                        product.Code = _codeGenerator.GenerateProductCode(category.Code, product.Id);
                     }
+
+                    var lot = new ProductLot
+                    {
+                        ProductId = product.Id,
+                        LotQuantity = lotDto.LotQuantity,
+                        Description = lotDto.Description ?? $"Partial Lot for {product.Name}",
+                        CreatedDate = DateTime.UtcNow
+                    };
+
+                    _context.Set<ProductLot>().Add(lot);
+                    await _context.SaveChangesAsync();
+
+                    // Generate lot code: {LotId:D4}
+                    lot.Code = _codeGenerator.GenerateLotCode(lot.Id);
                     
-                    product.Code = _codeGenerator.GenerateProductCode(category.Code, product.Id);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Ok(new { LotId = lot.Id, LotCode = lot.Code });
                 }
-
-                var lot = new ProductLot
+                 catch (Exception ex)
                 {
-                    ProductId = product.Id,
-                    LotQuantity = lotDto.LotQuantity,
-                    Description = lotDto.Description ?? $"Partial Lot for {product.Name}",
-                    CreatedDate = DateTime.UtcNow
-                };
-
-                _context.Set<ProductLot>().Add(lot);
-                await _context.SaveChangesAsync();
-
-                // Generate lot code: {LotId:D4}
-                lot.Code = _codeGenerator.GenerateLotCode(lot.Id);
-                
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(new { LotId = lot.Id, LotCode = lot.Code });
-            }
-             catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, new { Message = "An error occurred.", Error = ex.Message });
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new { Message = "An error occurred.", Error = ex.Message });
+                }
             }
         }
     }

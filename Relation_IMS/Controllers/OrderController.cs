@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -10,17 +12,22 @@ namespace Relation_IMS.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderRepository _repo;
-        public OrderController(IOrderRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+
+        public OrderController(IOrderRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
+        [RedisCache("order")]
         public async Task<ActionResult<List<Order>>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
             var orders = await _repo.GetAllOrdersAsync(search,  sortBy,pageNumber = 1, pageSize = 20);
             return Ok(orders);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("order")]
         public async Task<ActionResult<Order>> GetOrderById([FromRoute] int id) {
             var order = await _repo.GetOrderByIdAsync(id);
             if (order == null) {
@@ -30,32 +37,46 @@ namespace Relation_IMS.Controllers
             return Ok(order);
         }
         [HttpDelete("{id:int}")]
+        [InvalidateCache("order", "orderitem")]
         public async Task<ActionResult<Order>> DeleteOrderByIdAsync([FromRoute] int id)
         {
-            var order = await _repo.DeleteOrderByIdAsync(id);
-            if (order == null)
+            using (await _lockService.AcquireLockAsync($"order:{id}"))
             {
-                return NotFound(new { message = $"Orders with id : {id} not found." });
-            }
+                var order = await _repo.DeleteOrderByIdAsync(id);
+                if (order == null)
+                {
+                    return NotFound(new { message = $"Orders with id : {id} not found." });
+                }
 
-            return Ok(order);
+                return Ok(order);
+            }
         }
 
         [HttpPost]
+        [InvalidateCache("order", "orderitem")]
         public async Task<ActionResult<Order>> CreateNewOrderAsync(CreateOrderDTO orderDto) {
-            var created = await _repo.CreateNewOrderAsync(orderDto);
+            // Lock the customer to prevent concurrent order creation issues
+            using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
+            {
+                var created = await _repo.CreateNewOrderAsync(orderDto);
 
-            return CreatedAtAction(nameof(GetOrderById), new { id = created!.Id }, created);
+                return CreatedAtAction(nameof(GetOrderById), new { id = created!.Id }, created);
+            }
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("order", "orderitem")]
         public async Task<ActionResult<Order>> UpdateOrderByIdAsync([FromRoute] int id, UpdateOrderDTO updateDto) {
-            var updated = await _repo.UpdateOrderByIdAsync(id, updateDto);
+            using (await _lockService.AcquireLockAsync($"order:{id}"))
+            {
+                var updated = await _repo.UpdateOrderByIdAsync(id, updateDto);
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
         [HttpGet("{id:int}/items")]
+        [RedisCache("order")]
         public async Task<ActionResult<List<OrderItem>>> GetItemsByOrderId([FromRoute] int id)
         {
             var items = await _repo.GetItemsByOrderIdAsync(id);
@@ -63,6 +84,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("customer/{customerId:int}")]
+        [RedisCache("order")]
         public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId)
         {
             var orders = await _repo.GetOrderByCustomerIdAsync(customerId);

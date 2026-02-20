@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -10,12 +12,16 @@ namespace Relation_IMS.Controllers
     public class ProductItemController : ControllerBase
     {
         private readonly IProductItemRepository _repo;
-        public ProductItemController(IProductItemRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+
+        public ProductItemController(IProductItemRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
+        [RedisCache("productitem")]
         public async Task<ActionResult<List<ProductItem>>> GetAllProductItems()
         {
             var items = await _repo.GetAllProductItemsAsync();
@@ -23,6 +29,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("defects")]
+        [RedisCache("productitem")]
         public async Task<ActionResult<List<DefectItemResDTO>>> GetAllDefectedProductItems()
         {
             var items = await _repo.GetAllDefectedProductItemsAsync();
@@ -30,6 +37,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [RedisCache("productitem")]
         public async Task<ActionResult<ProductItem?>> GetProductItemById([FromRoute] int id)
         {
             var item = await _repo.GetProductItemByIdAsync(id);
@@ -39,6 +47,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("code/{code}")]
+        [RedisCache("productitem")]
         public async Task<ActionResult<ProductItemResponseDTO?>> GetProductItemByCode([FromRoute] string code)
         {
             var item = await _repo.GetProductItemByCodeAsync(code);
@@ -48,29 +57,42 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("productitem", "product", "inventory")]
         public async Task<ActionResult<ProductItem>> CreateNewProductItem(CreateProductItemDTO itemDto)
         {
-            var created = await _repo.CreateProductItemAsync(itemDto);
+            // Lock the variant to prevent concurrent item creation
+            using (await _lockService.AcquireLockAsync($"productvariant:{itemDto.ProductVariantId}"))
+            {
+                var created = await _repo.CreateProductItemAsync(itemDto);
 
-            return CreatedAtAction(nameof(GetProductItemById), new { id = created.Id }, created);
+                return CreatedAtAction(nameof(GetProductItemById), new { id = created.Id }, created);
+            }
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("productitem", "product", "inventory")]
         public async Task<ActionResult<ProductItem?>> UpdateProductItem([FromRoute] int id, CreateProductItemDTO itemDto)
         {
-            var updated = await _repo.UpdateProductItemAsync(id, itemDto);
-            if (updated == null) return NotFound(new { message = $"ProductItem with id {id} not found." });
+            using (await _lockService.AcquireLockAsync($"productitem:{id}"))
+            {
+                var updated = await _repo.UpdateProductItemAsync(id, itemDto);
+                if (updated == null) return NotFound(new { message = $"ProductItem with id {id} not found." });
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("productitem", "product", "inventory")]
         public async Task<ActionResult<ProductItem?>> DeleteProductItem([FromRoute] int id)
         {
-            var deleted = await _repo.DeleteProductItemAsync(id);
-            if (deleted == null) return NotFound(new { message = $"ProductItem with id {id} not found." });
+            using (await _lockService.AcquireLockAsync($"productitem:{id}"))
+            {
+                var deleted = await _repo.DeleteProductItemAsync(id);
+                if (deleted == null) return NotFound(new { message = $"ProductItem with id {id} not found." });
 
-            return Ok(deleted);
+                return Ok(deleted);
+            }
         }
 
         //[HttpPost("{id:int}/defect")]
@@ -82,6 +104,7 @@ namespace Relation_IMS.Controllers
         //}
 
         [HttpPost("{code}/defect")]
+        [InvalidateCache("productitem", "product", "inventory")]
         public async Task<ActionResult<DefectItemResDTO?>> DefectProductItemByCode([FromRoute] string code, [FromBody] DefectRequestDTO defectDto)
         {
             // Extract user ID from claims
@@ -91,11 +114,14 @@ namespace Relation_IMS.Controllers
             {
                 userId = parsedId;
             }
+            
+            using (await _lockService.AcquireLockAsync($"productitem:{code}"))
+            {
+                var defect = await _repo.DefectProductItemByCodeAsync(code, defectDto, userId);
+                if (defect == null) return NotFound(new { message = $"productItem not found with code : {code}" });
 
-            var defect = await _repo.DefectProductItemByCodeAsync(code, defectDto, userId);
-            if (defect == null) return NotFound(new { message = $"productItem not found with code : {code}" });
-
-            return Ok(defect);
+                return Ok(defect);
+            }
         }
     }
 }

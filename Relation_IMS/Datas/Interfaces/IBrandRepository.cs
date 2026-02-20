@@ -11,5 +11,6 @@ namespace Relation_IMS.Datas.Interfaces
         Task<Brand?> DeleteBrandByIdAsync(int id);
         Task<Brand> CreateBrandAsync(CreateBrandDTO brandDTO);
         Task<Brand?> UpdateBrandAsync(int id, CreateBrandDTO brandDTO);
+        Task<List<Brand>> GetBrandsByCategoryIdAsync(int categoryId);
     }
 }

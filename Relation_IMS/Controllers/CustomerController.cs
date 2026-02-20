@@ -4,8 +4,10 @@ using Microsoft.OpenApi.Validations;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.CustomerDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
 {
@@ -14,18 +16,22 @@ namespace Relation_IMS.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerRepository _repo;
-        public CustomerController(ICustomerRepository repo)
+        private readonly IConcurrencyLockService _lockService;
+        public CustomerController(ICustomerRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
+            _lockService = lockService;
         }
 
         [HttpGet]
+        [RedisCache("customer")]
         public async Task<ActionResult<List<Customer>>> GetAllCustomersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
             var customers = await _repo.GetAllCustomersAsync(search, sortBy, pageNumber, pageSize);
 
             return Ok(customers);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("customer")]
         public async Task<ActionResult<Customer?>> GetCustomerById([FromRoute] int id)
         {
             var customer = await _repo.GetCustomerByIdAsync(id);
@@ -35,17 +41,22 @@ namespace Relation_IMS.Controllers
             return Ok(customer);
         }
         [HttpDelete("{id:int}")]
+        [InvalidateCache("customer", "order")]
         public async Task<ActionResult<Customer?>> DeleteCustomerByIdAsync([FromRoute] int id)
         {
-            var customer = await _repo.DeleteCustomerByIdAsync(id);
-            if (customer == null)
+            using (await _lockService.AcquireLockAsync($"customer:{id}"))
             {
-                return NotFound(new { message = $"Customer with id : {id} not found." });
+                var customer = await _repo.DeleteCustomerByIdAsync(id);
+                if (customer == null)
+                {
+                    return NotFound(new { message = $"Customer with id : {id} not found." });
+                }
+                return Ok(customer);
             }
-            return Ok(customer);
         }
 
         [HttpPost]
+        [InvalidateCache("customer")]
         public async Task<ActionResult<Customer>> CreateNewCustomerAsync(CreateCustomerDTO customerDto)
         {
             if (!ModelState.IsValid)
@@ -60,12 +71,17 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("customer", "order")]
         public async Task<ActionResult<Customer>> UpdateCustomerAsync(int id,UpdateCustomerDTO updateDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var updated = await _repo.UpdateCustomerByIdAsync(id,updateDto);
+            
+            using (await _lockService.AcquireLockAsync($"customer:{id}"))
+            {
+                var updated = await _repo.UpdateCustomerByIdAsync(id,updateDto);
 
-            return Ok(updated);
+                return Ok(updated);
+            }
         }
 
     }
