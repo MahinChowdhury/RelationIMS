@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
 
@@ -20,6 +21,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpPost]
+        [InvalidateCache("productvariantcolor", "productvariant")]
         public async Task<IActionResult> AddColorForProductAsync([FromBody] CreateNewProductColorDTO productColor)
         {
             if (!ModelState.IsValid)
@@ -33,6 +35,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             return CreatedAtAction(nameof(GetProductColorById), new { id = created.Id }, created);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("productvariantcolor")]
         public async Task<ActionResult<ProductColor>> GetProductColorById([FromRoute] int id)
         {
             var productColor = await _repo.GetProductColorByIdAsync(id);
@@ -45,6 +48,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpGet]
+        [RedisCache("productvariantcolor")]
         public async Task<ActionResult<List<ProductSize>>> GetAllProductColorAsync()
         {
             var colors = await _repo.GetAllProductColorAsync();
@@ -52,6 +56,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             return Ok(colors);
         }
         [HttpDelete("{id:int}")]
+        [InvalidateCache("productvariantcolor", "productvariant")]
         public async Task<ActionResult<ProductColor?>> DeleteProductColorById([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"color:{id}"))
@@ -67,6 +72,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("productvariantcolor", "productvariant")]
         public async Task<ActionResult<ProductColor>> UpdateProductColor([FromRoute] int id, [FromBody] CreateNewProductColorDTO colorDTO)
         {
             if (!ModelState.IsValid)

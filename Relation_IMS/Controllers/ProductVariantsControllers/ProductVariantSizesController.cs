@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
 
@@ -20,6 +21,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
         //For Product Size and Color
         [HttpPost]
+        [InvalidateCache("productvariantsize", "productvariant")]
         public async Task<IActionResult> AddSizeForProductAsync([FromBody] CreateNewProductSizeDTO productSize)
         {
             if (!ModelState.IsValid)
@@ -33,6 +35,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             return CreatedAtAction(nameof(GetProductSizeById), new { id = created.Id }, created);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("productvariantsize")]
         public async Task<ActionResult<ProductSize>> GetProductSizeById([FromRoute] int id)
         {
             var productSize = await _repo.GetProductSizeByIdAsync(id);
@@ -45,6 +48,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpGet("category/{categoryId}")]
+        [RedisCache("productvariantsize")]
         public async Task<ActionResult<List<ProductSize>>> GetAllProductSizeByNameAsync([FromRoute] int categoryId)
         {
             var sizes = await _repo.GetAllProductSizeByCategoryIdAsync(categoryId);
@@ -53,6 +57,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("productvariantsize", "productvariant")]
         public async Task<ActionResult<ProductSize?>> DeleteProductSizeByIdAsync([FromRoute] int id) {
             using (await _lockService.AcquireLockAsync($"size:{id}"))
             {
@@ -66,6 +71,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpGet]
+        [RedisCache("productvariantsize")]
         public async Task<ActionResult<List<ProductSize>>> GetAllSizesAsync()
         {
             var sizes = await _repo.GetAllSizesAsync();
@@ -74,6 +80,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("productvariantsize", "productvariant")]
         public async Task<ActionResult<ProductSize>> UpdateProductSize([FromRoute] int id, [FromBody] CreateNewProductSizeDTO sizeDTO)
         {
             if (!ModelState.IsValid)

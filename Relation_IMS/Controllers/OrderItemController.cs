@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Services;
 
@@ -19,6 +20,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [RedisCache("orderitem")]
         public async Task<ActionResult<OrderItem>> GetOrderItemById([FromRoute] int id) {
             var orderItem = await _repo.GetOrderItemsByIdAsync(id);
 
@@ -29,6 +31,7 @@ namespace Relation_IMS.Controllers
             return Ok(orderItem);
         }
         [HttpDelete("{id:int}")]
+        [InvalidateCache("orderitem", "order")]
         public async Task<ActionResult<OrderItem>> DeleteOrderItemsById([FromRoute] int id)
         {
             // Fetch first to get OrderId
@@ -53,6 +56,7 @@ namespace Relation_IMS.Controllers
             }
         }
         [HttpPost]
+        [InvalidateCache("orderitem", "order")]
         public async Task<ActionResult<OrderItem>> CreateNewOrderItem(CreateOrderItemDTO orderItemDto) {
             using (await _lockService.AcquireLockAsync($"order:{orderItemDto.OrderId}"))
             {
@@ -62,6 +66,7 @@ namespace Relation_IMS.Controllers
             }
         }
         [HttpPut("{id:int}")]
+        [InvalidateCache("orderitem", "order")]
         public async Task<ActionResult<OrderItem>> UpdateOrderItemById([FromRoute] int id, UpdateOrderItemDTO updateDto) {
              // Fetch first to get OrderId
             var item = await _repo.GetOrderItemsByIdAsync(id);

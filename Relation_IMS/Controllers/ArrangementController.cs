@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Entities;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Controllers
@@ -22,6 +24,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("orders")]
+        [RedisCache("arrangement")]
         public async Task<IActionResult> GetPendingArrangementOrders()
         {
             // Show only orders where InternalStatus != Confirmed
@@ -43,6 +46,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("scan")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory")]
         public async Task<IActionResult> ScanItemForArrangement([FromBody] ArrangementScanRequestDTO request)
         {
             // Lock the order to prevent concurrent scans
@@ -136,6 +140,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("confirm/{orderId}")]
+        [InvalidateCache("arrangement", "order", "orderitem")]
         public async Task<IActionResult> ConfirmArrangement(int orderId)
         {
             using (await _lockService.AcquireLockAsync($"order:{orderId}"))
@@ -166,6 +171,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("items/{orderId}")]
+        [RedisCache("arrangement")]
         public async Task<IActionResult> GetArrangedItems(int orderId)
         {
             var items = await _context.ProductItems
@@ -184,6 +190,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("finalize/{orderId}")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory")]
         public async Task<IActionResult> FinalizeOrder(int orderId)
         {
             using (await _lockService.AcquireLockAsync($"order:{orderId}"))

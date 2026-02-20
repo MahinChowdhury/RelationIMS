@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Validations;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.CustomerDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
@@ -23,12 +24,14 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
+        [RedisCache("customer")]
         public async Task<ActionResult<List<Customer>>> GetAllCustomersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
             var customers = await _repo.GetAllCustomersAsync(search, sortBy, pageNumber, pageSize);
 
             return Ok(customers);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("customer")]
         public async Task<ActionResult<Customer?>> GetCustomerById([FromRoute] int id)
         {
             var customer = await _repo.GetCustomerByIdAsync(id);
@@ -38,6 +41,7 @@ namespace Relation_IMS.Controllers
             return Ok(customer);
         }
         [HttpDelete("{id:int}")]
+        [InvalidateCache("customer", "order")]
         public async Task<ActionResult<Customer?>> DeleteCustomerByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"customer:{id}"))
@@ -52,6 +56,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("customer")]
         public async Task<ActionResult<Customer>> CreateNewCustomerAsync(CreateCustomerDTO customerDto)
         {
             if (!ModelState.IsValid)
@@ -66,6 +71,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("customer", "order")]
         public async Task<ActionResult<Customer>> UpdateCustomerAsync(int id,UpdateCustomerDTO updateDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

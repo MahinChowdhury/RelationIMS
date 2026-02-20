@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
@@ -21,6 +22,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
+        [RedisCache("product")]
         public async Task<ActionResult<List<Product>>> GetAllProductsAsync(string? search,string? sortBy,string? stockOrder, int brandId = -1, int categoryId = -1 ,int pageNumber = 1, int pageSize = 20) {
             var products = await _repo.GetAllProductsAsync(search,sortBy, stockOrder, brandId, categoryId, pageNumber, pageSize);
 
@@ -28,6 +30,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [RedisCache("product")]
         public async Task<ActionResult<Product>> GetProductById([FromRoute] int id) {
             var product = await _repo.GetProductByIdAsync(id);
             if (product == null) {
@@ -38,6 +41,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("product", "productvariant", "productitem")]
         public async Task<IActionResult> DeleteProductByIdAsync([FromRoute] int id) {
             using (await _lockService.AcquireLockAsync($"product:{id}"))
             {
@@ -51,6 +55,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("product", "productvariant", "productitem")]
         public async Task<IActionResult> CreateProductAsync([FromForm] CreateProductFormDTO productFormDto, [FromServices] System.Threading.Channels.Channel<Relation_IMS.Services.ProductImageUploadTask> channel)
         {
             if (!ModelState.IsValid)
@@ -115,6 +120,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("product", "productvariant", "productitem")]
         public async Task<IActionResult> UpdateProductByIdAsync([FromRoute] int id, [FromBody] UpdateProductDTO updateDto) {
 
             if (!ModelState.IsValid)

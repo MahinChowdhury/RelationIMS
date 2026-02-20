@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Entities;
 using Relation_IMS.Dtos.ProductModels;
+using Relation_IMS.Filters;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Models.InventoryModels;
@@ -25,6 +26,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("product", "productvariant", "productitem", "inventory")]
         public async Task<IActionResult> CreateProductLot([FromForm] CreateProductLotDto lotDto, [FromServices] System.Threading.Channels.Channel<Relation_IMS.Services.ProductImageUploadTask> channel)
         {
             if (!ModelState.IsValid)
@@ -167,6 +169,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("existing")]
+        [InvalidateCache("product", "productvariant", "productitem", "inventory")]
         public async Task<IActionResult> CreateLotForExistingProduct([FromBody] CreateExistingProductLotDto lotDto)
         {
             if (!ModelState.IsValid)

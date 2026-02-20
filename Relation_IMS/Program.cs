@@ -45,6 +45,16 @@ builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 
 builder.Services.AddMemoryCache();
 
+// Redis Distributed Cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "RelationIMS:";
+});
+builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp =>
+    StackExchange.Redis.ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
+builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+
 builder.Services.AddSingleton<IClientCacheService, ClientCacheService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();

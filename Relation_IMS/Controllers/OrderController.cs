@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Services;
 
@@ -20,11 +21,13 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
+        [RedisCache("order")]
         public async Task<ActionResult<List<Order>>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
             var orders = await _repo.GetAllOrdersAsync(search,  sortBy,pageNumber = 1, pageSize = 20);
             return Ok(orders);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("order")]
         public async Task<ActionResult<Order>> GetOrderById([FromRoute] int id) {
             var order = await _repo.GetOrderByIdAsync(id);
             if (order == null) {
@@ -34,6 +37,7 @@ namespace Relation_IMS.Controllers
             return Ok(order);
         }
         [HttpDelete("{id:int}")]
+        [InvalidateCache("order", "orderitem")]
         public async Task<ActionResult<Order>> DeleteOrderByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
@@ -49,6 +53,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("order", "orderitem")]
         public async Task<ActionResult<Order>> CreateNewOrderAsync(CreateOrderDTO orderDto) {
             // Lock the customer to prevent concurrent order creation issues
             using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
@@ -60,6 +65,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("order", "orderitem")]
         public async Task<ActionResult<Order>> UpdateOrderByIdAsync([FromRoute] int id, UpdateOrderDTO updateDto) {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
             {
@@ -70,6 +76,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("{id:int}/items")]
+        [RedisCache("order")]
         public async Task<ActionResult<List<OrderItem>>> GetItemsByOrderId([FromRoute] int id)
         {
             var items = await _repo.GetItemsByOrderIdAsync(id);
@@ -77,6 +84,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("customer/{customerId:int}")]
+        [RedisCache("order")]
         public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId)
         {
             var orders = await _repo.GetOrderByCustomerIdAsync(customerId);

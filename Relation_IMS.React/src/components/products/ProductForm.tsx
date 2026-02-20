@@ -47,7 +47,7 @@ export function ProductForm({
 
     useEffect(() => {
         if (product.CategoryId && product.CategoryId !== 0) {
-            const filtered = brands.filter(b => b.CategoryId === product.CategoryId);
+            const filtered = brands.filter(b => Number(b.CategoryId) === Number(product.CategoryId));
             setFilteredBrands(filtered);
 
             // Reset brand selection if current brand doesn't match category
@@ -122,9 +122,9 @@ export function ProductForm({
                         <select
                             value={product.CategoryId}
                             onChange={(e) => {
-                                const val = e.target.value;
+                                const val = Number(e.target.value);
                                 onChange('CategoryId', val);
-                                onCategoryChange(Number(val));
+                                onCategoryChange(val);
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                         >

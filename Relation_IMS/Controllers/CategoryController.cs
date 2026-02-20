@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.CategoryDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
 
@@ -20,6 +21,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("category", "brand", "product")]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDTO dto)
         {
             if (!ModelState.IsValid)
@@ -39,6 +41,7 @@ namespace Relation_IMS.Controllers
 
         // Get All Categories
         [HttpGet]
+        [RedisCache("category")]
         public async Task<ActionResult<List<Category>>> GetAllCategories()
         {
             var categories = await _categoryRepository.GetAllCategoryAsync();
@@ -51,6 +54,7 @@ namespace Relation_IMS.Controllers
 
         // Get Category by ID
         [HttpGet("{id:int}")]
+        [RedisCache("category")]
         public async Task<ActionResult<Category>> GetCategoryById([FromRoute] int id)
         {
             var category = await _categoryRepository.GetCategoryByIdAsync(id);
@@ -63,6 +67,7 @@ namespace Relation_IMS.Controllers
 
         // Update Category
         [HttpPut("{id:int}")]
+        [InvalidateCache("category", "brand", "product")]
         public async Task<ActionResult<Category>> UpdateCategory([FromRoute] int id, [FromBody] UpdateCategoryDTO dto)
         {
             if (!ModelState.IsValid)
@@ -81,6 +86,7 @@ namespace Relation_IMS.Controllers
 
         // Delete Category
         [HttpDelete("{id:int}")]
+        [InvalidateCache("category", "brand", "product")]
         public async Task<IActionResult> DeleteCategory([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"category:{id}"))

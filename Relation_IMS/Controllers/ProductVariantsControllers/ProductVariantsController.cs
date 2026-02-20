@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
@@ -22,12 +23,14 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
 
         // For Adding Actual Product Variants
         [HttpGet]
+        [RedisCache("productvariant")]
         public async Task<ActionResult<List<ProductVariant>>> GetAllProductVariants() {
             var variants = await _repo.GetAllProductVariantsAsync();
 
             return Ok(variants);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("productvariant")]
         public async Task<ActionResult<ProductVariant>> GetProductVariantById([FromRoute] int id) {
             var variant = await _repo.GetProductVariantByIdAsync(id);
             if (variant == null) {
@@ -36,6 +39,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
             return Ok(variant);
         }
         [HttpPost]
+        [InvalidateCache("productvariant", "productitem", "product")]
         public async Task<ActionResult<ProductVariant>> CreateProductVariantAsync([FromBody] CreateProductVariantDTO variantDTO) {
 
             if (!ModelState.IsValid)
@@ -54,6 +58,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("productvariant", "productitem", "product")]
         public async Task<ActionResult<ProductVariant>> UpdateProductVariantAsync([FromRoute] int id, [FromBody] UpdateProductVariantDTO variantDTO)
         {
             if (!ModelState.IsValid)
@@ -72,6 +77,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("productvariant", "productitem", "product")]
         public async Task<ActionResult<ProductVariant>> DeleteProductVariantAsync([FromRoute] int id) {
             using (await _lockService.AcquireLockAsync($"productvariant:{id}"))
             {
@@ -85,6 +91,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpGet("product/{id:int}")]
+        [RedisCache("productvariant")]
         public async Task<ActionResult<List<ProductVariant>>> GetProductVariantsByProductId([FromRoute] int id) {
             var variants = await _repo.GetProductVariantsByProductIdAsync(id);
 
@@ -92,6 +99,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpPost("{id:int}/stock")]
+        [InvalidateCache("productvariant", "productitem", "product", "inventory")]
         public async Task<ActionResult<List<ProductItem>>> AddStock([FromRoute] int id, [FromBody] AddStockDTO stockDto)
         {
             if (!ModelState.IsValid)
@@ -107,6 +115,7 @@ namespace Relation_IMS.Controllers.ProductVariantsControllers
         }
 
         [HttpPost("stock/bulk")]
+        [InvalidateCache("productvariant", "productitem", "product", "inventory")]
         public async Task<ActionResult<List<ProductItem>>> AddStockBulk([FromBody] BulkAddStockDTO bulkDto)
         {
             if (!ModelState.IsValid)

@@ -2,6 +2,7 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos;
 using Relation_IMS.Dtos.InventoryDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Services;
 
 namespace Relation_IMS.Controllers
@@ -23,6 +24,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory
         [HttpGet]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetAllInventories()
         {
             var inventories = await _inventoryRepo.GetAllInventoriesAsync();
@@ -31,6 +33,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/5
         [HttpGet("{id}")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetInventoryById(int id)
         {
             var inventory = await _inventoryRepo.GetInventoryByIdAsync(id);
@@ -43,6 +46,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/5/items - Get all items in inventory with details
         [HttpGet("{id}/items")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetInventoryItems(int id)
         {
             var items = await _inventoryRepo.GetInventoryProductItemsAsync(id);
@@ -51,6 +55,7 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory
         [HttpPost]
+        [InvalidateCache("inventory")]
         public async Task<IActionResult> CreateInventory([FromBody] CreateInventoryDTO inventoryDto)
         {
             if (!ModelState.IsValid)
@@ -64,6 +69,7 @@ namespace Relation_IMS.Controllers
 
         // PUT: api/Inventory/5
         [HttpPut("{id}")]
+        [InvalidateCache("inventory")]
         public async Task<IActionResult> UpdateInventory(int id, [FromBody] CreateInventoryDTO inventoryDto)
         {
             if (!ModelState.IsValid)
@@ -84,6 +90,7 @@ namespace Relation_IMS.Controllers
 
         // DELETE: api/Inventory/5
         [HttpDelete("{id}")]
+        [InvalidateCache("inventory")]
         public async Task<IActionResult> DeleteInventory(int id)
         {
             using (await _lockService.AcquireLockAsync($"inventory:{id}"))
@@ -99,6 +106,7 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory/transfer
         [HttpPost("transfer")]
+        [InvalidateCache("inventory", "productitem")]
         public async Task<IActionResult> TransferProductItem([FromBody] TransferProductItemsDTO transferDto)
         {
             if (!ModelState.IsValid)
@@ -145,6 +153,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/5/stock-summary
         [HttpGet("{id}/stock-summary")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetInventoryStockSummary(int id)
         {
             var stockSummary = await _inventoryRepo.GetInventoryStockSummaryAsync(id);
@@ -153,6 +162,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/product/5/stock - Get product stock across all inventories
         [HttpGet("product/{productId}/stock")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetProductStockAcrossInventories(int productId)
         {
             var stockSummary = await _inventoryRepo.GetProductStockAcrossInventoriesAsync(productId);
@@ -161,6 +171,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/variant/5/stock - Get variant stock across all inventories
         [HttpGet("variant/{variantId}/stock")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetVariantStockAcrossInventories(int variantId)
         {
             var stockSummary = await _inventoryRepo.GetVariantStockAcrossInventoriesAsync(variantId);
@@ -169,6 +180,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/transfer/history
         [HttpGet("transfer/history")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetInventoryMovementHistory(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
@@ -184,6 +196,7 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory/customer-return
         [HttpPost("customer-return")]
+        [InvalidateCache("inventory", "productitem")]
         public async Task<IActionResult> ProcessCustomerReturn([FromBody] CustomerReturnRequestDTO returnDto)
         {
             if (!ModelState.IsValid)
@@ -206,6 +219,7 @@ namespace Relation_IMS.Controllers
 
         // GET: api/Inventory/customer-return/history
         [HttpGet("customer-return/history")]
+        [RedisCache("inventory")]
         public async Task<IActionResult> GetCustomerReturnHistory([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
             var history = await _inventoryRepo.GetCustomerReturnRecordsAsync(pageNumber, pageSize);

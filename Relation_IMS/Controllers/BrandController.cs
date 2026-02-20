@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
 
@@ -20,12 +21,14 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
+        [RedisCache("brand")]
         public async Task<ActionResult<List<Brand>>> GetAllBrandsAsync() {
             var brands = await _repo.GetAllBrandsAsync();
 
             return Ok(brands);
         }
         [HttpGet("{id:int}")]
+        [RedisCache("brand")]
         public async Task<ActionResult<Brand?>> GetBrandById([FromRoute] int id) {
             var brand = await _repo.GetBrandByIdAsync(id);
 
@@ -37,6 +40,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("brand", "product")]
         public async Task<ActionResult<Brand?>> DeleteBrandByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"brand:{id}"))
@@ -53,6 +57,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("brand", "product")]
         public async Task<ActionResult<Brand>> CreateBrandAsync(CreateBrandDTO brandDTO)
         {
             if (!ModelState.IsValid)
@@ -64,6 +69,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("brand", "product")]
         public async Task<ActionResult<Brand>> UpdateBrand([FromRoute] int id, [FromBody] CreateBrandDTO brandDTO)
         {
             if (!ModelState.IsValid)
@@ -83,6 +89,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet("category/{categoryId:int}")]
+        [RedisCache("brand")]
         public async Task<ActionResult<List<Brand>>> GetBrandsByCategory([FromRoute] int categoryId)
         {
             var brands = await _repo.GetBrandsByCategoryIdAsync(categoryId);
