@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import VariantSelectionModal from './VariantSelectionModal';
+import { CustomerFormModal } from '../../components/customers/CustomerModals';
 
 // Types matching the API DTOs and Logic
 interface Customer {
@@ -78,6 +79,17 @@ export default function CreateOrder() {
     const [customerSearch, setCustomerSearch] = useState('');
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+    // New Customer State
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState<any>({
+        Id: 0,
+        Name: '',
+        Phone: '',
+        ShopName: '',
+        ShopAddress: '',
+        Address: ''
+    });
 
     // Allow Due Logic
     const [allowDue, setAllowDue] = useState(false);
@@ -187,6 +199,20 @@ export default function CreateOrder() {
             navigate('/orders');
         } finally {
             setLoadingOrder(false);
+        }
+    };
+
+    // --- Create Customer ---
+    const handleCreateCustomer = async () => {
+        try {
+            const res = await api.post<Customer>('/Customer', editingCustomer);
+            setShowCreateModal(false);
+            setSelectedCustomer(res.data);
+            setCustomerSearch('');
+            alert('Customer created successfully!');
+        } catch (e: any) {
+            console.error(e);
+            alert('Failed to create customer');
         }
     };
 
@@ -485,10 +511,8 @@ export default function CreateOrder() {
 
     const handlePrintInvoice = () => {
         if (!createdOrderId) return;
-        // Open details view in new tab with autoPrint
-        window.open(`/orders/${createdOrderId}?view=details&autoPrint=true`, '_blank');
         // Navigate current tab to cycle (default behavior)
-        navigate(`/orders/${createdOrderId}?view=cycle`);
+        navigate(`/orders/${createdOrderId}/invoice`);
     };
 
     const handleNoPrint = () => {
@@ -528,7 +552,19 @@ export default function CreateOrder() {
 
                     {/* Customer Selection */}
                     <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 p-5 z-20 relative">
-                        <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider mb-2">Customer Selection</label>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">Customer Selection</label>
+                            <button
+                                onClick={() => {
+                                    setEditingCustomer({ Id: 0, Name: '', Phone: '', ShopName: '', ShopAddress: '', Address: '' });
+                                    setShowCreateModal(true);
+                                }}
+                                className="flex items-center gap-1 text-xs font-bold text-primary hover:text-green-600 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[16px]">person_add</span>
+                                Add New Customer
+                            </button>
+                        </div>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                 <span className="material-symbols-outlined">smartphone</span>
@@ -1051,6 +1087,16 @@ export default function CreateOrder() {
                     </div>
                 </div>
             )}
+
+            {/* Create Customer Modal */}
+            <CustomerFormModal
+                show={showCreateModal}
+                mode="create"
+                customer={editingCustomer}
+                onChange={(f, v) => setEditingCustomer((p: any) => ({ ...p, [f]: v }))}
+                onClose={() => setShowCreateModal(false)}
+                onSave={handleCreateCustomer}
+            />
         </div>
     );
 }
