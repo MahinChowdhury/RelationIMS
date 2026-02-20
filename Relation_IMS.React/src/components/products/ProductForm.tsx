@@ -164,6 +164,7 @@ export function ProductForm({
                         <input
                             type="number"
                             step="0.01"
+                            onFocus={(e) => e.target.select()}
                             value={product.CostPrice}
                             onChange={(e) => onChange('CostPrice', parseFloat(e.target.value))}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
@@ -175,6 +176,7 @@ export function ProductForm({
                         <input
                             type="number"
                             step="0.01"
+                            onFocus={(e) => e.target.select()}
                             value={product.BasePrice}
                             onChange={(e) => onChange('BasePrice', parseFloat(e.target.value))}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
@@ -187,6 +189,7 @@ export function ProductForm({
                         <input
                             type="number"
                             step="0.01"
+                            onFocus={(e) => e.target.select()}
                             value={product.MSRP}
                             onChange={(e) => onChange('MSRP', parseFloat(e.target.value))}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
@@ -259,6 +262,7 @@ export function ProductForm({
                             <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Quantity</label>
                             <input
                                 type="number"
+                                onFocus={(e) => e.target.select()}
                                 value={newStock.quantity}
                                 onChange={(e) => setNewStock({ ...newStock, quantity: parseInt(e.target.value) })}
                                 min="0"
@@ -315,6 +319,7 @@ export function ProductForm({
                                     <div className="flex items-center gap-2 mt-1">
                                         <input
                                             type="number"
+                                            onFocus={(e) => e.target.select()}
                                             value={editedStock.quantity}
                                             onChange={(e) => setEditedStock({ ...editedStock, quantity: parseInt(e.target.value) })}
                                             className="w-full text-center text-xl font-bold p-1 rounded-lg border-gray-200 bg-white"

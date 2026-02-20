@@ -609,6 +609,7 @@ export default function StockIn() {
                                                     <input
                                                         type="number"
                                                         min="1"
+                                                        onFocus={(e) => e.target.select()}
                                                         value={existingLotQuantity}
                                                         onChange={(e) => setExistingLotQuantity(parseInt(e.target.value) || 0)}
                                                         className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-lg font-bold rounded-lg p-2 text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
@@ -659,6 +660,7 @@ export default function StockIn() {
                                                                         <input
                                                                             type="number"
                                                                             min="0"
+                                                                            onFocus={(e) => e.target.select()}
                                                                             className="w-full bg-[#f8fcf9] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-center font-bold focus:ring-[#17cf54] focus:border-[#17cf54]"
                                                                             placeholder="+0"
                                                                             value={addStockQuantities[variant.Id] || ''}
@@ -743,6 +745,7 @@ export default function StockIn() {
                                                     <input
                                                         type="number"
                                                         min="1"
+                                                        onFocus={(e) => e.target.select()}
                                                         value={newVariant.quantity}
                                                         onChange={(e) => setNewVariant({ ...newVariant, quantity: Number(e.target.value) })}
                                                         className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-bold text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
@@ -881,6 +884,7 @@ export default function StockIn() {
                                                 <input
                                                     type="number"
                                                     min="1"
+                                                    onFocus={(e) => e.target.select()}
                                                     value={lotQuantity}
                                                     onChange={(e) => setLotQuantity(parseInt(e.target.value))}
                                                     className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-lg font-bold rounded-lg p-3 text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
