@@ -17,6 +17,11 @@ export interface ProductSize {
     CategoryId: number;
 }
 
+export interface Quarter {
+    Id: number;
+    Name: string;
+}
+
 export interface ProductVariant {
     Id: number;
     ProductId: number;
@@ -41,6 +46,7 @@ export interface Product {
     MSRP: number;
     CategoryId: number; // API refs suggest numbers but safe to handle strings
     BrandId: number;
+    QuarterId?: number;
     ImageUrls?: string[];
     TotalQuantity?: number;
     Category?: {
@@ -52,6 +58,7 @@ export interface Product {
         Name: string;
         CategoryId: number;
     };
+    Quarter?: Quarter;
     Variants?: ProductVariant[];
 }
 // --- Customers ---

@@ -101,6 +101,7 @@ namespace Relation_IMS.Services
                                 BasePrice = product.BasePrice,
                                 CategoryId = product.CategoryId, // Should be valid
                                 BrandId = product.BrandId,
+                                QuarterId = product.QuarterId,
                                 ImageUrls = currentImages,
                                 Variants = null // Watch out if this wipes variants! 
                             };

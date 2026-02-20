@@ -4,6 +4,7 @@ import api from '../../services/api';
 // --- Types ---
 interface Brand { Id: number; Name: string; CategoryId: number; }
 interface Category { Id: number; Name: string; }
+interface Quarter { Id: number; Name: string; }
 interface Color { id: number; name: string; hex: string; }
 interface Size { id: number; name: string; categoryId?: number; }
 
@@ -13,6 +14,7 @@ export default function Configuration() {
     // --- State ---
     const [brands, setBrands] = useState<Brand[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [quarters, setQuarters] = useState<Quarter[]>([]);
     const [colors, setColors] = useState<Color[]>([]);
     const [sizes, setSizes] = useState<Size[]>([]);
 
@@ -20,7 +22,7 @@ export default function Configuration() {
 
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalType, setModalType] = useState<'brand' | 'category' | 'color' | 'size'>('brand');
+    const [modalType, setModalType] = useState<'brand' | 'category' | 'quarter' | 'color' | 'size'>('brand');
     const [editingItem, setEditingItem] = useState<any>(null);
 
     // Form State
@@ -38,15 +40,17 @@ export default function Configuration() {
                 try { return await api.get(url); } catch (e) { console.error(`Failed to load ${url}`, e); return { data: [] }; }
             };
 
-            const [brandRes, catRes, colorRes, sizeRes] = await Promise.all([
+            const [brandRes, catRes, quarterRes, colorRes, sizeRes] = await Promise.all([
                 safeGet('/Brand'),
                 safeGet('/Category'),
+                safeGet('/Quarter'),
                 safeGet('/ProductVariantColors'),
                 safeGet('/ProductVariantSizes')
             ]);
 
             setBrands(brandRes.data);
             setCategories(catRes.data);
+            setQuarters(quarterRes.data);
 
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
 
@@ -62,7 +66,7 @@ export default function Configuration() {
 
     // --- Handlers ---
 
-    const openModal = (type: 'brand' | 'category' | 'color' | 'size', item?: any) => {
+    const openModal = (type: 'brand' | 'category' | 'quarter' | 'color' | 'size', item?: any) => {
         setModalType(type);
         setEditingItem(item);
         setModalOpen(true);
@@ -79,7 +83,7 @@ export default function Configuration() {
         }
     };
 
-    const handleDelete = async (type: 'brand' | 'category' | 'color' | 'size', id: number) => {
+    const handleDelete = async (type: 'brand' | 'category' | 'quarter' | 'color' | 'size', id: number) => {
         if (!window.confirm("Are you sure you want to delete this item?")) return;
 
         try {
@@ -87,6 +91,7 @@ export default function Configuration() {
             switch (type) {
                 case 'brand': endpoint = `/Brand/${id}`; break;
                 case 'category': endpoint = `/Category/${id}`; break;
+                case 'quarter': endpoint = `/Quarter/${id}`; break;
                 case 'color': endpoint = `/ProductVariantColors/${id}`; break;
                 case 'size': endpoint = `/ProductVariantSizes/${id}`; break;
             }
@@ -115,6 +120,10 @@ export default function Configuration() {
                     endpoint = isEdit ? `/Category/${id}` : '/Category';
                     payload = { Name: formData.name };
                     break;
+                case 'quarter':
+                    endpoint = isEdit ? `/Quarter/${id}` : '/Quarter';
+                    payload = { Name: formData.name };
+                    break;
                 case 'color':
                     endpoint = isEdit ? `/ProductVariantColors/${id}` : '/ProductVariantColors';
                     payload = { Name: formData.name, HexCode: formData.hex };
@@ -140,7 +149,7 @@ export default function Configuration() {
     };
 
 
-    const renderCard = (title: string, subtitle: string | null, type: 'brand' | 'category' | 'color' | 'size', item: any, colorHex?: string) => (
+    const renderCard = (title: string, subtitle: string | null, type: 'brand' | 'category' | 'quarter' | 'color' | 'size', item: any, colorHex?: string) => (
         <div className="bg-white dark:bg-[#1a2e22] border border-gray-100 dark:border-[#2a4032] rounded-lg p-2 flex justify-between items-center group hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
             <div className="flex items-center gap-2 overflow-hidden">
                 {colorHex ? (
@@ -236,6 +245,32 @@ export default function Configuration() {
                             </div>
                         </div>
 
+                        {/* Quarters Section */}
+                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
+                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[#17cf54]">calendar_month</span>
+                                    Quarters
+                                </h2>
+                                <button
+                                    onClick={() => openModal('quarter')}
+                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">add</span>
+                                    Add Quarter
+                                </button>
+                            </div>
+                            <div className="p-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                    {quarters.length > 0 ? (
+                                        quarters.map(q => renderCard(q.Name, null, 'quarter', q))
+                                    ) : (
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">No quarters configured yet.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Colors Section */}
                         <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
@@ -309,88 +344,91 @@ export default function Configuration() {
                             {editingItem ? 'Edit' : 'Add'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
                         </h2>
 
-                        <div className="flex flex-col gap-4">
-                            <div>
-                                <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                    placeholder={`Enter ${modalType} name...`}
-                                    autoFocus
-                                />
+                        <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                        placeholder={`Enter ${modalType} name...`}
+                                        autoFocus
+                                    />
+                                </div>
+
+                                {modalType === 'brand' && (
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Category <span className="text-red-400">*</span></label>
+                                        <select
+                                            value={formData.categoryId}
+                                            onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
+                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                        >
+                                            <option value={0} disabled>Select a category...</option>
+                                            {categories.map(c => (
+                                                <option key={c.Id} value={c.Id}>{c.Name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {modalType === 'color' && (
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Color Hex</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={formData.hex || '#000000'}
+                                                onChange={e => setFormData({ ...formData, hex: e.target.value })}
+                                                className="h-12 w-12 rounded-lg border border-gray-200 cursor-pointer"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={formData.hex}
+                                                onChange={e => setFormData({ ...formData, hex: e.target.value })}
+                                                className="flex-1 bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                placeholder="#000000"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* For Size, we might want Category selection, although user didn't explicitly ask for it, the backend often implies it. For simplicity, we can offer it or default it. */}
+                                {modalType === 'size' && (
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Category (Optional)</label>
+                                        <select
+                                            value={formData.categoryId}
+                                            onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
+                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                        >
+                                            <option value={0}>Generic / All</option>
+                                            {categories.map(c => (
+                                                <option key={c.Id} value={c.Id}>{c.Name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
 
-                            {modalType === 'brand' && (
-                                <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Category <span className="text-red-400">*</span></label>
-                                    <select
-                                        value={formData.categoryId}
-                                        onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                    >
-                                        <option value={0} disabled>Select a category...</option>
-                                        {categories.map(c => (
-                                            <option key={c.Id} value={c.Id}>{c.Name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-
-                            {modalType === 'color' && (
-                                <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Color Hex</label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="color"
-                                            value={formData.hex || '#000000'}
-                                            onChange={e => setFormData({ ...formData, hex: e.target.value })}
-                                            className="h-12 w-12 rounded-lg border border-gray-200 cursor-pointer"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={formData.hex}
-                                            onChange={e => setFormData({ ...formData, hex: e.target.value })}
-                                            className="flex-1 bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                            placeholder="#000000"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* For Size, we might want Category selection, although user didn't explicitly ask for it, the backend often implies it. For simplicity, we can offer it or default it. */}
-                            {modalType === 'size' && (
-                                <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Category (Optional)</label>
-                                    <select
-                                        value={formData.categoryId}
-                                        onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                    >
-                                        <option value={0}>Generic / All</option>
-                                        {categories.map(c => (
-                                            <option key={c.Id} value={c.Id}>{c.Name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex gap-3 mt-8">
-                            <button
-                                onClick={() => setModalOpen(false)}
-                                className="flex-1 py-3 text-gray-500 hover:text-gray-700 font-bold hover:bg-gray-50 rounded-xl transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all"
-                            >
-                                Save Changes
-                            </button>
-                        </div>
+                            <div className="flex gap-3 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setModalOpen(false)}
+                                    className="flex-1 py-3 text-gray-500 hover:text-gray-700 font-bold hover:bg-gray-50 rounded-xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

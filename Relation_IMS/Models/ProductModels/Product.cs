@@ -30,6 +30,10 @@ namespace Relation_IMS.Models.ProductModels
         [Required(ErrorMessage = "Brand Id is required.")]
         public int BrandId { get; set; }
         public Brand? Brand { get; set; }
+
+        [Required(ErrorMessage = "Quarter Id is required.")]
+        public int QuarterId { get; set; }
+        public Quarter? Quarter { get; set; }
         public List<ProductVariant>? Variants { get; set; } = new();
         public ProductLot? Lot { get; set; }
         public List<OrderItem>? OrderItems { get; set; }

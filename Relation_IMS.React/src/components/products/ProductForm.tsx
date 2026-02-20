@@ -5,6 +5,7 @@ interface ProductFormProps {
     product: Product;
     categories: any[];
     brands: any[];
+    quarters: any[];
     colors: any[];
     availableSizes: any[];
     stockItems: StockItem[];
@@ -33,7 +34,7 @@ interface ProductFormProps {
 }
 
 export function ProductForm({
-    product, categories, brands, colors, availableSizes, stockItems, selectedImages,
+    product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
     onChange, onCategoryChange,
     onImagesSelected, removeImage,
     newStock, setNewStock, addStock, removeStock,
@@ -143,6 +144,18 @@ export function ProductForm({
                         >
                             <option value={0}>{!product.CategoryId || product.CategoryId === 0 ? 'Select Category First' : 'Select Brand'}</option>
                             {filteredBrands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Quarter</label>
+                        <select
+                            value={product.QuarterId || 0}
+                            onChange={(e) => onChange('QuarterId', Number(e.target.value))}
+                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
+                        >
+                            <option value={0}>Select Quarter</option>
+                            {quarters.map((q: any) => <option key={q.Id} value={q.Id}>{q.Name}</option>)}
                         </select>
                     </div>
 

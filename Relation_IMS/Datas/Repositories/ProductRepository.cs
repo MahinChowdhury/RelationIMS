@@ -62,7 +62,7 @@ namespace Relation_IMS.Datas.Repositories
             return product;
         }
 
-        public async Task<List<Product>> GetAllProductsAsync(string? search, string? sortBy, string? stockOrder, int brandId, int categoryId, int pageNumber, int pageSize)
+        public async Task<List<Product>> GetAllProductsAsync(string? search, string? sortBy, string? stockOrder, int brandId, int categoryId, int quarterId, int pageNumber, int pageSize)
         {
             var query = _context.Products.AsQueryable();
 
@@ -93,6 +93,11 @@ namespace Relation_IMS.Datas.Repositories
                 query = query.Where(p => p.CategoryId == categoryId);
             }
 
+            if (quarterId != -1)
+            {
+                query = query.Where(p => p.QuarterId == quarterId);
+            }
+
             if (!string.IsNullOrEmpty(stockOrder))
             {
                 if (stockOrder.Equals("Ascending")) query = query.OrderBy(p => p.TotalQuantity);
@@ -117,6 +122,7 @@ namespace Relation_IMS.Datas.Repositories
             var product = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
+                .Include(p => p.Quarter)
                 .Include(p => p.Variants!)
                     .ThenInclude(v => v.Color)
                 .Include(p => p.Variants!)
@@ -148,6 +154,7 @@ namespace Relation_IMS.Datas.Repositories
             product.BasePrice = updateDto.BasePrice;
             product.BrandId = updateDto.BrandId;
             product.CategoryId = updateDto.CategoryId;
+            product.QuarterId = updateDto.QuarterId;
 
             // Handle ImageUrls (replace all)
             product.ImageUrls = updateDto.ImageUrls ?? new List<string>();

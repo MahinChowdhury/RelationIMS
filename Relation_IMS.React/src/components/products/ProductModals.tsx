@@ -40,6 +40,7 @@ interface ProductFormModalProps {
     product: Product;
     categories: any[];
     brands: any[];
+    quarters: any[];
     colors: any[];
     availableSizes: any[];
     stockItems: StockItem[];
@@ -71,7 +72,7 @@ interface ProductFormModalProps {
 }
 
 export function ProductFormModal({
-    show, mode, product, categories, brands, colors, availableSizes, stockItems, selectedImages,
+    show, mode, product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
     onClose, onSave, onChange, onCategoryChange,
     onImagesSelected, removeImage,
     newStock, setNewStock, addStock, removeStock,
@@ -112,6 +113,7 @@ export function ProductFormModal({
                     product={product}
                     categories={categories}
                     brands={brands}
+                    quarters={quarters}
                     colors={colors}
                     availableSizes={availableSizes}
                     stockItems={stockItems}
