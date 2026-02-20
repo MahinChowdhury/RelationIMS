@@ -25,11 +25,13 @@ export default function ProductsPage() {
     const [sortBy, setSortBy] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedBrand, setSelectedBrand] = useState<string>('');
+    const [selectedQuarter, setSelectedQuarter] = useState<string>('');
     const [stockOrder, setStockOrder] = useState('');
 
     // Dropdown Data
     const [categories, setCategories] = useState<any[]>([]);
     const [brands, setBrands] = useState<any[]>([]);
+    const [quarters, setQuarters] = useState<any[]>([]);
     const [colors, setColors] = useState<any[]>([]);
     const [availableSizes, setAvailableSizes] = useState<any[]>([]);
 
@@ -52,6 +54,7 @@ export default function ProductsPage() {
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
+        QuarterId: 0,
         ImageUrls: []
     };
     const [currentProduct, setCurrentProduct] = useState<Product>(initialProductState);
@@ -75,13 +78,14 @@ export default function ProductsPage() {
     useEffect(() => {
         loadCategories();
         loadBrands();
+        loadQuarters();
         loadColors();
     }, []);
 
     // ONE Unified Filter Trigger
     useEffect(() => {
         loadProducts(true);
-    }, [selectedCategory, selectedBrand, stockOrder, sortBy, debouncedSearch]);
+    }, [selectedCategory, selectedBrand, selectedQuarter, stockOrder, sortBy, debouncedSearch]);
 
     // Infinite Scroll Trigger
     useEffect(() => {
@@ -112,6 +116,7 @@ export default function ProductsPage() {
                 stockOrder: stockOrder || '',
                 categoryId: selectedCategory === '' ? '-1' : selectedCategory,
                 BrandId: selectedBrand === '' ? '-1' : selectedBrand,
+                QuarterId: selectedQuarter === '' ? '-1' : selectedQuarter,
                 pageNumber: reset ? '1' : page.toString(),
                 pageSize: '20',
             });
@@ -150,6 +155,13 @@ export default function ProductsPage() {
         } catch (err) { console.error(err); }
     };
 
+    const loadQuarters = async () => {
+        try {
+            const res = await api.get('/Quarter');
+            setQuarters(res.data.map((q: any) => ({ Id: q.Id, Name: q.Name })));
+        } catch (err) { console.error(err); }
+    };
+
     const loadColors = async () => {
         try {
             const res = await api.get('/ProductVariantColors');
@@ -170,6 +182,7 @@ export default function ProductsPage() {
     // --- Helpers ---
     const getCategoryNameById = (id: number) => categories.find(c => c.id === id)?.name || 'Unknown';
     const getBrandName = (id: number) => brands.find(b => b.Id === id)?.Name || 'Unknown';
+    const getQuarterName = (id: number) => quarters.find(q => q.Id === id)?.Name || 'Unknown';
     const getColorHex = (name: string) => colors.find(c => c.name === name)?.hex || null;
     const getStockStatus = (id: number) => {
         const p = products.find(prod => prod.Id === id);
@@ -289,6 +302,7 @@ export default function ProductsPage() {
             formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
+            formData.append('QuarterId', currentProduct.QuarterId?.toString() || '0');
 
             // Append images
             imageFiles.forEach(file => {
@@ -600,6 +614,21 @@ export default function ProductsPage() {
                         </select>
                     </div>
 
+                    {/* Quarter */}
+                    <div className="relative">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                            {selectedQuarter === '' ? "Quarter" : getQuarterName(Number(selectedQuarter))}
+                        </button>
+                        <select
+                            value={selectedQuarter}
+                            onChange={(e) => setSelectedQuarter(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        >
+                            <option value="">All Quarters</option>
+                            {quarters.map(q => <option key={q.Id} value={q.Id}>{q.Name}</option>)}
+                        </select>
+                    </div>
+
                     {/* Stock */}
                     <div className="relative">
                         <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
@@ -674,6 +703,7 @@ export default function ProductsPage() {
                 product={currentProduct}
                 categories={categories}
                 brands={brands}
+                quarters={quarters}
                 colors={colors}
                 availableSizes={availableSizes}
                 stockItems={stockItems}
@@ -703,6 +733,7 @@ export default function ProductsPage() {
                 product={currentProduct}
                 categories={categories}
                 brands={brands}
+                quarters={quarters}
                 colors={colors}
                 availableSizes={availableSizes}
                 stockItems={stockItems}

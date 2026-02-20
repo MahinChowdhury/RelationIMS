@@ -20,11 +20,13 @@ export default function StockIn() {
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
+        QuarterId: 0,
         ImageUrls: []
     };
     const [currentProduct, setCurrentProduct] = useState<Product>(initialProductState);
     const [categories, setCategories] = useState<any[]>([]);
     const [brands, setBrands] = useState<any[]>([]);
+    const [quarters, setQuarters] = useState<any[]>([]);
     const [colors, setColors] = useState<any[]>([]);
     const [availableSizes, setAvailableSizes] = useState<any[]>([]);
 
@@ -239,13 +241,15 @@ export default function StockIn() {
 
     const loadMetadata = async () => {
         try {
-            const [catRes, brandRes, colorRes] = await Promise.all([
+            const [catRes, brandRes, quarterRes, colorRes] = await Promise.all([
                 api.get('/Category'),
                 api.get('/Brand'),
+                api.get('/Quarter'),
                 api.get('/ProductVariantColors')
             ]);
             setCategories(catRes.data.map((c: any) => ({ id: c.Id, name: c.Name })));
             setBrands(brandRes.data.map((b: any) => ({ Id: b.Id, Name: b.Name, CategoryId: b.CategoryId })));
+            setQuarters(quarterRes.data.map((q: any) => ({ Id: q.Id, Name: q.Name })));
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
         } catch (err) { console.error(err); }
     };
@@ -322,6 +326,7 @@ export default function StockIn() {
             formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
+            formData.append('QuarterId', currentProduct.QuarterId?.toString() || '0');
 
             imageFiles.forEach(file => formData.append('Images', file));
 
@@ -371,6 +376,7 @@ export default function StockIn() {
             formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
+            formData.append('QuarterId', currentProduct.QuarterId?.toString() || '0');
             formData.append('LotQuantity', lotQuantity.toString());
 
             stockItems.forEach((s, index) => {
@@ -567,7 +573,10 @@ export default function StockIn() {
                                         <div className="flex justify-between items-start mb-6">
                                             <div>
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
-                                                <p className="text-sm text-gray-500">{foundProduct.Category?.Name} • {foundProduct.Brand?.Name}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {foundProduct.Category?.Name} • {foundProduct.Brand?.Name}
+                                                    {foundProduct.Quarter && ` • ${foundProduct.Quarter.Name}`}
+                                                </p>
                                             </div>
                                             <div className="flex flex-col items-end gap-2">
                                                 <div className="text-right">
@@ -781,6 +790,7 @@ export default function StockIn() {
                                     product={currentProduct}
                                     categories={categories}
                                     brands={brands}
+                                    quarters={quarters}
                                     colors={colors}
                                     availableSizes={availableSizes}
                                     stockItems={stockItems}
@@ -830,6 +840,7 @@ export default function StockIn() {
                                     product={currentProduct}
                                     categories={categories}
                                     brands={brands}
+                                    quarters={quarters}
                                     colors={colors}
                                     availableSizes={availableSizes}
                                     stockItems={stockItems}

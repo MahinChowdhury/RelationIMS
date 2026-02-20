@@ -83,6 +83,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ProductSize> ProductSizes { get; set; }
     public DbSet<Brand> Brands { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Quarter> Quarters { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }

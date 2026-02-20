@@ -14,7 +14,7 @@ export default function ProductCard({
     product,
     placeholderImage,
     getCategoryNameById,
-    getBrandName
+    getBrandName,
 }: ProductCardProps) {
     const navigate = useNavigate();
 

@@ -20,6 +20,7 @@ namespace Relation_IMS.MappingProfile
             CreateMap<CreateNewProductSizeDTO, ProductSize>();
             CreateMap<CreateNewProductDTO, Product>();
             CreateMap<CreateProductVariantDTO, ProductVariant>();
+            CreateMap<CreateQuarterDTO, Quarter>();
             CreateMap<CreateBrandDTO, Brand>();
             CreateMap<CreateCustomerDTO, Customer>();
             CreateMap<CreateOrderDTO, Order>();
