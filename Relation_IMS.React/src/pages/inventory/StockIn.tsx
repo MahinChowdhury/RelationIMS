@@ -20,7 +20,7 @@ export default function StockIn() {
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
-        QuarterId: 0,
+        QuarterIds: [],
         ImageUrls: []
     };
     const [currentProduct, setCurrentProduct] = useState<Product>(initialProductState);
@@ -248,7 +248,7 @@ export default function StockIn() {
                 api.get('/ProductVariantColors')
             ]);
             setCategories(catRes.data.map((c: any) => ({ id: c.Id, name: c.Name })));
-            setBrands(brandRes.data.map((b: any) => ({ Id: b.Id, Name: b.Name, CategoryId: b.CategoryId })));
+            setBrands(brandRes.data.map((b: any) => ({ Id: b.Id, Name: b.Name, Categories: b.Categories })));
             setQuarters(quarterRes.data.map((q: any) => ({ Id: q.Id, Name: q.Name })));
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
         } catch (err) { console.error(err); }
@@ -326,7 +326,11 @@ export default function StockIn() {
             formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
-            formData.append('QuarterId', currentProduct.QuarterId?.toString() || '0');
+            if (currentProduct.QuarterIds && currentProduct.QuarterIds.length > 0) {
+                currentProduct.QuarterIds.forEach((id: number) => {
+                    formData.append('QuarterIds', id.toString());
+                });
+            }
 
             imageFiles.forEach(file => formData.append('Images', file));
 
@@ -376,7 +380,11 @@ export default function StockIn() {
             formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
-            formData.append('QuarterId', currentProduct.QuarterId?.toString() || '0');
+            if (currentProduct.QuarterIds && currentProduct.QuarterIds.length > 0) {
+                currentProduct.QuarterIds.forEach((id: number) => {
+                    formData.append('QuarterIds', id.toString());
+                });
+            }
             formData.append('LotQuantity', lotQuantity.toString());
 
             stockItems.forEach((s, index) => {
@@ -575,7 +583,7 @@ export default function StockIn() {
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
                                                 <p className="text-sm text-gray-500">
                                                     {foundProduct.Category?.Name} • {foundProduct.Brand?.Name}
-                                                    {foundProduct.Quarter && ` • ${foundProduct.Quarter.Name}`}
+                                                    {foundProduct.Quarters && foundProduct.Quarters.length > 0 && ` • ${foundProduct.Quarters.map(q => q.Name).join(', ')}`}
                                                 </p>
                                             </div>
                                             <div className="flex flex-col items-end gap-2">

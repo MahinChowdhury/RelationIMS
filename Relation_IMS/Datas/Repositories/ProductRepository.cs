@@ -27,6 +27,10 @@ namespace Relation_IMS.Datas.Repositories
             var product = _mapper.Map<Product>(productDto);
             Console.WriteLine($"Mapped Product: {product.Name}, CategoryId: {product.CategoryId}");
             
+            product.Quarters = await _context.Quarters
+                .Where(q => productDto.QuarterIds.Contains(q.Id))
+                .ToListAsync();
+            
             // Get category to generate code
             var category = await _context.Categories.FindAsync(product.CategoryId);
             if (category == null)
@@ -68,7 +72,11 @@ namespace Relation_IMS.Datas.Repositories
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || p.Brand!.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+                var searchLower = search.ToLower();
+                query = query.Where(p => p.Name.ToLower().Contains(searchLower) || 
+                                         (p.Brand.Name.ToLower().Contains(searchLower)) ||
+                                         (p.Category.Name.ToLower().Contains(searchLower)) ||
+                                         (p.Quarters.Any(q => q.Name.ToLower().Contains(searchLower))));
             }
 
             if (!string.IsNullOrEmpty(sortBy))
@@ -95,7 +103,7 @@ namespace Relation_IMS.Datas.Repositories
 
             if (quarterId != -1)
             {
-                query = query.Where(p => p.QuarterId == quarterId);
+                query = query.Where(p => p.Quarters.Any(q => q.Id == quarterId));
             }
 
             if (!string.IsNullOrEmpty(stockOrder))
@@ -110,6 +118,7 @@ namespace Relation_IMS.Datas.Repositories
             }
 
             var products = await query
+                .Include(p => p.Quarters)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -122,7 +131,7 @@ namespace Relation_IMS.Datas.Repositories
             var product = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Brand)
-                .Include(p => p.Quarter)
+                .Include(p => p.Quarters)
                 .Include(p => p.Variants!)
                     .ThenInclude(v => v.Color)
                 .Include(p => p.Variants!)
@@ -143,6 +152,7 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Product?> UpdateProductByIdAsync(int id, UpdateProductDTO updateDto)
         {
             var product = await _context.Products
+                .Include(p => p.Quarters)
                 .Include(p => p.Variants)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -154,7 +164,16 @@ namespace Relation_IMS.Datas.Repositories
             product.BasePrice = updateDto.BasePrice;
             product.BrandId = updateDto.BrandId;
             product.CategoryId = updateDto.CategoryId;
-            product.QuarterId = updateDto.QuarterId;
+            
+            // Handle Quarters explicitly for Many-to-Many tracking
+            product.Quarters?.Clear();
+            var newQuarters = await _context.Quarters
+                .Where(q => updateDto.QuarterIds.Contains(q.Id))
+                .ToListAsync();
+            foreach(var q in newQuarters)
+            {
+                product.Quarters?.Add(q);
+            }
 
             // Handle ImageUrls (replace all)
             product.ImageUrls = updateDto.ImageUrls ?? new List<string>();

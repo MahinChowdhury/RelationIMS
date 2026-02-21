@@ -23,7 +23,15 @@ namespace Relation_IMS.Controllers
 
         [HttpGet]
         [RedisCache("product")]
-        public async Task<ActionResult<List<Product>>> GetAllProductsAsync(string? search,string? sortBy,string? stockOrder, int brandId = -1, int categoryId = -1 ,int quarterId = -1,int pageNumber = 1, int pageSize = 20) {
+        public async Task<ActionResult<List<Product>>> GetAllProductsAsync(
+            [FromQuery] string? search,
+            [FromQuery] string? sortBy,
+            [FromQuery] string? stockOrder, 
+            [FromQuery(Name="BrandId")] int brandId = -1, 
+            [FromQuery(Name="categoryId")] int categoryId = -1,
+            [FromQuery(Name="QuarterId")] int quarterId = -1,
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 20) {
             var products = await _repo.GetAllProductsAsync(search,sortBy, stockOrder, brandId, categoryId, quarterId, pageNumber, pageSize);
 
             return Ok(products);
@@ -72,7 +80,7 @@ namespace Relation_IMS.Controllers
                     CostPrice = productFormDto.CostPrice,
                     MSRP = productFormDto.MSRP,
                     BrandId = productFormDto.BrandId,
-                    QuarterId = productFormDto.QuarterId,
+                    QuarterIds = productFormDto.QuarterIds ?? new List<int>(),
                     CategoryId = productFormDto.CategoryId,
                     ImageUrls = new List<string>() // Initially empty, will be updated by background job
                 };

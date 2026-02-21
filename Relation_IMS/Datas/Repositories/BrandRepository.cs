@@ -20,6 +20,9 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Brand> CreateBrandAsync(CreateBrandDTO brandDTO)
         {
             var brand = _mapper.Map<Brand>(brandDTO);
+            brand.Categories = await _context.Categories
+                .Where(c => brandDTO.CategoryIds.Contains(c.Id))
+                .ToListAsync();
 
             await _context.Brands.AddAsync(brand);
             await _context.SaveChangesAsync();
@@ -40,14 +43,14 @@ namespace Relation_IMS.Datas.Repositories
 
         public async Task<List<Brand>> GetAllBrandsAsync()
         {
-            var brands = await _context.Brands.ToListAsync();
+            var brands = await _context.Brands.Include(b => b.Categories).ToListAsync();
 
             return brands;
         }
 
         public async Task<Brand?> GetBrandByIdAsync(int id)
         {
-            var brand = await _context.Brands.FindAsync(id);
+            var brand = await _context.Brands.Include(b => b.Categories).FirstOrDefaultAsync(b => b.Id == id);
             if (brand == null) return null;
 
             return brand;
@@ -55,10 +58,14 @@ namespace Relation_IMS.Datas.Repositories
 
         public async Task<Brand?> UpdateBrandAsync(int id, CreateBrandDTO brandDTO)
         {
-            var brand = await _context.Brands.FindAsync(id);
+            var brand = await _context.Brands.Include(b => b.Categories).FirstOrDefaultAsync(b => b.Id == id);
             if (brand == null) return null;
 
             _mapper.Map(brandDTO, brand);
+            brand.Categories = await _context.Categories
+                .Where(c => brandDTO.CategoryIds.Contains(c.Id))
+                .ToListAsync();
+
             await _context.SaveChangesAsync();
 
             return brand;
@@ -67,7 +74,8 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<List<Brand>> GetBrandsByCategoryIdAsync(int categoryId)
         {
             var brands = await _context.Brands
-                .Where(b => b.CategoryId == categoryId)
+                .Include(b => b.Categories)
+                .Where(b => b.Categories != null && b.Categories.Any(c => c.Id == categoryId))
                 .ToListAsync();
 
             return brands;
