@@ -16,24 +16,12 @@ namespace Relation_IMS.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Brands",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Brands", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true)
                 },
@@ -74,7 +62,8 @@ namespace Relation_IMS.Migrations
                     IsDueAllowed = table.Column<bool>(type: "boolean", nullable: false),
                     NidNumber = table.Column<string>(type: "text", nullable: false),
                     ReferenceName = table.Column<string>(type: "text", nullable: false),
-                    ReferencePhoneNumber = table.Column<string>(type: "text", nullable: false)
+                    ReferencePhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    Balance = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -124,6 +113,19 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Quarters",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Quarters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -155,33 +157,19 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "Brands",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    ImageUrls = table.Column<List<string>>(type: "text[]", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    BasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    MSRP = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    BrandId = table.Column<int>(type: "integer", nullable: false)
+                    CategoryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_Brands", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Brands_BrandId",
-                        column: x => x.BrandId,
-                        principalTable: "Brands",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryId",
+                        name: "FK_Brands_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id",
@@ -236,6 +224,8 @@ namespace Relation_IMS.Migrations
                     PaymentStatus = table.Column<string>(type: "text", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Remarks = table.Column<string>(type: "text", nullable: true),
+                    NextPaymentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    InternalStatus = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -314,6 +304,97 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ImageUrls = table.Column<List<string>>(type: "text[]", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    BasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    MSRP = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    BrandId = table.Column<int>(type: "integer", nullable: false),
+                    QuarterId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_Brands_BrandId",
+                        column: x => x.BrandId,
+                        principalTable: "Brands",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Products_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Products_Quarters_QuarterId",
+                        column: x => x.QuarterId,
+                        principalTable: "Quarters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomerReturnRecords",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    RefundAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: true),
+                    OrderId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerReturnRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomerReturnRecords_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomerReturnRecords_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderPayments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "integer", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderPayments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderPayments_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductLots",
                 columns: table => new
                 {
@@ -378,11 +459,13 @@ namespace Relation_IMS.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
+                    ProductVariantId = table.Column<int>(type: "integer", nullable: true),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Discount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    Subtotal = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
+                    Subtotal = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    ArrangedQuantity = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -394,31 +477,14 @@ namespace Relation_IMS.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_OrderItems_ProductVariants_ProductVariantId",
+                        column: x => x.ProductVariantId,
+                        principalTable: "ProductVariants",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_OrderItems_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OrderPayments",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderId = table.Column<int>(type: "integer", nullable: false),
-                    PaymentMethod = table.Column<int>(type: "integer", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    Note = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderPayments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_OrderPayments_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -434,7 +500,8 @@ namespace Relation_IMS.Migrations
                     Code = table.Column<string>(type: "text", nullable: false),
                     IsDefected = table.Column<bool>(type: "boolean", nullable: false),
                     IsSold = table.Column<bool>(type: "boolean", nullable: false),
-                    InventoryId = table.Column<int>(type: "integer", nullable: false)
+                    InventoryId = table.Column<int>(type: "integer", nullable: false),
+                    OrderItemId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -446,6 +513,11 @@ namespace Relation_IMS.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_ProductItems_OrderItems_OrderItemId",
+                        column: x => x.OrderItemId,
+                        principalTable: "OrderItems",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_ProductItems_ProductLots_ProductLotId",
                         column: x => x.ProductLotId,
                         principalTable: "ProductLots",
@@ -454,6 +526,32 @@ namespace Relation_IMS.Migrations
                         name: "FK_ProductItems_ProductVariants_ProductVariantId",
                         column: x => x.ProductVariantId,
                         principalTable: "ProductVariants",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomerReturnItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerReturnRecordId = table.Column<int>(type: "integer", nullable: false),
+                    ProductItemId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerReturnItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomerReturnItems_CustomerReturnRecords_CustomerReturnRec~",
+                        column: x => x.CustomerReturnRecordId,
+                        principalTable: "CustomerReturnRecords",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomerReturnItems_ProductItems_ProductItemId",
+                        column: x => x.ProductItemId,
+                        principalTable: "ProductItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -534,10 +632,35 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Brands_CategoryId",
+                table: "Brands",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Unique_ClientId",
                 table: "Clients",
                 column: "ClientId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerReturnItems_CustomerReturnRecordId",
+                table: "CustomerReturnItems",
+                column: "CustomerReturnRecordId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerReturnItems_ProductItemId",
+                table: "CustomerReturnItems",
+                column: "ProductItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerReturnRecords_CustomerId",
+                table: "CustomerReturnRecords",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomerReturnRecords_OrderId",
+                table: "CustomerReturnRecords",
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InventoryTransferRecordItems_InventoryTransferRecordId",
@@ -575,6 +698,11 @@ namespace Relation_IMS.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_ProductVariantId",
+                table: "OrderItems",
+                column: "ProductVariantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderPayments_OrderId",
                 table: "OrderPayments",
                 column: "OrderId");
@@ -605,6 +733,11 @@ namespace Relation_IMS.Migrations
                 column: "InventoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductItems_OrderItemId",
+                table: "ProductItems",
+                column: "OrderItemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductItems_ProductLotId",
                 table: "ProductItems",
                 column: "ProductLotId");
@@ -629,6 +762,11 @@ namespace Relation_IMS.Migrations
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_QuarterId",
+                table: "Products",
+                column: "QuarterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductColorId",
@@ -677,10 +815,10 @@ namespace Relation_IMS.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "InventoryTransferRecordItems");
+                name: "CustomerReturnItems");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "InventoryTransferRecordItems");
 
             migrationBuilder.DropTable(
                 name: "OrderPayments");
@@ -695,10 +833,10 @@ namespace Relation_IMS.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
-                name: "InventoryTransferRecords");
+                name: "CustomerReturnRecords");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "InventoryTransferRecords");
 
             migrationBuilder.DropTable(
                 name: "ProductItems");
@@ -710,19 +848,25 @@ namespace Relation_IMS.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Customers");
-
-            migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
                 name: "Inventories");
+
+            migrationBuilder.DropTable(
+                name: "OrderItems");
 
             migrationBuilder.DropTable(
                 name: "ProductLots");
 
             migrationBuilder.DropTable(
+                name: "Orders");
+
+            migrationBuilder.DropTable(
                 name: "ProductVariants");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "ProductColors");
@@ -735,6 +879,9 @@ namespace Relation_IMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "Brands");
+
+            migrationBuilder.DropTable(
+                name: "Quarters");
 
             migrationBuilder.DropTable(
                 name: "Categories");

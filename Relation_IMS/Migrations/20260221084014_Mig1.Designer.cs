@@ -13,8 +13,8 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260131063549_Mig6")]
-    partial class Mig6
+    [Migration("20260221084014_Mig1")]
+    partial class Mig1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -508,11 +508,16 @@ namespace Relation_IMS.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Brands");
                 });
@@ -577,6 +582,9 @@ namespace Relation_IMS.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("QuarterId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TotalQuantity")
                         .HasColumnType("integer");
 
@@ -585,6 +593,8 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("QuarterId");
 
                     b.ToTable("Products");
                 });
@@ -773,6 +783,23 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("ProductSizeId");
 
                     b.ToTable("ProductVariants");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.Quarter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Quarters");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.User", b =>
@@ -987,6 +1014,17 @@ namespace Relation_IMS.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.Brand", b =>
+                {
+                    b.HasOne("Relation_IMS.Models.ProductModels.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Product", b =>
                 {
                     b.HasOne("Relation_IMS.Models.ProductModels.Brand", "Brand")
@@ -1001,9 +1039,17 @@ namespace Relation_IMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Relation_IMS.Models.ProductModels.Quarter", "Quarter")
+                        .WithMany("Products")
+                        .HasForeignKey("QuarterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
+
+                    b.Navigation("Quarter");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductDefect", b =>
@@ -1146,6 +1192,11 @@ namespace Relation_IMS.Migrations
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductVariant", b =>
                 {
                     b.Navigation("ProductItems");
+                });
+
+            modelBuilder.Entity("Relation_IMS.Models.ProductModels.Quarter", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.User", b =>
