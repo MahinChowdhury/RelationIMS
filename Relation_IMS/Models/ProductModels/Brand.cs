@@ -8,9 +8,7 @@ namespace Relation_IMS.Models.ProductModels
         [Required(ErrorMessage = "Brand Name is required")]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "Category is required")]
-        public int CategoryId { get; set; }
-        public Category? Category { get; set; }
+        public List<Category>? Categories { get; set; } = new List<Category>();
 
         public List<Product>? Products { get; set; }
     }

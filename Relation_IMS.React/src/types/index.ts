@@ -46,7 +46,7 @@ export interface Product {
     MSRP: number;
     CategoryId: number; // API refs suggest numbers but safe to handle strings
     BrandId: number;
-    QuarterId?: number;
+    QuarterIds?: number[];
     ImageUrls?: string[];
     TotalQuantity?: number;
     Category?: {
@@ -56,9 +56,9 @@ export interface Product {
     Brand?: {
         Id: number;
         Name: string;
-        CategoryId: number;
+        Categories?: any[];
     };
-    Quarter?: Quarter;
+    Quarters?: Quarter[];
     Variants?: ProductVariant[];
 }
 // --- Customers ---

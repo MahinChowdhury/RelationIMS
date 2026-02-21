@@ -26,8 +26,8 @@ namespace Relation_IMS.Dtos.ProductDtos
         [Required(ErrorMessage = "Brand Id is required.")]
         public int BrandId { get; set; }
 
-        [Required(ErrorMessage = "Quarter Id is required.")]
-        public int QuarterId { get; set; }
+        [Required(ErrorMessage = "At least one Quarter is required.")]
+        public List<int> QuarterIds { get; set; } = new List<int>();
 
         public List<IFormFile>? Images { get; set; }
     }

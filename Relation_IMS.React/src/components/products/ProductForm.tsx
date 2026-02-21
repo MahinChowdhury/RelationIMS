@@ -48,7 +48,7 @@ export function ProductForm({
 
     useEffect(() => {
         if (product.CategoryId && product.CategoryId !== 0) {
-            const filtered = brands.filter(b => Number(b.CategoryId) === Number(product.CategoryId));
+            const filtered = brands.filter(b => b.Categories?.some((c: any) => Number(c.Id) === Number(product.CategoryId)));
             setFilteredBrands(filtered);
 
             // Reset brand selection if current brand doesn't match category
@@ -148,15 +148,27 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Quarter</label>
-                        <select
-                            value={product.QuarterId || 0}
-                            onChange={(e) => onChange('QuarterId', Number(e.target.value))}
-                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
-                        >
-                            <option value={0}>Select Quarter</option>
-                            {quarters.map((q: any) => <option key={q.Id} value={q.Id}>{q.Name}</option>)}
-                        </select>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Quarters</label>
+                        <div className="flex flex-col gap-2 max-h-32 overflow-y-auto bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-lg p-2.5">
+                            {quarters.map((q: any) => (
+                                <label key={q.Id} className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={product.QuarterIds?.includes(q.Id) || false}
+                                        onChange={(e) => {
+                                            const id = q.Id;
+                                            const currentIds = product.QuarterIds || [];
+                                            const newIds = e.target.checked
+                                                ? [...currentIds, id]
+                                                : currentIds.filter((cid: number) => cid !== id);
+                                            onChange('QuarterIds', newIds);
+                                        }}
+                                        className="w-4 h-4 text-[#17cf54] rounded focus:ring-[#17cf54] dark:bg-black/20 dark:border-gray-600"
+                                    />
+                                    <span className="text-sm text-[#0e1b12] dark:text-white">{q.Name}</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     <div>

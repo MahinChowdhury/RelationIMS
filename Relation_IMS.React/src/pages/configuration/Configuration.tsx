@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 // --- Types ---
-interface Brand { Id: number; Name: string; CategoryId: number; }
+interface Brand { Id: number; Name: string; Categories: Category[]; }
 interface Category { Id: number; Name: string; }
 interface Quarter { Id: number; Name: string; }
 interface Color { id: number; name: string; hex: string; }
@@ -26,7 +26,7 @@ export default function Configuration() {
     const [editingItem, setEditingItem] = useState<any>(null);
 
     // Form State
-    const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0 });
+    const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0, categoryIds: [] as number[] });
 
     useEffect(() => {
         loadAllData();
@@ -76,10 +76,11 @@ export default function Configuration() {
             setFormData({
                 name: item.Name || item.name,
                 hex: item.hex || item.HexCode || '',
-                categoryId: item.CategoryId || 0
+                categoryId: item.CategoryId || 0,
+                categoryIds: item.Categories ? item.Categories.map((c: any) => c.Id) : []
             });
         } else {
-            setFormData({ name: '', hex: '', categoryId: 0 });
+            setFormData({ name: '', hex: '', categoryId: 0, categoryIds: [] });
         }
     };
 
@@ -114,7 +115,7 @@ export default function Configuration() {
             switch (modalType) {
                 case 'brand':
                     endpoint = isEdit ? `/Brand/${id}` : '/Brand';
-                    payload = { Name: formData.name, CategoryId: formData.categoryId };
+                    payload = { Name: formData.name, CategoryIds: formData.categoryIds };
                     break;
                 case 'category':
                     endpoint = isEdit ? `/Category/${id}` : '/Category';
@@ -211,7 +212,7 @@ export default function Configuration() {
                             <div className="p-4">
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                                     {brands.length > 0 ? (
-                                        brands.map(b => renderCard(b.Name, categories.find(c => c.Id === b.CategoryId)?.Name || null, 'brand', b))
+                                        brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
                                     ) : (
                                         <p className="text-xs text-gray-400 col-span-full py-4 text-center">No brands configured yet.</p>
                                     )}
@@ -360,17 +361,29 @@ export default function Configuration() {
 
                                 {modalType === 'brand' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Category <span className="text-red-400">*</span></label>
-                                        <select
-                                            value={formData.categoryId}
-                                            onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                        >
-                                            <option value={0} disabled>Select a category...</option>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Categories <span className="text-red-400">*</span></label>
+                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
-                                                <option key={c.Id} value={c.Id}>{c.Name}</option>
+                                                <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={c.Id}
+                                                        checked={formData.categoryIds.includes(c.Id)}
+                                                        onChange={(e) => {
+                                                            const id = parseInt(e.target.value);
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                categoryIds: e.target.checked
+                                                                    ? [...prev.categoryIds, id]
+                                                                    : prev.categoryIds.filter(cid => cid !== id)
+                                                            }));
+                                                        }}
+                                                        className="w-4 h-4 text-[#17cf54] rounded focus:ring-[#17cf54] focus:ring-offset-0 dark:bg-black/20 dark:border-gray-600"
+                                                    />
+                                                    <span className="text-sm font-medium text-[#0e1b12] dark:text-gray-200">{c.Name}</span>
+                                                </label>
                                             ))}
-                                        </select>
+                                        </div>
                                     </div>
                                 )}
 

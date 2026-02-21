@@ -8,6 +8,6 @@ namespace Relation_IMS.Models.ProductModels
         [Required(ErrorMessage = "Quarter Name is required")]
         public string Name { get; set; } = null!;
 
-        public List<Product>? Products { get; set; }
+        public List<Product>? Products { get; set; } = new List<Product>();
     }
 }

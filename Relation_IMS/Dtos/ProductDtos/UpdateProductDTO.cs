@@ -23,8 +23,8 @@ namespace Relation_IMS.Dtos.ProductDtos
         public int CategoryId { get; set; }
         [Required(ErrorMessage = "Brand Id is required.")]
         public int BrandId { get; set; }
-        [Required(ErrorMessage = "Quarter Id is required.")]
-        public int QuarterId { get; set; }
+        [Required(ErrorMessage = "At least one Quarter is required.")]
+        public List<int> QuarterIds { get; set; } = new List<int>();
         public List<string>? ImageUrls { get; set; }
         public List<ProductVariant>? Variants { get; set; }
     }
