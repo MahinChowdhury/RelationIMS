@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 import api from '../../services/api';
 import BarcodeScanner from '../../components/BarcodeScanner';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface Inventory {
     Id: number;
@@ -34,6 +35,7 @@ interface ReturnRecord {
 }
 
 export default function CustomerReturn() {
+    const { t } = useLanguage();
     // State
     const [inventories, setInventories] = useState<Inventory[]>([]);
     const [selectedInventoryId, setSelectedInventoryId] = useState<number | ''>('');
@@ -103,7 +105,7 @@ export default function CustomerReturn() {
 
         } catch (err) {
             console.error(err);
-            setErrorMsg('Order not found.');
+            setErrorMsg(t.orders.orderNotFound || 'Order not found.');
         } finally {
             setLoadingOrder(false);
         }
@@ -150,7 +152,7 @@ export default function CustomerReturn() {
         const code = rawCode.trim();
 
         if (scannedItems.some(i => i.code === code)) {
-            alert('This code is already in the list.');
+            alert(t.inventory.codeAlreadyInList);
             return;
         }
 
@@ -181,7 +183,12 @@ export default function CustomerReturn() {
                     } else {
                         // NOT IN ORDER
                         isValidOrderReturn = false;
-                        const confirmAdd = window.confirm(`WARNING: Item '${code}' (${item.ProductVariant?.Product?.Name}) is NOT part of Order #${orderId}. \n\nDo you want to add it anyway? (Price will be 0)`);
+                        const confirmAdd = window.confirm(
+                            (t.inventory.itemNotPartOfOrder || "WARNING: Item {code} ({name}) is NOT part of Order #{orderId}. \n\nDo you want to add it anyway? (Price will be 0)")
+                                .replace('{code}', code)
+                                .replace('{name}', item.ProductVariant?.Product?.Name || '')
+                                .replace('{orderId}', orderId)
+                        );
                         if (!confirmAdd) {
                             setProcessing(false);
                             return;
@@ -212,9 +219,9 @@ export default function CustomerReturn() {
             console.error("Failed to fetch item", err);
             // Verify failure logic
             if (err.response && err.response.status === 404) {
-                alert(`Product with code '${code}' not found in system.`);
+                alert(t.inventory.productNotFoundInSystem.replace('{code}', code));
             } else {
-                const confirmAdd = window.confirm(`Failed to verify item '${code}'. Add manual entry?`);
+                const confirmAdd = window.confirm((t.inventory.failedToVerifyItem || "Failed to verify item {code}. Add manual entry?").replace('{code}', code));
                 if (confirmAdd) {
                     setScannedItems(prev => [...prev, {
                         id: crypto.randomUUID(),
@@ -255,7 +262,7 @@ export default function CustomerReturn() {
                 OrderId: orderData ? orderData.Id : undefined
             });
 
-            setSuccessMsg('Return processed successfully! Customer balance updated.');
+            setSuccessMsg(t.inventory.returnProcessedSuccess || 'Return processed successfully! Customer balance updated.');
             setScannedItems([]);
             setRefundAmount('0');
             // Keep customer selected or clear? Maybe clear for next customer
@@ -268,7 +275,7 @@ export default function CustomerReturn() {
 
         } catch (error: any) {
             console.error(error);
-            setErrorMsg(error.response?.data?.message || 'Failed to process return.');
+            setErrorMsg(error.response?.data?.message || t.inventory.failedToProcessReturn || 'Failed to process return.');
         } finally {
             setProcessing(false);
         }
@@ -278,8 +285,8 @@ export default function CustomerReturn() {
         <div className="container mx-auto max-w-5xl px-4 py-4 md:px-8 md:py-8 flex flex-col gap-6">
             {/* Header */}
             <div className="flex flex-col gap-1">
-                <h1 className="text-3xl font-extrabold text-text-main dark:text-white">Customer Return</h1>
-                <p className="text-text-secondary dark:text-gray-400">Batch return items to inventory and refund to customer balance.</p>
+                <h1 className="text-3xl font-extrabold text-text-main dark:text-white">{t.inventory.customerReturn || 'Customer Return'}</h1>
+                <p className="text-text-secondary dark:text-gray-400">{t.inventory.customerReturnSubtitle || 'Batch return items to inventory and refund to customer balance.'}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -289,14 +296,14 @@ export default function CustomerReturn() {
                     {/* Order Selection (Optional) */}
                     <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
                         <label className="block text-sm font-bold text-text-main dark:text-white mb-2">
-                            Order ID <span className="text-secondary font-normal">(Optional)</span>
+                            {t.orders.orderId || 'Order ID'} <span className="text-secondary font-normal">({t.orders.optional || 'Optional'})</span>
                         </label>
                         <div className="flex gap-2">
                             <input
                                 type="text"
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value)}
-                                placeholder="Order #"
+                                placeholder={t.orders.orderPlaceholder || "Order #"}
                                 className="flex-1 bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white font-mono"
                                 onKeyDown={(e) => e.key === 'Enter' && handleLoadOrder()}
                             />
@@ -311,13 +318,13 @@ export default function CustomerReturn() {
                         {orderData && (
                             <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded text-xs flex items-center gap-1">
                                 <span className="material-symbols-outlined text-sm">verified</span>
-                                <b>Order #{orderData.Id} Loaded</b>
+                                <b>{t.inventory.orderLoaded.replace('{id}', orderData.Id) || `Order #${orderData.Id} Loaded`}</b>
                             </div>
                         )}
                     </div>
                     {/* Inventory Selection */}
                     <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
-                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Target Inventory</label>
+                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">{t.inventory.targetInventory || 'Target Inventory'}</label>
                         <select
                             value={selectedInventoryId}
                             onChange={(e) => setSelectedInventoryId(Number(e.target.value))}
@@ -329,7 +336,7 @@ export default function CustomerReturn() {
 
                     {/* Customer Selection */}
                     <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm relative">
-                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Customer</label>
+                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">{t.common.customer || 'Customer'}</label>
                         {selectedCustomer ? (
                             <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                                 <div>
@@ -346,7 +353,7 @@ export default function CustomerReturn() {
                                     type="text"
                                     value={customerSearch}
                                     onChange={(e) => setCustomerSearch(e.target.value)}
-                                    placeholder="Search customer..."
+                                    placeholder={t.inventory.searchCustomer || "Search customer..."}
                                     className="w-full bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white"
                                 />
                                 {showCustomerDropdown && customers.length > 0 && (
@@ -373,7 +380,7 @@ export default function CustomerReturn() {
 
                     {/* Scan Item Input */}
                     <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
-                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">Scan Item</label>
+                        <label className="block text-sm font-bold text-text-main dark:text-white mb-2">{t.inventory.scanItem || 'Scan Item'}</label>
                         <div className="flex gap-2">
                             <input
                                 autoFocus
@@ -381,7 +388,7 @@ export default function CustomerReturn() {
                                 value={productCodeInput}
                                 onChange={(e) => setProductCodeInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddProduct()}
-                                placeholder="Enter Product Code"
+                                placeholder={t.inventory.enterProductCode || "Enter Product Code"}
                                 className="flex-1 bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white"
                             />
                             <button
@@ -396,7 +403,7 @@ export default function CustomerReturn() {
                             disabled={!productCodeInput.trim()}
                             className="mt-2 w-full py-2 bg-secondary/10 text-secondary font-bold text-sm rounded-lg hover:bg-secondary/20 transition disabled:opacity-50"
                         >
-                            Add to List
+                            {t.inventory.addToList || 'Add to List'}
                         </button>
                     </div>
                 </div>
@@ -404,9 +411,9 @@ export default function CustomerReturn() {
                 {/* Right Column: List & Action */}
                 <div className="md:col-span-2 flex flex-col h-full bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-gray-100 dark:border-[#2a4032] flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h3 className="font-bold text-lg text-text-main dark:text-white">Items to Return ({scannedItems.length})</h3>
+                        <h3 className="font-bold text-lg text-text-main dark:text-white">{t.inventory.itemsToReturn || 'Items to Return'} ({scannedItems.length})</h3>
                         {scannedItems.length > 0 && (
-                            <button onClick={() => setScannedItems([])} className="text-xs text-red-500 hover:text-red-700 font-medium">Clear All</button>
+                            <button onClick={() => setScannedItems([])} className="text-xs text-red-500 hover:text-red-700 font-medium">{t.common.clearAll || 'Clear All'}</button>
                         )}
                     </div>
 
@@ -414,7 +421,7 @@ export default function CustomerReturn() {
                         {scannedItems.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
                                 <span className="material-symbols-outlined text-4xl">shopping_bag</span>
-                                <p>No items added yet.</p>
+                                <p>{t.orders.noItemsAdded || 'No items added yet.'}</p>
                             </div>
                         ) : (
                             <div className="flex flex-col gap-2">
@@ -444,7 +451,7 @@ export default function CustomerReturn() {
 
                     <div className="p-4 border-t border-gray-100 dark:border-[#2a4032] bg-gray-50/50 dark:bg-white/5 space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-text-main dark:text-white mb-1">Refund Amount (Balance Increase)</label>
+                            <label className="block text-sm font-bold text-text-main dark:text-white mb-1">{t.inventory.refundAmount || 'Refund Amount'} ({t.inventory.balanceIncrease || 'Balance Increase'})</label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                                 <input
@@ -480,7 +487,7 @@ export default function CustomerReturn() {
                             className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg hover:shadow-green-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {processing ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">keyboard_return</span>}
-                            <span>Confirm Return & Refund</span>
+                            <span>{t.inventory.confirmReturn || 'Confirm Return & Refund'}</span>
                         </button>
                     </div>
                 </div>
@@ -489,25 +496,25 @@ export default function CustomerReturn() {
             {/* History Table */}
             <div className="mt-8">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-text-main dark:text-white">Past Returns</h3>
+                    <h3 className="text-xl font-bold text-text-main dark:text-white">{t.inventory.pastReturns || 'Past Returns'}</h3>
                 </div>
                 <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[#2a4032] shadow-sm bg-white dark:bg-[#1a2e22]">
                     <div className="max-h-[500px] overflow-y-auto">
                         <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
                             <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] dark:text-gray-400 sticky top-0 z-10 transition-colors">
                                 <tr>
-                                    <th className="px-6 py-4 font-bold" scope="col">Date</th>
-                                    <th className="px-6 py-4 font-bold" scope="col">Customer</th>
-                                    <th className="px-6 py-4 font-bold" scope="col">Items Returned</th>
-                                    <th className="px-6 py-4 font-bold" scope="col">Refunded</th>
-                                    <th className="px-6 py-4 font-bold" scope="col">Processed By</th>
+                                    <th className="px-6 py-4 font-bold" scope="col">{t.common.date || 'Date'}</th>
+                                    <th className="px-6 py-4 font-bold" scope="col">{t.common.customer || 'Customer'}</th>
+                                    <th className="px-6 py-4 font-bold" scope="col">{t.inventory.itemsReturned || 'Items Returned'}</th>
+                                    <th className="px-6 py-4 font-bold" scope="col">{t.inventory.refunded || 'Refunded'}</th>
+                                    <th className="px-6 py-4 font-bold" scope="col">{t.inventory.processedBy || 'Processed By'}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-[#2a4032]">
                                 {history.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-8 text-center text-text-secondary dark:text-gray-400">
-                                            No return history found.
+                                            {t.inventory.noReturnHistory || 'No return history found.'}
                                         </td>
                                     </tr>
                                 ) : (
@@ -521,7 +528,7 @@ export default function CustomerReturn() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                                    {record.ItemsCount} items
+                                                    {record.ItemsCount} {t.common.items || 'items'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 font-mono font-bold text-green-600 dark:text-green-400">

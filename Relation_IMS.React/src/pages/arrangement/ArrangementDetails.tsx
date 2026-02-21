@@ -4,6 +4,7 @@ import { BrowserMultiFormatReader } from '@zxing/library';
 import api from '../../services/api';
 import { type Order, OrderInternalStatus } from '../../types';
 import ProductDetails from '../products/ProductDetails';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface ScannedItemRecord {
     sku: string;
@@ -14,6 +15,7 @@ interface ScannedItemRecord {
 }
 
 export default function ArrangementDetails() {
+    const { t } = useLanguage();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [order, setOrder] = useState<Order | null>(null);
@@ -145,7 +147,7 @@ export default function ArrangementDetails() {
                 sku,
                 matched: true,
                 timestamp: new Date(),
-                productName: "Item Verified",
+                productName: t.inventory.verified || "Item Verified",
                 productImage: undefined
             };
 
@@ -197,7 +199,7 @@ export default function ArrangementDetails() {
         return (
             <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-background-light dark:bg-background-dark">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary"></div>
-                <p className="mt-4 text-text-secondary font-medium">Loading Arrangement Details...</p>
+                <p className="mt-4 text-text-secondary font-medium">{t.orders.loadingArrangement || 'Loading Arrangement Details...'}</p>
             </div>
         );
     }
@@ -209,28 +211,28 @@ export default function ArrangementDetails() {
                 <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
                     <Link className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center" to="/">
                         <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                        Dashboard
+                        {t.nav.dashboard || 'Dashboard'}
                     </Link>
                     <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                    <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">Orders</Link>
+                    <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">{t.nav.orders || 'Orders'}</Link>
                     <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
                     <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to={`/orders/${order.Id}`}>#ORD-{order.Id}</Link>
                     <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                    <span className="text-text-main dark:text-gray-200 font-bold">Arrangement</span>
+                    <span className="text-text-main dark:text-gray-200 font-bold">{t.nav.arrangement || 'Arrangement'}</span>
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-black text-text-main dark:text-white tracking-tight flex items-center gap-3">
                             <span className="material-symbols-outlined text-4xl text-primary">fact_check</span>
-                            Order Arrangement
+                            {t.orders.orderArrangementTitle || 'Order Arrangement'}
                         </h1>
-                        <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">Scan items to verify against order requirements</p>
+                        <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">{t.orders.orderArrangementSubtitle || 'Scan items to verify against order requirements'}</p>
                     </div>
                     <div className="flex gap-3">
                         <div className="flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-gray-800/50 rounded-lg border border-primary/20 text-sm font-bold text-primary">
                             <span className="material-symbols-outlined text-lg">timelapse</span>
-                            {order.InternalStatus >= OrderInternalStatus.Confirmed ? 'Confirmed' : (order.InternalStatus === OrderInternalStatus.Arranged ? 'Arranged' : 'In Progress')}
+                            {order.InternalStatus >= OrderInternalStatus.Confirmed ? (t.orders.confirmed || 'Confirmed') : (order.InternalStatus === OrderInternalStatus.Arranged ? (t.orders.arranged || 'Arranged') : (t.common.inProgress || 'In Progress'))}
                         </div>
                     </div>
                 </div>
@@ -242,15 +244,15 @@ export default function ArrangementDetails() {
                             <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">playlist_add_check</span>
-                                    Required Items
+                                    {t.orders.requiredItems || 'Required Items'}
                                 </h3>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm whitespace-nowrap">
                                     <thead className="bg-[#f8fcf9] dark:bg-white/5 text-text-secondary font-medium">
                                         <tr>
-                                            <th className="px-6 py-3">Product Details</th>
-                                            <th className="px-6 py-3 w-32 text-center">Quantity</th>
+                                            <th className="px-6 py-3">{t.orders.productDetails || 'Product Details'}</th>
+                                            <th className="px-6 py-3 w-32 text-center">{t.common.quantity || 'Quantity'}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
@@ -322,7 +324,7 @@ export default function ArrangementDetails() {
                     <section className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
                         <div className="flex items-center gap-2 mb-6 justify-center">
                             <span className="material-symbols-outlined text-primary text-2xl">qr_code_scanner</span>
-                            <h3 className="text-xl font-bold text-text-main dark:text-white">Scan to Verify</h3>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white">{t.orders.scanToVerify || 'Scan to Verify'}</h3>
                         </div>
                         <div className="flex justify-center">
                             <div className="w-full max-w-xl flex flex-col gap-4">
@@ -347,25 +349,25 @@ export default function ArrangementDetails() {
                                             </div>
                                             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur rounded px-2 py-1 flex items-center gap-2 border border-white/10">
                                                 <div className="size-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Camera Active</span>
+                                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">{t.orders.cameraActive || 'Camera Active'}</span>
                                             </div>
                                             <button
                                                 onClick={stopScanning}
                                                 className="absolute bottom-4 right-4 bg-black/60 hover:bg-red-500/80 backdrop-blur text-white px-3 py-1 rounded text-xs font-bold transition-colors pointer-events-auto"
                                             >
-                                                Stop Scanning
+                                                {t.orders.stopScanning || 'Stop Scanning'}
                                             </button>
                                         </>
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white">
                                             <span className="material-symbols-outlined text-4xl mb-2 text-gray-500">videocam_off</span>
-                                            <p className="text-sm text-gray-400 mb-4">Camera is paused</p>
+                                            <p className="text-sm text-gray-400 mb-4">{t.orders.cameraPaused || 'Camera is paused'}</p>
                                             <button
                                                 onClick={() => setIsScanning(true)}
                                                 className="px-6 py-2 bg-primary hover:bg-primary-dark text-white font-bold rounded-lg shadow-lg transition-transform active:scale-95 flex items-center gap-2"
                                             >
                                                 <span className="material-symbols-outlined">qr_code_scanner</span>
-                                                Start Camera
+                                                {t.orders.startCamera || 'Start Camera'}
                                             </button>
                                         </div>
                                     )}
@@ -382,7 +384,7 @@ export default function ArrangementDetails() {
                                             value={manualSku}
                                             onChange={(e) => setManualSku(e.target.value)}
                                             className="block w-full rounded-xl border-[#e7f3eb] dark:border-[#2a4032] bg-[#f8fcf9] dark:bg-white/5 pl-10 pr-20 py-4 text-base text-text-main dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary shadow-sm transition-all"
-                                            placeholder="Enter SKU manually..."
+                                            placeholder={t.orders.enterSkuManually || "Enter SKU manually..."}
                                             type="text"
                                         />
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -393,7 +395,7 @@ export default function ArrangementDetails() {
                                     </form>
                                 </div>
                                 <p className="text-xs text-center text-text-secondary">
-                                    Ensure barcode is within the frame or type the SKU code directly.
+                                    {t.orders.scanInstructions || 'Ensure barcode is within the frame or type the SKU code directly.'}
                                 </p>
                             </div>
                         </div>
@@ -405,20 +407,20 @@ export default function ArrangementDetails() {
                             <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">history</span>
-                                    Scanned Items
+                                    {t.orders.scannedItems || 'Scanned Items'}
                                 </h3>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm whitespace-nowrap">
                                     <thead className="bg-[#f8fcf9] dark:bg-white/5 text-text-secondary font-medium">
                                         <tr>
-                                            <th className="px-6 py-3">Product Details</th>
+                                            <th className="px-6 py-3">{t.orders.productDetails || 'Product Details'}</th>
                                             <th className="px-6 py-3">SKU</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
                                         {scannedItems.length === 0 ? (
-                                            <tr><td colSpan={2} className="p-4 text-center text-text-secondary">No items scanned yet.</td></tr>
+                                            <tr><td colSpan={2} className="p-4 text-center text-text-secondary">{t.orders.noItemsScanned || 'No items scanned yet.'}</td></tr>
                                         ) : (
                                             scannedItems.map((scan, idx) => (
                                                 <tr key={idx} className={scan.matched ? "bg-green-50/40 dark:bg-green-900/10" : "bg-red-50/40 dark:bg-red-900/10"}>
@@ -430,7 +432,7 @@ export default function ArrangementDetails() {
                                                             <div>
                                                                 <p className="font-bold text-text-main dark:text-white">{scan.productName}</p>
                                                                 <p className={`text-xs ${scan.matched ? "text-text-secondary" : "text-red-500"}`}>
-                                                                    {scan.matched ? `Matched at ${scan.timestamp.toLocaleTimeString()}` : `Error at ${scan.timestamp.toLocaleTimeString()}`}
+                                                                    {scan.matched ? `${t.orders.matchedAt || 'Matched at'} ${scan.timestamp.toLocaleTimeString()}` : `${t.orders.errorAt || 'Error at'} ${scan.timestamp.toLocaleTimeString()}`}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -458,7 +460,7 @@ export default function ArrangementDetails() {
                             disabled={order.InternalStatus >= OrderInternalStatus.Arranged}
                         >
                             <span className="material-symbols-outlined text-2xl">check_circle</span>
-                            {order.InternalStatus >= OrderInternalStatus.Arranged ? 'Arrangement Completed' : 'Confirm Arrangement'}
+                            {order.InternalStatus >= OrderInternalStatus.Arranged ? (t.orders.arrangementCompleted || 'Arrangement Completed') : (t.orders.confirmArrangement || 'Confirm Arrangement')}
                         </button>
                     </div>
                 </div>
@@ -472,9 +474,9 @@ export default function ArrangementDetails() {
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-4xl text-primary">fact_check</span>
                             </div>
-                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Complete Arrangement?</h3>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.completeArrangementPrompt || 'Complete Arrangement?'}</h3>
                             <p className="text-text-secondary dark:text-gray-400 text-sm leading-relaxed">
-                                Are you sure all items have been verified and arranged? This will mark the order as <strong className="text-primary">Arranged</strong> and proceed to final confirmation.
+                                {(t.orders.completeArrangementConfirm || 'Are you sure all items have been verified and arranged? This will mark the order as {status} and proceed to final confirmation.').replace('{status}', t.orders.arranged || 'Arranged')}
                             </p>
                         </div>
                         <div className="flex gap-3">

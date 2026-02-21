@@ -848,6 +848,11 @@ namespace Relation_IMS.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("PreferredLanguage")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "IX_Unique_Email")

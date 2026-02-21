@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // --- Types ---
 interface Brand { Id: number; Name: string; Categories: Category[]; }
@@ -11,6 +12,8 @@ interface Size { id: number; name: string; categoryId?: number; }
 // --- Types for API Payloads ---
 
 export default function Configuration() {
+    const { t, language, setLanguage } = useLanguage();
+
     // --- State ---
     const [brands, setBrands] = useState<Brand[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -29,11 +32,11 @@ export default function Configuration() {
     const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0, categoryIds: [] as number[] });
 
     useEffect(() => {
-        loadAllData();
+        loadAllData(true);
     }, []);
 
-    const loadAllData = async () => {
-        setLoading(true);
+    const loadAllData = async (showLoading = false) => {
+        if (showLoading) setLoading(true);
         try {
             // Helper to safe load so one failure doesn't break the page
             const safeGet = async (url: string) => {
@@ -85,7 +88,7 @@ export default function Configuration() {
     };
 
     const handleDelete = async (type: 'brand' | 'category' | 'quarter' | 'color' | 'size', id: number) => {
-        if (!window.confirm("Are you sure you want to delete this item?")) return;
+        if (!window.confirm(t.config.confirmDelete)) return;
 
         try {
             let endpoint = '';
@@ -101,7 +104,7 @@ export default function Configuration() {
             loadAllData(); // Refresh list
         } catch (error) {
             console.error("Delete failed", error);
-            alert("Failed to delete item.");
+            alert(t.config.failedToDelete);
         }
     };
 
@@ -145,7 +148,7 @@ export default function Configuration() {
             loadAllData();
         } catch (error) {
             console.error("Save failed", error);
-            alert("Failed to save changes.");
+            alert(t.config.failedToSave);
         }
     };
 
@@ -186,12 +189,49 @@ export default function Configuration() {
 
                 {/* Header */}
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-extrabold text-[#0e1b12] dark:text-white">Configuration</h1>
-                    <p className="text-[#4e9767] dark:text-gray-400">Manage your product attributes and metadata.</p>
+                    <h1 className="text-3xl font-extrabold text-[#0e1b12] dark:text-white">{t.config.title}</h1>
+                    <p className="text-[#4e9767] dark:text-gray-400">{t.config.subtitle}</p>
+                </div>
+
+                {/* Language Switcher Section */}
+                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                        <div>
+                            <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[#17cf54]">translate</span>
+                                {t.config.language}
+                            </h2>
+                            <p className="text-xs text-gray-400 mt-0.5">{t.config.languageSubtitle}</p>
+                        </div>
+                    </div>
+                    <div className="p-4">
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setLanguage('en')}
+                                className={`flex-1 flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border-2 font-bold text-sm transition-all ${language === 'en'
+                                    ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] shadow-sm shadow-green-500/10'
+                                    : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+                                    }`}
+                            >
+                                <span className="text-xl">🇺🇸</span>
+                                {t.config.english}
+                            </button>
+                            <button
+                                onClick={() => setLanguage('bn')}
+                                className={`flex-1 flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border-2 font-bold text-sm transition-all ${language === 'bn'
+                                    ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] shadow-sm shadow-green-500/10'
+                                    : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
+                                    }`}
+                            >
+                                <span className="text-xl">🇧🇩</span>
+                                {t.config.bangla}
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-20 text-gray-400 font-bold">Loading Configuration...</div>
+                    <div className="text-center py-20 text-gray-400 font-bold">{t.config.loadingConfig}</div>
                 ) : (
                     <>
                         {/* Brands Section */}
@@ -199,14 +239,14 @@ export default function Configuration() {
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                                 <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#17cf54]">verified</span>
-                                    Brands
+                                    {t.config.brands}
                                 </h2>
                                 <button
                                     onClick={() => openModal('brand')}
                                     className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">add</span>
-                                    Add Brand
+                                    {t.config.addBrand}
                                 </button>
                             </div>
                             <div className="p-4">
@@ -214,7 +254,7 @@ export default function Configuration() {
                                     {brands.length > 0 ? (
                                         brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
                                     ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">No brands configured yet.</p>
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
                                     )}
                                 </div>
                             </div>
@@ -225,14 +265,14 @@ export default function Configuration() {
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                                 <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#17cf54]">category</span>
-                                    Categories
+                                    {t.config.categories}
                                 </h2>
                                 <button
                                     onClick={() => openModal('category')}
                                     className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">add</span>
-                                    Add Category
+                                    {t.config.addCategory}
                                 </button>
                             </div>
                             <div className="p-4">
@@ -240,7 +280,7 @@ export default function Configuration() {
                                     {categories.length > 0 ? (
                                         categories.map(c => renderCard(c.Name, null, 'category', c))
                                     ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">No categories configured yet.</p>
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noCategories}</p>
                                     )}
                                 </div>
                             </div>
@@ -251,14 +291,14 @@ export default function Configuration() {
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                                 <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#17cf54]">calendar_month</span>
-                                    Quarters
+                                    {t.config.quarters}
                                 </h2>
                                 <button
                                     onClick={() => openModal('quarter')}
                                     className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">add</span>
-                                    Add Quarter
+                                    {t.config.addQuarter}
                                 </button>
                             </div>
                             <div className="p-4">
@@ -266,7 +306,7 @@ export default function Configuration() {
                                     {quarters.length > 0 ? (
                                         quarters.map(q => renderCard(q.Name, null, 'quarter', q))
                                     ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">No quarters configured yet.</p>
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noQuarters}</p>
                                     )}
                                 </div>
                             </div>
@@ -277,14 +317,14 @@ export default function Configuration() {
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                                 <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#17cf54]">palette</span>
-                                    Colors
+                                    {t.config.colors}
                                 </h2>
                                 <button
                                     onClick={() => openModal('color')}
                                     className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">add</span>
-                                    Add Color
+                                    {t.config.addColor}
                                 </button>
                             </div>
                             <div className="p-4">
@@ -292,7 +332,7 @@ export default function Configuration() {
                                     {colors.length > 0 ? (
                                         colors.map(c => renderCard(c.name, c.hex, 'color', c, c.hex))
                                     ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">No colors configured yet.</p>
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noColors}</p>
                                     )}
                                 </div>
                             </div>
@@ -303,14 +343,14 @@ export default function Configuration() {
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                                 <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#17cf54]">straighten</span>
-                                    Sizes
+                                    {t.config.sizes}
                                 </h2>
                                 <button
                                     onClick={() => openModal('size')}
                                     className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">add</span>
-                                    Add Size
+                                    {t.config.addSize}
                                 </button>
                             </div>
                             <div className="p-4">
@@ -318,17 +358,17 @@ export default function Configuration() {
                                     {sizes.length > 0 ? (
                                         [...sizes]
                                             .sort((a, b) => {
-                                                const catA = categories.find(c => c.Id === a.categoryId)?.Name || 'Generic';
-                                                const catB = categories.find(c => c.Id === b.categoryId)?.Name || 'Generic';
+                                                const catA = categories.find(c => c.Id === a.categoryId)?.Name || t.common.generic;
+                                                const catB = categories.find(c => c.Id === b.categoryId)?.Name || t.common.generic;
                                                 if (catA !== catB) return catA.localeCompare(catB);
                                                 return a.name.localeCompare(b.name);
                                             })
                                             .map(s => {
                                                 const categoryName = categories.find(c => c.Id === s.categoryId)?.Name;
-                                                return renderCard(s.name, categoryName || 'Generic', 'size', s);
+                                                return renderCard(s.name, categoryName || t.common.generic, 'size', s);
                                             })
                                     ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">No sizes configured yet.</p>
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noSizes}</p>
                                     )}
                                 </div>
                             </div>
@@ -342,26 +382,26 @@ export default function Configuration() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                         <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white mb-6">
-                            {editingItem ? 'Edit' : 'Add'} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
+                            {editingItem ? t.common.edit : t.common.add} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
                         </h2>
 
                         <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                             <div className="flex flex-col gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Name</label>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.common.name}</label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                        placeholder={`Enter ${modalType} name...`}
+                                        placeholder={t.config.enterName.replace('{type}', modalType)}
                                         autoFocus
                                     />
                                 </div>
 
                                 {modalType === 'brand' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Categories <span className="text-red-400">*</span></label>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
                                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
@@ -389,7 +429,7 @@ export default function Configuration() {
 
                                 {modalType === 'color' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Color Hex</label>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.config.colorHex}</label>
                                         <div className="flex gap-2">
                                             <input
                                                 type="color"
@@ -408,16 +448,16 @@ export default function Configuration() {
                                     </div>
                                 )}
 
-                                {/* For Size, we might want Category selection, although user didn't explicitly ask for it, the backend often implies it. For simplicity, we can offer it or default it. */}
+                                {/* For Size, we might want Category selection */}
                                 {modalType === 'size' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Category (Optional)</label>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.config.categoryOptional}</label>
                                         <select
                                             value={formData.categoryId}
                                             onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
                                             className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
                                         >
-                                            <option value={0}>Generic / All</option>
+                                            <option value={0}>{t.config.genericAll}</option>
                                             {categories.map(c => (
                                                 <option key={c.Id} value={c.Id}>{c.Name}</option>
                                             ))}
@@ -432,13 +472,13 @@ export default function Configuration() {
                                     onClick={() => setModalOpen(false)}
                                     className="flex-1 py-3 text-gray-500 hover:text-gray-700 font-bold hover:bg-gray-50 rounded-xl transition-colors"
                                 >
-                                    Cancel
+                                    {t.common.cancel}
                                 </button>
                                 <button
                                     type="submit"
                                     className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all"
                                 >
-                                    Save Changes
+                                    {t.common.saveChanges}
                                 </button>
                             </div>
                         </form>

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { AlertProvider } from './context/AlertContext'
+import { LanguageProvider } from './i18n/LanguageContext'
 import { setupGlobalAlerts } from './services/DialogService'
 
 // Replace standard window.alert with our nice dialog
@@ -12,9 +13,11 @@ setupGlobalAlerts()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AlertProvider>
-        <App />
-      </AlertProvider>
+      <LanguageProvider>
+        <AlertProvider>
+          <App />
+        </AlertProvider>
+      </LanguageProvider>
     </BrowserRouter>
   </StrictMode>,
 )

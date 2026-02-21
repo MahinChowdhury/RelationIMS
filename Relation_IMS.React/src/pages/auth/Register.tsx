@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const Register = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -22,7 +24,7 @@ const Register = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
-            alert("Passwords don't match!");
+            alert(t.auth.passwordsDontMatch);
             return;
         }
         setLoading(true);
@@ -52,14 +54,14 @@ const Register = () => {
                                 eco
                             </span>
                         </div>
-                        <h1 className="text-2xl font-bold text-text-main font-display">Create Account</h1>
-                        <p className="text-text-secondary mt-2">Join to manage your inventory intelligently.</p>
+                        <h1 className="text-2xl font-bold text-text-main font-display">{t.auth.createAccount}</h1>
+                        <p className="text-text-secondary mt-2">{t.auth.joinSubtitle}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-text-main mb-1">
-                                Full Name
+                                {t.auth.fullName}
                             </label>
                             <input
                                 id="name"
@@ -76,7 +78,7 @@ const Register = () => {
 
                         <div>
                             <label htmlFor="phone" className="block text-sm font-medium text-text-main mb-1">
-                                Phone Number
+                                {t.auth.phoneNumber}
                             </label>
                             <input
                                 id="phone"
@@ -93,7 +95,7 @@ const Register = () => {
 
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-text-main mb-1">
-                                Password
+                                {t.auth.password}
                             </label>
                             <input
                                 id="password"
@@ -110,7 +112,7 @@ const Register = () => {
 
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-main mb-1">
-                                Confirm Password
+                                {t.auth.confirmPassword}
                             </label>
                             <input
                                 id="confirmPassword"
@@ -131,16 +133,16 @@ const Register = () => {
                                 disabled={loading}
                                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:translate-y-[-1px] active:translate-y-[1px]"
                             >
-                                {loading ? 'Creating Account...' : 'Register'}
+                                {loading ? t.auth.creatingAccount : t.auth.register}
                             </button>
                         </div>
                     </form>
 
                     <div className="mt-8 text-center">
                         <p className="text-sm text-text-secondary">
-                            Already have an account?{' '}
+                            {t.auth.alreadyHaveAccount}{' '}
                             <Link to="/login" className="font-medium text-primary hover:text-primary-dark transition-colors">
-                                Sign in
+                                {t.auth.signIn}
                             </Link>
                         </p>
                     </div>

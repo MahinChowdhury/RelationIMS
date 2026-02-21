@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { type Inventory } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function InventoryLocations() {
+    const { t } = useLanguage();
     const [inventories, setInventories] = useState<Inventory[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -41,7 +43,7 @@ export default function InventoryLocations() {
 
     const handleCreateInventory = async () => {
         if (!formData.Name.trim()) {
-            alert('Please enter a location name');
+            alert(t.inventory.enterLocationName);
             return;
         }
 
@@ -52,7 +54,7 @@ export default function InventoryLocations() {
             handleCloseModal();
         } catch (error) {
             console.error('Failed to create inventory', error);
-            alert('Failed to create location. Please try again.');
+            alert(t.inventory.failedToCreateLocation);
         } finally {
             setSaving(false);
         }
@@ -66,19 +68,19 @@ export default function InventoryLocations() {
                     <li className="inline-flex items-center">
                         <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
                             <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            Dashboard
+                            {t.nav.dashboard || 'Dashboard'}
                         </Link>
                     </li>
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <Link to="/inventory" className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white">Inventory</Link>
+                            <Link to="/inventory" className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white">{t.inventory.title || 'Inventory'}</Link>
                         </div>
                     </li>
                     <li aria-current="page">
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">Locations</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.inventory.locations || 'Locations'}</span>
                         </div>
                     </li>
                 </ol>
@@ -87,9 +89,9 @@ export default function InventoryLocations() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">Inventory Locations</h1>
+                    <h1 className="text-2xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">{t.inventory.locations || 'Inventory Locations'}</h1>
                     <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base max-w-2xl">
-                        Manage your physical inventory locations and view stock distribution.
+                        {t.inventory.manageLocationsSubtitle || 'Manage your physical inventory locations and view stock distribution.'}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -98,7 +100,7 @@ export default function InventoryLocations() {
                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-green-600 transition-all shadow-sm"
                     >
                         <span className="material-symbols-outlined text-[20px]">add_location</span>
-                        <span>Add Location</span>
+                        <span>{t.inventory.addLocation || 'Add Location'}</span>
                     </button>
                 </div>
             </div>
@@ -111,13 +113,13 @@ export default function InventoryLocations() {
             ) : inventories.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1a2e22] rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
                     <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">warehouse</span>
-                    <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">No Locations Found</h3>
-                    <p className="text-text-secondary dark:text-gray-400 mb-6">Get started by creating your first inventory location.</p>
+                    <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.inventory.noLocationsFound || 'No Locations Found'}</h3>
+                    <p className="text-text-secondary dark:text-gray-400 mb-6">{t.inventory.getStartedLocations || 'Get started by creating your first inventory location.'}</p>
                     <button
                         onClick={handleOpenModal}
                         className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20"
                     >
-                        Create Location
+                        {t.inventory.createLocation || 'Create Location'}
                     </button>
                 </div>
             ) : (
@@ -145,16 +147,16 @@ export default function InventoryLocations() {
                                 </div>
                                 <div className="py-4 border-y border-dashed border-gray-100 dark:border-[#2a4032]">
                                     <p className="text-sm text-text-secondary dark:text-gray-300 line-clamp-2 min-h-[40px]">
-                                        {inv.Description || 'No description provided.'}
+                                        {inv.Description || t.common.noData || 'No description provided.'}
                                     </p>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-                                        <span className="text-sm font-medium text-text-secondary dark:text-gray-300">Active</span>
+                                        <span className="text-sm font-medium text-text-secondary dark:text-gray-300">{t.inventory.active || 'Active'}</span>
                                     </div>
                                     <Link to={`/inventory/locations/${inv.Id}`} className="text-sm font-bold text-primary hover:text-green-700 flex items-center gap-1 group-hover:gap-2 transition-all">
-                                        View Details <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                        {t.inventory.viewDetails || 'View Details'} <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                                     </Link>
                                 </div>
                             </div>
@@ -170,8 +172,8 @@ export default function InventoryLocations() {
                             <span className="material-symbols-outlined text-4xl">add</span>
                         </div>
                         <div className="text-center">
-                            <h3 className="text-lg font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">Add New Location</h3>
-                            <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">Configure a new warehouse or shop</p>
+                            <h3 className="text-lg font-bold text-text-main dark:text-white group-hover:text-primary transition-colors">{t.inventory.addNewLocation || 'Add New Location'}</h3>
+                            <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">{t.inventory.configureNewLocation || 'Configure a new warehouse or shop'}</p>
                         </div>
                     </button>
                 </div>
@@ -189,10 +191,10 @@ export default function InventoryLocations() {
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-bold text-text-main dark:text-white leading-tight">
-                                        Add New Location
+                                        {t.inventory.addNewLocation || 'Add New Location'}
                                     </h2>
                                     <p className="text-xs text-text-secondary dark:text-gray-400 font-medium">
-                                        Create a new inventory location
+                                        {t.inventory.createLocation || 'Create a new inventory location'}
                                     </p>
                                 </div>
                             </div>
@@ -208,7 +210,7 @@ export default function InventoryLocations() {
                         <div className="p-6 flex flex-col gap-4">
                             {/* Name */}
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-bold text-text-main dark:text-gray-300">Location Name *</label>
+                                <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.inventory.locationName || 'Location Name'} *</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
                                         <span className="material-symbols-outlined text-[20px]">warehouse</span>
@@ -226,7 +228,7 @@ export default function InventoryLocations() {
 
                             {/* Description */}
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-sm font-bold text-text-main dark:text-gray-300">Description</label>
+                                <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.description || 'Description'}</label>
                                 <div className="relative">
                                     <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
                                         <span className="material-symbols-outlined text-[20px]">description</span>
@@ -236,7 +238,7 @@ export default function InventoryLocations() {
                                         onChange={(e) => setFormData({ ...formData, Description: e.target.value })}
                                         rows={3}
                                         className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
-                                        placeholder="Enter location description (optional)"
+                                        placeholder={t.inventory.enterLocationDescription || "Enter location description (optional)"}
                                     ></textarea>
                                 </div>
                             </div>
@@ -250,7 +252,7 @@ export default function InventoryLocations() {
                                 disabled={saving}
                                 className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Cancel
+                                {t.common.cancel || 'Cancel'}
                             </button>
                             <button
                                 type="button"
@@ -261,12 +263,12 @@ export default function InventoryLocations() {
                                 {saving ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                        <span>Creating...</span>
+                                        <span>{t.common.loading || 'Creating...'}</span>
                                     </>
                                 ) : (
                                     <>
                                         <span className="material-symbols-outlined text-[18px]">check</span>
-                                        <span>Create Location</span>
+                                        <span>{t.inventory.createLocation || 'Create Location'}</span>
                                     </>
                                 )}
                             </button>

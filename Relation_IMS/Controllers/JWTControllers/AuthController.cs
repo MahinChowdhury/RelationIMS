@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Dtos.JWTDtos;
 using Relation_IMS.Services.JWTServices;
+using System.Security.Claims;
 
 namespace Relation_IMS.Controllers.JWTControllers
 {
@@ -65,6 +67,61 @@ namespace Relation_IMS.Controllers.JWTControllers
                 return Unauthorized(new { message = "Invalid refresh token or client." });
             // Successful token refresh: return 200 OK with new tokens and expiry info
             return Ok(authResponse);
+        }
+
+        // GET api/auth/me
+        // Returns user info including preferences
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var userInfo = await _userService.GetUserInfoAsync(userId.Value);
+            if (userInfo == null) return NotFound();
+
+            return Ok(userInfo);
+        }
+
+        // PUT api/auth/me/language
+        // Updates the user's preferred language
+        [Authorize]
+        [HttpPut("me/language")]
+        public async Task<IActionResult> UpdateLanguage([FromBody] UserPreferenceDTO preference)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var success = await _userService.UpdatePreferredLanguageAsync(userId.Value, preference.PreferredLanguage);
+            if (!success) return BadRequest(new { message = "Invalid language code. Supported: en, bn" });
+
+            return Ok(new { message = "Language preference updated.", preferredLanguage = preference.PreferredLanguage });
+        }
+
+        // GET api/auth/me/language
+        // Gets the user's preferred language
+        [Authorize]
+        [HttpGet("me/language")]
+        public async Task<IActionResult> GetLanguage()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var userInfo = await _userService.GetUserInfoAsync(userId.Value);
+            if (userInfo == null) return NotFound();
+
+            return Ok(new { preferredLanguage = userInfo.PreferredLanguage });
+        }
+
+        // Helper: Extract current user Id from JWT claims
+        private int? GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                           ?? User.FindFirst("sub")?.Value;
+            if (int.TryParse(userIdClaim, out var userId))
+                return userId;
+            return null;
         }
     }
 }

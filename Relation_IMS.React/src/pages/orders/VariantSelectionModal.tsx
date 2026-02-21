@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { type Product, type ProductVariant } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface VariantSelectionModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface VariantSelectionModalProps {
 }
 
 export default function VariantSelectionModal({ isOpen, onClose, product, variants, onConfirm }: VariantSelectionModalProps) {
+    const { t } = useLanguage();
     const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
     const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([]);
     const [quantity, setQuantity] = useState<number>(1);
@@ -94,7 +96,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
         });
 
         if (invalidSelections.length > 0) {
-            alert(`Insufficient stock for:\n- ${invalidSelections.join('\n- ')}\n\nPlease reduce quantity.`);
+            alert(`${t.orders.insufficientStock}\n- ${invalidSelections.join('\n- ')}\n\n${t.orders.pleaseReduceQuantity}`);
             return;
         }
 
@@ -165,7 +167,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                             {product.Name}
                         </h3>
-                        <p className="text-xs text-gray-400 font-mono mt-0.5">Selection Mode: Multi-Size</p>
+                        <p className="text-xs text-gray-400 font-mono mt-0.5">{t.orders.selectionMode}</p>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                         <span className="material-symbols-outlined">close</span>
@@ -189,7 +191,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         {/* Color Selection */}
                         {uniqueColors.length > 0 && (
                             <div className="mb-6">
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">1. Select Color</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.selectColor}</label>
                                 <div className="flex flex-wrap gap-2">
                                     {uniqueColors.map(color => (
                                         <button
@@ -220,8 +222,8 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         {uniqueSizes.length > 0 && (
                             <div className="mb-6">
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">2. Select Size(s)</label>
-                                    <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-0.5 rounded">Multi-Select Enabled</span>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300">{t.orders.selectSizes}</label>
+                                    <span className="text-xs text-primary font-medium bg-primary/10 px-2 py-0.5 rounded">{t.orders.multiSelectEnabled}</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {uniqueSizes.map(size => {
@@ -254,7 +256,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         {/* Quantity and Price */}
                         <div className="grid grid-cols-2 gap-4 mb-2">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Quantity (Per Size)</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.quantityPerSize}</label>
                                 <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -278,7 +280,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Unit Price</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.unitPrice}</label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                                     <input
@@ -303,7 +305,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                 }`}
                         >
                             <span className="material-symbols-outlined">queue</span>
-                            Add to List
+                            {t.orders.addToList}
                         </button>
                     </div>
 
@@ -312,7 +314,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                             <h4 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">shopping_basket</span>
-                                Selected Items
+                                {t.orders.selectedItems}
                             </h4>
                             <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{stagedItems.length}</span>
                         </div>
@@ -321,7 +323,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                             {stagedItems.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-2 opacity-60">
                                     <span className="material-symbols-outlined text-4xl">playlist_add</span>
-                                    <p className="text-sm font-medium text-center">No items added yet.<br />Select options and click "Add to List"</p>
+                                    <p className="text-sm font-medium text-center">{t.orders.noItemsAdded}<br />{t.orders.selectAndAdd}</p>
                                 </div>
                             ) : (
                                 stagedItems.map((item) => (
@@ -332,7 +334,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                                     <div className="size-3 rounded-full border border-gray-200" style={{ backgroundColor: item.variant.Color.HexCode }}></div>
                                                 )}
                                                 <span className="font-bold text-gray-800 dark:text-white text-sm">
-                                                    {item.variant.Size?.Name} <span className="text-gray-400 font-normal">in {item.variant.Color?.Name}</span>
+                                                    {item.variant.Size?.Name} <span className="text-gray-400 font-normal">{t.common.in || 'in'} {item.variant.Color?.Name}</span>
                                                 </span>
                                             </div>
                                             <button
@@ -357,7 +359,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
 
                         <div className="p-4 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-gray-700">
                             <div className="flex justify-between items-center mb-4">
-                                <span className="text-sm text-gray-500">Total Amount</span>
+                                <span className="text-sm text-gray-500">{t.orders.totalAmount}</span>
                                 <span className="text-xl font-bold text-gray-800 dark:text-white">${totalStagedAmount.toFixed(2)}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
@@ -377,7 +379,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                         }`}
                                 >
                                     <span className="material-symbols-outlined">check</span>
-                                    Confirm
+                                    {t.common.confirm}
                                 </button>
                             </div>
                         </div>

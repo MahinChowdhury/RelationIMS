@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -36,14 +38,14 @@ const Login = () => {
                                 temp_preferences_custom
                             </span>
                         </div>
-                        <h1 className="text-3xl font-bold text-text-main font-display">Welcome Back</h1>
-                        <p className="text-text-secondary mt-2">Sign in to manage your inventory.</p>
+                        <h1 className="text-3xl font-bold text-text-main font-display">{t.auth.welcomeBack}</h1>
+                        <p className="text-text-secondary mt-2">{t.auth.signInSubtitle}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="phone" className="block text-sm font-medium text-text-main mb-1">
-                                Phone Number
+                                {t.auth.phoneNumber}
                             </label>
                             <div className="relative">
                                 <input
@@ -62,7 +64,7 @@ const Login = () => {
 
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-text-main mb-1">
-                                Password
+                                {t.auth.password}
                             </label>
                             <div className="relative">
                                 <input
@@ -88,13 +90,13 @@ const Login = () => {
                                     className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
                                 />
                                 <label htmlFor="remember-me" className="ml-2 block text-sm text-text-main cursor-pointer">
-                                    Remember me
+                                    {t.auth.rememberMe}
                                 </label>
                             </div>
 
                             <div className="text-sm">
                                 <a href="#" className="font-medium text-primary hover:text-primary-dark transition-colors">
-                                    Forgot password?
+                                    {t.auth.forgotPassword}
                                 </a>
                             </div>
                         </div>
@@ -105,23 +107,23 @@ const Login = () => {
                                 disabled={loading}
                                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:translate-y-[-1px] active:translate-y-[1px]"
                             >
-                                {loading ? 'Signing in...' : 'Login'}
+                                {loading ? t.auth.signingIn : t.auth.login}
                             </button>
                         </div>
                     </form>
 
                     <div className="mt-8 text-center">
                         <p className="text-sm text-text-secondary">
-                            Don't have an account?{' '}
+                            {t.auth.dontHaveAccount}{' '}
                             <Link to="/register" className="font-medium text-primary hover:text-primary-dark transition-colors">
-                                Register now
+                                {t.auth.registerNow}
                             </Link>
                         </p>
                     </div>
                 </div>
 
                 <p className="mt-8 text-center text-sm text-text-secondary opacity-75">
-                    Relation Inventory Management System
+                    {t.app.fullName}
                 </p>
             </main>
         </div>

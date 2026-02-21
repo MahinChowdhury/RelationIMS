@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import type { Order } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface EditPaymentModalProps {
     isOpen: boolean;
@@ -10,13 +11,14 @@ interface EditPaymentModalProps {
 }
 
 export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpdated }: EditPaymentModalProps) {
+    const { t } = useLanguage();
     const [payments, setPayments] = useState<{ method: string, amount: number, note: string }[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isOpen && order.Payments) {
             setPayments(order.Payments.map(p => ({
-                method: p.PaymentMethod === 0 ? 'Cash' : p.PaymentMethod === 1 ? 'Bank' : 'Bkash',
+                method: p.PaymentMethod === 0 ? (t.orders.cash || 'Cash') : p.PaymentMethod === 1 ? (t.orders.bank || 'Bank') : (t.orders.bkash || 'Bkash'),
                 amount: p.Amount,
                 note: p.Note || ''
             })));
@@ -24,7 +26,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
     }, [isOpen, order]);
 
     const handleAddPayment = () => {
-        setPayments([...payments, { method: 'Cash', amount: 0, note: '' }]);
+        setPayments([...payments, { method: t.orders.cash || 'Cash', amount: 0, note: '' }]);
     };
 
     const handleRemovePayment = (index: number) => {
@@ -59,7 +61,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                 Remarks: order.Remarks,
                 InternalStatus: order.InternalStatus,
                 Payments: payments.map(p => ({
-                    PaymentMethod: p.method === 'Cash' ? 0 : p.method === 'Bank' ? 1 : 2,
+                    PaymentMethod: p.method === (t.orders.cash || 'Cash') ? 0 : p.method === (t.orders.bank || 'Bank') ? 1 : 2,
                     Amount: Number(p.amount),
                     Note: p.note
                 }))
@@ -70,7 +72,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
             onClose();
         } catch (err) {
             console.error("Failed to update payments", err);
-            alert("Failed to update payments.");
+            alert(t.orders.failedToUpdatePayments);
         } finally {
             setLoading(false);
         }
@@ -87,7 +89,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                 <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
                     <h2 className="text-xl font-black text-text-main dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">payments</span>
-                        Edit Payments
+                        {t.orders.editPayments || 'Edit Payments'}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
                         <span className="material-symbols-outlined text-text-secondary">close</span>
@@ -104,9 +106,9 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                         onChange={(e) => handlePaymentChange(index, 'method', e.target.value)}
                                         className="h-10 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     >
-                                        <option value="Cash">Cash</option>
-                                        <option value="Bank">Bank</option>
-                                        <option value="Bkash">Bkash</option>
+                                        <option value={t.orders.cash || "Cash"}>{t.orders.cash || "Cash"}</option>
+                                        <option value={t.orders.bank || "Bank"}>{t.orders.bank || "Bank"}</option>
+                                        <option value={t.orders.bkash || "Bkash"}>{t.orders.bkash || "Bkash"}</option>
                                     </select>
                                     <input
                                         type="number"
@@ -114,7 +116,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                         value={payment.amount}
                                         onChange={(e) => handlePaymentChange(index, 'amount', Number(e.target.value))}
                                         className="h-10 flex-1 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                        placeholder="Amount"
+                                        placeholder={t.common.amount || "Amount"}
                                     />
                                     <button
                                         onClick={() => handleRemovePayment(index)}
@@ -128,7 +130,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                     value={payment.note}
                                     onChange={(e) => handlePaymentChange(index, 'note', e.target.value)}
                                     className="h-10 w-full px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                    placeholder="Payment Note (Optional)"
+                                    placeholder={t.orders.paymentNote || "Payment Note (Optional)"}
                                 />
                             </div>
                         ))}
@@ -138,21 +140,21 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                             className="w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2 font-bold text-sm"
                         >
                             <span className="material-symbols-outlined">add</span>
-                            Add Payment
+                            {t.orders.addPayment || 'Add Payment'}
                         </button>
                     </div>
 
                     <div className="mt-6 p-4 bg-gray-50 dark:bg-black/20 rounded-xl space-y-2">
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Order Net Amount:</span>
+                            <span className="text-gray-500">{t.orders.orderNetAmount || 'Order Net Amount'}:</span>
                             <span className="font-bold text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Total Paid:</span>
+                            <span className="text-gray-500">{t.orders.totalPaid || 'Total Paid'}:</span>
                             <span className="font-bold text-green-600">৳{totalPaid.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-base pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <span className="font-bold text-text-main dark:text-white">Remaining Due:</span>
+                            <span className="font-bold text-text-main dark:text-white">{t.orders.remainingDue || 'Remaining Due'}:</span>
                             <span className={`font-black ${due > 0 ? 'text-red-500' : 'text-green-500'}`}>৳{due.toFixed(2)}</span>
                         </div>
                     </div>
@@ -163,7 +165,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                         onClick={onClose}
                         className="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
-                        Cancel
+                        {t.common.cancel || 'Cancel'}
                     </button>
                     <button
                         onClick={handleSave}
@@ -171,7 +173,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                         className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 disabled:opacity-50 flex items-center gap-2"
                     >
                         {loading ? <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span> : <span className="material-symbols-outlined text-sm">save</span>}
-                        Save Changes
+                        {t.common.saveChanges || 'Save Changes'}
                     </button>
                 </div>
             </div>

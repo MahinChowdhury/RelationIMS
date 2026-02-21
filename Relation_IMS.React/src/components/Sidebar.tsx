@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -7,6 +8,7 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const location = useLocation();
+    const { t } = useLanguage();
 
     const isActive = (path: string) => {
         return location.pathname.startsWith(path);
@@ -20,13 +22,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     }
 
     const navItems: NavItem[] = [
-        { name: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
-        { name: 'Products', path: '/products', icon: 'shopping_bag' },
-        { name: 'Orders', path: '/orders', icon: 'receipt_long' },
-        { name: 'Customers', path: '/customers', icon: 'group' },
-        { name: 'Inventory', path: '/inventory', icon: 'inventory_2' },
-        { name: 'Arrangement', path: '/arrangement', icon: 'conveyor_belt' },
-        { name: 'Accounts', path: '/accounts', icon: 'bar_chart' },
+        { name: t.nav.dashboard, path: '/dashboard', icon: 'dashboard' },
+        { name: t.nav.products, path: '/products', icon: 'shopping_bag' },
+        { name: t.nav.orders, path: '/orders', icon: 'receipt_long' },
+        { name: t.nav.customers, path: '/customers', icon: 'group' },
+        { name: t.nav.inventory, path: '/inventory', icon: 'inventory_2' },
+        { name: t.nav.arrangement, path: '/arrangement', icon: 'conveyor_belt' },
+        { name: t.nav.accounts, path: '/accounts', icon: 'bar_chart' },
     ];
 
     return (
@@ -52,8 +54,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                 <span className="material-symbols-outlined">eco</span>
                             </div>
                             <div className="flex flex-col">
-                                <h1 className="text-text-main dark:text-white text-base font-bold leading-normal">Relation IMS</h1>
-                                <p className="text-text-secondary text-xs font-normal">Inventory Manager</p>
+                                <h1 className="text-text-main dark:text-white text-base font-bold leading-normal">{t.app.name}</h1>
+                                <p className="text-text-secondary text-xs font-normal">{t.app.subtitle}</p>
                             </div>
                         </div>
 
@@ -94,7 +96,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             <span className="material-symbols-outlined text-gray-500 group-hover:text-primary dark:text-gray-400">
                                 tune
                             </span>
-                            <span className="text-sm font-medium">Configuration</span>
+                            <span className="text-sm font-medium">{t.nav.configuration}</span>
                         </Link>
 
                         <div className="flex items-center gap-3 px-3 py-2.5 mt-2">

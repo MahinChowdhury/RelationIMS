@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import { type Order, PaymentStatus } from '../../types';
 
 export default function OrdersPage() {
+    const { t } = useLanguage();
     const navigate = useNavigate();
 
     // State
@@ -141,19 +143,19 @@ export default function OrdersPage() {
                     <li className="inline-flex items-center">
                         <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
                             <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            Dashboard
+                            {t.nav.dashboard}
                         </Link>
                     </li>
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">Orders</span>
+                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">{t.nav.orders}</span>
                         </div>
                     </li>
                     <li aria-current="page">
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">All Orders</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.orders.allOrders}</span>
                         </div>
                     </li>
                 </ol>
@@ -162,9 +164,9 @@ export default function OrdersPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">Orders List</h1>
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">{t.orders.ordersList}</h1>
                     <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
-                        Manage customer orders, track payments, and update status.
+                        {t.orders.subtitle}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -172,7 +174,7 @@ export default function OrdersPage() {
                         onClick={() => navigate('/orders/create')}
                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all">
                         <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
-                        Create Order
+                        {t.orders.createOrder}
                     </button>
                 </div>
             </div>
@@ -329,7 +331,7 @@ export default function OrdersPage() {
                                 title="View Details">
                                 <span className="material-symbols-outlined text-[16px]">visibility</span>
                             </button>
-                            <button 
+                            <button
                                 onClick={() => navigate(`/orders/${order.Id}/invoice`)}
                                 className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
                                 <span className="material-symbols-outlined text-[16px]">print</span>

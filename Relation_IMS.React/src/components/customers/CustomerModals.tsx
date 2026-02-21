@@ -1,4 +1,5 @@
 import type { Customer } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // --- Types ---
 interface CustomerFormModalProps {
@@ -25,6 +26,7 @@ export function CustomerFormModal({
     onSave,
     onChange
 }: CustomerFormModalProps) {
+    const { t } = useLanguage();
     if (!show) return null;
 
     return (
@@ -41,10 +43,10 @@ export function CustomerFormModal({
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-text-main dark:text-white leading-tight">
-                                {mode === 'create' ? 'Add New Customer' : 'Edit Customer'}
+                                {mode === 'create' ? t.customers.addCustomer : t.customers.editCustomer}
                             </h2>
                             <p className="text-xs text-text-secondary dark:text-gray-400 font-medium">
-                                {mode === 'create' ? 'Enter customer details below' : 'Update customer information'}
+                                {mode === 'create' ? t.dialog.enterDetails || 'Enter details' : t.customers.editCustomer}
                             </p>
                         </div>
                     </div>
@@ -60,7 +62,7 @@ export function CustomerFormModal({
                 <div className="p-6 flex flex-col gap-4">
                     {/* Name */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Full Name</label>
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.name}</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
                                 <span className="material-symbols-outlined text-[20px]">person</span>
@@ -79,7 +81,7 @@ export function CustomerFormModal({
                     {/* Contact Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-bold text-text-main dark:text-gray-300">Phone</label>
+                            <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.phone}</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
                                     <span className="material-symbols-outlined text-[20px]">call</span>
@@ -98,7 +100,7 @@ export function CustomerFormModal({
 
                     {/* Address */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Address</label>
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.address}</label>
                         <div className="relative">
                             <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
                                 <span className="material-symbols-outlined text-[20px]">location_on</span>
@@ -113,7 +115,7 @@ export function CustomerFormModal({
                         </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Shop Name</label>
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.customers.shopName}</label>
                         <div className="relative">
                             <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
                                 <span className="material-symbols-outlined text-[20px]">location_on</span>
@@ -128,7 +130,7 @@ export function CustomerFormModal({
                         </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-bold text-text-main dark:text-gray-300">Shop Address</label>
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.customers.shopAddress}</label>
                         <div className="relative">
                             <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
                                 <span className="material-symbols-outlined text-[20px]">location_on</span>
@@ -151,7 +153,7 @@ export function CustomerFormModal({
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
                     >
-                        Cancel
+                        {t.common.cancel}
                     </button>
                     <button
                         type="button"
@@ -159,7 +161,7 @@ export function CustomerFormModal({
                         className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-md shadow-green-500/20 transition-all flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[18px]">check</span>
-                        {mode === 'create' ? 'Save Customer' : 'Update Changes'}
+                        {mode === 'create' ? t.customers.addCustomer : t.common.saveChanges}
                     </button>
                 </div>
             </div>
@@ -169,6 +171,7 @@ export function CustomerFormModal({
 
 // --- DELETE MODAL ---
 export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustomerModalProps) {
+    const { t } = useLanguage();
     if (!show) return null;
 
     return (
@@ -179,9 +182,9 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
                         <span className="material-symbols-outlined text-red-500 text-[32px]">warning</span>
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-text-main dark:text-white mb-1">Delete Customer</h2>
+                        <h2 className="text-xl font-black text-text-main dark:text-white mb-1">{t.customers.deleteCustomer}</h2>
                         <p className="text-sm text-text-secondary dark:text-gray-400">
-                            Are you sure you want to delete this customer? This action cannot be undone.
+                            {t.common.areYouSure}
                         </p>
                     </div>
                 </div>
@@ -190,13 +193,13 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
                         onClick={onCancel}
                         className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
                     >
-                        Cancel
+                        {t.common.cancel}
                     </button>
                     <button
                         onClick={onConfirm}
                         className="px-4 py-2.5 text-sm font-bold text-white bg-red-500 rounded-lg hover:bg-red-600 shadow-md shadow-red-500/20 transition-all"
                     >
-                        Yes, Delete
+                        {t.common.yes}, {t.common.delete}
                     </button>
                 </div>
             </div>

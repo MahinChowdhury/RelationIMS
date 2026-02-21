@@ -4,10 +4,12 @@ import api from '../../services/api';
 import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus } from '../../types';
 import InternalOrderCycle from './InternalOrderCycle';
 import EditPaymentModal from './EditPaymentModal';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // ... (existing imports or keep them if they were already there, but careful not to duplicate)
 
 const CopyableBarcode = ({ code, isReturned }: { code: string, isReturned?: boolean }) => {
+    const { t } = useLanguage();
     const [copied, setCopied] = useState(false);
 
     const handleCopy = (e: React.MouseEvent) => {
@@ -22,7 +24,7 @@ const CopyableBarcode = ({ code, isReturned }: { code: string, isReturned?: bool
             <button
                 onClick={handleCopy}
                 className="font-mono text-xs text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-md bg-red-50 dark:bg-red-900/20 shadow-sm flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-800/40 hover:border-red-300 dark:hover:border-red-700 transition-all active:scale-95 group/code"
-                title="Returned Item (Click to copy)"
+                title={`${t.common.returnedItem || 'Returned Item'} (${t.common.clickToCopy || 'Click to copy'})`}
             >
                 {code}
                 <span className={`material-symbols-outlined text-[14px] transition-all duration-300 ${copied ? 'text-blue-500 scale-110' : 'text-red-500 opacity-60 group-hover/code:opacity-100'}`}>
@@ -36,7 +38,7 @@ const CopyableBarcode = ({ code, isReturned }: { code: string, isReturned?: bool
         <button
             onClick={handleCopy}
             className="font-mono text-xs text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 px-2.5 py-1 rounded-md bg-green-50 dark:bg-green-900/20 shadow-sm flex items-center gap-1.5 hover:bg-green-100 dark:hover:bg-green-800/40 hover:border-green-300 dark:hover:border-green-700 transition-all active:scale-95 group/code"
-            title="Sold Item (Click to copy)"
+            title={`${t.common.soldItem || 'Sold Item'} (${t.common.clickToCopy || 'Click to copy'})`}
         >
             {code}
             <span className={`material-symbols-outlined text-[14px] transition-all duration-300 ${copied ? 'text-blue-500 scale-110' : 'text-green-500 opacity-60 group-hover/code:opacity-100'}`}>
@@ -47,6 +49,7 @@ const CopyableBarcode = ({ code, isReturned }: { code: string, isReturned?: bool
 };
 
 export default function OrderDetailsPage() {
+    const { t } = useLanguage();
     const { id } = useParams<{ id: string }>();
     const [searchParams] = useSearchParams();
     const viewMode = searchParams.get('view');
@@ -105,7 +108,7 @@ export default function OrderDetailsPage() {
 
     const loadOrderDetails = async (orderId: number) => {
         if (isNaN(orderId)) {
-            setError('Invalid order ID.');
+            setError(t.orders.orderNotFound || 'Invalid order ID.');
             setLoading(false);
             return;
         }
@@ -135,9 +138,9 @@ export default function OrderDetailsPage() {
         } catch (err: any) {
             console.error('Failed to load order:', err);
             if (err.response?.status === 404) {
-                setError('Order not found.');
+                setError(t.orders.orderNotFound || 'Order not found.');
             } else {
-                setError('Failed to load order details. Please try again later.');
+                setError(t.orders.failedToLoad || 'Failed to load order details. Please try again later.');
             }
         } finally {
             setLoading(false);
@@ -148,12 +151,12 @@ export default function OrderDetailsPage() {
         return (
             <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-background-light dark:bg-background-dark">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary"></div>
-                <p className="mt-4 text-text-secondary font-medium">Loading order details...</p>
+                <p className="mt-4 text-text-secondary font-medium">{t.common.loading || 'Loading order details...'}</p>
             </div>
         );
     }
 
-    if (error || !order) return <div>{error || 'Order not found'}</div>;
+    if (error || !order) return <div className="p-4 text-center">{error || t.orders.orderNotFound || 'Order not found'}</div>;
 
     // GATEWAY LOGIC
     const isConfirmed = order.InternalStatus === OrderInternalStatus.Confirmed;
@@ -170,8 +173,8 @@ export default function OrderDetailsPage() {
 
 
     const formatDate = (dateString: string) => {
-        if (!dateString || dateString.startsWith('0001-01-01')) return 'N/A';
-        return new Date(dateString).toLocaleDateString('en-US', {
+        if (!dateString || dateString.startsWith('0001-01-01')) return t.common.notAvailable || 'N/A';
+        return new Date(dateString).toLocaleDateString(t.common.dateLocale || 'en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -182,10 +185,10 @@ export default function OrderDetailsPage() {
 
     const getPaymentStatusText = (status: PaymentStatus) => {
         switch (status) {
-            case PaymentStatus.Pending: return 'Pending';
-            case PaymentStatus.Partial: return 'Partial';
-            case PaymentStatus.Paid: return 'Paid';
-            default: return 'Unknown';
+            case PaymentStatus.Pending: return t.common.pending || 'Pending';
+            case PaymentStatus.Partial: return t.orders.partial || 'Partial';
+            case PaymentStatus.Paid: return t.common.paid || 'Paid';
+            default: return t.common.unknown || 'Unknown';
         }
     };
 
@@ -204,12 +207,12 @@ export default function OrderDetailsPage() {
                 <div className="max-w-md w-full text-center">
                     <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-8 mb-6">
                         <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
-                        <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Oops! Something went wrong</h2>
-                        <p className="text-red-600 dark:text-red-400">{error || 'Order not found'}</p>
+                        <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">{t.common.somethingWentWrong || 'Oops! Something went wrong'}</h2>
+                        <p className="text-red-600 dark:text-red-400">{error || t.orders.orderNotFound || 'Order not found'}</p>
                     </div>
                     <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20">
                         <span className="material-symbols-outlined">arrow_back</span>
-                        Back to Orders
+                        {t.common.backToOrders || 'Back to Orders'}
                     </Link>
                 </div>
             </div>
@@ -226,19 +229,19 @@ export default function OrderDetailsPage() {
             <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
                 <Link className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center" to="/">
                     <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                    Dashboard
+                    {t.nav.dashboard || 'Dashboard'}
                 </Link>
                 <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">Orders</Link>
+                <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">{t.nav.orders || 'Orders'}</Link>
                 <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                <span className="text-text-main dark:text-gray-200 font-bold">Order #{order.Id}</span>
+                <span className="text-text-main dark:text-gray-200 font-bold">{t.common.order || 'Order'} #{order.Id}</span>
             </div>
 
             {/* Header Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <h1 className="text-3xl md:text-4xl font-black text-text-main dark:text-white tracking-tight">Order #{order.Id}</h1>
+                        <h1 className="text-3xl md:text-4xl font-black text-text-main dark:text-white tracking-tight">{t.common.order || 'Order'} #{order.Id}</h1>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border
                             ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800' :
                                 order.PaymentStatus === PaymentStatus.Partial ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' :
@@ -249,22 +252,22 @@ export default function OrderDetailsPage() {
                         {order.InternalStatus !== OrderInternalStatus.Confirmed && (
                             <Link to={`/arrangement/${order.Id}`} className="ml-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
                                 <span className="material-symbols-outlined text-xs">conveyor_belt</span>
-                                {order.InternalStatus === OrderInternalStatus.Created ? 'Pending Arrangement' :
-                                    order.InternalStatus === OrderInternalStatus.Arranging ? 'Arranging' :
-                                        order.InternalStatus === OrderInternalStatus.Arranged ? 'Arranged (Confirm Now)' : 'Unknown'}
+                                {order.InternalStatus === OrderInternalStatus.Created ? (t.orders.pendingArrangement || 'Pending Arrangement') :
+                                    order.InternalStatus === OrderInternalStatus.Arranging ? (t.orders.arranging || 'Arranging') :
+                                        order.InternalStatus === OrderInternalStatus.Arranged ? (t.orders.arrangedConfirmNow || 'Arranged (Confirm Now)') : (t.common.unknown || 'Unknown')}
                             </Link>
                         )}
                     </div>
-                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base">Placed on {formatDate(order.CreatedAt)}</p>
+                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base">{t.orders.placedOn || 'Placed on'} {formatDate(order.CreatedAt)}</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                     <Link to={`/orders/${order.Id}/invoice`} className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
                         <span className="material-symbols-outlined text-lg">print</span>
-                        Print Invoice
+                        {t.orders.printInvoice || 'Print Invoice'}
                     </Link>
                     <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
                         <span className="material-symbols-outlined text-lg">edit</span>
-                        {order.InternalStatus === OrderInternalStatus.Confirmed ? 'Edit Payment' : 'Edit Order'}
+                        {order.InternalStatus === OrderInternalStatus.Confirmed ? (t.orders.editOrderPayment || 'Edit Payment') : (t.orders.editOrder || 'Edit Order')}
                     </button>
                 </div>
             </div>
@@ -276,9 +279,9 @@ export default function OrderDetailsPage() {
                     <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">
                         <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">person</span>
-                            Customer Details
+                            {t.orders.customerDetails || 'Customer Details'}
                         </h3>
-                        <Link to={`/customers/${order.CustomerId}`} className="text-primary hover:text-green-700 text-sm font-semibold">View Profile</Link>
+                        <Link to={`/customers/${order.CustomerId}`} className="text-primary hover:text-green-700 text-sm font-semibold">{t.orders.viewProfile || 'View Profile'}</Link>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-6">
                         <div className="flex flex-col items-center sm:items-start gap-3 min-w-[120px]">
@@ -286,39 +289,39 @@ export default function OrderDetailsPage() {
                                 {order.Customer?.Name?.charAt(0) || '#'}
                             </div>
                             <div className="text-center sm:text-left">
-                                <p className="font-bold text-text-main dark:text-white text-lg">{order.Customer?.Name || 'Unknown Customer'}</p>
+                                <p className="font-bold text-text-main dark:text-white text-lg">{order.Customer?.Name || t.orders.unknownCustomer || 'Unknown Customer'}</p>
                                 <p className="text-xs text-text-secondary">ID: #{order.CustomerId}</p>
                             </div>
                         </div>
                         <div className="flex-1 space-y-4">
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Contact Info</p>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">{t.orders.contactInfo || 'Contact Info'}</p>
 
                                     <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base">call</span>
-                                        <a className="hover:underline" href={`tel:${order.Customer?.Phone || ''}`}>{order.Customer?.Phone || 'N/A'}</a>
+                                        <a className="hover:underline" href={`tel:${order.Customer?.Phone || ''}`}>{order.Customer?.Phone || t.common.notAvailable || 'N/A'}</a>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Customer Address</p>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">{t.orders.customerAddress || 'Customer Address'}</p>
                                     <div className="flex items-start gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base mt-0.5">location_on</span>
-                                        <span className="whitespace-pre-wrap">{order.Customer?.Address || 'No shipping address provided.'}</span>
+                                        <span className="whitespace-pre-wrap">{order.Customer?.Address || t.orders.noShippingAddress || 'No shipping address provided.'}</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Shop Name</p>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">{t.orders.shopName || 'Shop Name'}</p>
                                     <div className="flex items-start gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base mt-0.5">location_on</span>
-                                        <span className="whitespace-pre-wrap">{order.Customer?.ShopName || 'No shop name provided.'}</span>
+                                        <span className="whitespace-pre-wrap">{order.Customer?.ShopName || t.orders.noShopName || 'No shop name provided.'}</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Shop Address</p>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">{t.orders.shopAddress || 'Shop Address'}</p>
                                     <div className="flex items-start gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base mt-0.5">location_on</span>
-                                        <span className="whitespace-pre-wrap">{order.Customer?.ShopAddress || 'No shop address provided.'}</span>
+                                        <span className="whitespace-pre-wrap">{order.Customer?.ShopAddress || t.orders.noShopAddress || 'No shop address provided.'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -331,7 +334,7 @@ export default function OrderDetailsPage() {
                     <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">
                         <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">payments</span>
-                            Payment Details
+                            {t.orders.paymentDetails || 'Payment Details'}
                         </h3>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border
                             ${order.PaymentStatus === PaymentStatus.Paid ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800' :
@@ -343,7 +346,7 @@ export default function OrderDetailsPage() {
                     <div className="flex-1 flex flex-col justify-between">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
-                                <p className="text-xs text-text-secondary mb-1">Payment Method(s)</p>
+                                <p className="text-xs text-text-secondary mb-1">{t.orders.paymentMethods || 'Payment Method(s)'}</p>
                                 {order.Payments && order.Payments.length > 0 ? (
                                     <div className="space-y-1">
                                         {order.Payments.map((p: OrderPayment, idx: number) => (
@@ -353,7 +356,7 @@ export default function OrderDetailsPage() {
                                                         {p.PaymentMethod === 0 ? 'payments' : p.PaymentMethod === 1 ? 'account_balance' : 'smartphone'}
                                                     </span>
                                                     <span className="font-medium text-text-main dark:text-white">
-                                                        {p.PaymentMethod === 0 ? 'Cash' : p.PaymentMethod === 1 ? 'Bank' : 'Bkash'}
+                                                        {p.PaymentMethod === 0 ? (t.orders.cash || 'Cash') : p.PaymentMethod === 1 ? (t.orders.bank || 'Bank') : (t.orders.bkash || 'Bkash')}
                                                     </span>
                                                 </div>
                                                 <span className="font-bold text-text-main dark:text-white">৳{p.Amount.toFixed(2)}</span>
@@ -363,26 +366,26 @@ export default function OrderDetailsPage() {
                                 ) : (
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-text-main dark:text-white">credit_card</span>
-                                        <span className="font-bold text-sm text-text-main dark:text-white">Standard</span>
+                                        <span className="font-bold text-sm text-text-main dark:text-white">{t.common.default || 'Standard'}</span>
                                     </div>
                                 )}
                             </div>
                             <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
-                                <p className="text-xs text-text-secondary mb-1">Order Type</p>
+                                <p className="text-xs text-text-secondary mb-1">{t.orders.orderType || 'Order Type'}</p>
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-text-main dark:text-white">shopping_bag</span>
-                                    <span className="font-bold text-sm text-text-main dark:text-white">Retail</span>
+                                    <span className="font-bold text-sm text-text-main dark:text-white">{t.orders.retail || 'Retail'}</span>
                                 </div>
                             </div>
                         </div>
                         <div className="space-y-4">
                             <div className="flex justify-between items-end">
                                 <div>
-                                    <p className="text-sm font-medium text-text-secondary">Total Amount Paid</p>
+                                    <p className="text-sm font-medium text-text-secondary">{t.orders.paidByCustomer || 'Total Amount Paid'}</p>
                                     <p className="text-xl font-bold text-primary">৳{paidAmount.toFixed(2)}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-medium text-text-secondary">Remaining Due</p>
+                                    <p className="text-sm font-medium text-text-secondary">{t.orders.remainingDue || 'Remaining Due'}</p>
                                     <p className={`text-xl font-bold ${dueAmount > 0 ? 'text-red-500' : 'text-text-main dark:text-white'}`}>৳{dueAmount.toFixed(2)}</p>
                                 </div>
                             </div>
@@ -390,7 +393,7 @@ export default function OrderDetailsPage() {
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                                 <div className={`h-2.5 rounded-full ${paidPercentage === 100 ? 'bg-primary' : 'bg-primary/80'}`} style={{ width: `${paidPercentage}%` }}></div>
                             </div>
-                            <p className="text-xs text-center text-text-secondary">{paidPercentage.toFixed(0)}% of payment completed</p>
+                            <p className="text-xs text-center text-text-secondary">{(t.orders.paymentCompleted || '{percentage}% of payment completed').replace('{percentage}', paidPercentage.toFixed(0))}</p>
                         </div>
                     </div>
                 </div>
@@ -401,24 +404,24 @@ export default function OrderDetailsPage() {
                 {/* Order Items Table */}
                 <div className="flex-1 bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] overflow-hidden">
                     <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-text-main dark:text-white">Order Items</h3>
-                        <span className="text-sm text-text-secondary">{order.OrderItems?.length || 0} Items</span>
+                        <h3 className="text-lg font-bold text-text-main dark:text-white">{t.orders.orderItems || 'Order Items'}</h3>
+                        <span className="text-sm text-text-secondary">{order.OrderItems?.length || 0} {t.common.items || 'Items'}</span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-[#f8fcf9] dark:bg-white/5 text-text-secondary font-medium">
                                 <tr>
                                     <th className="px-6 py-3 w-12">#</th>
-                                    <th className="px-6 py-3">Product Details</th>
-                                    <th className="px-6 py-3 text-right">Unit Price</th>
-                                    <th className="px-6 py-3 text-center">Quantity</th>
-                                    <th className="px-6 py-3 text-right">Total</th>
+                                    <th className="px-6 py-3">{t.orders.productDetails || 'Product Details'}</th>
+                                    <th className="px-6 py-3 text-right">{t.orders.unitPrice || 'Unit Price'}</th>
+                                    <th className="px-6 py-3 text-center">{t.common.quantity || 'Quantity'}</th>
+                                    <th className="px-6 py-3 text-right">{t.common.total || 'Total'}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
                                 {(!order.OrderItems || order.OrderItems.length === 0) ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-8 text-center text-text-secondary">No items found in this order.</td>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-text-secondary">{t.orders.noItemsFoundInOrder || 'No items found in this order.'}</td>
                                     </tr>
                                 ) : (
                                     // Grouping Logic: Group by ProductId + ColorId
@@ -442,7 +445,7 @@ export default function OrderDetailsPage() {
                                                         </div>
                                                         <div>
                                                             <p className="font-bold text-sm text-text-main dark:text-white flex items-center gap-2">
-                                                                {group.product?.Name || 'Unknown Product'}
+                                                                {group.product?.Name || t.common.unknownProduct || 'Unknown Product'}
                                                                 {group.color && (
                                                                     <span className="px-2 py-0.5 rounded-full bg-white dark:bg-gray-600 text-xs border border-gray-200 dark:border-gray-500 font-normal flex items-center gap-1">
                                                                         <span className="size-2 rounded-full border border-gray-300" style={{ backgroundColor: group.color.HexCode }}></span>
@@ -484,7 +487,7 @@ export default function OrderDetailsPage() {
                                                                 <div className="flex flex-col gap-1">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="font-bold text-sm text-text-main dark:text-gray-300">
-                                                                            {item.ProductVariant?.Size?.Name || item.ProductVariant?.Size?.Name || 'One Size'}
+                                                                            {item.ProductVariant?.Size?.Name || item.ProductVariant?.Size?.Name || t.common.default || 'One Size'}
                                                                         </span>
                                                                         {hasCodes && !isExpanded && (
                                                                             <span className="text-[10px] text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-800 px-1.5 rounded-full">
@@ -498,7 +501,7 @@ export default function OrderDetailsPage() {
                                                             <td className="px-6 py-3 text-right text-text-main dark:text-gray-200">
                                                                 <div className="flex flex-col items-end">
                                                                     <span className="font-medium">৳{item.UnitPrice.toFixed(2)}</span>
-                                                                    {(item.Discount || 0) > 0 && <span className="text-xs text-red-500">Disc: -৳{item.Discount?.toFixed(2)}</span>}
+                                                                    {(item.Discount || 0) > 0 && <span className="text-xs text-red-500">{t.orders.discount || 'Disc'}: -৳{item.Discount?.toFixed(2)}</span>}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-3 text-center text-text-main dark:text-gray-200 font-bold">{item.Quantity}</td>
@@ -533,34 +536,34 @@ export default function OrderDetailsPage() {
                 {/* Order Summary */}
                 <div className="w-full lg:w-96 shrink-0 flex flex-col gap-6">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
-                        <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">Order Summary</h3>
+                        <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">{t.orders.orderSummary || 'Order Summary'}</h3>
                         <div className="space-y-3 mb-6">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-text-secondary font-medium">Subtotal</span>
+                                <span className="text-text-secondary font-medium">{t.common.subtotal || 'Subtotal'}</span>
                                 <span className="text-text-main dark:text-white font-bold">৳{order.TotalAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-text-secondary font-medium">Discount</span>
+                                <span className="text-text-secondary font-medium">{t.orders.discount || 'Discount'}</span>
                                 <span className="text-green-600 dark:text-green-400 font-bold">-৳{order.Discount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-text-secondary font-medium">Tax (0%)</span>
+                                <span className="text-text-secondary font-medium">{t.common.tax || 'Tax'} (0%)</span>
                                 <span className="text-text-main dark:text-white font-bold">৳0.00</span>
                             </div>
                         </div>
                         <div className="border-t border-dashed border-gray-300 dark:border-gray-600 pt-4 mb-4">
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-base font-bold text-text-main dark:text-white">Net Amount</span>
+                                <span className="text-base font-bold text-text-main dark:text-white">{t.orders.netAmount || 'Net Amount'}</span>
                                 <span className="text-xl font-black text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
                             </div>
                         </div>
                         <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 border border-green-100 dark:border-green-900/20 space-y-2">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-green-800 dark:text-green-300 font-medium">Paid by Customer</span>
+                                <span className="text-green-800 dark:text-green-300 font-medium">{t.orders.paidByCustomer || 'Paid by Customer'}</span>
                                 <span className="text-green-800 dark:text-green-300 font-bold">৳{paidAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-base pt-2 border-t border-green-200 dark:border-green-800/30">
-                                <span className="text-red-600 dark:text-red-400 font-bold">Total Due</span>
+                                <span className="text-red-600 dark:text-red-400 font-bold">{t.orders.totalDue || 'Total Due'}</span>
                                 <span className="text-red-600 dark:text-red-400 font-black text-lg">৳{dueAmount.toFixed(2)}</span>
                             </div>
                         </div>
@@ -568,7 +571,7 @@ export default function OrderDetailsPage() {
                         {/* Next Payment Date Display */}
                         {order.NextPaymentDate && dueAmount > 0 && (
                             <div className="bg-amber-50 dark:bg-amber-900/10 rounded-lg p-3 border border-amber-100 dark:border-amber-800/20 flex flex-col items-center justify-center mt-3 animate-in fade-in">
-                                <span className="text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider mb-1">Next Payment Date</span>
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-500 uppercase tracking-wider mb-1">{t.orders.nextPaymentDate || 'Next Payment Date'}</span>
                                 <span className="text-lg font-bold text-amber-800 dark:text-amber-400 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-base">calendar_clock</span>
                                     {formatDate(order.NextPaymentDate.toString())}
@@ -578,7 +581,7 @@ export default function OrderDetailsPage() {
 
                         <button className="w-full mt-6 bg-primary text-white font-bold h-12 rounded-lg hover:bg-green-600 transition-all shadow-md flex items-center justify-center gap-2">
                             <span className="material-symbols-outlined">mark_email_read</span>
-                            Send Invoice Email
+                            {t.orders.sendInvoiceEmail || 'Send Invoice Email'}
                         </button>
                     </div>
 
@@ -586,12 +589,12 @@ export default function OrderDetailsPage() {
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
                         <h3 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-gray-400 text-lg">sticky_note_2</span>
-                            Internal Remarks
+                            {t.orders.internalRemarks || 'Internal Remarks'}
                         </h3>
                         <textarea
                             readOnly
                             className="w-full bg-[#f8fcf9] dark:bg-black/20 border-none rounded-lg text-sm p-3 min-h-[100px] text-text-main dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-primary resize-none"
-                            placeholder="No remarks for this order."
+                            placeholder={t.orders.noRemarks || "No remarks for this order."}
                             value={order.Remarks || ''}
                         ></textarea>
                     </div>

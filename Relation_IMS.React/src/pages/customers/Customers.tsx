@@ -5,9 +5,11 @@ import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { Customer } from '../../types';
 import { CustomerFormModal, DeleteCustomerModal } from '../../components/customers/CustomerModals';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function CustomersPage() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     // State
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -143,7 +145,7 @@ export default function CustomersPage() {
             loadCustomers(true);
         } catch (e: any) {
             console.error(e);
-            alert('Failed to create customer');
+            alert(t.customers.failedToCreate);
         }
     };
 
@@ -155,7 +157,7 @@ export default function CustomersPage() {
             loadCustomers(true);
         } catch (e: any) {
             console.error(e);
-            alert('Failed to update customer');
+            alert(t.customers.failedToUpdate);
         }
     };
 
@@ -167,7 +169,7 @@ export default function CustomersPage() {
             setShowDeleteModal(false);
         } catch (e: any) {
             console.error(e);
-            alert('Failed to delete customer');
+            alert(t.customers.failedToDelete);
         }
     };
 
@@ -190,13 +192,13 @@ export default function CustomersPage() {
                     <li className="inline-flex items-center">
                         <a href="#" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
                             <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            Dashboard
+                            {t.nav.dashboard}
                         </a>
                     </li>
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white cursor-pointer">Customers</span>
+                            <span className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white cursor-pointer">{t.nav.customers}</span>
                         </div>
                     </li>
                     <li aria-current="page">
@@ -211,7 +213,7 @@ export default function CustomersPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">Customer List</h1>
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-text-main dark:text-white tracking-tight">{t.customers.title}</h1>
                     <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
                         Detailed contact information, shopping activity, and order history.
                     </p>
@@ -222,7 +224,7 @@ export default function CustomersPage() {
                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-lg shadow-green-500/20 transition-all"
                     >
                         <span className="material-symbols-outlined text-[20px]">person_add</span>
-                        Add Customer
+                        {t.customers.addCustomer}
                     </button>
                 </div>
             </div>

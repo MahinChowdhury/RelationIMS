@@ -4,8 +4,10 @@ import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { InventoryTransferHistoryResponse } from '../../types/inventory';
 import { getInventoryMovementHistory } from '../../services/InventoryService';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const MovementHistory = () => {
+    const { t } = useLanguage();
     const [logs, setLogs] = useState<InventoryTransferHistoryResponse[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -98,16 +100,16 @@ const MovementHistory = () => {
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-primary text-sm font-medium">
                         <span className="material-symbols-outlined text-[20px]">inventory_2</span>
-                        <Link to="/inventory">Inventory</Link>
+                        <Link to="/inventory">{t.inventory.title || 'Inventory'}</Link>
                         <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                        <span>History</span>
+                        <span>{t.inventory.movementHistory || 'History'}</span>
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-black text-[#0e1b12] dark:text-white tracking-tight">Movement History</h1>
-                    <p className="text-[#4e9767] text-base font-medium max-w-2xl">Track the flow of inventory between warehouses and storefronts with real-time logs.</p>
+                    <h1 className="text-3xl md:text-4xl font-black text-[#0e1b12] dark:text-white tracking-tight">{t.inventory.movementHistory || 'Movement History'}</h1>
+                    <p className="text-[#4e9767] text-base font-medium max-w-2xl">{t.inventory.movementHistorySubtitle || 'Track the flow of inventory between warehouses and storefronts with real-time logs.'}</p>
                 </div>
                 <button className="flex items-center justify-center gap-2 bg-white dark:bg-[#1e2e23] hover:bg-[#e7f3eb] dark:hover:bg-[#2a3f31] border border-[#d0e7d7] dark:border-white/10 text-[#0e1b12] dark:text-white h-10 px-4 rounded-lg shadow-sm transition-all text-sm font-bold">
                     <span className="material-symbols-outlined text-[20px]">download</span>
-                    <span>Export CSV</span>
+                    <span>{t.common.exportCSV || 'Export CSV'}</span>
                 </button>
             </header>
 
@@ -125,7 +127,7 @@ const MovementHistory = () => {
                                     </div>
                                     <input
                                         className="flex w-full flex-1 bg-transparent border-none h-full placeholder:text-[#4e9767]/70 px-4 text-base font-normal focus:ring-0 text-[#0e1b12] dark:text-white"
-                                        placeholder="Search SKU, Product Name, or User..."
+                                        placeholder={t.inventory.searchHistoryPlaceholder || "Search SKU, Product Name, or User..."}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
@@ -135,7 +137,7 @@ const MovementHistory = () => {
                         {/* Bottom Row: Filters */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">Date Range</span>
+                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.inventory.dateRange || 'Date Range'}</span>
                                 <div className="flex items-center gap-2">
                                     <input
                                         className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary"
@@ -148,34 +150,34 @@ const MovementHistory = () => {
                             {/* Detailed filters (Source/Dest/User) would require fetching available options. Keeping simple for now or accepting IDs if known. */}
                             {/* Placeholder selects for visual completeness, logic simplified for MVP */}
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">Source</span>
+                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.common.source || 'Source'}</span>
                                 <select
                                     className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
                                     value={sourceFilter}
                                     onChange={(e) => setSourceFilter(e.target.value)}
                                 >
-                                    <option value="">All Locations</option>
+                                    <option value="">{t.inventory.allLocations || 'All Locations'}</option>
                                     {/* Populate dynamically if inventory list available */}
                                 </select>
                             </label>
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">Destination</span>
+                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.common.destination || 'Destination'}</span>
                                 <select
                                     className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
                                     value={destinationFilter}
                                     onChange={(e) => setDestinationFilter(e.target.value)}
                                 >
-                                    <option value="">All Locations</option>
+                                    <option value="">{t.inventory.allLocations || 'All Locations'}</option>
                                 </select>
                             </label>
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">User</span>
+                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.common.user || 'User'}</span>
                                 <select
                                     className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
                                     value={userFilter}
                                     onChange={(e) => setUserFilter(e.target.value)}
                                 >
-                                    <option value="">All Users</option>
+                                    <option value="">{t.inventory.allUsers || 'All Users'}</option>
                                 </select>
                             </label>
                         </div>
@@ -188,12 +190,12 @@ const MovementHistory = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-primary/5 border-b border-[#d0e7d7] dark:border-white/5 text-xs uppercase text-[#4e9767] font-bold tracking-wider">
-                                    <th className="px-6 py-4">Date &amp; Time</th>
-                                    <th className="px-6 py-4">Product</th>
-                                    <th className="px-6 py-4">Movement Route</th>
-                                    <th className="px-6 py-4 text-center">Quantity</th>
-                                    <th className="px-6 py-4">Transferred By</th>
-                                    <th className="px-6 py-4 text-right">Action</th>
+                                    <th className="px-6 py-4">{t.inventory.dateTime || 'Date & Time'}</th>
+                                    <th className="px-6 py-4">{t.common.product || 'Product'}</th>
+                                    <th className="px-6 py-4">{t.inventory.movementRoute || 'Movement Route'}</th>
+                                    <th className="px-6 py-4 text-center">{t.common.quantity || 'Quantity'}</th>
+                                    <th className="px-6 py-4">{t.inventory.transferredBy || 'Transferred By'}</th>
+                                    <th className="px-6 py-4 text-right">{t.common.action || 'Action'}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#d0e7d7]/50 dark:divide-white/5">
@@ -220,15 +222,15 @@ const MovementHistory = () => {
                                                                 {item.ProductImageUrl ? (
                                                                     <img className="w-full h-full object-cover" alt={item.ProductName} src={item.ProductImageUrl} />
                                                                 ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-[10px] text-gray-500">No Img</div>
+                                                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-[10px] text-gray-500">{t.common.noImage || 'No Img'}</div>
                                                                 )}
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-bold text-[#0e1b12] dark:text-white">{item.ProductName}</span>
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="text-[10px] text-[#4e9767] font-medium bg-primary/10 px-1.5 py-0.5 rounded w-fit">{item.ProductSku}</span>
-                                                                    {item.SizeName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Size: {item.SizeName}</span>}
-                                                                    {item.ColorName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Color: {item.ColorName}</span>}
+                                                                    {item.SizeName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">{t.common.size || 'Size'}: {item.SizeName}</span>}
+                                                                    {item.ColorName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">{t.common.color || 'Color'}: {item.ColorName}</span>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -251,7 +253,7 @@ const MovementHistory = () => {
                                             <td className="px-6 py-4 text-center align-top">
                                                 <div className="mt-1">
                                                     <span className="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-black bg-primary/10 text-primary border border-primary/20">
-                                                        {totalQuantity} Items
+                                                        {totalQuantity} {t.common.items || 'Items'}
                                                     </span>
                                                 </div>
                                             </td>
@@ -283,13 +285,13 @@ const MovementHistory = () => {
                         {loading && (
                             <div className="flex items-center gap-3 text-primary animate-pulse">
                                 <span className="material-symbols-outlined animate-spin shadow-primary/20 drop-shadow-sm">progress_activity</span>
-                                <span className="text-sm font-bold tracking-tight">Fetching inventory logs...</span>
+                                <span className="text-sm font-bold tracking-tight">{t.inventory.fetchingLogs || 'Fetching inventory logs...'}</span>
                             </div>
                         )}
                         {!hasMore && logs.length > 0 && (
                             <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-600">
                                 <span className="material-symbols-outlined text-3xl opacity-50">inventory</span>
-                                <p className="text-xs font-bold uppercase tracking-widest">End of History</p>
+                                <p className="text-xs font-bold uppercase tracking-widest">{t.inventory.endOfHistory || 'End of History'}</p>
                             </div>
                         )}
                         {!loading && logs.length === 0 && (
@@ -297,7 +299,7 @@ const MovementHistory = () => {
                                 <div className="size-16 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400">
                                     <span className="material-symbols-outlined text-4xl">search_off</span>
                                 </div>
-                                <p className="text-[#4e9767] font-medium tracking-tight">No movement records found.</p>
+                                <p className="text-[#4e9767] font-medium tracking-tight">{t.inventory.noMovementRecords || 'No movement records found.'}</p>
                             </div>
                         )}
                     </div>

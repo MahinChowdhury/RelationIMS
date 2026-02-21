@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import type { StockItem, Product } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface ProductFormProps {
     product: Product;
@@ -41,6 +42,7 @@ export function ProductForm({
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
     getColorHex, isLotMode = false
 }: ProductFormProps) {
+    const { t } = useLanguage();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Filter brands by selected category
@@ -73,7 +75,7 @@ export function ProductForm({
                     >
                         <span className="material-symbols-outlined text-4xl text-gray-400 group-hover:text-[#4e9767] mb-2 transition-colors">cloud_upload</span>
                         <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                            <span className="font-bold text-[#4e9767]">Click to upload</span> or drag and drop
+                            <span className="font-bold text-[#4e9767]">{t.products.uploadClick}</span> {t.products.dragAndDrop}
                         </p>
                         <p className="text-[10px] text-gray-400 mt-1">SVG, PNG, JPG (max 2MB)</p>
                     </div>
@@ -108,7 +110,7 @@ export function ProductForm({
                 {/* Main Form Fields */}
                 <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="col-span-1 md:col-span-2">
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Name</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.common.name}</label>
                         <input
                             type="text"
                             value={product.Name}
@@ -119,7 +121,7 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Category</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.category}</label>
                         <select
                             value={product.CategoryId}
                             onChange={(e) => {
@@ -129,26 +131,26 @@ export function ProductForm({
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                         >
-                            <option value={0}>Select Category</option>
+                            <option value={0}>{t.common.search} {t.products.category}</option>
                             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Brand</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.brand}</label>
                         <select
                             value={product.BrandId}
                             onChange={(e) => onChange('BrandId', e.target.value)}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             disabled={!product.CategoryId || product.CategoryId === 0}
                         >
-                            <option value={0}>{!product.CategoryId || product.CategoryId === 0 ? 'Select Category First' : 'Select Brand'}</option>
+                            <option value={0}>{!product.CategoryId || product.CategoryId === 0 ? `${t.common.search} ${t.products.category} ${t.common.first || 'First'}` : `${t.common.search} ${t.products.brand}`}</option>
                             {filteredBrands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
                         </select>
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Quarters</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.quarter}</label>
                         <div className="flex flex-col gap-2 max-h-32 overflow-y-auto bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-lg p-2.5">
                             {quarters.map((q: any) => (
                                 <label key={q.Id} className="flex items-center gap-2 cursor-pointer">
@@ -172,7 +174,7 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Cost Price ($)</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.costPrice} ($)</label>
                         <input
                             type="number"
                             step="0.01"
@@ -184,7 +186,7 @@ export function ProductForm({
                         />
                     </div>
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Base Price ($)</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.basePrice} ($)</label>
                         <input
                             type="number"
                             step="0.01"
@@ -197,7 +199,7 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">MSRP ($)</label>
+                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.msrp} ($)</label>
                         <input
                             type="number"
                             step="0.01"
@@ -215,7 +217,7 @@ export function ProductForm({
 
             {/* Application Description */}
             <div>
-                <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">Description</label>
+                <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.common.description}</label>
                 <textarea
                     value={product.Description}
                     onChange={(e) => onChange('Description', e.target.value)}
@@ -231,21 +233,21 @@ export function ProductForm({
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-[#4e9767]">inventory</span>
-                        {isLotMode ? 'Define Lot Variants' : 'Initial Stock Levels'}
+                        {isLotMode ? t.products.defineLotVariants : t.products.initialStockLevels}
                     </h3>
                 </div>
 
                 {/* Stock Input Row */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
                     <div>
-                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Color</label>
+                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.color}</label>
                         <div className="flex items-center gap-2">
                             <select
                                 value={newStock.color}
                                 onChange={(e) => setNewStock({ ...newStock, color: e.target.value })}
                                 className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
                             >
-                                <option value="" disabled hidden>Select</option>
+                                <option value="" disabled hidden>{t.common.search}</option>
                                 {colors.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                             </select>
                             {getColorHex(newStock.color) && (
@@ -258,20 +260,20 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Size</label>
+                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.size}</label>
                         <select
                             value={newStock.size}
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}
                             className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
                         >
-                            <option value="" disabled hidden>Select</option>
+                            <option value="" disabled hidden>{t.common.search}</option>
                             {availableSizes.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                         </select>
                     </div>
 
                     {!isLotMode && (
                         <div>
-                            <label className="text-xs font-bold mb-1 block uppercase text-gray-500">Quantity</label>
+                            <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.quantity}</label>
                             <input
                                 type="number"
                                 onFocus={(e) => e.target.select()}
@@ -289,7 +291,7 @@ export function ProductForm({
                             onClick={addStock}
                             className="w-full px-4 py-2 bg-[#4e9767] hover:bg-[#3d7a52] text-white rounded-lg font-bold transition-all"
                         >
-                            + Add {isLotMode ? 'Variant' : 'Variant'}
+                            {t.products.addStockVariant}
                         </button>
                     </div>
                 </div>
@@ -336,13 +338,13 @@ export function ProductForm({
                                             onChange={(e) => setEditedStock({ ...editedStock, quantity: parseInt(e.target.value) })}
                                             className="w-full text-center text-xl font-bold p-1 rounded-lg border-gray-200 bg-white"
                                         />
-                                        <button onClick={() => saveStockEdit(i)} className="text-green-600 font-bold text-xs">OK</button>
-                                        <button onClick={cancelStockEdit} className="text-red-500 font-bold text-xs">X</button>
+                                        <button onClick={() => saveStockEdit(i)} className="text-green-600 font-bold text-xs">{t.common.ok || 'OK'}</button>
+                                        <button onClick={cancelStockEdit} className="text-red-500 font-bold text-xs">{t.common.cancel || 'X'}</button>
                                     </div>
                                 ) : (
                                     <div className="mt-1">
                                         <div className="w-full text-center text-xl font-bold p-2 text-[#0e1b12] dark:text-white">
-                                            {s.quantity} <span className="text-xs font-normal text-gray-500">Units</span>
+                                            {s.quantity} <span className="text-xs font-normal text-gray-500">{t.common.units || 'Units'}</span>
                                         </div>
                                     </div>
                                 )
@@ -352,7 +354,7 @@ export function ProductForm({
 
                     {stockItems.length === 0 && (
                         <div className="col-span-full py-8 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-                            No variants configured yet. Add a variant above.
+                            {t.products.noVariantsFound}
                         </div>
                     )}
                 </div>

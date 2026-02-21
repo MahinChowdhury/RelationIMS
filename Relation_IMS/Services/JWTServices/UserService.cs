@@ -140,5 +140,41 @@ namespace Relation_IMS.Services.JWTServices
             await _dbContext.SaveChangesAsync();
             return true; // Indicate successful revocation
         }
+
+        // Gets user info including roles and preferences
+        public async Task<UserInfoDTO?> GetUserInfoAsync(int userId)
+        {
+            var user = await _dbContext.Users
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+
+            if (user == null) return null;
+
+            return new UserInfoDTO
+            {
+                Id = user.Id,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Email = user.Email,
+                PreferredLanguage = user.PreferredLanguage,
+                Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList()
+            };
+        }
+
+        // Updates the user's preferred language
+        public async Task<bool> UpdatePreferredLanguageAsync(int userId, string language)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            // Validate language code
+            var validLanguages = new[] { "en", "bn" };
+            if (!validLanguages.Contains(language))
+                return false;
+
+            user.PreferredLanguage = language;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

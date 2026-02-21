@@ -1,5 +1,6 @@
 import type { InventoryStock } from '../../types';
 import { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface InventoryStockModalProps {
     show: boolean;
@@ -11,6 +12,7 @@ interface InventoryStockModalProps {
 }
 
 export default function InventoryStockModal({ show, onClose, stockData, loading, variantName, mode }: InventoryStockModalProps) {
+    const { t } = useLanguage();
     const [expandedInventoryId, setExpandedInventoryId] = useState<number | null>(null);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -34,9 +36,9 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
         return mode === 'available' ? item.Quantity : item.DefectQuantity;
     };
 
-    const title = mode === 'available' ? 'Stock Distribution' : 'Defect Distribution';
-    const emptyMessage = mode === 'available' ? 'No inventory records found.' : 'No defect records found.';
-    const totalLabel = mode === 'available' ? 'Total Available' : 'Total Defects';
+    const title = mode === 'available' ? t.products.stockAndVariants : t.products.defects;
+    const emptyMessage = mode === 'available' ? t.common.noData : t.common.noData;
+    const totalLabel = mode === 'available' ? t.products.inStock : t.products.defects;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
@@ -63,7 +65,7 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-8 gap-3">
                             <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-800 dark:border-gray-700 dark:border-t-white rounded-full animate-spin"></div>
-                            <p className="text-gray-500 text-xs font-medium">Checking availability...</p>
+                            <p className="text-gray-500 text-xs font-medium">{t.products.checkingAvailability}</p>
                         </div>
                     ) : stockData.length === 0 ? (
                         <div className="text-center py-8 px-4">
@@ -120,7 +122,7 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
                                         {/* Expandable Code List */}
                                         {isExpanded && codes && codes.length > 0 && (
                                             <div className="bg-gray-50 dark:bg-black/20 px-5 py-2 border-t border-gray-100 dark:border-[#333] animate-in slide-in-from-top-2 duration-200">
-                                                <p className="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wide">Product Codes</p>
+                                                <p className="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wide">{t.products.productCodes}</p>
                                                 <div className="flex flex-wrap gap-2">
                                                     {codes.map((code, idx) => (
                                                         <button
@@ -135,7 +137,7 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
                                                             </span>
                                                             {copiedCode === code && (
                                                                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-800 text-white text-[10px] rounded shadow-lg animate-in fade-in zoom-in duration-200 pointer-events-none">
-                                                                    Copied!
+                                                                    {t.common.okay}
                                                                 </span>
                                                             )}
                                                         </button>

@@ -13,7 +13,7 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260221084051_Mig1")]
+    [Migration("20260221103630_Mig1")]
     partial class Mig1
     {
         /// <inheritdoc />
@@ -850,6 +850,11 @@ namespace Relation_IMS.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PreferredLanguage")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
 
                     b.HasKey("Id");
 

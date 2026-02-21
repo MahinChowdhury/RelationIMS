@@ -32,5 +32,9 @@ namespace Relation_IMS.Models
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         public List<Order>? Orders { get; set; }
+
+        // User preferences
+        [MaxLength(5)]
+        public string PreferredLanguage { get; set; } = "en";
     }
 }

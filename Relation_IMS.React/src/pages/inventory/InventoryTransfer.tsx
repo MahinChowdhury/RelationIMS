@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import type { InventoryBasicDTO, TransferProductItemsDTO, ScannedItem } from '../../types';
 import InventoryTransferScanner from '../../components/inventory/InventoryTransferScanner';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 
 
 const InventoryTransfer = () => {
+    const { t } = useLanguage();
     // const navigate = useNavigate();
     const [inventories, setInventories] = useState<InventoryBasicDTO[]>([]);
     const [sourceId, setSourceId] = useState<number | ''>('');
@@ -72,7 +74,7 @@ const InventoryTransfer = () => {
 
     const validateBarcode = (code: string): boolean => {
         if (!sourceId) {
-            alert('Please select a source inventory first.');
+            alert(t.inventory.selectSourceFirst);
             setIsScannerOpen(false);
             return false;
         }
@@ -83,7 +85,7 @@ const InventoryTransfer = () => {
         const exists = sourceItems.some((item: any) => item.Code === code || item.ProductItemCode === code);
 
         if (!exists) {
-            alert(`Item ${code} not found in source inventory!`);
+            alert(t.inventory.itemNotFoundInSource.replace('{code}', code));
             return false;
         }
         return true;
@@ -186,13 +188,13 @@ const InventoryTransfer = () => {
             const response = await api.post('/Inventory/transfer', payload);
 
             if (response.status === 200) {
-                alert('Transfer Completed Successfully! ' + (response.data.message || ''));
+                alert(t.inventory.transferCompleted + ' ' + (response.data.message || ''));
                 setScannedItems([]);
                 setNotes('');
             }
         } catch (error: any) {
             console.error(error);
-            alert('Transfer Failed: ' + (error.response?.data?.message || error.message));
+            alert(t.inventory.transferFailed + ' ' + (error.response?.data?.message || error.message));
         } finally {
             setTransferring(false);
         }
@@ -208,13 +210,13 @@ const InventoryTransfer = () => {
                     <li className="inline-flex items-center">
                         <Link to="/inventory" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
                             <span className="material-symbols-outlined text-[18px] mr-1">inventory_2</span>
-                            Inventory
+                            {t.inventory.title || 'Inventory'}
                         </Link>
                     </li>
                     <li aria-current="page">
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">Transfer Stock</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.inventory.transfer || 'Transfer Stock'}</span>
                         </div>
                     </li>
                 </ol>
@@ -222,9 +224,9 @@ const InventoryTransfer = () => {
 
             {/* Header */}
             <div className="flex flex-col gap-1">
-                <h1 className="text-2xl md:text-3xl font-extrabold text-text-main dark:text-white tracking-tight">Transfer Stock</h1>
+                <h1 className="text-2xl md:text-3xl font-extrabold text-text-main dark:text-white tracking-tight">{t.inventory.transfer || 'Transfer Stock'}</h1>
                 <p className="text-text-secondary dark:text-gray-400 text-sm max-w-2xl">
-                    Move stock between warehouses or store locations efficiently.
+                    {t.inventory.transferSubtitle || 'Move stock between warehouses or store locations efficiently.'}
                 </p>
             </div>
 
@@ -235,12 +237,12 @@ const InventoryTransfer = () => {
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-5">
                         <div className="flex items-center gap-2 mb-4">
                             <span className="material-symbols-outlined text-primary">alt_route</span>
-                            <h3 className="font-bold text-text-main dark:text-white">Transfer Route</h3>
+                            <h3 className="font-bold text-text-main dark:text-white">{t.inventory.transferRoute || 'Transfer Route'}</h3>
                         </div>
 
                         <div className="flex flex-col gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-text-secondary dark:text-gray-400 mb-1.5">Source Inventory</label>
+                                <label className="block text-sm font-medium text-text-secondary dark:text-gray-400 mb-1.5">{t.inventory.sourceInventory || 'Source Inventory'}</label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-[20px]">warehouse</span>
                                     <select
@@ -249,7 +251,7 @@ const InventoryTransfer = () => {
                                         onChange={(e) => setSourceId(Number(e.target.value))}
                                         disabled={loading || isSourceLoading}
                                     >
-                                        <option value="">{loading ? 'Loading...' : 'Select Source...'}</option>
+                                        <option value="">{loading ? (t.common.loading || 'Loading...') : (t.inventory.selectSource || 'Select Source...')}</option>
                                         {inventories.map(inv => (
                                             <option key={inv.Id} value={inv.Id}>{inv.Name}</option>
                                         ))}
@@ -265,7 +267,7 @@ const InventoryTransfer = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-text-secondary dark:text-gray-400 mb-1.5">Destination Inventory</label>
+                                <label className="block text-sm font-medium text-text-secondary dark:text-gray-400 mb-1.5">{t.inventory.destinationInventory || 'Destination Inventory'}</label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-[20px]">store</span>
                                     <select
@@ -273,7 +275,7 @@ const InventoryTransfer = () => {
                                         value={destinationId}
                                         onChange={(e) => setDestinationId(Number(e.target.value))}
                                     >
-                                        <option value="">Select Destination...</option>
+                                        <option value="">{t.inventory.selectDestination || 'Select Destination...'}</option>
                                         {inventories.filter(i => i.Id !== sourceId).map(inv => (
                                             <option key={inv.Id} value={inv.Id}>{inv.Name}</option>
                                         ))}
@@ -287,7 +289,7 @@ const InventoryTransfer = () => {
                     {/* Scan Items */}
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-5">
                         <div className="mb-4">
-                            <h3 className="font-bold text-text-main dark:text-white mb-1">Scan Items</h3>
+                            <h3 className="font-bold text-text-main dark:text-white mb-1">{t.inventory.scanItems || 'Scan Items'}</h3>
                         </div>
 
                         <form onSubmit={handleScan} className="relative">
@@ -301,7 +303,7 @@ const InventoryTransfer = () => {
                             <input
                                 ref={scanInputRef}
                                 type="text"
-                                placeholder="Scan barcode to increment..."
+                                placeholder={t.inventory.scanToIncrement || "Scan barcode to increment..."}
                                 className="w-full pl-11 pr-12 py-3 bg-gray-50 dark:bg-[#112116] border border-gray-200 dark:border-[#2a4032] rounded-lg text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 value={scanInput}
                                 onChange={(e) => setScanInput(e.target.value)}
@@ -316,7 +318,7 @@ const InventoryTransfer = () => {
                         </form>
                         <p className="mt-2 text-xs text-text-secondary dark:text-gray-400 flex items-center gap-1">
                             <span className="material-symbols-outlined text-[14px]">info</span>
-                            Scan product barcode repeatedly to increase quantity.
+                            {t.inventory.scanRepeatedly || 'Scan product barcode repeatedly to increase quantity.'}
                         </p>
 
                         {/* Last Scanned Feedback */}
@@ -326,9 +328,9 @@ const InventoryTransfer = () => {
                                     <span className="material-symbols-outlined text-[20px] block">check</span>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-0.5">Last Scanned</p>
+                                    <p className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider mb-0.5">{t.inventory.lastScanned || 'Last Scanned'}</p>
                                     <p className="text-sm font-medium text-text-main dark:text-white">{scannedItems[0].description}</p>
-                                    <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">Code: {scannedItems[0].code} • Count: {scannedItems[0].count}</p>
+                                    <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">{t.common.code || 'Code'}: {scannedItems[0].code} • {t.common.quantity || 'Count'}: {scannedItems[0].count}</p>
                                 </div>
                             </div>
                         )}
@@ -341,10 +343,10 @@ const InventoryTransfer = () => {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">shopping_cart_checkout</span>
-                                <h3 className="font-bold text-text-main dark:text-white">Transfer Manifest</h3>
+                                <h3 className="font-bold text-text-main dark:text-white">{t.inventory.transferManifest || 'Transfer Manifest'}</h3>
                             </div>
                             <span className="px-2.5 py-1 bg-gray-100 dark:bg-[#112116] text-text-secondary dark:text-gray-400 text-xs font-bold rounded-full">
-                                {scannedItems.length} Items
+                                {scannedItems.length} {t.common.items || 'Items'}
                             </span>
                         </div>
 
@@ -353,7 +355,7 @@ const InventoryTransfer = () => {
                             {scannedItems.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-text-secondary dark:text-gray-500 opacity-60">
                                     <span className="material-symbols-outlined text-6xl mb-2">qr_code_2</span>
-                                    <p>No items scanned yet.</p>
+                                    <p>{t.inventory.noItemsScanned || 'No items scanned yet.'}</p>
                                 </div>
                             ) : (
                                 scannedItems.map((item) => (
@@ -369,13 +371,13 @@ const InventoryTransfer = () => {
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-text-main dark:text-white text-sm">{item.description}</h4>
-                                                <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">Code: {item.code}</p>
-                                                <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">Available at Source: -</p>
+                                                <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">{t.common.code || 'Code'}: {item.code}</p>
+                                                <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">{t.inventory.availableAtSource || 'Available at Source'}: -</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-6">
                                             <div className="text-right">
-                                                <p className="text-[10px] font-bold text-text-secondary dark:text-gray-500 uppercase tracking-wider mb-0.5">Scanned</p>
+                                                <p className="text-[10px] font-bold text-text-secondary dark:text-gray-500 uppercase tracking-wider mb-0.5">{t.inventory.scanned || 'Scanned'}</p>
                                                 <p className="text-2xl font-bold text-text-main dark:text-white leading-none">{item.count}</p>
                                             </div>
                                             <button
@@ -393,10 +395,10 @@ const InventoryTransfer = () => {
                         {/* Footer Notes & Action */}
                         <div className="mt-6 pt-6 border-t border-gray-100 dark:border-[#2a4032]">
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-text-secondary dark:text-gray-400 mb-1.5">Notes (Optional)</label>
+                                <label className="block text-sm font-medium text-text-secondary dark:text-gray-400 mb-1.5">{t.inventory.notesOptional || 'Notes (Optional)'}</label>
                                 <textarea
                                     className="w-full p-3 bg-gray-50 dark:bg-[#112116] border border-gray-200 dark:border-[#2a4032] rounded-lg text-sm text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none h-20"
-                                    placeholder="Driver name, tracking number, or special instructions..."
+                                    placeholder={t.inventory.transferNotesPlaceholder || "Driver name, tracking number, or special instructions..."}
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                 ></textarea>
@@ -404,7 +406,7 @@ const InventoryTransfer = () => {
 
                             <div className="flex items-center justify-between">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-sm text-text-secondary dark:text-gray-400">Total Units:</span>
+                                    <span className="text-sm text-text-secondary dark:text-gray-400">{t.common.total || 'Total'} {t.common.units || 'Units'}:</span>
                                     <span className="text-2xl font-bold text-text-main dark:text-white">{totalUnits}</span>
                                 </div>
                                 <div className="flex gap-3">
@@ -416,7 +418,7 @@ const InventoryTransfer = () => {
                                         }}
                                         disabled={transferring}
                                     >
-                                        Cancel
+                                        {t.common.cancel || 'Cancel'}
                                     </button>
                                     <button
                                         className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-green-600 rounded-lg shadow-lg shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -426,12 +428,12 @@ const InventoryTransfer = () => {
                                         {transferring ? (
                                             <>
                                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                                Processing...
+                                                {t.inventory.processing || 'Processing...'}
                                             </>
                                         ) : (
                                             <>
                                                 <span className="material-symbols-outlined text-[20px]">send</span>
-                                                Confirm Transfer
+                                                {t.inventory.confirmTransfer || 'Confirm Transfer'}
                                             </>
                                         )}
                                     </button>
@@ -444,17 +446,17 @@ const InventoryTransfer = () => {
 
             {/* Recent Transfers Table */}
             <div className="mt-4">
-                <h3 className="text-lg font-bold text-text-main dark:text-white mb-4">Recent Transfers</h3>
+                <h3 className="text-lg font-bold text-text-main dark:text-white mb-4">{t.inventory.recentTransfers || 'Recent Transfers'}</h3>
                 <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[#2a4032] shadow-sm bg-white dark:bg-[#1a2e22]">
                     <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
                         <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] dark:text-gray-400">
                             <tr>
-                                <th scope="col" className="px-6 py-4 font-bold">Date</th>
-                                <th scope="col" className="px-6 py-4 font-bold">Reference</th>
-                                <th scope="col" className="px-6 py-4 font-bold">Route</th>
-                                <th scope="col" className="px-6 py-4 font-bold">Items</th>
-                                <th scope="col" className="px-6 py-4 font-bold">Status</th>
-                                <th scope="col" className="px-6 py-4 font-bold">User</th>
+                                <th scope="col" className="px-6 py-4 font-bold">{t.common.date || 'Date'}</th>
+                                <th scope="col" className="px-6 py-4 font-bold">{t.common.reference || 'Reference'}</th>
+                                <th scope="col" className="px-6 py-4 font-bold">{t.inventory.route || 'Route'}</th>
+                                <th scope="col" className="px-6 py-4 font-bold">{t.common.items || 'Items'}</th>
+                                <th scope="col" className="px-6 py-4 font-bold">{t.common.status || 'Status'}</th>
+                                <th scope="col" className="px-6 py-4 font-bold">{t.common.user || 'User'}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-[#2a4032]">
@@ -474,7 +476,7 @@ const InventoryTransfer = () => {
                                             ? 'text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400'
                                             : 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-400'
                                             }`}>
-                                            {transfer.status}
+                                            {transfer.status === 'Completed' ? (t.common.completed || 'Completed') : (t.inventory.inTransit || 'In Transit')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 flex items-center gap-2">

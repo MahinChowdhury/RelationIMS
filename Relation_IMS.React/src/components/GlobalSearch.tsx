@@ -2,9 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import api from '../services/api';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const GlobalSearch = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
@@ -73,15 +75,15 @@ const GlobalSearch = () => {
                 navigate(`/products/${res.data.ProductId}`);
                 setQuery('');
             } else {
-                alert("Product not found or invalid barcode.");
+                alert(t.globalSearch.productNotFound);
             }
         } catch (err) {
             console.error("Search failed", err);
             // Check if 404
             if ((err as any)?.response?.status === 404) {
-                alert(`Product Item '${term}' not found.`);
+                alert(t.globalSearch.itemNotFound.replace('{term}', term));
             } else {
-                alert("Error searching for product.");
+                alert(t.globalSearch.errorSearching);
             }
         } finally {
             setLoading(false);
@@ -103,7 +105,7 @@ const GlobalSearch = () => {
                     <button
                         onClick={() => setIsScanning(true)}
                         className="pl-3 pr-2 py-2 text-gray-400 hover:text-primary transition-colors border-r border-gray-100 dark:border-gray-700"
-                        title="Scan Barcode"
+                        title={t.globalSearch.scanBarcode}
                     >
                         <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
                     </button>
@@ -166,17 +168,17 @@ const GlobalSearch = () => {
 
                             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur rounded px-2 py-1 flex items-center gap-2 border border-white/10">
                                 <div className="size-2 bg-red-500 rounded-full animate-pulse"></div>
-                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Live</span>
+                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">{t.common.live}</span>
                             </div>
                         </div>
 
                         <div className="p-4 flex justify-between items-center bg-gray-900 border-t border-white/10">
-                            <p className="text-gray-400 text-sm">Point camera at a barcode</p>
+                            <p className="text-gray-400 text-sm">{t.orders.pointCameraAtBarcode}</p>
                             <button
                                 onClick={() => setIsScanning(false)}
                                 className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold transition-colors"
                             >
-                                Cancel
+                                {t.common.cancel}
                             </button>
                         </div>
                     </div>

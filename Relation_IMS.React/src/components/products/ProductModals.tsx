@@ -1,10 +1,12 @@
 import { ProductForm } from './ProductForm';
 import type { Product, StockItem } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 
 
 // ------ DELETE MODAL ------
 export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolean, onCancel: () => void, onConfirm: () => void }) {
+    const { t } = useLanguage();
     if (!show) return null;
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn">
@@ -16,16 +18,16 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-[#0e1b12] text-xl font-black">Confirm Deletion</h2>
-                        <p className="text-[#4e9767] text-sm">This action cannot be undone</p>
+                        <h2 className="text-[#0e1b12] text-xl font-black">{t.products.confirmDeletion}</h2>
+                        <p className="text-[#4e9767] text-sm">{t.products.cannotBeUndone}</p>
                     </div>
                 </div>
                 <p className="text-[#0e1b12] text-base mb-6 leading-relaxed">
-                    Are you sure you want to delete this product? All associated data will be permanently removed.
+                    {t.products.deleteConfirmMessage}
                 </p>
                 <div className="flex justify-end gap-3">
-                    <button onClick={onCancel} className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-semibold transition-all shadow-md hover:shadow-lg">Cancel</button>
-                    <button onClick={onConfirm} className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all shadow-md hover:shadow-lg">Delete Product</button>
+                    <button onClick={onCancel} className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-semibold transition-all shadow-md hover:shadow-lg">{t.common.cancel}</button>
+                    <button onClick={onConfirm} className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all shadow-md hover:shadow-lg">{t.products.deleteProduct}</button>
                 </div>
             </div>
         </div>
@@ -79,6 +81,7 @@ export function ProductFormModal({
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
     getColorHex
 }: ProductFormModalProps) {
+    const { t } = useLanguage();
     // const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!show) return null;
@@ -104,8 +107,8 @@ export function ProductFormModal({
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-[#0e1b12] text-2xl font-black">{mode === 'create' ? 'Add New Product' : 'Edit Product'}</h2>
-                        <p className="text-[#4e9767] text-sm font-medium">{mode === 'create' ? 'Create a new product entry' : 'Update product information'}</p>
+                        <h2 className="text-[#0e1b12] text-2xl font-black">{mode === 'create' ? t.products.addProduct : t.products.editProduct}</h2>
+                        <p className="text-[#4e9767] text-sm font-medium">{mode === 'create' ? t.products.createProduct : t.products.productDetails}</p>
                     </div>
                 </div>
 
@@ -142,14 +145,14 @@ export function ProductFormModal({
                         onClick={onClose}
                         className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-bold transition-all shadow-md hover:shadow-lg"
                     >
-                        Cancel
+                        {t.common.cancel}
                     </button>
                     <button
                         type="button"
                         onClick={onSave}
                         className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white font-bold transition-all shadow-md hover:shadow-lg"
                     >
-                        {mode === 'create' ? 'Create Product' : 'Save Changes'}
+                        {mode === 'create' ? t.products.createProduct : t.common.saveChanges}
                     </button>
                 </div>
             </div>

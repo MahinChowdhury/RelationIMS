@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
 import BarcodeScanner from '../../components/BarcodeScanner';
@@ -11,6 +12,7 @@ import type { Product, StockItem } from '../../types';
 
 export default function ProductsPage() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     // State
     const [products, setProducts] = useState<Product[]>([]);
@@ -279,7 +281,7 @@ export default function ProductsPage() {
 
         } catch (e) {
             console.error(e);
-            alert('Failed to update product');
+            alert(t.products.failedToUpdate);
         }
     };
 
@@ -346,7 +348,7 @@ export default function ProductsPage() {
 
         } catch (e) {
             console.error(e);
-            alert('Failed to create product');
+            alert(t.products.failedToCreate);
         }
     };
 
@@ -360,7 +362,7 @@ export default function ProductsPage() {
             setProductToDelete(null);
         } catch (e) {
             console.error(e);
-            alert('Failed to delete product');
+            alert(t.products.failedToDelete);
         }
     };
 
@@ -459,12 +461,12 @@ export default function ProductsPage() {
                 setItemsToPrint(barcodes);
                 setShowPrintModal(true);
             } else {
-                alert('No variants found for this product.');
+                alert(t.products.noVariantsFound);
             }
 
         } catch (error) {
             console.error('Failed to prepare barcodes:', error);
-            alert('Failed to load product details for printing.');
+            alert(t.products.failedToLoadForPrinting);
         }
     };
 
@@ -481,19 +483,19 @@ export default function ProductsPage() {
                     <li className="inline-flex items-center">
                         <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
                             <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            Dashboard
+                            {t.nav.dashboard}
                         </Link>
                     </li>
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">Products</span>
+                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">{t.nav.products}</span>
                         </div>
                     </li>
                     <li aria-current="page">
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">All Products</span>
+                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.products.allProducts}</span>
                         </div>
                     </li>
                 </ol>
@@ -503,19 +505,19 @@ export default function ProductsPage() {
             {showPrintModal && (
                 <div className="fixed inset-0 z-[9999] bg-white overflow-auto">
                     <div className="p-4 flex justify-between items-center bg-gray-100 border-b no-print sticky top-0">
-                        <h2 className="text-xl font-bold">Print Barcodes</h2>
+                        <h2 className="text-xl font-bold">{t.products.printBarcodes}</h2>
                         <div className="flex gap-2">
                             <button
                                 onClick={printSheet}
                                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold flex items-center gap-2"
                             >
-                                <span className="material-symbols-outlined">print</span> Print
+                                <span className="material-symbols-outlined">print</span> {t.common.print}
                             </button>
                             <button
                                 onClick={() => setShowPrintModal(false)}
                                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-bold"
                             >
-                                Close
+                                {t.common.close}
                             </button>
                         </div>
                     </div>
@@ -532,7 +534,7 @@ export default function ProductsPage() {
                     <div className="bg-primary text-white p-2 rounded-lg shadow-sm">
                         <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
                     </div>
-                    <h1 className="text-2xl font-extrabold text-text-main dark:text-white tracking-tight">Product List</h1>
+                    <h1 className="text-2xl font-extrabold text-text-main dark:text-white tracking-tight">{t.products.title}</h1>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
@@ -540,15 +542,15 @@ export default function ProductsPage() {
                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm"
                     >
                         <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                        <span className="hidden sm:inline">Scan</span>
+                        <span className="hidden sm:inline">{t.common.scan}</span>
                     </button>
                     <button
                         onClick={openCreateModal}
                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
                     >
                         <span className="material-symbols-outlined text-[18px]">add</span>
-                        <span className="hidden sm:inline">Add Product</span>
-                        <span className="sm:hidden">Add</span>
+                        <span className="hidden sm:inline">{t.products.addProduct}</span>
+                        <span className="sm:hidden">{t.common.add}</span>
                     </button>
                 </div>
             </div>
@@ -564,7 +566,7 @@ export default function ProductsPage() {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="block w-full py-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-white shadow-sm focus:ring-primary focus:border-primary dark:bg-[#1a2e22] dark:border-[#2a4032] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary transition-all"
-                        placeholder="Search products..."
+                        placeholder={t.products.searchProducts}
                     />
                 </div>
                 <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
@@ -572,7 +574,7 @@ export default function ProductsPage() {
                     <div className="relative">
                         <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[16px]">sort</span>
-                            {sortBy || "Sort"}
+                            {sortBy || t.products.sort}
                             <span className="material-symbols-outlined text-[14px] text-gray-400">expand_more</span>
                         </button>
                         <select
@@ -580,25 +582,25 @@ export default function ProductsPage() {
                             onChange={(e) => setSortBy(e.target.value)}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         >
-                            <option value="">Sort by</option>
-                            <option value="SKU">SKU</option>
-                            <option value="Brand">Brand</option>
-                            <option value="Price Ascending">Price Ascending</option>
-                            <option value="Price Descending">Price Descending</option>
+                            <option value="">{t.products.sortBy}</option>
+                            <option value="SKU">{t.products.sku}</option>
+                            <option value="Brand">{t.products.brand}</option>
+                            <option value="Price Ascending">{t.products.priceAscending}</option>
+                            <option value="Price Descending">{t.products.priceDescending}</option>
                         </select>
                     </div>
 
                     {/* Brand */}
                     <div className="relative">
                         <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            {selectedBrand === '' ? "Brand" : getBrandName(Number(selectedBrand))}
+                            {selectedBrand === '' ? t.products.brand : getBrandName(Number(selectedBrand))}
                         </button>
                         <select
                             value={selectedBrand}
                             onChange={(e) => setSelectedBrand(e.target.value)}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         >
-                            <option value="">All Brands</option>
+                            <option value="">{t.products.allBrands}</option>
                             {brands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
                         </select>
                     </div>
@@ -606,14 +608,14 @@ export default function ProductsPage() {
                     {/* Category */}
                     <div className="relative">
                         <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            {selectedCategory === '' ? "Category" : getCategoryNameById(Number(selectedCategory))}
+                            {selectedCategory === '' ? t.products.category : getCategoryNameById(Number(selectedCategory))}
                         </button>
                         <select
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         >
-                            <option value="">All Categories</option>
+                            <option value="">{t.products.allCategories}</option>
                             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
@@ -621,14 +623,14 @@ export default function ProductsPage() {
                     {/* Quarter */}
                     <div className="relative">
                         <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            {selectedQuarter === '' ? "Quarter" : getQuarterName(Number(selectedQuarter))}
+                            {selectedQuarter === '' ? t.products.quarter : getQuarterName(Number(selectedQuarter))}
                         </button>
                         <select
                             value={selectedQuarter}
                             onChange={(e) => setSelectedQuarter(e.target.value)}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         >
-                            <option value="">All Quarters</option>
+                            <option value="">{t.products.allQuarters}</option>
                             {quarters.map(q => <option key={q.Id} value={q.Id}>{q.Name}</option>)}
                         </select>
                     </div>
@@ -636,14 +638,14 @@ export default function ProductsPage() {
                     {/* Stock */}
                     <div className="relative">
                         <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            {stockOrder || "Stock Status"}
+                            {stockOrder || t.products.stockStatus}
                         </button>
                         <select
                             value={stockOrder}
                             onChange={(e) => setStockOrder(e.target.value)}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         >
-                            <option value="">Default</option>
+                            <option value="">{t.common.default}</option>
                             <option value="in-stock">in-stock</option>
                             <option value="low-stock">low-stock</option>
                             <option value="out-of-stock">out-of-stock</option>

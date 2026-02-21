@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 import type { Order } from '../../types';
 import { OrderInternalStatus } from '../../types';
 
 export default function Arrangement() {
+    const { t } = useLanguage();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,13 +31,13 @@ export default function Arrangement() {
     const getStatusBadge = (status: OrderInternalStatus) => {
         switch (status) {
             case OrderInternalStatus.Created:
-                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">New</span>;
+                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{t.common.new || 'New'}</span>;
             case OrderInternalStatus.Arranging:
-                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300">In Progress</span>;
+                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300">{t.common.inProgress || 'In Progress'}</span>;
             case OrderInternalStatus.Arranged:
-                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">Completed</span>;
+                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">{t.common.completed || 'Completed'}</span>;
             case OrderInternalStatus.Confirmed:
-                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Confirmed</span>;
+                return <span className="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">{t.orders.confirmed || 'Confirmed'}</span>;
             default:
                 return null;
         }
@@ -48,16 +50,16 @@ export default function Arrangement() {
                 <div>
                     <h1 className="text-3xl md:text-4xl font-black text-text-main dark:text-white tracking-tight flex items-center gap-3">
                         <span className="material-symbols-outlined text-4xl text-primary">conveyor_belt</span>
-                        Order Arrangement
+                        {t.arrangement.orderArrangement}
                     </h1>
-                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">Manage and fulfill order items</p>
+                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">{t.arrangement.subtitle}</p>
                 </div>
                 <button
                     onClick={fetchOrders}
                     className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e2e23] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
                 >
                     <span className="material-symbols-outlined text-primary">refresh</span>
-                    Refresh
+                    {t.common.refresh || 'Refresh'}
                 </button>
             </div>
 
@@ -65,14 +67,14 @@ export default function Arrangement() {
             <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 overflow-hidden">
                 {loading ? (
                     <div className="p-12 text-center text-gray-400 animate-pulse">
-                        Loading orders...
+                        {t.orders.loadingOrders || 'Loading orders...'}
                     </div>
                 ) : orders.length === 0 ? (
                     <div className="p-12 text-center text-gray-400">
                         <div className="flex flex-col items-center gap-3">
                             <span className="material-symbols-outlined text-5xl opacity-20">checklist</span>
-                            <p className="font-medium">No pending orders found.</p>
-                            <p className="text-xs max-w-xs mx-auto text-gray-500">All orders have been arranged or no new orders available.</p>
+                            <p className="font-medium">{t.orders.noPendingOrders || 'No pending orders found.'}</p>
+                            <p className="text-xs max-w-xs mx-auto text-gray-500">{t.orders.allOrdersArranged || 'All orders have been arranged or no new orders available.'}</p>
                         </div>
                     </div>
                 ) : (
@@ -80,12 +82,12 @@ export default function Arrangement() {
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 font-medium border-b border-gray-100 dark:border-gray-700">
                                 <tr>
-                                    <th className="px-6 py-4">Order ID</th>
-                                    <th className="px-6 py-4">Customer</th>
-                                    <th className="px-6 py-4">Date</th>
-                                    <th className="px-6 py-4">Items</th>
-                                    <th className="px-6 py-4 text-center">Status</th>
-                                    <th className="px-6 py-4 text-right">Action</th>
+                                    <th className="px-6 py-4">{t.orders.orderId || 'Order ID'}</th>
+                                    <th className="px-6 py-4">{t.common.customer || 'Customer'}</th>
+                                    <th className="px-6 py-4">{t.common.date || 'Date'}</th>
+                                    <th className="px-6 py-4">{t.common.items || 'Items'}</th>
+                                    <th className="px-6 py-4 text-center">{t.common.status || 'Status'}</th>
+                                    <th className="px-6 py-4 text-right">{t.common.action || 'Action'}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#f0f7f2] dark:divide-gray-700">
@@ -105,7 +107,7 @@ export default function Arrangement() {
                                         <td className="px-6 py-4">
                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 font-medium text-xs">
                                                 <span className="material-symbols-outlined text-sm">shopping_bag</span>
-                                                {order.OrderItems?.length || 0} items
+                                                {order.OrderItems?.length || 0} {t.common.items || 'items'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -116,7 +118,7 @@ export default function Arrangement() {
                                                 to={`/arrangement/${order.Id}`}
                                                 className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-dark transition-colors shadow-sm shadow-primary/30"
                                             >
-                                                Start Arranging
+                                                {t.orders.startArranging || 'Start Arranging'}
                                                 <span className="material-symbols-outlined text-base">arrow_forward</span>
                                             </Link>
                                         </td>

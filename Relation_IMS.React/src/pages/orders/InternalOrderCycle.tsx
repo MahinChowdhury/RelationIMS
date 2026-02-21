@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { type Order, OrderInternalStatus } from '../../types';
 import { useState } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface InternalOrderCycleProps {
     order: Order;
@@ -9,6 +10,7 @@ interface InternalOrderCycleProps {
 
 export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showPrintModal, setShowPrintModal] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
             setShowPrintModal(true);
         } catch (err) {
             console.error("Failed to confirm order", err);
-            alert("Failed to confirm order.");
+            alert(t.orders.failedToConfirm);
         } finally {
             setLoading(false);
         }
@@ -50,9 +52,9 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
     };
 
     const steps = [
-        { label: 'Created', status: OrderInternalStatus.Created, icon: 'add_shopping_cart' },
-        { label: 'Arrangement', status: OrderInternalStatus.Arranging, icon: 'fact_check' },
-        { label: 'Confirmed', status: OrderInternalStatus.Confirmed, icon: 'check_circle' },
+        { label: t.orders.created || 'Created', status: OrderInternalStatus.Created, icon: 'add_shopping_cart' },
+        { label: t.orders.arrangement || 'Arrangement', status: OrderInternalStatus.Arranging, icon: 'fact_check' },
+        { label: t.orders.confirmed || 'Confirmed', status: OrderInternalStatus.Confirmed, icon: 'check_circle' },
     ];
 
     return (
@@ -62,8 +64,8 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
                         <span className="material-symbols-outlined text-5xl text-primary">deployed_code</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text-main dark:text-white mb-2">Internal Order Cycle</h1>
-                    <p className="text-text-secondary">Order #ORD-{order.Id} is currently in progress.</p>
+                    <h1 className="text-3xl font-black text-text-main dark:text-white mb-2">{t.orders.internalOrderCycle || 'Internal Order Cycle'}</h1>
+                    <p className="text-text-secondary">{(t.orders.orderCycleSubtitle || 'Order #ORD-{id} is currently in progress.').replace('{id}', order.Id.toString())}</p>
                 </div>
 
                 <div className="relative flex justify-between items-center w-full mb-16">
@@ -143,17 +145,17 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                                     {/* Labels */}
                                     {isCurrent && !isConfirmActionable && !isComplete && (
                                         <span className="text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block text-primary bg-primary/10">
-                                            Current Stage
+                                            {t.orders.currentStage || 'Current Stage'}
                                         </span>
                                     )}
                                     {isConfirmActionable && (
                                         <span className="text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block bg-primary text-white animate-bounce shadow-lg shadow-primary/30">
-                                            Click to Confirm
+                                            {t.orders.clickToConfirm || 'Click to Confirm'}
                                         </span>
                                     )}
                                     {isComplete && step.status === OrderInternalStatus.Confirmed && (
                                         <span className="text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block bg-green-100 text-green-700">
-                                            Completed
+                                            {t.common.completed || 'Completed'}
                                         </span>
                                     )}
                                 </div>
@@ -185,7 +187,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                         className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary hover:text-primary transition-colors flex items-center gap-2 text-sm"
                     >
                         <span className="material-symbols-outlined text-lg">visibility</span>
-                        View Order Details
+                        {t.orders.viewOrderDetails || 'View Order Details'}
                     </Link>
 
                     {(order.InternalStatus === OrderInternalStatus.Created || order.InternalStatus === OrderInternalStatus.Arranging || order.InternalStatus === OrderInternalStatus.Arranged) && order.InternalStatus < OrderInternalStatus.Confirmed && (
@@ -194,7 +196,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                             className={`px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary hover:text-primary transition-colors flex items-center gap-2 text-sm ${order.InternalStatus === OrderInternalStatus.Arranged ? 'bg-green-50 dark:bg-green-900/20' : ''}`}
                         >
                             <span className="material-symbols-outlined text-lg">fact_check</span>
-                            {order.InternalStatus === OrderInternalStatus.Arranged ? 'View Arrangement' : 'Start Arrangement'}
+                            {order.InternalStatus === OrderInternalStatus.Arranged ? (t.orders.viewArrangement || 'View Arrangement') : (t.orders.startArrangement || 'Start Arrangement')}
                         </Link>
                     )}
 
@@ -209,7 +211,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                             ) : (
                                 <span className="material-symbols-outlined text-lg">check_circle</span>
                             )}
-                            Confirm Order Completion
+                            {t.orders.confirmOrderCompletion || 'Confirm Order Completion'}
                         </button>
                     )}
                 </div>
@@ -223,14 +225,15 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-4xl text-primary">verified</span>
                             </div>
-                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Final Confirmation</h3>
-                            <p className="text-text-secondary dark:text-gray-400 text-sm leading-relaxed">
-                                <strong className="text-primary">Have you received the payments?</strong>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.finalConfirmation || 'Final Confirmation'}</h3>
+                            <div className="text-text-secondary dark:text-gray-400 text-sm leading-relaxed">
+                                <strong className="text-primary">{t.orders.receivedPayments || 'Have you received the payments?'}</strong>
                                 <br />
                                 <br />
-                                Confirming this order will mark it as complete and all items as sold.
-                                This action is irreversible.
-                            </p>
+                                {t.orders.confirmMarkComplete || 'Confirming this order will mark it as complete and all items as sold.'}
+                                <br />
+                                {t.orders.actionIrreversible || 'This action is irreversible.'}
+                            </div>
                         </div>
                         <div className="flex gap-3">
                             <button
@@ -243,7 +246,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                                 onClick={finalizeOrder}
                                 className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-green-200/50 dark:shadow-none"
                             >
-                                Yes, Complete
+                                {t.orders.yesComplete || 'Yes, Complete'}
                             </button>
                         </div>
                     </div>
@@ -255,9 +258,9 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
-                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">Order Confirmed! 🎉</h3>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.orderCreated || 'Order Confirmed! 🎉'}</h3>
                             <p className="text-text-secondary dark:text-gray-400 text-sm">
-                                Do you want to print the invoice now?
+                                {t.orders.doYouWantToPrintInvoice || 'Do you want to print the invoice now?'}
                             </p>
                         </div>
                         <div className="flex gap-3 flex-col">
@@ -266,13 +269,13 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                                 className="w-full px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg flex items-center justify-center gap-2"
                             >
                                 <span className="material-symbols-outlined">print</span>
-                                Yes, Print Invoice
+                                {t.orders.yesPrintInvoice || 'Yes, Print Invoice'}
                             </button>
                             <button
                                 onClick={handleNoPrint}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 font-medium transition-colors"
                             >
-                                No, thanks
+                                {t.orders.noThanks || 'No, thanks'}
                             </button>
                         </div>
                     </div>

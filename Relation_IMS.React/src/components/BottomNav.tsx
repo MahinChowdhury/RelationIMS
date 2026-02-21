@@ -1,8 +1,10 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function BottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     const isActive = (path: string) => {
         return location.pathname.startsWith(path);
@@ -18,7 +20,7 @@ export default function BottomNav() {
                     grid_view
                 </span>
                 <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/dashboard') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Dashboard
+                    {t.nav.dashboard}
                 </span>
             </NavLink>
 
@@ -30,7 +32,7 @@ export default function BottomNav() {
                     shopping_bag
                 </span>
                 <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/products') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Products
+                    {t.nav.products}
                 </span>
             </NavLink>
 
@@ -42,7 +44,7 @@ export default function BottomNav() {
                     receipt_long
                 </span>
                 <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/orders') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Orders
+                    {t.nav.orders}
                 </span>
             </NavLink>
 
@@ -63,7 +65,7 @@ export default function BottomNav() {
                     group
                 </span>
                 <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/customers') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Customers
+                    {t.nav.customers}
                 </span>
             </NavLink>
 
@@ -75,7 +77,7 @@ export default function BottomNav() {
                     inventory_2
                 </span>
                 <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/inventory') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Inventory
+                    {t.nav.inventory}
                 </span>
             </NavLink>
 
@@ -87,7 +89,7 @@ export default function BottomNav() {
                     leaderboard
                 </span>
                 <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/accounts') ? 'text-primary' : 'text-text-secondary'}`}>
-                    Accounts
+                    {t.nav.accounts}
                 </span>
             </NavLink>
         </nav>

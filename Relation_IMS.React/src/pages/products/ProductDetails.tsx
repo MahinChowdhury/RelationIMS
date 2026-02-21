@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 import InventoryStockModal from '../../components/products/InventoryStockModal';
 
 // ---------- Interfaces ----------
@@ -14,6 +15,7 @@ interface ProductDetailsProps {
 export default function ProductDetails({ productId }: ProductDetailsProps) {
     const { id } = useParams<{ id: string }>();
     const activeId = productId || id;
+    const { t } = useLanguage();
     const [productDetail, setProductDetail] = useState<Product | null>(null);
     const [selectedImage, setSelectedImage] = useState<string>('');
 
@@ -80,7 +82,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
     }, [productDetail]);
 
     if (!productDetail) {
-        return <div className="p-8 text-center text-gray-500">Loading product details...</div>;
+        return <div className="p-8 text-center text-gray-500">{t.products.loadingDetails}</div>;
     }
 
     return (
@@ -92,13 +94,13 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                     <li className="inline-flex items-center">
                         <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to="/dashboard">
                             <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            Dashboard
+                            {t.nav.dashboard}
                         </Link>
                     </li>
                     <li>
                         <div className="flex items-center">
                             <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <Link className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white" to="/products">products</Link>
+                            <Link className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white" to="/products">{t.nav.products}</Link>
                         </div>
                     </li>
                     <li aria-current="page">
@@ -146,16 +148,16 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
                         <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">inventory_2</span>
-                            Stock & Variants
+                            {t.products.stockAndVariants}
                         </h2>
                         <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-[#2a4032]">
                             <table className="w-full text-sm text-center">
                                 <thead>
                                     <tr className="bg-[#4e9767] text-white">
-                                        <th className="py-3 px-4 font-bold uppercase text-xs">Color</th>
-                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Size</th>
-                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Quantity</th>
-                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Defects</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs">{t.products.color}</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.size}</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.common.quantity}</th>
+                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.defects}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-[#112116] divide-y divide-gray-100 dark:divide-[#2a4032]">
@@ -214,12 +216,12 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                 </span>
                                 <span className={`bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide flex items-center gap-1`}>
                                     <span className={`w-1.5 h-1.5 rounded-full ${getStockStatus() ? 'bg-primary' : 'bg-red-500'}`}></span>
-                                    {getStockStatus() ? "In Stock" : "Out of Stock"}
+                                    {getStockStatus() ? t.products.inStock : t.products.outOfStock}
                                 </span>
                             </div>
                         </div>
                         <div className="text-right hidden sm:block">
-                            <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">Retail Price</p>
+                            <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">{t.products.retailPrice}</p>
                             <p className="text-3xl font-black text-text-main dark:text-white">${productDetail.MSRP.toFixed(2)}</p>
                         </div>
                     </div>
@@ -228,11 +230,11 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
                         <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">info</span>
-                            Product Details
+                            {t.products.productDetails}
                         </h2>
                         <div className="flex flex-col gap-6">
                             <div>
-                                <label className="block text-xs font-bold uppercase text-text-secondary mb-2 tracking-wide">Description</label>
+                                <label className="block text-xs font-bold uppercase text-text-secondary mb-2 tracking-wide">{t.common.description}</label>
                                 <div className="bg-gray-50 dark:bg-[#112116] p-4 rounded-lg border border-gray-100 dark:border-[#2a4032]">
                                     <p className="text-sm text-text-main dark:text-gray-300 leading-relaxed">
                                         {productDetail.Description}
@@ -250,7 +252,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                             <span className="material-symbols-outlined text-[20px]">price_check</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">MSRP</span>
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.msrp}</span>
                                             <span className="text-lg font-extrabold text-text-main dark:text-white">
                                                 ${(productDetail.MSRP || 0).toFixed(2)}
                                             </span>
@@ -263,7 +265,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                             <span className="material-symbols-outlined text-[20px]">attach_money</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Base Price</span>
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.basePrice}</span>
                                             <span className="text-lg font-extrabold text-red-500 dark:text-white">
                                                 ${(productDetail.BasePrice || 0).toFixed(2)}
                                             </span>
@@ -276,7 +278,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                             <span className="material-symbols-outlined text-[20px]">inventory</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
                                             <span className="text-lg font-extrabold text-blue-500 dark:text-white">
                                                 ${(productDetail.CostPrice || 0).toFixed(2)}
                                             </span>
@@ -294,7 +296,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                             <span className="material-symbols-outlined text-[20px]">category</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Category</span>
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.category}</span>
                                             <span className="text-sm font-bold text-text-main dark:text-white truncate">
                                                 {productDetail.Category?.Name || 'N/A'}
                                             </span>
@@ -307,7 +309,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                             <span className="material-symbols-outlined text-[20px]">verified</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Brand</span>
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.brand}</span>
                                             <span className="text-sm font-bold text-text-main dark:text-white truncate">
                                                 {productDetail.Brand?.Name || 'N/A'}
                                             </span>
@@ -320,7 +322,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                             <span className="material-symbols-outlined text-[20px]">calendar_today</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Quarter</span>
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.quarter}</span>
                                             <span className="text-sm font-bold text-text-main dark:text-white truncate">
                                                 {productDetail.Quarters && productDetail.Quarters.length > 0 ? productDetail.Quarters.map((q: any) => q.Name).join(', ') : 'N/A'}
                                             </span>
