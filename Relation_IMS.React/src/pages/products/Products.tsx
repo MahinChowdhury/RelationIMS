@@ -54,7 +54,7 @@ export default function ProductsPage() {
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
-        QuarterId: 0,
+        QuarterIds: [],
         ImageUrls: []
     };
     const [currentProduct, setCurrentProduct] = useState<Product>(initialProductState);
@@ -151,7 +151,7 @@ export default function ProductsPage() {
     const loadBrands = async () => {
         try {
             const res = await api.get('/Brand');
-            setBrands(res.data.map((b: any) => ({ Id: b.Id, Name: b.Name, CategoryId: b.CategoryId })));
+            setBrands(res.data.map((b: any) => ({ Id: b.Id, Name: b.Name, Categories: b.Categories })));
         } catch (err) { console.error(err); }
     };
 
@@ -302,7 +302,11 @@ export default function ProductsPage() {
             formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());
-            formData.append('QuarterId', currentProduct.QuarterId?.toString() || '0');
+            if (currentProduct.QuarterIds && currentProduct.QuarterIds.length > 0) {
+                currentProduct.QuarterIds.forEach((id: number) => {
+                    formData.append('QuarterIds', id.toString());
+                });
+            }
 
             // Append images
             imageFiles.forEach(file => {

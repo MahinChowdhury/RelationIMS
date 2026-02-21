@@ -239,97 +239,97 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                     </p>
                                 </div>
                             </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    {/* LEFT SIDE – MSRP, Base Price, Cost Price */}
-                    <div className="flex flex-col gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                        {/* MSRP */}
-                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                            <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20 shrink-0">
-                                <span className="material-symbols-outlined text-[20px]">price_check</span>
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase text-text-secondary">MSRP</span>
-                                <span className="text-lg font-extrabold text-text-main dark:text-white">
-                                    ${(productDetail.MSRP || 0).toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
+                                {/* LEFT SIDE – MSRP, Base Price, Cost Price */}
+                                <div className="flex flex-col gap-4">
 
-                        {/* Base Price */}
-                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                            <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-red-500/20 shrink-0">
-                                <span className="material-symbols-outlined text-[20px]">attach_money</span>
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase text-text-secondary">Base Price</span>
-                                <span className="text-lg font-extrabold text-red-500 dark:text-white">
-                                    ${(productDetail.BasePrice || 0).toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
+                                    {/* MSRP */}
+                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20 shrink-0">
+                                            <span className="material-symbols-outlined text-[20px]">price_check</span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">MSRP</span>
+                                            <span className="text-lg font-extrabold text-text-main dark:text-white">
+                                                ${(productDetail.MSRP || 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                        {/* Cost Price */}
-                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                            <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-green-500/20 shrink-0">
-                                <span className="material-symbols-outlined text-[20px]">inventory</span>
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
-                                <span className="text-lg font-extrabold text-blue-500 dark:text-white">
-                                    ${(productDetail.CostPrice || 0).toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
+                                    {/* Base Price */}
+                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-red-500/20 shrink-0">
+                                            <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Base Price</span>
+                                            <span className="text-lg font-extrabold text-red-500 dark:text-white">
+                                                ${(productDetail.BasePrice || 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                    </div>
+                                    {/* Cost Price */}
+                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-green-500/20 shrink-0">
+                                            <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Cost Price</span>
+                                            <span className="text-lg font-extrabold text-blue-500 dark:text-white">
+                                                ${(productDetail.CostPrice || 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                    {/* RIGHT SIDE – Category, Brand, Quarter */}
-                    <div className="flex flex-col gap-4">
+                                </div>
 
-                        {/* Category */}
-                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                            <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
-                                <span className="material-symbols-outlined text-[20px]">category</span>
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase text-text-secondary">Category</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white truncate">
-                                    {productDetail.Category?.Name || 'N/A'}
-                                </span>
-                            </div>
-                        </div>
+                                {/* RIGHT SIDE – Category, Brand, Quarter */}
+                                <div className="flex flex-col gap-4">
 
-                        {/* Brand */}
-                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                            <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
-                                <span className="material-symbols-outlined text-[20px]">verified</span>
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase text-text-secondary">Brand</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white truncate">
-                                    {productDetail.Brand?.Name || 'N/A'}
-                                </span>
-                            </div>
-                        </div>
+                                    {/* Category */}
+                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
+                                            <span className="material-symbols-outlined text-[20px]">category</span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Category</span>
+                                            <span className="text-sm font-bold text-text-main dark:text-white truncate">
+                                                {productDetail.Category?.Name || 'N/A'}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                        {/* Quarter */}
-                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                            <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
-                                <span className="material-symbols-outlined text-[20px]">calendar_today</span>
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase text-text-secondary">Quarter</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white truncate">
-                                    {productDetail.Quarter?.Name || 'N/A'}
-                                </span>
-                            </div>
-                        </div>
+                                    {/* Brand */}
+                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
+                                            <span className="material-symbols-outlined text-[20px]">verified</span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Brand</span>
+                                            <span className="text-sm font-bold text-text-main dark:text-white truncate">
+                                                {productDetail.Brand?.Name || 'N/A'}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                    </div>
+                                    {/* Quarter */}
+                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
+                                            <span className="material-symbols-outlined text-[20px]">calendar_today</span>
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-bold uppercase text-text-secondary">Quarter</span>
+                                            <span className="text-sm font-bold text-text-main dark:text-white truncate">
+                                                {productDetail.Quarters && productDetail.Quarters.length > 0 ? productDetail.Quarters.map((q: any) => q.Name).join(', ') : 'N/A'}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                </div>
+                                </div>
+
+                            </div>
 
                         </div>
                     </div>

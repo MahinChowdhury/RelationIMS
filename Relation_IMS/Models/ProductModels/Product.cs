@@ -31,9 +31,7 @@ namespace Relation_IMS.Models.ProductModels
         public int BrandId { get; set; }
         public Brand? Brand { get; set; }
 
-        [Required(ErrorMessage = "Quarter Id is required.")]
-        public int QuarterId { get; set; }
-        public Quarter? Quarter { get; set; }
+        public List<Quarter>? Quarters { get; set; } = new List<Quarter>();
         public List<ProductVariant>? Variants { get; set; } = new();
         public ProductLot? Lot { get; set; }
         public List<OrderItem>? OrderItems { get; set; }
