@@ -16,6 +16,19 @@ namespace Relation_IMS.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Brands",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Brands", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
@@ -157,19 +170,57 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Brands",
+                name: "BrandCategory",
+                columns: table => new
+                {
+                    BrandsId = table.Column<int>(type: "integer", nullable: false),
+                    CategoriesId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BrandCategory", x => new { x.BrandsId, x.CategoriesId });
+                    table.ForeignKey(
+                        name: "FK_BrandCategory_Brands_BrandsId",
+                        column: x => x.BrandsId,
+                        principalTable: "Brands",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BrandCategory_Categories_CategoriesId",
+                        column: x => x.CategoriesId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Code = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                    ImageUrls = table.Column<List<string>>(type: "text[]", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    BasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    MSRP = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    BrandId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Brands", x => x.Id);
+                    table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Brands_Categories_CategoryId",
+                        name: "FK_Products_Brands_BrandId",
+                        column: x => x.BrandId,
+                        principalTable: "Brands",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
                         principalColumn: "Id",
@@ -304,42 +355,82 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "ProductLots",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "text", nullable: true),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    ImageUrls = table.Column<List<string>>(type: "text[]", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    BasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    MSRP = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    BrandId = table.Column<int>(type: "integer", nullable: false),
-                    QuarterId = table.Column<int>(type: "integer", nullable: false)
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    LotQuantity = table.Column<int>(type: "integer", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_ProductLots", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Brands_BrandId",
-                        column: x => x.BrandId,
-                        principalTable: "Brands",
+                        name: "FK_ProductLots_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductQuarter",
+                columns: table => new
+                {
+                    ProductsId = table.Column<int>(type: "integer", nullable: false),
+                    QuartersId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductQuarter", x => new { x.ProductsId, x.QuartersId });
+                    table.ForeignKey(
+                        name: "FK_ProductQuarter_Products_ProductsId",
+                        column: x => x.ProductsId,
+                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Products_Quarters_QuarterId",
-                        column: x => x.QuarterId,
+                        name: "FK_ProductQuarter_Quarters_QuartersId",
+                        column: x => x.QuartersId,
                         principalTable: "Quarters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductVariants",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    ProductColorId = table.Column<int>(type: "integer", nullable: false),
+                    ProductSizeId = table.Column<int>(type: "integer", nullable: false),
+                    VariantPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductVariants", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductVariants_ProductColors_ProductColorId",
+                        column: x => x.ProductColorId,
+                        principalTable: "ProductColors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductVariants_ProductSizes_ProductSizeId",
+                        column: x => x.ProductSizeId,
+                        principalTable: "ProductSizes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductVariants_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -390,63 +481,6 @@ namespace Relation_IMS.Migrations
                         name: "FK_OrderPayments_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductLots",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Code = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    LotQuantity = table.Column<int>(type: "integer", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductLots", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProductLots_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductVariants",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    ProductColorId = table.Column<int>(type: "integer", nullable: false),
-                    ProductSizeId = table.Column<int>(type: "integer", nullable: false),
-                    VariantPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductVariants", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProductVariants_ProductColors_ProductColorId",
-                        column: x => x.ProductColorId,
-                        principalTable: "ProductColors",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProductVariants_ProductSizes_ProductSizeId",
-                        column: x => x.ProductSizeId,
-                        principalTable: "ProductSizes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProductVariants_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -632,9 +666,9 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Brands_CategoryId",
-                table: "Brands",
-                column: "CategoryId");
+                name: "IX_BrandCategory_CategoriesId",
+                table: "BrandCategory",
+                column: "CategoriesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Unique_ClientId",
@@ -754,6 +788,11 @@ namespace Relation_IMS.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductQuarter_QuartersId",
+                table: "ProductQuarter",
+                column: "QuartersId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
                 table: "Products",
                 column: "BrandId");
@@ -762,11 +801,6 @@ namespace Relation_IMS.Migrations
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_QuarterId",
-                table: "Products",
-                column: "QuarterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductColorId",
@@ -815,6 +849,9 @@ namespace Relation_IMS.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "BrandCategory");
+
+            migrationBuilder.DropTable(
                 name: "CustomerReturnItems");
 
             migrationBuilder.DropTable(
@@ -825,6 +862,9 @@ namespace Relation_IMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductDefects");
+
+            migrationBuilder.DropTable(
+                name: "ProductQuarter");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
@@ -840,6 +880,9 @@ namespace Relation_IMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProductItems");
+
+            migrationBuilder.DropTable(
+                name: "Quarters");
 
             migrationBuilder.DropTable(
                 name: "Clients");
@@ -879,9 +922,6 @@ namespace Relation_IMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "Brands");
-
-            migrationBuilder.DropTable(
-                name: "Quarters");
 
             migrationBuilder.DropTable(
                 name: "Categories");
