@@ -40,6 +40,7 @@ export default function StockIn() {
     const [loadingProduct, setLoadingProduct] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [addStockQuantities, setAddStockQuantities] = useState<{ [variantId: number]: number }>({});
+    const [editingQuarterIds, setEditingQuarterIds] = useState<number[]>([]);
 
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -97,6 +98,7 @@ export default function StockIn() {
             // 2. Load Full Product Details
             const productRes = await api.get<Product>(`/Product/${productId}`);
             setFoundProduct(productRes.data);
+            setEditingQuarterIds(productRes.data.Quarters?.map(q => q.Id) || []);
 
             // 3. Load Available Sizes for this Product's Category
             if (productRes.data.CategoryId) {
@@ -135,6 +137,25 @@ export default function StockIn() {
 
         try {
             setIsSaving(true);
+
+            // Check if QuarterIds were modified
+            const originalQuarters = foundProduct.Quarters?.map(q => q.Id).sort().join(',') || '';
+            const newQuarters = [...editingQuarterIds].sort().join(',');
+
+            if (originalQuarters !== newQuarters) {
+                // Perform product update
+                await api.put(`/Product/${foundProduct.Id}`, {
+                    Name: foundProduct.Name,
+                    Description: foundProduct.Description,
+                    BasePrice: foundProduct.BasePrice,
+                    CostPrice: foundProduct.CostPrice,
+                    MSRP: foundProduct.MSRP,
+                    CategoryId: foundProduct.CategoryId,
+                    BrandId: foundProduct.BrandId,
+                    QuarterIds: editingQuarterIds,
+                    ImageUrls: foundProduct.ImageUrls
+                });
+            }
 
             // 1. Update existing variants (using Bulk Endpoint for performance)
             const bulkItems = [];
@@ -583,8 +604,31 @@ export default function StockIn() {
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
                                                 <p className="text-sm text-gray-500">
                                                     {foundProduct.Category?.Name} • {foundProduct.Brand?.Name}
-                                                    {foundProduct.Quarters && foundProduct.Quarters.length > 0 && ` • ${foundProduct.Quarters.map(q => q.Name).join(', ')}`}
                                                 </p>
+
+                                                {/* Quarters Editing */}
+                                                <div className="mt-2 flex flex-wrap gap-2 items-center">
+                                                    <span className="text-xs font-bold uppercase text-gray-400 mr-2">Quarters:</span>
+                                                    {quarters.map((q: any) => {
+                                                        const isSelected = editingQuarterIds.includes(q.Id);
+                                                        return (
+                                                            <button
+                                                                key={q.Id}
+                                                                onClick={() => {
+                                                                    if (isSelected) setEditingQuarterIds(prev => prev.filter(id => id !== q.Id));
+                                                                    else setEditingQuarterIds(prev => [...prev, q.Id]);
+                                                                }}
+                                                                className={`px-2 py-0.5 rounded textxs font-bold transition-colors shadow-sm ${isSelected
+                                                                    ? 'bg-[#17cf54] text-white border border-[#17cf54]'
+                                                                    : 'bg-white dark:bg-black/20 text-gray-500 border border-gray-200 dark:border-gray-700 hover:border-[#17cf54] hover:text-[#17cf54]'
+                                                                    }`}
+                                                            >
+                                                                {q.Name}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+
                                             </div>
                                             <div className="flex flex-col items-end gap-2">
                                                 <div className="text-right">
