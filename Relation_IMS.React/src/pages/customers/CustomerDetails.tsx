@@ -8,9 +8,15 @@ export default function CustomerDetailsPage() {
     const navigate = useNavigate();
     const customerId = Number(id);
     const [customer, setCustomer] = useState<Customer | null>(null);
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [allOrders, setAllOrders] = useState<Order[]>([]);
+    const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+    const [loadingFilters, setLoadingFilters] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // Filters
+    const [statusFilter, setStatusFilter] = useState<string>('');
+    const [yearFilter, setYearFilter] = useState<string>('');
 
     useEffect(() => {
         if (!customerId || isNaN(customerId)) {
@@ -18,10 +24,15 @@ export default function CustomerDetailsPage() {
             setLoading(false);
             return;
         }
-        loadCustomerData();
+        loadInitialData();
     }, [customerId]);
 
-    const loadCustomerData = async () => {
+    useEffect(() => {
+        if (!customerId || isNaN(customerId)) return;
+        loadFilteredOrders();
+    }, [customerId, statusFilter, yearFilter]);
+
+    const loadInitialData = async () => {
         try {
             setLoading(true);
             setError('');
@@ -30,22 +41,38 @@ export default function CustomerDetailsPage() {
             setCustomer(custRes.data);
 
             const ordRes = await api.get(`/Order/customer/${customerId}`);
-            setOrders(ordRes.data || []);
+            setAllOrders(ordRes.data || []);
         } catch (err: any) {
-            console.error('Failed to load data:', err);
+            console.error('Failed to load initial data:', err);
             setError(err.response?.data?.message || 'Failed to load customer data.');
         } finally {
             setLoading(false);
         }
     };
 
+    const loadFilteredOrders = async () => {
+        try {
+            setLoadingFilters(true);
+            const queryParams = new URLSearchParams();
+            if (statusFilter !== '') queryParams.append('status', statusFilter);
+            if (yearFilter !== '') queryParams.append('year', yearFilter);
+
+            const ordRes = await api.get(`/Order/customer/${customerId}?${queryParams.toString()}`);
+            setFilteredOrders(ordRes.data || []);
+        } catch (err: any) {
+            console.error('Failed to load filtered orders:', err);
+        } finally {
+            setLoadingFilters(false);
+        }
+    };
+
     // --- Derived Logic ---
-    const totalSpent = orders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
-    const totalDue = orders.reduce((sum, o) =>
+    const totalSpent = allOrders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
+    const totalDue = allOrders.reduce((sum, o) =>
         sum + (o.NetAmount - (o.PaidAmount ?? (o.PaymentStatus === 2 ? o.NetAmount : 0))), 0);
 
-    const lastOrderDate = orders.length > 0
-        ? new Date(Math.max(...orders.map(o => new Date(o.CreatedAt).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const lastOrderDate = allOrders.length > 0
+        ? new Date(Math.max(...allOrders.map(o => new Date(o.CreatedAt).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : 'N/A';
 
     const formatDate = (dateString?: string) => {
@@ -86,7 +113,7 @@ export default function CustomerDetailsPage() {
 
     const getCustomerStatus = () => {
         if (totalSpent > 2000) return 'VIP Customer';
-        if (orders.length > 5) return 'Loyal Customer';
+        if (allOrders.length > 5) return 'Loyal Customer';
         return 'Retail Customer';
     };
 
@@ -299,15 +326,42 @@ export default function CustomerDetailsPage() {
 
                     {/* Recent Orders Table */}
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] flex-1">
-                        <div className="p-6 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                        <div className="p-6 border-b border-gray-100 dark:border-[#2a4032] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">receipt_long</span>
                                 Recent Orders
+                                <span className="text-sm font-medium text-text-secondary ml-2 whitespace-nowrap">({filteredOrders.length} found)</span>
                             </h2>
-                            <span className="text-sm font-medium text-text-secondary">{orders.length} orders found</span>
+                            <div className="flex items-center gap-3">
+                                <select
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="0">Pending</option>
+                                    <option value="1">Partial</option>
+                                    <option value="2">Paid</option>
+                                </select>
+                                <select
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
+                                    value={yearFilter}
+                                    onChange={(e) => setYearFilter(e.target.value)}
+                                >
+                                    <option value="">All Years</option>
+                                    <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                                    <option value={new Date().getFullYear() - 1}>{new Date().getFullYear() - 1}</option>
+                                    <option value={new Date().getFullYear() - 2}>{new Date().getFullYear() - 2}</option>
+                                    <option value={new Date().getFullYear() - 3}>{new Date().getFullYear() - 3}</option>
+                                </select>
+                            </div>
                         </div>
 
-                        {orders.length === 0 ? (
+                        {loadingFilters ? (
+                            <div className="p-8 flex justify-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary border-gray-200"></div>
+                            </div>
+                        ) : filteredOrders.length === 0 ? (
                             <div className="p-8 text-center text-text-secondary">
                                 No orders found for this customer.
                             </div>
@@ -326,7 +380,7 @@ export default function CustomerDetailsPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-[#1a2e22]">
-                                        {orders.map((order) => (
+                                        {filteredOrders.map((order) => (
                                             <tr key={order.Id} className="border-b dark:border-[#2a4032] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                                 <td className="px-6 py-4 font-medium text-primary">#ORD-{order.Id}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-text-secondary">{formatFullDate(order.CreatedAt)}</td>
@@ -353,7 +407,7 @@ export default function CustomerDetailsPage() {
                             </div>
                         )}
 
-                        {orders.length > 5 && (
+                        {filteredOrders.length > 5 && (
                             <div className="p-4 border-t border-gray-100 dark:border-[#2a4032] flex justify-center">
                                 <button className="text-sm font-medium text-text-secondary hover:text-primary transition-colors flex items-center gap-1">
                                     Show All Orders

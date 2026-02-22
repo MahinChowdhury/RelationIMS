@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿ using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Filters;
@@ -37,7 +37,7 @@ namespace Relation_IMS.Controllers
             return Ok(order);
         }
         [HttpDelete("{id:int}")]
-        [InvalidateCache("order", "orderitem")]
+        [InvalidateCache("order", "orderitem", "arrangement")]
         public async Task<ActionResult<Order>> DeleteOrderByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
@@ -53,7 +53,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
-        [InvalidateCache("order", "orderitem")]
+        [InvalidateCache("order", "orderitem", "arrangement")]
         public async Task<ActionResult<Order>> CreateNewOrderAsync(CreateOrderDTO orderDto) {
             // Lock the customer to prevent concurrent order creation issues
             using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
@@ -65,7 +65,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [InvalidateCache("order", "orderitem")]
+        [InvalidateCache("order", "orderitem", "arrangement")]
         public async Task<ActionResult<Order>> UpdateOrderByIdAsync([FromRoute] int id, UpdateOrderDTO updateDto) {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
             {
@@ -85,9 +85,9 @@ namespace Relation_IMS.Controllers
 
         [HttpGet("customer/{customerId:int}")]
         [RedisCache("order")]
-        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId)
+        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId, [FromQuery] int? status, [FromQuery] int? year)
         {
-            var orders = await _repo.GetOrderByCustomerIdAsync(customerId);
+            var orders = await _repo.GetOrderByCustomerIdAsync(customerId, status, year);
 
             if (orders == null) {
                 return NotFound(new {message = $"Customer with id : {customerId} not found." });

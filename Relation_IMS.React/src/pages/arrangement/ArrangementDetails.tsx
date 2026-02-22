@@ -256,64 +256,86 @@ export default function ArrangementDetails() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#f0f7f2] dark:divide-[#2a4032]">
-                                        {order.OrderItems && order.OrderItems.map(item => (
-                                            <tr
-                                                key={item.Id}
-                                                className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer group"
-                                                onClick={() => setSelectedRequiredItemProductId(item.ProductId)}
-                                                title="Click to view product details"
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="size-12 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0 border border-[#e7f3eb] dark:border-gray-600 overflow-hidden flex items-center justify-center relative group/image">
-                                                            {item.Product?.ImageUrls?.[0] ?
-                                                                <>
-                                                                    <img src={item.Product.ImageUrls[0]} className="w-full h-full object-cover transition-all duration-300 group-hover/image:blur-sm transform group-hover/image:scale-110" />
-                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 bg-black/20">
-                                                                        <span className="material-symbols-outlined text-white drop-shadow-md text-xl">visibility</span>
-                                                                    </div>
-                                                                </>
-                                                                : <span className="material-symbols-outlined text-gray-400">image_not_supported</span>
-                                                            }
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-bold text-text-main dark:text-white">{item.Product?.Name}</p>
-                                                            <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary mt-0.5">
-                                                                <span className="px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded shadow-sm border border-[#e7f3eb] dark:border-gray-600 font-mono">ID: {item.ProductId}</span>
-                                                                {item.ProductVariant && (
-                                                                    <>
-                                                                        {item.ProductVariant.Color && (
-                                                                            <span className="px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded shadow-sm border border-[#e7f3eb] dark:border-gray-600 flex items-center gap-1">
-                                                                                <span className="size-2 rounded-full border border-gray-200" style={{ backgroundColor: item.ProductVariant.Color.HexCode }}></span>
-                                                                                {item.ProductVariant.Color.Name}
+                                        {order.OrderItems && order.OrderItems.length > 0 ? (
+                                            Object.values(order.OrderItems.reduce((groups, item) => {
+                                                const key = `${item.ProductId}-${item.ProductVariant?.ProductColorId || 'NoColor'}`;
+                                                if (!groups[key]) groups[key] = { items: [], product: item.Product, color: item.ProductVariant?.Color };
+                                                groups[key].items.push(item);
+                                                return groups;
+                                            }, {} as Record<string, { items: typeof order.OrderItems, product: any, color: any }>)).map((group, groupIdx) => (
+                                                <>{/* Group Header */}
+                                                    <tr
+                                                        key={`group-${groupIdx}`}
+                                                        className="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-100/60 dark:hover:bg-gray-800/50 transition-colors"
+                                                        onClick={() => setSelectedRequiredItemProductId(group.items[0].ProductId)}
+                                                        title="Click to view product details"
+                                                    >
+                                                        <td colSpan={2} className="px-6 py-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="size-10 rounded-lg bg-white dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden relative group/image">
+                                                                    {group.product?.ImageUrls?.[0] ? (
+                                                                        <>
+                                                                            <img src={group.product.ImageUrls[0]} alt={group.product.Name} className="w-full h-full object-cover transition-all duration-300 group-hover/image:blur-sm transform group-hover/image:scale-110" />
+                                                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 bg-black/20">
+                                                                                <span className="material-symbols-outlined text-white drop-shadow-md text-lg">visibility</span>
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span className="material-symbols-outlined text-gray-400">image</span>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-sm text-text-main dark:text-white flex items-center gap-2">
+                                                                        {group.product?.Name || 'Unknown Product'}
+                                                                        {group.color && (
+                                                                            <span className="px-2 py-0.5 rounded-full bg-white dark:bg-gray-600 text-xs border border-gray-200 dark:border-gray-500 font-normal flex items-center gap-1">
+                                                                                <span className="size-2 rounded-full border border-gray-300" style={{ backgroundColor: group.color.HexCode }}></span>
+                                                                                {group.color.Name}
                                                                             </span>
                                                                         )}
-                                                                        {item.ProductVariant.Size && (
-                                                                            <span className="px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded shadow-sm border border-[#e7f3eb] dark:border-gray-600">
-                                                                                {item.ProductVariant.Size.Name}
-                                                                            </span>
-                                                                        )}
-                                                                    </>
-                                                                )}
+                                                                    </p>
+                                                                    {group.product?.Category && <p className="text-xs text-text-secondary">{group.product.Category.Name}</p>}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="text-lg font-bold text-text-main dark:text-white">
-                                                            {item.ArrangedQuantity || 0} / {item.Quantity}
-                                                        </span>
-                                                        <div className="w-16 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-primary transition-all duration-500"
-                                                                style={{ width: `${Math.min(100, ((item.ArrangedQuantity || 0) / item.Quantity) * 100)}%` }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                        </td>
+                                                    </tr>
+
+                                                    {/* Size Sub-rows */}
+                                                    {group.items.map((item) => (
+                                                        <tr
+                                                            key={item.Id}
+                                                            className="hover:bg-green-50/30 dark:hover:bg-white/5 transition-colors"
+                                                        >
+                                                            <td className="px-6 py-3 pl-12">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="material-symbols-outlined text-sm text-gray-300 rotate-90">subdirectory_arrow_right</span>
+                                                                    <span className="font-bold text-sm text-text-main dark:text-gray-300">
+                                                                        {item.ProductVariant?.Size?.Name || 'One Size'}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-center">
+                                                                <div className="flex flex-col items-center">
+                                                                    <span className="text-lg font-bold text-text-main dark:text-white">
+                                                                        {item.ArrangedQuantity || 0} / {item.Quantity}
+                                                                    </span>
+                                                                    <div className="w-16 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
+                                                                        <div
+                                                                            className="h-full bg-primary transition-all duration-500"
+                                                                            style={{ width: `${Math.min(100, ((item.ArrangedQuantity || 0) / item.Quantity) * 100)}%` }}
+                                                                        ></div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={2} className="px-6 py-8 text-center text-text-secondary">{t.orders.noItemsFoundInOrder || 'No items found in this order.'}</td>
                                             </tr>
-                                        ))}
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

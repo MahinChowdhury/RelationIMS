@@ -48,6 +48,31 @@ const CopyableBarcode = ({ code, isReturned }: { code: string, isReturned?: bool
     );
 };
 
+const MiniOrderCycle = ({ status, t }: { status: OrderInternalStatus; t: any }) => {
+    const isArranging = status >= OrderInternalStatus.Arranging;
+    const isArranged = status >= OrderInternalStatus.Arranged;
+    const isConfirmed = status === OrderInternalStatus.Confirmed;
+
+    return (
+        <div className="flex items-center gap-1 bg-white dark:bg-[#1a2e22] px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm" title={t.orders.internalOrderCycle || 'Internal Order Cycle'}>
+            <div className="size-5 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-[12px]">add_shopping_cart</span>
+            </div>
+            <div className={`w-4 md:w-6 h-0.5 transition-colors ${isArranging ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+
+            <div className={`size-5 rounded-full flex items-center justify-center border-2 transition-colors ${isArranged || isConfirmed ? 'bg-green-500 border-green-500 text-white shadow-sm' : isArranging ? 'border-primary bg-green-50 dark:bg-green-900/20 text-primary' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
+                {isArranged || isConfirmed ? <span className="material-symbols-outlined text-[12px]">check</span> : <span className="material-symbols-outlined text-[12px]">fact_check</span>}
+            </div>
+
+            <div className={`w-4 md:w-6 h-0.5 transition-colors ${isConfirmed ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+
+            <div className={`size-5 rounded-full flex items-center justify-center border-2 transition-colors ${isConfirmed ? 'bg-green-500 border-green-500 text-white shadow-sm' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
+                <span className="material-symbols-outlined text-[12px]">check_circle</span>
+            </div>
+        </div>
+    );
+};
+
 export default function OrderDetailsPage() {
     const { t } = useLanguage();
     const { id } = useParams<{ id: string }>();
@@ -260,15 +285,18 @@ export default function OrderDetailsPage() {
                     </div>
                     <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base">{t.orders.placedOn || 'Placed on'} {formatDate(order.CreatedAt)}</p>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                    <Link to={`/orders/${order.Id}/invoice`} className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
-                        <span className="material-symbols-outlined text-lg">print</span>
-                        {t.orders.printInvoice || 'Print Invoice'}
-                    </Link>
-                    <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
-                        <span className="material-symbols-outlined text-lg">edit</span>
-                        {order.InternalStatus === OrderInternalStatus.Confirmed ? (t.orders.editOrderPayment || 'Edit Payment') : (t.orders.editOrder || 'Edit Order')}
-                    </button>
+                <div className="flex flex-col items-end gap-3">
+                    <MiniOrderCycle status={order.InternalStatus} t={t} />
+                    <div className="flex flex-wrap justify-end gap-3">
+                        <Link to={`/orders/${order.Id}/invoice`} className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
+                            <span className="material-symbols-outlined text-lg">print</span>
+                            {t.orders.printInvoice || 'Print Invoice'}
+                        </Link>
+                        <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
+                            <span className="material-symbols-outlined text-lg">edit</span>
+                            {order.InternalStatus === OrderInternalStatus.Confirmed ? (t.orders.editOrderPayment || 'Edit Payment') : (t.orders.editOrder || 'Edit Order')}
+                        </button>
+                    </div>
                 </div>
             </div>
 

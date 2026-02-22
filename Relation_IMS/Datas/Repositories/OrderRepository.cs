@@ -86,9 +86,21 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
-        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId)
+        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null)
         {
-            var orders = await _context.Orders.Where(o => o.CustomerId == customerId).ToListAsync();
+            var query = _context.Orders.Where(o => o.CustomerId == customerId);
+
+            if (status.HasValue)
+            {
+                query = query.Where(o => (int)o.PaymentStatus == status.Value);
+            }
+
+            if (year.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Year == year.Value);
+            }
+
+            var orders = await query.ToListAsync();
 
             return orders;
         }

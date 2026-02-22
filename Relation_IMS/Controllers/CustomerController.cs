@@ -41,7 +41,7 @@ namespace Relation_IMS.Controllers
             return Ok(customer);
         }
         [HttpDelete("{id:int}")]
-        [InvalidateCache("customer", "order")]
+        [InvalidateCache("customer", "order", "arrangement")]
         public async Task<ActionResult<Customer?>> DeleteCustomerByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"customer:{id}"))
@@ -71,7 +71,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [InvalidateCache("customer", "order")]
+        [InvalidateCache("customer", "order", "arrangement")]
         public async Task<ActionResult<Customer>> UpdateCustomerAsync(int id,UpdateCustomerDTO updateDto) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

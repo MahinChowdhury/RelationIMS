@@ -195,7 +195,7 @@ export default function Configuration() {
 
                 {/* Language Switcher Section */}
                 <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                    <div className="p-5 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                         <div>
                             <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[#17cf54]">translate</span>
@@ -203,30 +203,21 @@ export default function Configuration() {
                             </h2>
                             <p className="text-xs text-gray-400 mt-0.5">{t.config.languageSubtitle}</p>
                         </div>
-                    </div>
-                    <div className="p-4">
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setLanguage('en')}
-                                className={`flex-1 flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border-2 font-bold text-sm transition-all ${language === 'en'
-                                    ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] shadow-sm shadow-green-500/10'
-                                    : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
-                                    }`}
-                            >
-                                <span className="text-xl">🇺🇸</span>
-                                {t.config.english}
-                            </button>
-                            <button
-                                onClick={() => setLanguage('bn')}
-                                className={`flex-1 flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border-2 font-bold text-sm transition-all ${language === 'bn'
-                                    ? 'border-[#17cf54] bg-[#17cf54]/10 text-[#17cf54] shadow-sm shadow-green-500/10'
-                                    : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
-                                    }`}
-                            >
-                                <span className="text-xl">🇧🇩</span>
-                                {t.config.bangla}
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setLanguage(language === 'en' ? 'bn' : 'en')}
+                            className={`relative flex items-center p-1.5 rounded-full w-[160px] h-[44px] cursor-pointer shrink-0 shadow-inner transition-colors duration-300 border ${language === 'en' ? 'bg-blue-100/50 dark:bg-blue-900/20 border-blue-200/50 dark:border-blue-800/50' : 'bg-sky-100/50 dark:bg-sky-900/20 border-sky-200/50 dark:border-sky-800/50'}`}
+                            aria-label="Toggle Language"
+                        >
+                            <div
+                                className={`absolute left-1.5 shadow-md w-[74px] h-[32px] rounded-full transition-all duration-300 ${language === 'bn' ? 'translate-x-[74px] bg-sky-500' : 'translate-x-0 bg-blue-500'}`}
+                            ></div>
+                            <span className={`relative z-10 w-1/2 text-center text-[13px] font-bold transition-colors duration-300 ${language === 'en' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                                English
+                            </span>
+                            <span className={`relative z-10 w-1/2 text-center text-[13px] font-bold transition-colors duration-300 ${language === 'bn' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                                বাংলা
+                            </span>
+                        </button>
                     </div>
                 </div>
 
