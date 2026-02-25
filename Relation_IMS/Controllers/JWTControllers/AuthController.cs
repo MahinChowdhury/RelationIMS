@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace Relation_IMS.Controllers.JWTControllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;

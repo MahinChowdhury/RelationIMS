@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Relation_IMS.Models.ProductModels
 {
-    public class Product
+    public class Product : BaseAuditableEntity
     {
-        public int Id { get; set; }
         public string? Code { get; set; } 
         [Required(ErrorMessage = "Product name is required.")]
         public string Name { get; set; } = null!;

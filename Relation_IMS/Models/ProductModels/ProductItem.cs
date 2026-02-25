@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Relation_IMS.Models.InventoryModels;
+﻿using Relation_IMS.Models.InventoryModels;
 using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.ProductModels
 {
-    public class ProductItem
+    public class ProductItem : BaseAuditableEntity
     {
-        [Key]
-        public int Id { get; set; }
-
         public int? ProductLotId { get; set; }
         public ProductLot? ProductLot { get; set; }
 

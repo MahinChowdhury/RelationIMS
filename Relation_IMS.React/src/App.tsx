@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Products from './pages/products/Products';
@@ -24,6 +25,7 @@ import Welcome from './pages/Welcome';
 import Configuration from './pages/configuration/Configuration';
 import Arrangement from './pages/arrangement/Arrangement';
 import ArrangementDetails from './pages/arrangement/ArrangementDetails';
+import UserManagement from './pages/users/UserManagement';
 
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;
@@ -32,9 +34,12 @@ const Accounts = () => <div className="p-4">Accounts Page Coming Soon</div>;
 function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Layout />}>
+
+      {/* Protected routes */}
+      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/" element={<Welcome />} />
         <Route path="welcome" element={<Welcome />} />
         <Route path="dashboard" element={<Dashboard />} />
@@ -55,8 +60,8 @@ function App() {
         <Route path="inventory/locations/:id" element={<InventoryDetails />} />
         <Route path="inventory/stock-in" element={<StockIn />} />
         <Route path="inventory/history" element={<MovementHistory />} />
-        <Route path="inventory/history" element={<MovementHistory />} />
         <Route path="configuration" element={<Configuration />} />
+        <Route path="users" element={<UserManagement />} />
         <Route path="arrangement" element={<Arrangement />} />
         <Route path="arrangement/:id" element={<ArrangementDetails />} />
         {/* Deep link support for products */}

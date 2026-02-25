@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Relation_IMS.Models.OrderModels
 {
-    public class OrderItem
+    public class OrderItem : BaseAuditableEntity
     {
-        public int Id { get; set; }
         [Required(ErrorMessage = "Order id is required.")]
         public int OrderId { get; set; }
         public Order? Order { get; set; }
@@ -36,6 +35,5 @@ namespace Relation_IMS.Models.OrderModels
         [Range(0, double.MaxValue)]
         public decimal Subtotal { get; set; }
         public int ArrangedQuantity { get; set; } = 0;
-        public DateTime CreatedAt = DateTime.UtcNow;
     }
 }

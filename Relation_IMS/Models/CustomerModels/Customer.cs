@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.CustomerModels
 {
-    public class Customer
+    public class Customer : BaseAuditableEntity
     {
-        public int Id { get; set; }
         [Required(ErrorMessage = "Customer name is required.")]
         public string Name { get; set; } = null!;
         [Required(ErrorMessage = "Phone number is required.")]
@@ -18,7 +17,6 @@ namespace Relation_IMS.Models.CustomerModels
         [Required(ErrorMessage = "Shop address is required.")]
         public string ShopAddress { get; set; } = null!;
         public List<Order>? Orders { get; set; }
-        public DateTime? CreatedDate { get; set; } = DateTime.UtcNow;
         public bool IsDueAllowed { get; set; } = false;
         public string NidNumber { get; set; } = string.Empty;
         public string ReferenceName { get; set; } = string.Empty;

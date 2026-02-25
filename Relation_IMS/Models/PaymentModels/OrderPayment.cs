@@ -4,10 +4,8 @@ using Relation_IMS.Models.OrderModels;
 
 namespace Relation_IMS.Models.PaymentModels
 {
-    public class OrderPayment
+    public class OrderPayment : BaseAuditableEntity
     {
-        public int Id { get; set; }
-        
         public int OrderId { get; set; }
         public Order? Order { get; set; }
 

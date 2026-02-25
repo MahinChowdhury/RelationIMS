@@ -1,14 +1,10 @@
-using Relation_IMS.Models.JWTModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Relation_IMS.Models.ProductModels
 {
-    public class ProductDefect
+    public class ProductDefect : BaseAuditableEntity
     {
-        [Key]
-        public int Id { get; set; }
-
         [Required]
         public int ProductItemId { get; set; }
 
