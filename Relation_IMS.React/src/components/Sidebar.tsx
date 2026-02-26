@@ -119,7 +119,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             >
                                 manage_accounts
                             </span>
-                            <span className={`text-sm ${isActive('/users') ? 'font-bold' : 'font-medium'}`}>User Management</span>
+                            <span className={`text-sm ${isActive('/users') ? 'font-bold' : 'font-medium'}`}>{t.nav.userManagement}</span>
                         </Link>
 
                         <Link
@@ -141,12 +141,14 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
                         {/* User Profile Component */}
                         <div className="relative mt-2" ref={profileMenuRef}>
-                            <button
-                                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                                className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors focus:outline-none"
-                            >
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className="size-8 rounded-full bg-primary/20 shrink-0 flex items-center justify-center text-primary font-bold">
+                            <div className="w-full flex items-center justify-between gap-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group">
+                                <Link
+                                    to="/userprofile"
+                                    onClick={onClose}
+                                    className="flex-1 flex items-center gap-3 px-3 py-2.5 overflow-hidden"
+                                    title="View Profile"
+                                >
+                                    <div className="size-8 rounded-full bg-primary/20 shrink-0 flex items-center justify-center text-primary font-bold group-hover:bg-primary/30 transition-colors">
                                         {user?.Firstname?.charAt(0) || 'U'}
                                     </div>
                                     <div className="flex flex-col text-left truncate">
@@ -157,17 +159,23 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                             {user?.Roles?.length ? user.Roles.join(', ') : 'Role'}
                                         </p>
                                     </div>
-                                </div>
-                                <span className={`material-symbols-outlined text-gray-500 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`}>
-                                    expand_more
-                                </span>
-                            </button>
+                                </Link>
+                                <button
+                                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                                    className="px-2 py-2.5 text-gray-500 hover:text-primary transition-colors focus:outline-none"
+                                    aria-label="Toggle profile menu"
+                                >
+                                    <span className={`material-symbols-outlined text-[20px] transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`}>
+                                        expand_more
+                                    </span>
+                                </button>
+                            </div>
 
                             {/* Profile Menu Popup */}
                             {isProfileMenuOpen && (
                                 <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[#203326] border border-gray-100 dark:border-[#2a4032] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50">
                                     <Link
-                                        to="/profile"
+                                        to="/userprofile"
                                         onClick={() => { setIsProfileMenuOpen(false); if (onClose) onClose(); }}
                                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                                     >

@@ -6,6 +6,7 @@ using Relation_IMS.Models.JWTModels;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.PaymentModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Models.UserProfileModels;
 using Relation_IMS.Services;
 
 namespace Relation_IMS.Entities;
@@ -96,6 +97,22 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ProductDefect>()
             .Property(i => i.Status)
             .HasConversion<string>();
+
+        // UserProfile: one-to-one with User
+        modelBuilder.Entity<Relation_IMS.Models.UserProfileModels.UserProfile>()
+            .HasIndex(up => up.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<Relation_IMS.Models.UserProfileModels.UserProfile>()
+            .HasOne(up => up.User)
+            .WithOne(u => u.UserProfile)
+            .HasForeignKey<Relation_IMS.Models.UserProfileModels.UserProfile>(up => up.UserId);
+
+        // SalaryRecord: many-to-one with User
+        modelBuilder.Entity<Relation_IMS.Models.UserProfileModels.SalaryRecord>()
+            .HasOne(s => s.User)
+            .WithMany(u => u.SalaryRecords)
+            .HasForeignKey(s => s.UserId);
     }
 
     //For JWT
@@ -125,4 +142,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrderPayment> OrderPayments { get; set; }
     public DbSet<CustomerReturnRecord> CustomerReturnRecords { get; set; }
     public DbSet<CustomerReturnItem> CustomerReturnItems { get; set; }
+    public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<SalaryRecord> SalaryRecords { get; set; }
 }

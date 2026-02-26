@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { getUserProfile, getSalaryRecords, addSalaryRecord, updateUserProfile, changePassword, type UserProfileDTO, type SalaryRecordDTO } from '../../services/userService';
 
 interface UserInfo {
     name: string;
@@ -12,14 +15,7 @@ interface UserInfo {
     address: string;
 }
 
-interface SalaryRecord {
-    id: number;
-    month: string;
-    year: number;
-    amount: number;
-    status: 'paid' | 'pending';
-    paidDate?: string;
-}
+
 
 interface StatCard {
     label: string;
@@ -31,6 +27,14 @@ const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 export default function UserProfile() {
     const { t, language, setLanguage } = useLanguage();
+    const { id } = useParams();
+    const { user: currentUser } = useAuth();
+
+    const [profileData, setProfileData] = useState<UserProfileDTO | null>(null);
+    const [salaryHistory, setSalaryHistory] = useState<SalaryRecordDTO[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
     const [isEditing, setIsEditing] = useState(false);
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -42,25 +46,73 @@ export default function UserProfile() {
         notes: ''
     });
 
-    const userInfo: UserInfo = {
-        name: 'Md Nasir',
-        email: 'nasir@relation.com',
-        phone: '+880 1234 567890',
-        role: 'Manager',
-        joinDate: 'January 2024',
-        avatar: 'https://ui-avatars.com/api/?name=Md+Nasir&background=17cf54&color=fff',
-        currentSalary: 45000,
-        address: '123 Main Street, Dhaka 1200, Bangladesh'
+    // Edit Profile Modal state
+    const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
+    const [editForm, setEditForm] = useState({
+        firstname: '',
+        lastname: '',
+        email: '',
+        phone: '',
+        address: ''
+    });
+    const [editSaving, setEditSaving] = useState(false);
+    const [editError, setEditError] = useState('');
+
+    // Change Password Modal state
+    const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
+
+    const targetUserId = id ? Number(id) : currentUser?.Id;
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!targetUserId) return;
+            setLoading(true);
+            try {
+                const [profile, salaries] = await Promise.all([
+                    getUserProfile(targetUserId),
+                    getSalaryRecords(targetUserId)
+                ]);
+                setProfileData(profile);
+                setSalaryHistory(salaries);
+                setSalaryForm(prev => ({ ...prev, amount: profile.CurrentSalary || 0 }));
+                setError('');
+            } catch (err) {
+                console.error('Failed to load user profile:', err);
+                setError('Failed to load user profile.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [targetUserId]);
+
+    // Format join date
+    const formatJoinDate = (dateStr?: string) => {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        return `${months[d.getMonth()]} ${d.getFullYear()}`;
     };
 
-    const [salaryHistory, setSalaryHistory] = useState<SalaryRecord[]>([
-        { id: 1, month: 'January', year: 2026, amount: 45000, status: 'paid', paidDate: '2026-01-31' },
-        { id: 2, month: 'December', year: 2025, amount: 45000, status: 'paid', paidDate: '2025-12-31' },
-        { id: 3, month: 'November', year: 2025, amount: 45000, status: 'paid', paidDate: '2025-11-30' },
-        { id: 4, month: 'October', year: 2025, amount: 42000, status: 'paid', paidDate: '2025-10-31' },
-        { id: 5, month: 'September', year: 2025, amount: 42000, status: 'paid', paidDate: '2025-09-30' },
-        { id: 6, month: 'August', year: 2025, amount: 40000, status: 'paid', paidDate: '2025-08-31' },
-    ]);
+    // Derived user info for display
+    const userInfo: UserInfo = {
+        name: profileData ? `${profileData.Firstname} ${profileData.Lastname || ''}`.trim() : 'Loading...',
+        email: profileData?.Email || '',
+        phone: profileData?.PhoneNumber || '',
+        role: profileData?.Role || 'User',
+        joinDate: formatJoinDate(profileData?.JoinDate),
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData?.Firstname || 'U')}+${encodeURIComponent(profileData?.Lastname || '')}&background=17cf54&color=fff`,
+        currentSalary: profileData?.CurrentSalary || 0,
+        address: profileData?.Address || 'N/A'
+    };
 
     const stats: StatCard[] = [
         { label: t.profile?.ordersHandled || 'Orders Handled', value: '1,234', icon: 'receipt_long' },
@@ -73,24 +125,130 @@ export default function UserProfile() {
         setLanguage(language === 'en' ? 'bn' : 'en');
     };
 
-    const handlePaySalary = () => {
-        const newRecord: SalaryRecord = {
-            id: salaryHistory.length + 1,
-            month: salaryForm.month,
-            year: salaryForm.year,
-            amount: salaryForm.amount,
-            status: 'paid',
-            paidDate: new Date().toISOString().split('T')[0]
-        };
-        setSalaryHistory([newRecord, ...salaryHistory]);
-        setPaySalaryModalOpen(false);
-        setSalaryForm({
-            month: months[new Date().getMonth()],
-            year: new Date().getFullYear(),
-            amount: 0,
-            notes: ''
-        });
+    const handlePaySalary = async () => {
+        if (!targetUserId) return;
+        try {
+            const newRecord = await addSalaryRecord(targetUserId, {
+                UserId: targetUserId,
+                Month: salaryForm.month,
+                Year: salaryForm.year,
+                Amount: salaryForm.amount,
+                Notes: salaryForm.notes || undefined
+            });
+            setSalaryHistory([newRecord, ...salaryHistory]);
+            setPaySalaryModalOpen(false);
+            setSalaryForm({
+                month: months[new Date().getMonth()],
+                year: new Date().getFullYear(),
+                amount: profileData?.CurrentSalary || 0,
+                notes: ''
+            });
+        } catch (err) {
+            console.error('Failed to pay salary:', err);
+            alert('Failed to record salary payment.');
+        }
     };
+
+    const openEditProfileModal = () => {
+        if (profileData) {
+            setEditForm({
+                firstname: profileData.Firstname || '',
+                lastname: profileData.Lastname || '',
+                email: profileData.Email || '',
+                phone: profileData.PhoneNumber || '',
+                address: profileData.Address || ''
+            });
+        }
+        setEditError('');
+        setEditProfileModalOpen(true);
+    };
+
+    const handleSaveProfile = async () => {
+        if (!targetUserId || !profileData) return;
+        setEditSaving(true);
+        setEditError('');
+        try {
+            const updated = await updateUserProfile(targetUserId, {
+                Firstname: editForm.firstname,
+                Lastname: editForm.lastname,
+                Email: editForm.email,
+                PhoneNumber: editForm.phone,
+                Address: editForm.address,
+                CurrentSalary: profileData.CurrentSalary
+            });
+            setProfileData(updated);
+            setEditProfileModalOpen(false);
+        } catch (err: any) {
+            console.error('Failed to update profile:', err);
+            setEditError(err?.response?.data?.message || 'Failed to update profile.');
+        } finally {
+            setEditSaving(false);
+        }
+    };
+
+    const openChangePasswordModal = () => {
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        setPasswordError('');
+        setPasswordSuccess('');
+        setChangePasswordModalOpen(true);
+    };
+
+    const handleChangePassword = async () => {
+        if (!targetUserId) return;
+        setPasswordError('');
+        setPasswordSuccess('');
+
+        if (passwordForm.newPassword.length < 6) {
+            setPasswordError('New password must be at least 6 characters.');
+            return;
+        }
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            setPasswordError('New passwords do not match.');
+            return;
+        }
+
+        setPasswordSaving(true);
+        try {
+            const result = await changePassword(targetUserId, {
+                CurrentPassword: passwordForm.currentPassword,
+                NewPassword: passwordForm.newPassword
+            });
+            setPasswordSuccess(result.message || 'Password changed successfully!');
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setTimeout(() => {
+                setChangePasswordModalOpen(false);
+                setPasswordSuccess('');
+            }, 1500);
+        } catch (err: any) {
+            console.error('Failed to change password:', err);
+            setPasswordError(err?.response?.data?.message || 'Failed to change password.');
+        } finally {
+            setPasswordSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex-1 flex items-center justify-center bg-[#f6f8f6] dark:bg-[#112116]">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                    <p className="text-[#4e9767] dark:text-gray-400 font-medium">{t.common?.loading || 'Loading profile...'}</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !profileData) {
+        return (
+            <div className="flex-1 flex items-center justify-center bg-[#f6f8f6] dark:bg-[#112116]">
+                <div className="text-center p-8 bg-white dark:bg-[#1a2e22] rounded-2xl shadow-sm border border-red-100 dark:border-red-900/20 max-w-sm">
+                    <span className="material-symbols-outlined text-red-400 text-5xl mb-4">account_circle_off</span>
+                    <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white mb-2">{error || 'User not found'}</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">We couldn't retrieve the user information you're looking for.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-[#112116] p-6 md:p-8">
@@ -135,15 +293,11 @@ export default function UserProfile() {
 
                         {/* Edit Button */}
                         <button
-                            onClick={() => setIsEditing(!isEditing)}
-                            className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${
-                                isEditing 
-                                    ? 'bg-[#17cf54] text-white shadow-lg shadow-green-500/20' 
-                                    : 'bg-gray-100 dark:bg-white/10 text-[#0e1b12] dark:text-white hover:bg-gray-200 dark:hover:bg-white/15'
-                            }`}
+                            onClick={openEditProfileModal}
+                            className="px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all bg-gray-100 dark:bg-white/10 text-[#0e1b12] dark:text-white hover:bg-gray-200 dark:hover:bg-white/15"
                         >
-                            <span className="material-symbols-outlined text-[18px]">{isEditing ? 'check' : 'edit'}</span>
-                            {isEditing ? (t.profile?.save || 'Save') : (t.profile?.editProfile || 'Edit Profile')}
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                            {t.profile?.editProfile || 'Edit Profile'}
                         </button>
                     </div>
                 </div>
@@ -175,7 +329,7 @@ export default function UserProfile() {
                             <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-white text-[32px]">account_balance_wallet</span>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => {
                                     setSalaryForm(prev => ({ ...prev, amount: userInfo.currentSalary }));
                                     setPaySalaryModalOpen(true);
@@ -200,39 +354,36 @@ export default function UserProfile() {
                     </div>
                     <div className="divide-y divide-gray-100 dark:divide-white/10">
                         {salaryHistory.map((record) => (
-                            <div key={record.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                            <div key={record.Id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                        record.status === 'paid' 
-                                            ? 'bg-[#17cf54]/10' 
-                                            : 'bg-yellow-500/10'
-                                    }`}>
-                                        <span className={`material-symbols-outlined ${
-                                            record.status === 'paid' 
-                                                ? 'text-[#17cf54]' 
-                                                : 'text-yellow-500'
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${record.Status === 'paid'
+                                        ? 'bg-[#17cf54]/10'
+                                        : 'bg-yellow-500/10'
                                         }`}>
-                                            {record.status === 'paid' ? 'check_circle' : 'schedule'}
+                                        <span className={`material-symbols-outlined ${record.Status === 'paid'
+                                            ? 'text-[#17cf54]'
+                                            : 'text-yellow-500'
+                                            }`}>
+                                            {record.Status === 'paid' ? 'check_circle' : 'schedule'}
                                         </span>
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-[#0e1b12] dark:text-white">{record.month} {record.year}</p>
+                                        <p className="font-semibold text-[#0e1b12] dark:text-white">{record.Month} {record.Year}</p>
                                         <p className="text-xs text-gray-400">
-                                            {record.status === 'paid' 
-                                                ? `${t.profile?.paidOn || 'Paid on'} ${record.paidDate}` 
+                                            {record.Status === 'paid'
+                                                ? `${t.profile?.paidOn || 'Paid on'} ${record.PaidDate ? new Date(record.PaidDate).toLocaleDateString() : ''}`
                                                 : t.profile?.pending || 'Pending'
                                             }
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-bold text-[#0e1b12] dark:text-white">৳ {record.amount.toLocaleString()}</p>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                        record.status === 'paid'
-                                            ? 'bg-[#17cf54]/10 text-[#17cf54]'
-                                            : 'bg-yellow-500/10 text-yellow-500'
-                                    }`}>
-                                        {record.status === 'paid' ? (t.profile?.paid || 'Paid') : (t.profile?.pending || 'Pending')}
+                                    <p className="font-bold text-[#0e1b12] dark:text-white">৳ {record.Amount.toLocaleString()}</p>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full ${record.Status === 'paid'
+                                        ? 'bg-[#17cf54]/10 text-[#17cf54]'
+                                        : 'bg-yellow-500/10 text-yellow-500'
+                                        }`}>
+                                        {record.Status === 'paid' ? (t.profile?.paid || 'Paid') : (t.profile?.pending || 'Pending')}
                                     </span>
                                 </div>
                             </div>
@@ -301,24 +452,11 @@ export default function UserProfile() {
                                     <p className="text-xs text-gray-400">{t.profile?.lastChanged || 'Last changed: 30 days ago'}</p>
                                 </div>
                             </div>
-                            <button className="p-2 text-[#17cf54] hover:bg-[#17cf54]/10 rounded-lg transition-colors">
-                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                            </button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-gray-500">notifications</span>
-                                <div>
-                                    <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.notifications || 'Notifications'}</p>
-                                    <p className="text-xs text-gray-400">{t.profile?.notifDesc || 'Order updates, alerts, and more'}</p>
-                                </div>
-                            </div>
-                            <button 
-                                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                                className={`w-12 h-6 rounded-full relative transition-colors ${notificationsEnabled ? 'bg-[#17cf54]' : 'bg-gray-300 dark:bg-gray-600'}`}
+                            <button
+                                onClick={openChangePasswordModal}
+                                className="p-2 text-[#17cf54] hover:bg-[#17cf54]/10 rounded-lg transition-colors"
                             >
-                                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${notificationsEnabled ? 'right-1' : 'left-1'}`}></span>
+                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                             </button>
                         </div>
 
@@ -330,7 +468,7 @@ export default function UserProfile() {
                                     <p className="text-xs text-gray-400">{t.profile?.darkModeDesc || 'Use dark theme'}</p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setDarkModeEnabled(!darkModeEnabled)}
                                 className={`w-12 h-6 rounded-full relative transition-colors ${darkModeEnabled ? 'bg-[#17cf54]' : 'bg-gray-300 dark:bg-gray-600'}`}
                             >
@@ -374,7 +512,7 @@ export default function UserProfile() {
                                     <span className="material-symbols-outlined text-[#17cf54]">payments</span>
                                     {t.profile?.paySalary || 'Pay Salary'}
                                 </h2>
-                                <button 
+                                <button
                                     onClick={() => setPaySalaryModalOpen(false)}
                                     className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
                                 >
@@ -459,6 +597,211 @@ export default function UserProfile() {
                                 >
                                     <span className="material-symbols-outlined text-[18px]">check</span>
                                     {t.profile?.paySalary || 'Pay Salary'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Edit Profile Modal */}
+                {editProfileModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[#17cf54]">edit</span>
+                                    {t.profile?.editProfile || 'Edit Profile'}
+                                </h2>
+                                <button
+                                    onClick={() => setEditProfileModalOpen(false)}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-gray-500">close</span>
+                                </button>
+                            </div>
+
+                            {editError && (
+                                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">error</span>
+                                    {editError}
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold uppercase text-gray-400">{t.common?.firstname || 'First Name'}</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.firstname}
+                                            onChange={(e) => setEditForm({ ...editForm, firstname: e.target.value })}
+                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold uppercase text-gray-400">{t.common?.lastname || 'Last Name'}</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.lastname}
+                                            onChange={(e) => setEditForm({ ...editForm, lastname: e.target.value })}
+                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-gray-400">{t.common?.email || 'Email'}</label>
+                                    <input
+                                        type="email"
+                                        value={editForm.email}
+                                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-gray-400">{t.common?.phone || 'Phone'}</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.phone}
+                                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.address || 'Address'}</label>
+                                    <textarea
+                                        value={editForm.address}
+                                        onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors resize-none"
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditProfileModalOpen(false)}
+                                    disabled={editSaving}
+                                    className="flex-1 py-3 text-gray-500 hover:text-gray-700 font-bold hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                    {t.common?.cancel || 'Cancel'}
+                                </button>
+                                <button
+                                    onClick={handleSaveProfile}
+                                    disabled={editSaving}
+                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {editSaving ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-[18px]">check</span>
+                                            {t.profile?.save || 'Save Changes'}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Change Password Modal */}
+                {changePasswordModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[#17cf54]">lock</span>
+                                    {t.profile?.changePassword || 'Change Password'}
+                                </h2>
+                                <button
+                                    onClick={() => setChangePasswordModalOpen(false)}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-gray-500">close</span>
+                                </button>
+                            </div>
+
+                            {passwordError && (
+                                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">error</span>
+                                    {passwordError}
+                                </div>
+                            )}
+
+                            {passwordSuccess && (
+                                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-600 dark:text-green-400 text-sm flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                    {passwordSuccess}
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.currentPasswordLabel || 'Current Password'}</label>
+                                    <input
+                                        type="password"
+                                        value={passwordForm.currentPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                        placeholder="••••••••"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.newPasswordLabel || 'New Password'}</label>
+                                    <input
+                                        type="password"
+                                        value={passwordForm.newPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                        placeholder="••••••••"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.confirmPasswordLabel || 'Confirm New Password'}</label>
+                                    <input
+                                        type="password"
+                                        value={passwordForm.confirmPassword}
+                                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                        placeholder="••••••••"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                    />
+                                    {passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
+                                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[14px]">error</span>
+                                            Passwords do not match
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setChangePasswordModalOpen(false)}
+                                    disabled={passwordSaving}
+                                    className="flex-1 py-3 text-gray-500 hover:text-gray-700 font-bold hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-50"
+                                >
+                                    {t.common?.cancel || 'Cancel'}
+                                </button>
+                                <button
+                                    onClick={handleChangePassword}
+                                    disabled={passwordSaving || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword}
+                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {passwordSaving ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>
+                                            <span className="material-symbols-outlined text-[18px]">lock</span>
+                                            {t.profile?.changePassword || 'Change Password'}
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

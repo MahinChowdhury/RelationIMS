@@ -25,6 +25,17 @@ namespace Relation_IMS.Controllers.JWTControllers
             return Ok(users);
         }
 
+        // GET api/v1/user/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var users = await _userService.GetAllUsersAsync();
+            var user = users.FirstOrDefault(u => u.Id == id);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+            return Ok(user);
+        }
+
         // POST api/v1/user
         [HttpPost]
         public async Task<IActionResult> CreateUser(AdminCreateUserDTO dto)

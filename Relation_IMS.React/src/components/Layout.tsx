@@ -68,7 +68,7 @@ export default function Layout() {
                                 </p>
                             </div>
                             <Link
-                                to="/profile"
+                                to="/userprofile"
                                 onClick={() => setIsMobileProfileMenuOpen(false)}
                                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                             >
