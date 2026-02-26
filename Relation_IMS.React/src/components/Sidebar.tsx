@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
+import LogoutConfirmModal from './LogoutConfirmModal';
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -14,6 +15,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const { user, logout } = useAuth();
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -183,7 +185,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                         View Profile
                                     </Link>
                                     <button
-                                        onClick={() => { setIsProfileMenuOpen(false); logout(); }}
+                                        onClick={() => { setIsProfileMenuOpen(false); setShowLogoutConfirm(true); }}
                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">logout</span>
@@ -195,6 +197,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     </div>
                 </div>
             </aside>
+
+            <LogoutConfirmModal
+                show={showLogoutConfirm}
+                onCancel={() => setShowLogoutConfirm(false)}
+                onConfirm={logout}
+            />
         </>
     );
 };

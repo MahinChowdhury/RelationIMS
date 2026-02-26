@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { getUserProfile, getSalaryRecords, addSalaryRecord, updateUserProfile, changePassword, type UserProfileDTO, type SalaryRecordDTO } from '../../services/userService';
+import LogoutConfirmModal from '../../components/LogoutConfirmModal';
 
 interface UserInfo {
     name: string;
@@ -28,7 +29,7 @@ const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 export default function UserProfile() {
     const { t, language, setLanguage } = useLanguage();
     const { id } = useParams();
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, logout } = useAuth();
 
     const [profileData, setProfileData] = useState<UserProfileDTO | null>(null);
     const [salaryHistory, setSalaryHistory] = useState<SalaryRecordDTO[]>([]);
@@ -68,6 +69,9 @@ export default function UserProfile() {
     const [passwordSaving, setPasswordSaving] = useState(false);
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
+
+    // Logout confirmation modal state
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     const targetUserId = id ? Number(id) : currentUser?.Id;
 
@@ -375,6 +379,7 @@ export default function UserProfile() {
                                                 : t.profile?.pending || 'Pending'
                                             }
                                         </p>
+                                        {record.Notes && <p className="text-xs text-gray-400 italic">{record.Notes}</p>}
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -809,10 +814,16 @@ export default function UserProfile() {
                 )}
 
                 {/* Logout Button */}
-                <button className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
+                <button onClick={() => setShowLogoutConfirm(true)} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
                     <span className="material-symbols-outlined">logout</span>
                     {t.profile?.logout || 'Log Out'}
                 </button>
+
+                <LogoutConfirmModal
+                    show={showLogoutConfirm}
+                    onCancel={() => setShowLogoutConfirm(false)}
+                    onConfirm={logout}
+                />
 
             </div>
         </div>
