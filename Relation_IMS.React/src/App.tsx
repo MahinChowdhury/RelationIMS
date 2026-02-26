@@ -64,8 +64,8 @@ function App() {
         <Route path="configuration" element={<Configuration />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="arrangement" element={<Arrangement />} />
-<Route path="arrangement/:id" element={<ArrangementDetails />} />
-        <Route path="userprofile" element={<UserProfile />} />
+        <Route path="arrangement/:id" element={<ArrangementDetails />} />
+        <Route path="userprofile/:id?" element={<UserProfile />} />
         {/* Deep link support for products */}
         <Route path="products/:id" element={<ProductDetails />} />
       </Route>

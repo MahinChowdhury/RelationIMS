@@ -211,6 +211,17 @@ namespace Relation_IMS.Services.JWTServices
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
+            // Create user profile with address and salary
+            var userProfile = new Models.UserProfileModels.UserProfile
+            {
+                UserId = user.Id,
+                Address = dto.Address,
+                CurrentSalary = dto.CurrentSalary,
+                JoinDate = DateTime.UtcNow
+            };
+            _dbContext.UserProfiles.Add(userProfile);
+            await _dbContext.SaveChangesAsync();
+
             return new UserListDTO
             {
                 Id = user.Id,

@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../i18n/LanguageContext';
 import AddUserModal from './AddUserModal';
 import EditUserModal from './EditUserModal';
+import DeleteUserModal from './DeleteUserModal';
 import { getAllUsers, deleteUser, type UserDTO } from '../../services/userService';
 
 export default function UserManagement() {
+    const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<UserDTO | null>(null);
     const [editingUser, setEditingUser] = useState<UserDTO | null>(null);
     const [users, setUsers] = useState<UserDTO[]>([]);
     const [loading, setLoading] = useState(true);
@@ -30,10 +35,17 @@ export default function UserManagement() {
         fetchUsers();
     }, []);
 
-    const handleDeleteUser = async (user: UserDTO) => {
-        if (!confirm(`Are you sure you want to deactivate "${user.Firstname} ${user.Lastname || ''}"?`)) return;
+    const handleDeleteUser = (user: UserDTO) => {
+        setUserToDelete(user);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!userToDelete) return;
         try {
-            await deleteUser(user.Id);
+            await deleteUser(userToDelete.Id);
+            setIsDeleteModalOpen(false);
+            setUserToDelete(null);
             await fetchUsers();
         } catch {
             alert('Failed to delete user.');
@@ -70,18 +82,17 @@ export default function UserManagement() {
         ? 'bg-green-600 dark:bg-green-400 animate-pulse'
         : 'bg-gray-400 dark:bg-gray-500';
 
-    const filteredUsers = users.filter(u => {
+    const filteredUsers = users.filter((u: UserDTO) => {
         const q = searchQuery.toLowerCase();
         const fullName = `${u.Firstname} ${u.Lastname || ''}`.toLowerCase();
         return fullName.includes(q) || u.PhoneNumber.includes(q) || u.Role.toLowerCase().includes(q);
     });
 
-    const totalActive = users.filter(u => u.IsActive).length;
-    const totalInactive = users.filter(u => !u.IsActive).length;
+    const totalActive = users.filter((u: UserDTO) => u.IsActive).length;
+    const totalInactive = users.filter((u: UserDTO) => !u.IsActive).length;
 
     return (
         <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <nav aria-label="Breadcrumb" className="flex mb-1">
@@ -92,30 +103,30 @@ export default function UserManagement() {
                             <li>
                                 <div className="flex items-center">
                                     <span className="material-symbols-outlined text-text-secondary text-[16px]">chevron_right</span>
-                                    <span className="ms-1 text-xs font-bold text-text-main dark:text-white">User Management</span>
+                                    <span className="ms-1 text-xs font-bold text-text-main dark:text-white">{t.nav.userManagement}</span>
                                 </div>
                             </li>
                         </ol>
                     </nav>
-                    <h1 className="text-xl md:text-2xl font-extrabold text-text-main dark:text-white tracking-tight">System Users</h1>
+                    <h1 className="text-xl md:text-2xl font-extrabold text-text-main dark:text-white tracking-tight">{t.nav.userManagement}</h1>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative hidden sm:block">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                             <span className="material-symbols-outlined text-[18px]">search</span>
                         </span>
-                        <input type="text" placeholder="Search users..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                        <input type="text" placeholder={t.common.search || "Search users..."} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9 pr-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary w-52 transition-shadow backdrop-blur-sm shadow-sm" />
                     </div>
                     <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-green-500/20">
                         <span className="material-symbols-outlined text-[20px]">add</span>
-                        Add New User
+                        {t.common.add || 'Add New User'}
                     </button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            < div className="grid grid-cols-1 md:grid-cols-3 gap-6" >
                 <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[#2a4032] shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold text-text-secondary uppercase mb-1">Total Users</p>
@@ -143,104 +154,117 @@ export default function UserManagement() {
                         <span className="material-symbols-outlined">person_off</span>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Users Table */}
-            <div className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[#2a4032] flex-1 overflow-hidden flex flex-col min-h-[400px]">
-                {loading ? (
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                            <p className="text-text-secondary text-sm">Loading users...</p>
+            < div className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[#2a4032] flex-1 overflow-hidden flex flex-col min-h-[400px]" >
+                {
+                    loading ? (
+                        <div className="flex-1 flex items-center justify-center" >
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                                <p className="text-text-secondary text-sm">Loading users...</p>
+                            </div>
                         </div>
-                    </div>
-                ) : error ? (
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="text-center">
-                            <span className="material-symbols-outlined text-red-400 text-4xl mb-2">error</span>
-                            <p className="text-red-500 text-sm">{error}</p>
-                            <button onClick={fetchUsers} className="mt-3 text-sm text-primary hover:underline">Retry</button>
+                    ) : error ? (
+                        <div className="flex-1 flex items-center justify-center">
+                            <div className="text-center">
+                                <span className="material-symbols-outlined text-red-400 text-4xl mb-2">error</span>
+                                <p className="text-red-500 text-sm">{error}</p>
+                                <button onClick={fetchUsers} className="mt-3 text-sm text-primary hover:underline">Retry</button>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="overflow-x-auto flex-1">
-                            <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                                <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[#2a4032]">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-4 font-semibold">User Profile</th>
-                                        <th scope="col" className="px-6 py-4 font-semibold">Phone</th>
-                                        <th scope="col" className="px-6 py-4 font-semibold">Role</th>
-                                        <th scope="col" className="px-6 py-4 font-semibold">Status</th>
-                                        <th scope="col" className="px-6 py-4 font-semibold text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100/50 dark:divide-[#2a4032]">
-                                    {filteredUsers.length === 0 ? (
+                    ) : (
+                        <>
+                            <div className="overflow-x-auto flex-1">
+                                <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
+                                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[#2a4032]">
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-text-secondary">No users found.</td>
+                                            <th scope="col" className="px-6 py-4 font-semibold">User Profile</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Phone</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Role</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Status</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-right">Actions</th>
                                         </tr>
-                                    ) : (
-                                        filteredUsers.map(user => {
-                                            const roleInfo = getRoleIcon(user.Role);
-                                            const initials = `${user.Firstname?.charAt(0) || ''}${user.Lastname?.charAt(0) || ''}`.toUpperCase() || 'U';
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100/50 dark:divide-[#2a4032]">
+                                        {filteredUsers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-12 text-center text-text-secondary">No users found.</td>
+                                            </tr>
+                                        ) : (
+                                            filteredUsers.map((user: UserDTO) => {
+                                                const roleInfo = getRoleIcon(user.Role);
+                                                const initials = `${user.Firstname?.charAt(0) || ''}${user.Lastname?.charAt(0) || ''}`.toUpperCase() || 'U';
 
-                                            return (
-                                                <tr key={user.Id} className="hover:bg-white/50 dark:hover:bg-white/5 transition-colors group">
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white dark:border-[#2a4032] shadow-sm text-primary font-bold text-sm shrink-0">
-                                                                {initials}
+                                                return (
+                                                    <tr key={user.Id} className="hover:bg-white/50 dark:hover:bg-white/5 transition-colors group">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white dark:border-[#2a4032] shadow-sm text-primary font-bold text-sm shrink-0">
+                                                                    {initials}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold text-text-main dark:text-white text-sm">{user.Firstname} {user.Lastname || ''}</span>
+                                                                    <span className="text-xs text-gray-500">{user.Email}</span>
+                                                                </div>
                                                             </div>
-                                                            <div className="flex flex-col">
-                                                                <span className="font-bold text-text-main dark:text-white text-sm">{user.Firstname} {user.Lastname || ''}</span>
-                                                                <span className="text-xs text-gray-500">{user.Email}</span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="font-medium text-text-main dark:text-gray-200">{user.PhoneNumber}</span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className={`material-symbols-outlined text-[18px] ${roleInfo.color}`}>{roleInfo.icon}</span>
+                                                                <span className="font-medium text-text-main dark:text-gray-200">{user.Role || 'No Role'}</span>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className="font-medium text-text-main dark:text-gray-200">{user.PhoneNumber}</span>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className={`material-symbols-outlined text-[18px] ${roleInfo.color}`}>{roleInfo.icon}</span>
-                                                            <span className="font-medium text-text-main dark:text-gray-200">{user.Role || 'No Role'}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border backdrop-blur-sm ${getStatusStyles(user.IsActive)}`}>
-                                                            <span className={`size-1.5 rounded-full ${getStatusDotColor(user.IsActive)}`}></span>
-                                                            {user.IsActive ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <button onClick={() => handleEditUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20" title="Edit User">
-                                                                <span className="material-symbols-outlined text-[18px]">edit</span>
-                                                            </button>
-                                                            <button onClick={() => handleDeleteUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200" title="Delete User">
-                                                                <span className="material-symbols-outlined text-[18px]">delete</span>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
-                            <span className="text-xs text-text-secondary">Showing {filteredUsers.length} of {users.length} users</span>
-                        </div>
-                    </>
-                )}
-            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border backdrop-blur-sm ${getStatusStyles(user.IsActive)}`}>
+                                                                <span className={`size-1.5 rounded-full ${getStatusDotColor(user.IsActive)}`}></span>
+                                                                {user.IsActive ? 'Active' : 'Inactive'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <Link to={`/userprofile/${user.Id}`} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-transparent hover:border-blue-200" title="View Profile">
+                                                                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                                                </Link>
+                                                                <button onClick={() => handleEditUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20" title="Edit User">
+                                                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                                </button>
+                                                                <button onClick={() => handleDeleteUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200" title="Delete User">
+                                                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
+                                <span className="text-xs text-text-secondary">Showing {filteredUsers.length} of {users.length} users</span>
+                            </div>
+                        </>
+                    )
+                }
+            </div >
 
             <AddUserModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAdd={handleUserAdded} />
-            {editingUser && (
-                <EditUserModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingUser(null); }} onUpdated={handleUserUpdated} user={editingUser} />
-            )}
-        </div>
+            {
+                editingUser && (
+                    <EditUserModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingUser(null); }} onUpdated={handleUserUpdated} user={editingUser} />
+                )
+            }
+            <DeleteUserModal
+                show={isDeleteModalOpen}
+                userName={userToDelete ? `${userToDelete.Firstname} ${userToDelete.Lastname || ''}`.trim() : ''}
+                onCancel={() => { setIsDeleteModalOpen(false); setUserToDelete(null); }}
+                onConfirm={confirmDelete}
+            />
+        </div >
     );
 }

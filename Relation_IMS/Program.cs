@@ -76,6 +76,7 @@ builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
+builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
 // Concurrency Service

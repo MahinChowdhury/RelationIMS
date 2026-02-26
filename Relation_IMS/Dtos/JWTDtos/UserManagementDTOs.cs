@@ -64,6 +64,12 @@ namespace Relation_IMS.Dtos.JWTDtos
         // Single role name (e.g. "Salesman")
         [Required(ErrorMessage = "Role is required.")]
         public string Role { get; set; } = null!;
+
+        [MaxLength(200)]
+        public string? Address { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal CurrentSalary { get; set; }
     }
 
     // DTO for roles list

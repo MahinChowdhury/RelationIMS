@@ -21,6 +21,8 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
         password: '',
         confirmPassword: '',
         role: 'Salesman',
+        address: '',
+        currentSalary: 0,
     });
 
     useEffect(() => {
@@ -54,10 +56,12 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                 PhoneNumber: formData.phoneNumber,
                 Password: formData.password,
                 Role: formData.role,
+                Address: formData.address || undefined,
+                CurrentSalary: formData.currentSalary,
             });
             onAdd();
             onClose();
-            setFormData({ firstName: '', lastName: '', phoneNumber: '', password: '', confirmPassword: '', role: roles[0]?.Name || 'Salesman' });
+            setFormData({ firstName: '', lastName: '', phoneNumber: '', password: '', confirmPassword: '', role: roles[0]?.Name || 'Salesman', address: '', currentSalary: 0 });
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Failed to create user.');
         } finally {
@@ -130,6 +134,26 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                                 <input type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
                                     className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Address</label>
+                            <input type="text" name="address" value={formData.address} onChange={handleChange}
+                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="123 Main Street, Dhaka" />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary (৳)</label>
+                            <input
+                                type="number"
+                                name="currentSalary"
+                                value={formData.currentSalary}
+                                onChange={(e) => setFormData(prev => ({ ...prev, currentSalary: parseInt(e.target.value) || 0 }))}
+                                onFocus={(e) => e.target.select()}
+                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                                placeholder="0"
+                                min="0"
+                            />
                         </div>
                     </form>
                 </div>
