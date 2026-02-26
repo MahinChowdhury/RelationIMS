@@ -557,13 +557,52 @@ const en = {
         scanBarcode: 'Scan Barcode',
     },
 
-    // Dialog / Alerts
+// Dialog / Alerts
     dialog: {
         notification: 'Notification',
         error: 'Error',
         success: 'Success',
         warning: 'Warning',
         enterDetails: 'Enter details below',
+    },
+
+    // User Profile
+    profile: {
+        title: 'User Profile',
+        subtitle: 'Manage your account settings and preferences',
+        editProfile: 'Edit Profile',
+        save: 'Save',
+        personalInfo: 'Personal Information',
+        memberSince: 'Member since',
+        ordersHandled: 'Orders Handled',
+        totalSales: 'Total Sales',
+        thisMonth: 'This Month',
+        lastLogin: 'Last Login',
+        role: 'Role',
+        accountSettings: 'Account Settings',
+        changePassword: 'Change Password',
+        lastChanged: 'Last changed: 30 days ago',
+        notifications: 'Notifications',
+        notifDesc: 'Order updates, alerts, and more',
+        darkMode: 'Dark Mode',
+        darkModeDesc: 'Use dark theme',
+        language: 'Language',
+        logout: 'Log Out',
+        currentSalary: 'Current Salary',
+        perMonth: 'per month',
+        salaryHistory: 'Salary History',
+        records: 'records',
+        paidOn: 'Paid on',
+        paid: 'Paid',
+        pending: 'Pending',
+        paySalaryNow: 'Pay Salary Now',
+        paySalary: 'Pay Salary',
+        selectMonth: 'Month',
+        selectYear: 'Year',
+        salaryAmount: 'Amount',
+        notes: 'Notes',
+        notesPlaceholder: 'Add any notes...',
+        address: 'Address',
     },
 };
 

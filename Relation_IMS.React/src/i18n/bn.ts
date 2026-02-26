@@ -559,13 +559,52 @@ const bn: Translations = {
         scanBarcode: 'বারকোড স্ক্যান',
     },
 
-    // Dialog / Alerts
+// Dialog / Alerts
     dialog: {
         notification: 'বিজ্ঞপ্তি',
         error: 'ত্রুটি',
         success: 'সফল',
         warning: 'সতর্কতা',
         enterDetails: 'নিচে তথ্য লিখুন',
+    },
+
+    // User Profile
+    profile: {
+        title: 'ব্যবহারকারী প্রোফাইল',
+        subtitle: 'আপনার অ্যাকাউন্ট সেটিংস এবং পছন্দগুলি পরিচালনা করুন',
+        editProfile: 'প্রোফাইল সম্পাদনা',
+        save: 'সংরক্ষণ',
+        personalInfo: 'ব্যক্তিগত তথ্য',
+        memberSince: 'সদস্য হওয়ার তারিখ',
+        ordersHandled: 'পরিচালিত অর্ডার',
+        totalSales: 'মোট বিক্রয়',
+        thisMonth: 'এই মাস',
+        lastLogin: 'সর্বশেষ লগইন',
+        role: 'ভূমিকা',
+        accountSettings: 'অ্যাকাউন্ট সেটিংস',
+        changePassword: 'পাসওয়ার্ড পরিবর্তন',
+        lastChanged: 'সর্বশেষ পরিবর্তন: ৩০ দিন আগে',
+        notifications: 'বিজ্ঞপ্তি',
+        notifDesc: 'অর্ডার আপডেট, অ্যালার্ট এবং আরও অনেক কিছু',
+        darkMode: 'ডার্ক মোড',
+        darkModeDesc: 'ডার্ক থিম ব্যবহার করুন',
+        language: 'ভাষা',
+        logout: 'লগ আউট',
+        currentSalary: 'বর্তমান বেতন',
+        perMonth: 'প্রতি মাস',
+        salaryHistory: 'বেতনের ইতিহাস',
+        records: 'রেকর্ড',
+        paidOn: 'প্রদান তারিখ',
+        paid: 'পরিশোধিত',
+        pending: 'পেন্ডিং',
+        paySalaryNow: 'এখন বেতন দিন',
+        paySalary: 'বেতন দিন',
+        selectMonth: 'মাস',
+        selectYear: 'বছর',
+        salaryAmount: 'পরিমাণ',
+        notes: 'নোট',
+        notesPlaceholder: 'কোনো নোট যোগ করুন...',
+        address: 'ঠিকানা',
     },
 };
 
