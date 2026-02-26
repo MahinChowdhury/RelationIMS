@@ -24,6 +24,7 @@ import Welcome from './pages/Welcome';
 import Configuration from './pages/configuration/Configuration';
 import Arrangement from './pages/arrangement/Arrangement';
 import ArrangementDetails from './pages/arrangement/ArrangementDetails';
+import UserProfile from './pages/userprofile/UserProfile';
 
 // Placeholder components
 const Dashboard = () => <div className="p-4">Dashboard Page Coming Soon</div>;
@@ -58,7 +59,8 @@ function App() {
         <Route path="inventory/history" element={<MovementHistory />} />
         <Route path="configuration" element={<Configuration />} />
         <Route path="arrangement" element={<Arrangement />} />
-        <Route path="arrangement/:id" element={<ArrangementDetails />} />
+<Route path="arrangement/:id" element={<ArrangementDetails />} />
+        <Route path="userprofile" element={<UserProfile />} />
         {/* Deep link support for products */}
         <Route path="products/:id" element={<ProductDetails />} />
       </Route>
