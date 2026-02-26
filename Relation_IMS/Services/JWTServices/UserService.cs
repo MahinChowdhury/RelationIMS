@@ -8,15 +8,11 @@ namespace Relation_IMS.Services.JWTServices
 {
     public class UserService : IUserService
     {
-        // EF Core DbContext for database operations
         private readonly ApplicationDbContext _dbContext;
-        // Service for generating and validating JWT tokens
         private readonly ITokenService _tokenService;
-        // For accessing configuration values like token expiration time
         private readonly IConfiguration _configuration;
-        // Cache service to quickly get Client info without DB calls every time
         private readonly IClientCacheService _clientCacheService;
-        // Constructor injects dependencies via Dependency Injection
+
         public UserService(ApplicationDbContext dbContext, ITokenService tokenService, IConfiguration configuration, IClientCacheService clientCacheService)
         {
             _dbContext = dbContext;
@@ -24,59 +20,56 @@ namespace Relation_IMS.Services.JWTServices
             _configuration = configuration;
             _clientCacheService = clientCacheService;
         }
-        // Registers a new user with details from UserRegisterDTO
+
+        // Registers a new user
         public async Task<bool> RegisterUserAsync(UserRegisterDTO registerDto)
         {
-            // Check if a user with the same email already exists to enforce unique emails
-            if (await _dbContext.Users.AnyAsync(u => u.Email == registerDto.Email))
-                return false; // Registration fails if email is already taken
-                              // Create new User entity, hash the password using BCrypt for security
+            // Check if phone number already exists
+            if (await _dbContext.Users.AnyAsync(u => u.PhoneNumber == registerDto.PhoneNumber))
+                return false;
+
             var user = new User
             {
                 Firstname = registerDto.Firstname,
                 Lastname = registerDto.Lastname,
-                Email = registerDto.Email,
+                Email = registerDto.Email ?? $"{registerDto.PhoneNumber}@placeholder.local",
+                PhoneNumber = registerDto.PhoneNumber,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 IsActive = true
             };
-            // Assign default role "User" to new users
-            var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "User");
-            if (userRole != null)
-                user.UserRoles.Add(new UserRole { RoleId = userRole.Id, User = user });
-            // Add the new user entity to the DbContext and save changes to the database
+
+            // Assign default role "Salesman" to new registrations
+            var defaultRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Salesman");
+            if (defaultRole != null)
+                user.UserRoles.Add(new UserRole { RoleId = defaultRole.Id, User = user });
+
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
-            return true; // Registration succeeded
+            return true;
         }
-        // Authenticates user login and returns tokens if successful
+
+        // Authenticates user login by phone number
         public async Task<AuthResponseDTO?> AuthenticateUserAsync(UserLoginDTO loginDto, string ipAddress)
         {
-            // Retrieve user by email with roles eagerly loaded; only active users allowed
             var user = await _dbContext.Users
-            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.IsActive);
-            // Verify user exists and password matches the stored hashed password
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.PhoneNumber == loginDto.PhoneNumber && u.IsActive);
+
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
-                return null; // Invalid credentials
-                             // Extract list of role names for inclusion in JWT claims
-            var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
-            // Retrieve client info by ClientId
-            var client = await _clientCacheService.GetClientByClientIdAsync(loginDto.ClientId);
-            if (client == null)
-            {
-                // Fail if client does not exist or is inactive
                 return null;
-            }
-            // Generate JWT access token with user details, roles, and client info
+
+            var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+            var client = await _clientCacheService.GetClientByClientIdAsync(loginDto.ClientId);
+            if (client == null) return null;
+
             var accessToken = _tokenService.GenerateAccessToken(user, roles, out string jwtId, client);
-            // Generate refresh token linked to the generated JWT ID, client, user, and IP address
             var refreshToken = _tokenService.GenerateRefreshToken(ipAddress, jwtId, client, user.Id);
-            // Store the refresh token in the database for later validation and refresh workflows
+
             _dbContext.RefreshTokens.Add(refreshToken);
             await _dbContext.SaveChangesAsync();
-            // Read access token expiration duration from config or fallback to 15 minutes
+
             var accessTokenExpiryMinutes = int.TryParse(_configuration["JwtSettings:AccessTokenExpirationMinutes"], out var val) ? val : 15;
-            // Return the tokens and expiry info encapsulated in AuthResponseDTO
+
             return new AuthResponseDTO
             {
                 AccessToken = accessToken,
@@ -84,40 +77,35 @@ namespace Relation_IMS.Services.JWTServices
                 AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(accessTokenExpiryMinutes)
             };
         }
-        // Refreshes an expired access token using a valid refresh token and client ID
+
         public async Task<AuthResponseDTO?> RefreshTokenAsync(string refreshToken, string clientId, string ipAddress)
         {
-            // Retrieve client info by clientId for validation
             var client = await _clientCacheService.GetClientByClientIdAsync(clientId);
-            if (client == null)
-            {
-                // Client invalid or inactive; reject refresh
-                return null;
-            }
-            // Look up the refresh token in database, including related user and roles for new token generation
+            if (client == null) return null;
+
             var existingToken = await _dbContext.RefreshTokens
-            .Include(rt => rt.User)
-            .ThenInclude(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.ClientId == client.Id);
-            // Validate refresh token existence, revocation status, and expiration
+                .Include(rt => rt.User)
+                .ThenInclude(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.ClientId == client.Id);
+
             if (existingToken == null || existingToken.IsRevoked || existingToken.Expires <= DateTime.UtcNow)
-                return null; // Invalid refresh token
-                             // Revoke old refresh token immediately to prevent reuse
+                return null;
+
             existingToken.IsRevoked = true;
             existingToken.RevokedAt = DateTime.UtcNow;
+
             var user = existingToken.User;
             var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
-            // Generate a new access token with fresh JWT ID and client info
+
             var accessToken = _tokenService.GenerateAccessToken(user, roles, out string newJwtId, client);
-            // Generate a new refresh token linked to the new JWT ID
             var newRefreshToken = _tokenService.GenerateRefreshToken(ipAddress, newJwtId, client, user.Id);
-            // Store the new refresh token in the database
+
             _dbContext.RefreshTokens.Add(newRefreshToken);
             await _dbContext.SaveChangesAsync();
-            // Read access token expiration duration from config or default to 15 minutes
+
             var accessTokenExpiryMinutes = int.TryParse(_configuration["JwtSettings:AccessTokenExpirationMinutes"], out var val) ? val : 15;
-            // Return the new tokens and expiry info
+
             return new AuthResponseDTO
             {
                 AccessToken = accessToken,
@@ -125,23 +113,19 @@ namespace Relation_IMS.Services.JWTServices
                 AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(accessTokenExpiryMinutes)
             };
         }
-        // Revokes an existing refresh token to prevent further use
+
         public async Task<bool> RevokeRefreshTokenAsync(string refreshToken, string ipAddress)
         {
-            // Look up the refresh token in the database
             var existingToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-            // Return false if token not found or already revoked
-            if (existingToken == null || existingToken.IsRevoked)
-                return false;
-            // Mark token as revoked and record revocation time
+            if (existingToken == null || existingToken.IsRevoked) return false;
+
             existingToken.IsRevoked = true;
             existingToken.RevokedAt = DateTime.UtcNow;
-            // Persist changes to database
             await _dbContext.SaveChangesAsync();
-            return true; // Indicate successful revocation
+            return true;
         }
 
-        // Gets user info including roles and preferences
+        // Gets user info including role and preferences
         public async Task<UserInfoDTO?> GetUserInfoAsync(int userId)
         {
             var user = await _dbContext.Users
@@ -156,25 +140,153 @@ namespace Relation_IMS.Services.JWTServices
                 Firstname = user.Firstname,
                 Lastname = user.Lastname,
                 Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
                 PreferredLanguage = user.PreferredLanguage,
                 Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList()
             };
         }
 
-        // Updates the user's preferred language
         public async Task<bool> UpdatePreferredLanguageAsync(int userId, string language)
         {
             var user = await _dbContext.Users.FindAsync(userId);
             if (user == null) return false;
 
-            // Validate language code
             var validLanguages = new[] { "en", "bn" };
-            if (!validLanguages.Contains(language))
-                return false;
+            if (!validLanguages.Contains(language)) return false;
 
             user.PreferredLanguage = language;
             await _dbContext.SaveChangesAsync();
             return true;
+        }
+
+        // ===== User Management (Admin) =====
+
+        public async Task<List<UserListDTO>> GetAllUsersAsync()
+        {
+            return await _dbContext.Users
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .OrderByDescending(u => u.Id)
+                .Select(u => new UserListDTO
+                {
+                    Id = u.Id,
+                    Firstname = u.Firstname,
+                    Lastname = u.Lastname,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    IsActive = u.IsActive,
+                    PreferredLanguage = u.PreferredLanguage,
+                    Role = u.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? ""
+                })
+                .ToListAsync();
+        }
+
+        public async Task<UserListDTO?> AdminCreateUserAsync(AdminCreateUserDTO dto)
+        {
+            // Check phone uniqueness
+            if (await _dbContext.Users.AnyAsync(u => u.PhoneNumber == dto.PhoneNumber))
+                return null;
+
+            var user = new User
+            {
+                Firstname = dto.Firstname,
+                Lastname = dto.Lastname,
+                Email = dto.Email ?? $"{dto.PhoneNumber}@placeholder.local",
+                PhoneNumber = dto.PhoneNumber,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                IsActive = true
+            };
+
+            // Assign single role
+            var role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role);
+            if (role != null)
+                user.UserRoles.Add(new UserRole { RoleId = role.Id, User = user });
+            else
+            {
+                // Default to Salesman
+                var defaultRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Salesman");
+                if (defaultRole != null)
+                    user.UserRoles.Add(new UserRole { RoleId = defaultRole.Id, User = user });
+            }
+
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            return new UserListDTO
+            {
+                Id = user.Id,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = user.IsActive,
+                PreferredLanguage = user.PreferredLanguage,
+                Role = user.UserRoles.Select(ur => ur.Role?.Name ?? "").FirstOrDefault() ?? ""
+            };
+        }
+
+        public async Task<UserListDTO?> UpdateUserAsync(int userId, UserUpdateDTO dto)
+        {
+            var user = await _dbContext.Users
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return null;
+
+            // Check phone uniqueness (excluding self)
+            if (await _dbContext.Users.AnyAsync(u => u.PhoneNumber == dto.PhoneNumber && u.Id != userId))
+                return null;
+
+            user.Firstname = dto.Firstname;
+            user.Lastname = dto.Lastname;
+            user.PhoneNumber = dto.PhoneNumber;
+            user.Email = dto.Email ?? user.Email;
+            user.IsActive = dto.IsActive;
+
+            // Update role: remove existing, assign new single role
+            _dbContext.UserRoles.RemoveRange(user.UserRoles);
+            var role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role);
+            if (role != null)
+                _dbContext.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = role.Id });
+
+            await _dbContext.SaveChangesAsync();
+
+            // Reload role
+            await _dbContext.Entry(user).Collection(u => u.UserRoles).Query().Include(ur => ur.Role).LoadAsync();
+
+            return new UserListDTO
+            {
+                Id = user.Id,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = user.IsActive,
+                PreferredLanguage = user.PreferredLanguage,
+                Role = user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? ""
+            };
+        }
+
+        public async Task<bool> DeleteUserAsync(int userId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            user.IsActive = false;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<RoleDTO>> GetAllRolesAsync()
+        {
+            return await _dbContext.Roles
+                .OrderBy(r => r.Id)
+                .Select(r => new RoleDTO
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Description = r.Description
+                })
+                .ToListAsync();
         }
     }
 }

@@ -77,8 +77,7 @@ namespace Relation_IMS.Controllers
                 {
                     ProductId = product.Id,
                     LotQuantity = lotDto.LotQuantity,
-                    Description = $"Lot for {product.Name}",
-                    CreatedDate = DateTime.UtcNow
+                    Description = $"Lot for {product.Name}"
                 };
                 _context.Set<ProductLot>().Add(lot);
                 await _context.SaveChangesAsync();
@@ -202,8 +201,7 @@ namespace Relation_IMS.Controllers
                     {
                         ProductId = product.Id,
                         LotQuantity = lotDto.LotQuantity,
-                        Description = lotDto.Description ?? $"Partial Lot for {product.Name}",
-                        CreatedDate = DateTime.UtcNow
+                        Description = lotDto.Description ?? $"Partial Lot for {product.Name}"
                     };
 
                     _context.Set<ProductLot>().Add(lot);

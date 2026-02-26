@@ -2,9 +2,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Relation_IMS.Models.ProductModels;
-public class ProductVariant
+public class ProductVariant : BaseAuditableEntity
 {
-    public int Id { get; set; }
     [Required(ErrorMessage = "Product id is required.")]
     public int ProductId { get; set; }
     public Product? Product { get; set; }

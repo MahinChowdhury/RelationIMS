@@ -4,11 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.InventoryModels
 {
-    public class CustomerReturnRecord
+    public class CustomerReturnRecord : BaseAuditableEntity
     {
-        [Key]
-        public int Id { get; set; }
-
         public int CustomerId { get; set; }
         public Customer? Customer { get; set; }
 

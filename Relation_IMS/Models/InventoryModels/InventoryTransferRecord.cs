@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.InventoryModels
 {
-    public class InventoryTransferRecord
+    public class InventoryTransferRecord : BaseAuditableEntity
     {
-        public int Id { get; set; }
         public List<InventoryTransferRecordItem> TransferItems { get; set; } = new();
 
         [Required(ErrorMessage = "Source InventoryId is required.")]

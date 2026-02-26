@@ -8,6 +8,7 @@ using static Azure.Core.HttpHeader;
 namespace Relation_IMS.Models
 {
     [Index(nameof(Email), Name = "IX_Unique_Email", IsUnique = true)]
+    [Index(nameof(PhoneNumber), Name = "IX_Unique_PhoneNumber", IsUnique = true)]
     public class User
     {
         [Key]
@@ -22,6 +23,11 @@ namespace Relation_IMS.Models
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid Email Address.")]
         public string Email { get; set; } = null!;
+
+        [Required(ErrorMessage = "Phone number is required.")]
+        [MaxLength(20, ErrorMessage = "Phone number cannot exceed 20 characters.")]
+        public string PhoneNumber { get; set; } = null!;
+
         public bool IsActive { get; set; } = true;
         [Required]
         [MaxLength(100)]

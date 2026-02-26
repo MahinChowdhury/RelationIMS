@@ -100,6 +100,7 @@ const bn: Translations = {
         arrangement: 'অ্যারেঞ্জমেন্ট',
         accounts: 'একাউন্ট',
         configuration: 'কনফিগারেশন',
+        userManagement: 'ব্যবহারকারী পরিচালনা',
     },
 
     // Auth
@@ -108,6 +109,7 @@ const bn: Translations = {
         signInSubtitle: 'আপনার ইনভেন্টরি পরিচালনা করতে সাইন ইন করুন।',
         phoneNumber: 'ফোন নম্বর',
         password: 'পাসওয়ার্ড',
+        showPassword: 'পাসওয়ার্ড দেখান',
         rememberMe: 'আমাকে মনে রাখুন',
         forgotPassword: 'পাসওয়ার্ড ভুলে গেছেন?',
         login: 'লগইন',

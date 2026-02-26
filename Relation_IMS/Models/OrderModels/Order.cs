@@ -5,9 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Relation_IMS.Models.OrderModels
 {
-    public class Order
+    public class Order : BaseAuditableEntity
     {
-        public int Id { get; set; }
         [Required(ErrorMessage = "Customer Id is required.")]
         public int CustomerId { get; set; }
         public Customer? Customer { get; set; }
@@ -37,7 +36,5 @@ namespace Relation_IMS.Models.OrderModels
 
         public DateTime? NextPaymentDate { get; set; }
         public OrderInternalStatus InternalStatus { get; set; } = OrderInternalStatus.Created;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
