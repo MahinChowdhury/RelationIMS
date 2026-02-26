@@ -98,6 +98,7 @@ const en = {
         arrangement: 'Arrangement',
         accounts: 'Accounts',
         configuration: 'Configuration',
+        userManagement: 'User Management',
     },
 
     // Auth
@@ -106,6 +107,7 @@ const en = {
         signInSubtitle: 'Sign in to manage your inventory.',
         phoneNumber: 'Phone Number',
         password: 'Password',
+        showPassword: 'Show Password',
         rememberMe: 'Remember me',
         forgotPassword: 'Forgot password?',
         login: 'Login',

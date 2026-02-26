@@ -11,6 +11,7 @@ namespace Relation_IMS.Dtos.JWTDtos
         public string Firstname { get; set; } = null!;
         public string? Lastname { get; set; }
         public string Email { get; set; } = null!;
+        public string PhoneNumber { get; set; } = null!;
         public string PreferredLanguage { get; set; } = "en";
         public List<string> Roles { get; set; } = new();
     }

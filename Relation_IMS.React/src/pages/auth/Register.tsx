@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 const Register = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const { register } = useAuth();
     const [formData, setFormData] = useState({
-        name: '',
-        phone: '',
+        firstname: '',
+        lastname: '',
+        phoneNumber: '',
         password: '',
         confirmPassword: ''
     });
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -21,18 +25,24 @@ const Register = () => {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
-            alert(t.auth.passwordsDontMatch);
+            setError(t.auth.passwordsDontMatch);
             return;
         }
         setLoading(true);
-        // Simulate register API call
-        setTimeout(() => {
-            setLoading(false);
+        setError('');
+
+        try {
+            await register(formData.firstname, formData.lastname, formData.phoneNumber, formData.password);
             navigate('/login');
-        }, 1500);
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || 'Registration failed. Please try again.';
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -58,38 +68,61 @@ const Register = () => {
                         <p className="text-text-secondary mt-2">{t.auth.joinSubtitle}</p>
                     </div>
 
+                    {error && (
+                        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+                            {error}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-text-main mb-1">
-                                {t.auth.fullName}
-                            </label>
-                            <input
-                                id="name"
-                                name="name"
-                                type="text"
-                                autoComplete="name"
-                                required
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                                placeholder="John Doe"
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label htmlFor="firstname" className="block text-sm font-medium text-text-main mb-1">
+                                    {t.common.name} ({t.auth.fullName})
+                                </label>
+                                <input
+                                    id="firstname"
+                                    name="firstname"
+                                    type="text"
+                                    autoComplete="given-name"
+                                    required
+                                    value={formData.firstname}
+                                    onChange={handleChange}
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    placeholder="First"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="lastname" className="block text-sm font-medium text-text-main mb-1">
+                                    &nbsp;
+                                </label>
+                                <input
+                                    id="lastname"
+                                    name="lastname"
+                                    type="text"
+                                    autoComplete="family-name"
+                                    value={formData.lastname}
+                                    onChange={handleChange}
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    placeholder="Last"
+                                />
+                            </div>
                         </div>
 
                         <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-main mb-1">
                                 {t.auth.phoneNumber}
                             </label>
                             <input
-                                id="phone"
-                                name="phone"
+                                id="phoneNumber"
+                                name="phoneNumber"
                                 type="tel"
                                 autoComplete="tel"
                                 required
-                                value={formData.phone}
+                                value={formData.phoneNumber}
                                 onChange={handleChange}
                                 className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                                placeholder="01700000000"
+                                placeholder="01XXXXXXXXX"
                             />
                         </div>
 

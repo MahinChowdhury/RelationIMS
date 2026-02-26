@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens, type AuthResponse } from './authService';
 
-const API_BASE_URL = 'https://localhost:7062/api/v1'; // Use HTTPS directly
+const API_BASE_URL = 'http://localhost:5000/api/v1'; // Use HTTP directly
+const CLIENT_ID = 'client-app-one';
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
@@ -10,11 +12,99 @@ export const api = axios.create({
     withCredentials: true,
 });
 
-// Add a response interceptor to handle errors globally if needed
+// --- Request Interceptor: attach Authorization header ---
+api.interceptors.request.use(
+    (config) => {
+        const token = getAccessToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// --- Response Interceptor: auto-refresh on 401 ---
+let isRefreshing = false;
+let failedQueue: Array<{
+    resolve: (value: unknown) => void;
+    reject: (reason?: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+    failedQueue.forEach(({ resolve, reject }) => {
+        if (error) {
+            reject(error);
+        } else {
+            resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        console.error('API Error:', error);
+    async (error) => {
+        const originalRequest = error.config;
+
+        // Only attempt refresh on 401 and if we haven't already retried
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            // Don't try to refresh if this IS the refresh or login request
+            if (
+                originalRequest.url?.includes('/auth/login') ||
+                originalRequest.url?.includes('/auth/refresh-token')
+            ) {
+                return Promise.reject(error);
+            }
+
+            if (isRefreshing) {
+                // Queue requests while refreshing
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then((token) => {
+                    originalRequest.headers.Authorization = `Bearer ${token}`;
+                    return api(originalRequest);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            const refreshToken = getRefreshToken();
+            if (!refreshToken) {
+                clearTokens();
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
+            }
+
+            try {
+                const res = await axios.post<AuthResponse>(
+                    `${API_BASE_URL}/auth/refresh-token`,
+                    { RefreshToken: refreshToken, ClientId: CLIENT_ID },
+                    { headers: { 'Content-Type': 'application/json' } }
+                );
+
+                const { AccessToken, RefreshToken: newRefresh } = res.data;
+                setTokens(AccessToken, newRefresh);
+
+                processQueue(null, AccessToken);
+
+                originalRequest.headers.Authorization = `Bearer ${AccessToken}`;
+                return api(originalRequest);
+            } catch (refreshError) {
+                processQueue(refreshError, null);
+                clearTokens();
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+
         return Promise.reject(error);
     }
 );

@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const { login } = useAuth();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate login API call
-        setTimeout(() => {
+        setError('');
+
+        try {
+            await login(phoneNumber, password);
+            navigate('/');
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || 'Login failed. Please check your credentials.';
+            setError(msg);
+        } finally {
             setLoading(false);
-            navigate('/dashboard');
-        }, 1500);
+        }
     };
 
     return (
@@ -42,22 +52,28 @@ const Login = () => {
                         <p className="text-text-secondary mt-2">{t.auth.signInSubtitle}</p>
                     </div>
 
+                    {error && (
+                        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+                            {error}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-main mb-1">
                                 {t.auth.phoneNumber}
                             </label>
                             <div className="relative">
                                 <input
-                                    id="phone"
-                                    name="phone"
+                                    id="phoneNumber"
+                                    name="phoneNumber"
                                     type="tel"
                                     autoComplete="tel"
                                     required
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                                    placeholder="01700000000"
+                                    placeholder="01XXXXXXXXX"
                                 />
                             </div>
                         </div>
@@ -70,7 +86,7 @@ const Login = () => {
                                 <input
                                     id="password"
                                     name="password"
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
                                     required
                                     value={password}
@@ -84,13 +100,15 @@ const Login = () => {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <input
-                                    id="remember-me"
-                                    name="remember-me"
+                                    id="show-password"
+                                    name="show-password"
                                     type="checkbox"
-                                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
+                                    checked={showPassword}
+                                    onChange={(e) => setShowPassword(e.target.checked)}
+                                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer transition-transform active:scale-90"
                                 />
-                                <label htmlFor="remember-me" className="ml-2 block text-sm text-text-main cursor-pointer">
-                                    {t.auth.rememberMe}
+                                <label htmlFor="show-password" className="ml-2 block text-sm text-text-main cursor-pointer select-none">
+                                    {t.auth.showPassword}
                                 </label>
                             </div>
 

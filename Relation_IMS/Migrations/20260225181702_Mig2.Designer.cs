@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Relation_IMS.Entities;
@@ -12,9 +13,11 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260225181702_Mig2")]
+    partial class Mig2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -437,26 +440,20 @@ namespace Relation_IMS.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Salesman role",
-                            Name = "Salesman"
+                            Description = "Regular user role",
+                            Name = "User"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Shop Manager role",
-                            Name = "Shop Manager"
+                            Description = "Administrator role",
+                            Name = "Admin"
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Head Manager role",
-                            Name = "Head Manager"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Owner role",
-                            Name = "Owner"
+                            Description = "Editor Role",
+                            Name = "Editor"
                         });
                 });
 
@@ -1073,11 +1070,6 @@ namespace Relation_IMS.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.Property<string>("PreferredLanguage")
                         .IsRequired()
                         .HasMaxLength(5)
@@ -1086,9 +1078,6 @@ namespace Relation_IMS.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "IX_Unique_Email")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "PhoneNumber" }, "IX_Unique_PhoneNumber")
                         .IsUnique();
 
                     b.ToTable("Users");

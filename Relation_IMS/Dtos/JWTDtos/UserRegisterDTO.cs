@@ -13,9 +13,11 @@ namespace Relation_IMS.Dtos.JWTDtos
         [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
         public string Password { get; set; } = null!;
 
-        [Required(ErrorMessage = "Email is required.")]
+        [Required(ErrorMessage = "Phone number is required.")]
+        [MaxLength(20, ErrorMessage = "Phone number must be less than or equal to 20 characters.")]
+        public string PhoneNumber { get; set; } = null!;
+
         [EmailAddress(ErrorMessage = "Invalid Email Address.")]
-        public string Email { get; set; } = null!;
-        
+        public string? Email { get; set; }
     }
 }

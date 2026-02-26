@@ -57,6 +57,9 @@ builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 
 builder.Services.AddSingleton<IClientCacheService, ClientCacheService>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
@@ -188,7 +191,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowClientApps");
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Commented out to allow HTTP to port 5000
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

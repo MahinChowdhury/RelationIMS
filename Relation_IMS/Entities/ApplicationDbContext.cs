@@ -6,13 +6,41 @@ using Relation_IMS.Models.JWTModels;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.PaymentModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Entities;
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    private readonly ICurrentUserService? _currentUserService;
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUserService? currentUserService = null) : base(options)
     {
-        
+        _currentUserService = currentUserService;
+    }
+
+    // Auto-populate audit fields on save
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        var userId = _currentUserService?.UserId;
+
+        foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreatedAt = now;
+                    entry.Entity.CreatedBy = userId;
+                    break;
+
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = now;
+                    entry.Entity.UpdatedBy = userId;
+                    break;
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
     }
 
     // Configure entity relationships, keys, and seed data
@@ -35,9 +63,10 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(ur => ur.RoleId); // Foreign key in UserRole points to Role.Id
                                              // Seed initial Role data in the database
         modelBuilder.Entity<Role>().HasData(
-            new Role { Id = 1, Name = "User", Description = "Regular user role" },
-            new Role { Id = 2, Name = "Admin", Description = "Administrator role" },
-            new Role { Id = 3, Name = "Editor", Description = "Editor Role" }
+            new Role { Id = 1, Name = "Salesman", Description = "Salesman role" },
+            new Role { Id = 2, Name = "Shop Manager", Description = "Shop Manager role" },
+            new Role { Id = 3, Name = "Head Manager", Description = "Head Manager role" },
+            new Role { Id = 4, Name = "Owner", Description = "Owner role" }
         );
         // Seed initial Client data for authentication (demo purposes)
         modelBuilder.Entity<Client>().HasData(

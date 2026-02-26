@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.InventoryModels
 {
-    public class InventoryTransferRecordItem
+    public class InventoryTransferRecordItem : BaseAuditableEntity
     {
-        public int Id { get; set; }
-
         public int InventoryTransferRecordId { get; set; }
         public InventoryTransferRecord? InventoryTransferRecord { get; set; }
 

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { AlertProvider } from './context/AlertContext'
+import { AuthProvider } from './context/AuthContext'
 import { LanguageProvider } from './i18n/LanguageContext'
 import { setupGlobalAlerts } from './services/DialogService'
 
@@ -13,12 +14,13 @@ setupGlobalAlerts()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <LanguageProvider>
-        <AlertProvider>
-          <App />
-        </AlertProvider>
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <AlertProvider>
+            <App />
+          </AlertProvider>
+        </LanguageProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )
-

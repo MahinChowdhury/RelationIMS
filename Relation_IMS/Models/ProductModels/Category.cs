@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.ProductModels;
-public class Category
+public class Category : BaseAuditableEntity
 {
-    public int Id { get; set; }
     [MaxLength(1)]
     public string? Code { get; set; }
     [Required(ErrorMessage = "Category Name is required")]
@@ -12,4 +11,3 @@ public class Category
     public List<Product>? Products { get; set; } = new List<Product>();
     public List<Brand>? Brands { get; set; }
 }
-

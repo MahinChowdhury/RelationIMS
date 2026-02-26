@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { useState, useRef, useEffect } from 'react';
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -9,6 +11,20 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const location = useLocation();
     const { t } = useLanguage();
+    const { user, logout } = useAuth();
+
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const profileMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+                setIsProfileMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const isActive = (path: string) => {
         return location.pathname.startsWith(path);
@@ -89,22 +105,84 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     {/* Bottom Section */}
                     <div className="flex flex-col gap-1 border-t border-gray-100 dark:border-[#2a4032] pt-4">
                         <Link
-                            to="/configuration"
+                            to="/users"
                             onClick={onClose}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive('/users')
+                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary shadow-sm'
+                                : 'text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+                                }`}
                         >
-                            <span className="material-symbols-outlined text-gray-500 group-hover:text-primary dark:text-gray-400">
-                                tune
+                            <span
+                                className={`material-symbols-outlined ${isActive('/users') ? '' : 'text-gray-500 group-hover:text-primary dark:text-gray-400'
+                                    }`}
+                                style={isActive('/users') ? { fontVariationSettings: "'FILL' 1" } : {}}
+                            >
+                                manage_accounts
                             </span>
-                            <span className="text-sm font-medium">{t.nav.configuration}</span>
+                            <span className={`text-sm ${isActive('/users') ? 'font-bold' : 'font-medium'}`}>User Management</span>
                         </Link>
 
-                        <div className="flex items-center gap-3 px-3 py-2.5 mt-2">
-                            <div className="size-8 rounded-full bg-gray-200 bg-center bg-cover" style={{ backgroundImage: 'url("https://ui-avatars.com/api/?name=Jane+Doe&background=random")' }}></div>
-                            <div className="flex flex-col">
-                                <p className="text-sm font-bold text-text-main dark:text-white">Md Nasir</p>
-                                <p className="text-xs text-text-secondary">Manager</p>
-                            </div>
+                        <Link
+                            to="/configuration"
+                            onClick={onClose}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive('/configuration')
+                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary shadow-sm'
+                                : 'text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+                                }`}
+                        >
+                            <span
+                                className={`material-symbols-outlined ${isActive('/configuration') ? '' : 'text-gray-500 group-hover:text-primary dark:text-gray-400'
+                                    }`}
+                            >
+                                tune
+                            </span>
+                            <span className={`text-sm ${isActive('/configuration') ? 'font-bold' : 'font-medium'}`}>{t.nav.configuration}</span>
+                        </Link>
+
+                        {/* User Profile Component */}
+                        <div className="relative mt-2" ref={profileMenuRef}>
+                            <button
+                                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                                className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors focus:outline-none"
+                            >
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="size-8 rounded-full bg-primary/20 shrink-0 flex items-center justify-center text-primary font-bold">
+                                        {user?.Firstname?.charAt(0) || 'U'}
+                                    </div>
+                                    <div className="flex flex-col text-left truncate">
+                                        <p className="text-sm font-bold text-text-main dark:text-white truncate">
+                                            {user ? `${user.Firstname} ${user.Lastname || ''}`.trim() : 'User User'}
+                                        </p>
+                                        <p className="text-xs text-text-secondary truncate">
+                                            {user?.Roles?.length ? user.Roles.join(', ') : 'Role'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className={`material-symbols-outlined text-gray-500 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`}>
+                                    expand_more
+                                </span>
+                            </button>
+
+                            {/* Profile Menu Popup */}
+                            {isProfileMenuOpen && (
+                                <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[#203326] border border-gray-100 dark:border-[#2a4032] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50">
+                                    <Link
+                                        to="/profile"
+                                        onClick={() => { setIsProfileMenuOpen(false); if (onClose) onClose(); }}
+                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px] text-gray-400">person</span>
+                                        View Profile
+                                    </Link>
+                                    <button
+                                        onClick={() => { setIsProfileMenuOpen(false); logout(); }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">logout</span>
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

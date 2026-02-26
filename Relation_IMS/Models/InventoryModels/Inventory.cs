@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.InventoryModels
 {
-    public class Inventory
+    public class Inventory : BaseAuditableEntity
     {
-        public int Id { get; set; }
         [Required]
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
