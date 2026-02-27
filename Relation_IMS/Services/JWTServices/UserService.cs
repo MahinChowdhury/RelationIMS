@@ -161,10 +161,23 @@ namespace Relation_IMS.Services.JWTServices
 
         // ===== User Management (Admin) =====
 
-        public async Task<List<UserListDTO>> GetAllUsersAsync()
+        public async Task<List<UserListDTO>> GetAllUsersAsync(string? role = null, bool? isActive = null)
         {
-            return await _dbContext.Users
+            var query = _dbContext.Users
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(role))
+            {
+                query = query.Where(u => u.UserRoles.Any(ur => ur.Role.Name == role));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(u => u.IsActive == isActive.Value);
+            }
+
+            return await query
                 .OrderByDescending(u => u.Id)
                 .Select(u => new UserListDTO
                 {
@@ -239,6 +252,7 @@ namespace Relation_IMS.Services.JWTServices
         {
             var user = await _dbContext.Users
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .Include(u => u.UserProfile)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return null;
@@ -258,6 +272,21 @@ namespace Relation_IMS.Services.JWTServices
             var role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role);
             if (role != null)
                 _dbContext.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = role.Id });
+
+            // Update salary if provided
+            if (dto.CurrentSalary.HasValue)
+            {
+                if (user.UserProfile == null)
+                {
+                    user.UserProfile = new Models.UserProfileModels.UserProfile
+                    {
+                        UserId = user.Id,
+                        JoinDate = DateTime.UtcNow
+                    };
+                    _dbContext.UserProfiles.Add(user.UserProfile);
+                }
+                user.UserProfile.CurrentSalary = dto.CurrentSalary.Value;
+            }
 
             await _dbContext.SaveChangesAsync();
 

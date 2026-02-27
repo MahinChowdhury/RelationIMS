@@ -35,6 +35,7 @@ export interface UserUpdatePayload {
     Email?: string;
     IsActive: boolean;
     Role: string;
+    CurrentSalary?: number;
 }
 
 export interface UserProfileDTO {
@@ -85,9 +86,15 @@ export interface ChangePasswordPayload {
     NewPassword: string;
 }
 
-// Fetch all users
-export const getAllUsers = async (): Promise<UserDTO[]> => {
-    const res = await api.get('/user');
+// Fetch all users with optional filters
+export const getAllUsers = async (role?: string, isActive?: boolean): Promise<UserDTO[]> => {
+    const params = new URLSearchParams();
+    if (role) params.append('role', role);
+    if (isActive !== undefined) params.append('isActive', isActive.toString());
+    
+    const queryString = params.toString();
+    const url = queryString ? `/user?${queryString}` : '/user';
+    const res = await api.get(url);
     return res.data;
 };
 

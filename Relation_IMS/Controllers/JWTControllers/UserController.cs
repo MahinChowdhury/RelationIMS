@@ -19,9 +19,9 @@ namespace Relation_IMS.Controllers.JWTControllers
 
         // GET api/v1/user
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] string? role, [FromQuery] bool? isActive)
         {
-            var users = await _userService.GetAllUsersAsync();
+            var users = await _userService.GetAllUsersAsync(role, isActive);
             return Ok(users);
         }
 

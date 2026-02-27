@@ -74,6 +74,7 @@ export default function UserProfile() {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     const targetUserId = id ? Number(id) : currentUser?.Id;
+    const isOwnProfile = targetUserId === currentUser?.Id;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -296,13 +297,15 @@ export default function UserProfile() {
                         </div>
 
                         {/* Edit Button */}
-                        <button
-                            onClick={openEditProfileModal}
-                            className="px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all bg-gray-100 dark:bg-white/10 text-[#0e1b12] dark:text-white hover:bg-gray-200 dark:hover:bg-white/15"
-                        >
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                            {t.profile?.editProfile || 'Edit Profile'}
-                        </button>
+                        {isOwnProfile && (
+                            <button
+                                onClick={openEditProfileModal}
+                                className="px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all bg-gray-100 dark:bg-white/10 text-[#0e1b12] dark:text-white hover:bg-gray-200 dark:hover:bg-white/15"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">edit</span>
+                                {t.profile?.editProfile || 'Edit Profile'}
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -441,72 +444,74 @@ export default function UserProfile() {
                 </div>
 
                 {/* Account Settings Card */}
-                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">settings</span>
-                            {t.profile?.accountSettings || 'Account Settings'}
-                        </h3>
-                    </div>
-                    <div className="p-5 space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-gray-500">lock</span>
-                                <div>
-                                    <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.changePassword || 'Change Password'}</p>
-                                    <p className="text-xs text-gray-400">{t.profile?.lastChanged || 'Last changed: 30 days ago'}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={openChangePasswordModal}
-                                className="p-2 text-[#17cf54] hover:bg-[#17cf54]/10 rounded-lg transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                            </button>
+                {isOwnProfile && (
+                    <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                            <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[#17cf54]">settings</span>
+                                {t.profile?.accountSettings || 'Account Settings'}
+                            </h3>
                         </div>
+                        <div className="p-5 space-y-4">
+                            <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-gray-500">lock</span>
+                                    <div>
+                                        <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.changePassword || 'Change Password'}</p>
+                                        <p className="text-xs text-gray-400">{t.profile?.lastChanged || 'Last changed: 30 days ago'}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={openChangePasswordModal}
+                                    className="p-2 text-[#17cf54] hover:bg-[#17cf54]/10 rounded-lg transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                                </button>
+                            </div>
 
-                        <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-gray-500">dark_mode</span>
-                                <div>
-                                    <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.darkMode || 'Dark Mode'}</p>
-                                    <p className="text-xs text-gray-400">{t.profile?.darkModeDesc || 'Use dark theme'}</p>
+                            <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-gray-500">dark_mode</span>
+                                    <div>
+                                        <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.darkMode || 'Dark Mode'}</p>
+                                        <p className="text-xs text-gray-400">{t.profile?.darkModeDesc || 'Use dark theme'}</p>
+                                    </div>
                                 </div>
+                                <button
+                                    onClick={() => setDarkModeEnabled(!darkModeEnabled)}
+                                    className={`w-12 h-6 rounded-full relative transition-colors ${darkModeEnabled ? 'bg-[#17cf54]' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                >
+                                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${darkModeEnabled ? 'right-1' : 'left-1'}`}></span>
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setDarkModeEnabled(!darkModeEnabled)}
-                                className={`w-12 h-6 rounded-full relative transition-colors ${darkModeEnabled ? 'bg-[#17cf54]' : 'bg-gray-300 dark:bg-gray-600'}`}
-                            >
-                                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${darkModeEnabled ? 'right-1' : 'left-1'}`}></span>
-                            </button>
-                        </div>
 
-                        <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-gray-500">translate</span>
-                                <div>
-                                    <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.language || 'Language'}</p>
-                                    <p className="text-xs text-gray-400">{language === 'en' ? 'English' : 'বাংলা'}</p>
+                            <div className="flex items-center justify-between p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-gray-500">translate</span>
+                                    <div>
+                                        <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.language || 'Language'}</p>
+                                        <p className="text-xs text-gray-400">{language === 'en' ? 'English' : 'বাংলা'}</p>
+                                    </div>
                                 </div>
+                                <button
+                                    onClick={toggleLanguage}
+                                    className={`relative flex items-center p-1 rounded-full w-[120px] h-[36px] cursor-pointer shrink-0 shadow-inner transition-colors duration-300 border ${language === 'en' ? 'bg-blue-100/50 dark:bg-blue-900/20 border-blue-200/50 dark:border-blue-800/50' : 'bg-sky-100/50 dark:bg-sky-900/20 border-sky-200/50 dark:border-sky-800/50'}`}
+                                    aria-label="Toggle Language"
+                                >
+                                    <div
+                                        className={`absolute left-1 shadow-md w-[54px] h-[28px] rounded-full transition-all duration-300 ${language === 'bn' ? 'translate-x-[54px] bg-sky-500' : 'translate-x-0 bg-blue-500'}`}
+                                    ></div>
+                                    <span className={`relative z-10 w-1/2 text-center text-[11px] font-bold transition-colors duration-300 ${language === 'en' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                                        English
+                                    </span>
+                                    <span className={`relative z-10 w-1/2 text-center text-[11px] font-bold transition-colors duration-300 ${language === 'bn' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                                        বাংলা
+                                    </span>
+                                </button>
                             </div>
-                            <button
-                                onClick={toggleLanguage}
-                                className={`relative flex items-center p-1 rounded-full w-[120px] h-[36px] cursor-pointer shrink-0 shadow-inner transition-colors duration-300 border ${language === 'en' ? 'bg-blue-100/50 dark:bg-blue-900/20 border-blue-200/50 dark:border-blue-800/50' : 'bg-sky-100/50 dark:bg-sky-900/20 border-sky-200/50 dark:border-sky-800/50'}`}
-                                aria-label="Toggle Language"
-                            >
-                                <div
-                                    className={`absolute left-1 shadow-md w-[54px] h-[28px] rounded-full transition-all duration-300 ${language === 'bn' ? 'translate-x-[54px] bg-sky-500' : 'translate-x-0 bg-blue-500'}`}
-                                ></div>
-                                <span className={`relative z-10 w-1/2 text-center text-[11px] font-bold transition-colors duration-300 ${language === 'en' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
-                                    English
-                                </span>
-                                <span className={`relative z-10 w-1/2 text-center text-[11px] font-bold transition-colors duration-300 ${language === 'bn' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
-                                    বাংলা
-                                </span>
-                            </button>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Pay Salary Modal */}
                 {paySalaryModalOpen && (
@@ -814,10 +819,12 @@ export default function UserProfile() {
                 )}
 
                 {/* Logout Button */}
-                <button onClick={() => setShowLogoutConfirm(true)} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
-                    <span className="material-symbols-outlined">logout</span>
-                    {t.profile?.logout || 'Log Out'}
-                </button>
+                {isOwnProfile && (
+                    <button onClick={() => setShowLogoutConfirm(true)} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
+                        <span className="material-symbols-outlined">logout</span>
+                        {t.profile?.logout || 'Log Out'}
+                    </button>
+                )}
 
                 <LogoutConfirmModal
                     show={showLogoutConfirm}

@@ -38,6 +38,8 @@ namespace Relation_IMS.Dtos.JWTDtos
         // Single role name to assign
         [Required(ErrorMessage = "Role is required.")]
         public string Role { get; set; } = null!;
+
+        public decimal? CurrentSalary { get; set; }
     }
 
     // DTO for admin creating a user (includes role assignment)

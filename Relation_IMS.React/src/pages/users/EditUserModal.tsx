@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { updateUser, getAllRoles, type UserDTO, type RoleDTO } from '../../services/userService';
+import { useAuth } from '../../context/AuthContext';
+import { updateUser, getAllRoles, getUserProfile, type UserDTO, type RoleDTO } from '../../services/userService';
 
 interface EditUserModalProps {
     isOpen: boolean;
@@ -11,9 +12,13 @@ interface EditUserModalProps {
 
 export default function EditUserModal({ isOpen, onClose, onUpdated, user }: EditUserModalProps) {
     const { t } = useLanguage();
+    const { user: currentUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [roles, setRoles] = useState<RoleDTO[]>([]);
+    const [currentSalary, setCurrentSalary] = useState<string>('');
+
+    const isOwner = currentUser?.Roles.includes('Owner');
 
     const [formData, setFormData] = useState({
         firstName: user.Firstname,
@@ -33,6 +38,12 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                 isActive: user.IsActive,
                 role: user.Role,
             });
+            // Fetch current salary from user profile
+            getUserProfile(user.Id).then(profile => {
+                setCurrentSalary(profile.CurrentSalary?.toString() || '');
+            }).catch(() => {
+                setCurrentSalary('');
+            });
         }
     }, [isOpen, user]);
 
@@ -47,12 +58,14 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
         setLoading(true);
 
         try {
+            const salaryValue = currentSalary ? parseFloat(currentSalary) : undefined;
             await updateUser(user.Id, {
                 Firstname: formData.firstName,
                 Lastname: formData.lastName || undefined,
                 PhoneNumber: formData.phoneNumber,
                 IsActive: formData.isActive,
                 Role: formData.role,
+                CurrentSalary: salaryValue,
             });
             onUpdated();
         } catch (err: any) {
@@ -125,6 +138,15 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                                 ))}
                             </select>
                         </div>
+
+                        {isOwner && (
+                            <div>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary</label>
+                                <input type="number" value={currentSalary} onChange={(e) => setCurrentSalary(e.target.value)}
+                                    placeholder="Enter salary"
+                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                            </div>
+                        )}
                     </form>
                 </div>
 

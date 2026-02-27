@@ -4,11 +4,14 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import AddUserModal from './AddUserModal';
 import EditUserModal from './EditUserModal';
 import DeleteUserModal from './DeleteUserModal';
-import { getAllUsers, deleteUser, type UserDTO } from '../../services/userService';
+import { getAllUsers, deleteUser, getAllRoles, type UserDTO, type RoleDTO } from '../../services/userService';
 
 export default function UserManagement() {
     const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [roles, setRoles] = useState<RoleDTO[]>([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -21,7 +24,9 @@ export default function UserManagement() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const data = await getAllUsers();
+            const role = roleFilter || undefined;
+            const isActive = statusFilter === '' ? undefined : statusFilter === 'active';
+            const data = await getAllUsers(role, isActive);
             setUsers(data);
             setError('');
         } catch {
@@ -31,9 +36,23 @@ export default function UserManagement() {
         }
     };
 
+    const fetchRoles = async () => {
+        try {
+            const data = await getAllRoles();
+            setRoles(data);
+        } catch {
+            console.error('Failed to load roles.');
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchRoles();
     }, []);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [roleFilter, statusFilter]);
 
     const handleDeleteUser = (user: UserDTO) => {
         setUserToDelete(user);
@@ -110,19 +129,6 @@ export default function UserManagement() {
                     </nav>
                     <h1 className="text-xl md:text-2xl font-extrabold text-text-main dark:text-white tracking-tight">{t.nav.userManagement}</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="relative hidden sm:block">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <span className="material-symbols-outlined text-[18px]">search</span>
-                        </span>
-                        <input type="text" placeholder={t.common.search || "Search users..."} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9 pr-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary w-52 transition-shadow backdrop-blur-sm shadow-sm" />
-                    </div>
-                    <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-green-500/20">
-                        <span className="material-symbols-outlined text-[20px]">add</span>
-                        {t.common.add || 'Add New User'}
-                    </button>
-                </div>
             </div>
 
             {/* Stats Cards */}
@@ -155,6 +161,34 @@ export default function UserManagement() {
                     </div>
                 </div>
             </div >
+
+            {/* Filter Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="relative flex-1">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <span className="material-symbols-outlined text-[18px]">search</span>
+                    </span>
+                    <input type="text" placeholder={t.common.search || "Search users..."} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 pr-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary w-full sm:w-52 transition-shadow backdrop-blur-sm shadow-sm" />
+                </div>
+                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
+                    className="px-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
+                    <option value="">All Roles</option>
+                    {roles.map((role) => (
+                        <option key={role.Id} value={role.Name}>{role.Name}</option>
+                    ))}
+                </select>
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-green-500/20">
+                    <span className="material-symbols-outlined text-[20px]">add</span>
+                    {t.common.add || 'Add New User'}
+                </button>
+            </div>
 
             {/* Users Table */}
             < div className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[#2a4032] flex-1 overflow-hidden flex flex-col min-h-[400px]" >

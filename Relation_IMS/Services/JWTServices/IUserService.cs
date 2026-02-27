@@ -14,7 +14,7 @@ namespace Relation_IMS.Services.JWTServices
         Task<bool> UpdatePreferredLanguageAsync(int userId, string language);
 
         // User management (admin)
-        Task<List<UserListDTO>> GetAllUsersAsync();
+        Task<List<UserListDTO>> GetAllUsersAsync(string? role = null, bool? isActive = null);
         Task<UserListDTO?> AdminCreateUserAsync(AdminCreateUserDTO dto);
         Task<UserListDTO?> UpdateUserAsync(int userId, UserUpdateDTO dto);
         Task<bool> DeleteUserAsync(int userId);
