@@ -11,11 +11,9 @@ const GlobalSearch = () => {
     const [loading, setLoading] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
 
-    // Scanner Refs
     const videoRef = useRef<HTMLVideoElement>(null);
     const codeReader = useRef<BrowserMultiFormatReader | null>(null);
 
-    // Cleanup scanner on unmount
     useEffect(() => {
         return () => {
             if (codeReader.current) {
@@ -24,10 +22,8 @@ const GlobalSearch = () => {
         };
     }, []);
 
-    // Effect to start/manage scanner when isScanning changes
     useEffect(() => {
         if (isScanning) {
-            // Small delay to ensure modal/video ref is rendered
             const timer = setTimeout(() => {
                 startScanner();
             }, 100);
@@ -41,18 +37,14 @@ const GlobalSearch = () => {
         }
     }, [isScanning]);
 
-
     const startScanner = () => {
         if (!videoRef.current) return;
-
-        // If already running, don't restart
         if (codeReader.current) return;
 
         codeReader.current = new BrowserMultiFormatReader();
         codeReader.current.decodeFromVideoDevice(null, videoRef.current, (result, err) => {
             if (result) {
                 const code = result.getText();
-                // Found logic
                 codeReader.current?.reset();
                 codeReader.current = null;
                 setIsScanning(false);
@@ -71,7 +63,6 @@ const GlobalSearch = () => {
         try {
             const res = await api.get<any>(`/ProductItem/code/${term.trim()}`);
             if (res.data && res.data.ProductId) {
-                // Navigate to Product Details
                 navigate(`/products/${res.data.ProductId}`);
                 setQuery('');
             } else {
@@ -79,7 +70,6 @@ const GlobalSearch = () => {
             }
         } catch (err) {
             console.error("Search failed", err);
-            // Check if 404
             if ((err as any)?.response?.status === 404) {
                 alert(t.globalSearch.itemNotFound.replace('{term}', term));
             } else {
@@ -98,10 +88,10 @@ const GlobalSearch = () => {
 
     return (
         <>
-            <div className="fixed top-3 right-16 lg:right-6 z-[60] flex items-center animate-in fade-in slide-in-from-top-4 duration-500 gap-2">
+            <div className="fixed top-3 right-16 lg:right-6 z-[60] flex items-center animate-in fade-in slide-in-from-top-4 duration-500 gap-2 hidden lg:block">
                 <div className="relative group flex items-center bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-full border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-black/20 overflow-hidden">
 
-                    {/* Scanner Button */}
+                    {/* QR Scanner Button - Desktop Only */}
                     <button
                         onClick={() => setIsScanning(true)}
                         className="pl-3 pr-2 py-2 text-gray-400 hover:text-primary transition-colors border-r border-gray-100 dark:border-gray-700"
