@@ -33,16 +33,23 @@ namespace Relation_IMS.Services
 
         public async Task InvalidateCacheByPrefixAsync(string prefix)
         {
+            Console.WriteLine($"[Redis] InvalidateCacheByPrefixAsync called with prefix: {prefix}");
+            
             var server = _redis.GetServer(_redis.GetEndPoints().First());
 
             // IDistributedCache prepends the InstanceName ("RelationIMS:") to all keys.
             // We must include it when scanning, otherwise we'd never match any keys.
-            var keys = server.Keys(pattern: $"{InstanceName}{prefix}:*").ToArray();
+            var pattern = $"{InstanceName}{prefix}:*";
+            Console.WriteLine($"[Redis] Searching keys with pattern: {pattern}");
+            
+            var keys = server.Keys(pattern: pattern).ToArray();
+            Console.WriteLine($"[Redis] Found {keys.Length} keys to delete for prefix '{prefix}'");
 
             if (keys.Length > 0)
             {
                 var db = _redis.GetDatabase();
                 await db.KeyDeleteAsync(keys);
+                Console.WriteLine($"[Redis] Deleted {keys.Length} keys");
             }
         }
     }

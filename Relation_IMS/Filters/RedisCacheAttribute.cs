@@ -33,12 +33,14 @@ namespace Relation_IMS.Filters
             {
                 cacheService = context.HttpContext.RequestServices.GetRequiredService<IRedisCacheService>();
                 cacheKey = GenerateCacheKey(context.HttpContext.Request);
+                Console.WriteLine($"[RedisCache] Checking cache for key: {cacheKey}");
 
                 // Try to get from cache
                 var cachedResponse = await cacheService.GetCachedResponseAsync(cacheKey);
-
+                
                 if (!string.IsNullOrEmpty(cachedResponse))
                 {
+                    Console.WriteLine($"[RedisCache] Cache HIT for key: {cacheKey}");
                     // Return cached response
                     context.Result = new ContentResult
                     {
@@ -48,6 +50,7 @@ namespace Relation_IMS.Filters
                     };
                     return;
                 }
+                Console.WriteLine($"[RedisCache] Cache MISS for key: {cacheKey}");
             }
             catch (Exception)
             {

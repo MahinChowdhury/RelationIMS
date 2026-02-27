@@ -163,13 +163,15 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
               "http://localhost:4200",
               "http://localhost:5173",
-              "https://localhost:5173"  // Add HTTPS variant if needed
+              "https://localhost:5173"
               )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddAzureClients(clientBuilder =>
 {
@@ -196,5 +198,6 @@ app.UseCors("AllowClientApps");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<Relation_IMS.Hubs.ArrangementHub>("/hubs/arrangement");
 
 app.Run();
