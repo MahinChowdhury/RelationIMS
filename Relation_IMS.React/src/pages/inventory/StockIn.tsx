@@ -311,6 +311,10 @@ export default function StockIn() {
         }
     };
 
+    const reorderImages = (newOrder: string[]) => {
+        setSelectedImages(newOrder);
+    };
+
     const addStock = () => {
         if (!newStock.color || !newStock.size || newStock.quantity < 0) return;
         const exists = stockItems.find(s => s.color === newStock.color && s.size === newStock.size);
@@ -857,6 +861,7 @@ export default function StockIn() {
                                     onCategoryChange={onCategoryChange}
                                     onImagesSelected={onImagesSelected}
                                     removeImage={removeImage}
+                                    reorderImages={reorderImages}
                                     newStock={newStock}
                                     setNewStock={setNewStock}
                                     addStock={addStock}
@@ -907,6 +912,7 @@ export default function StockIn() {
                                     onCategoryChange={onCategoryChange}
                                     onImagesSelected={onImagesSelected}
                                     removeImage={removeImage}
+                                    reorderImages={reorderImages}
                                     newStock={newStock}
                                     setNewStock={setNewStock}
                                     addStock={addStock}

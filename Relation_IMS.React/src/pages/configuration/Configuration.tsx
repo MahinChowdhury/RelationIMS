@@ -197,32 +197,6 @@ export default function Configuration() {
                     <div className="text-center py-20 text-gray-400 font-bold">{t.config.loadingConfig}</div>
                 ) : (
                     <>
-                        {/* Brands Section */}
-                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">verified</span>
-                                    {t.config.brands}
-                                </h2>
-                                <button
-                                    onClick={() => openModal('brand')}
-                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">add</span>
-                                    {t.config.addBrand}
-                                </button>
-                            </div>
-                            <div className="p-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                    {brands.length > 0 ? (
-                                        brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
-                                    ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Categories Section */}
                         <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
@@ -249,6 +223,31 @@ export default function Configuration() {
                             </div>
                         </div>
 
+                        {/* Brands Section */}
+                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[#17cf54]">verified</span>
+                                    {t.config.brands}
+                                </h2>
+                                <button
+                                    onClick={() => openModal('brand')}
+                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">add</span>
+                                    {t.config.addBrand}
+                                </button>
+                            </div>
+                            <div className="p-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                    {brands.length > 0 ? (
+                                        brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
+                                    ) : (
+                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                         {/* Quarters Section */}
                         <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
