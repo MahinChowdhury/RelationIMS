@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { signalRService } from '../../services/signalR';
+import { audioService } from '../../services/audio';
 import { useLanguage } from '../../i18n/LanguageContext';
 import type { Order } from '../../types';
 import { OrderInternalStatus } from '../../types';
@@ -9,20 +11,46 @@ export default function Arrangement() {
     const { t } = useLanguage();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isLive, setIsLive] = useState(false);
+    const prevOrderCountRef = useRef<number>(0);
 
     useEffect(() => {
         fetchOrders();
+        
+        signalRService.connect().then(() => {
+            setIsLive(true);
+        });
+
+        const unsubscribe = signalRService.onOrderListUpdate(async () => {
+            console.log('[Arrangement] SignalR OrderListUpdated received, fetching fresh orders...');
+            const previousCount = prevOrderCountRef.current;
+            try {
+                const newOrders = await fetchOrders();
+                console.log(`[Arrangement] Fetched ${newOrders.length} orders (was ${previousCount})`);
+                if (newOrders && newOrders.length > previousCount) {
+                    audioService.playNotification();
+                }
+            } catch (err) {
+                console.error('[Arrangement] Failed to fetch orders on SignalR update:', err);
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
     }, []);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (): Promise<Order[]> => {
         try {
             setLoading(true);
             const res = await api.get<Order[]>('/Arrangement/orders');
-            // Filter out confirmed orders as per request
             const activeOrders = res.data.filter(o => o.InternalStatus !== OrderInternalStatus.Confirmed);
+            prevOrderCountRef.current = activeOrders.length;
             setOrders(activeOrders);
+            return activeOrders;
         } catch (err) {
             console.error("Failed to load arrangement orders", err);
+            return [];
         } finally {
             setLoading(false);
         }
@@ -54,13 +82,21 @@ export default function Arrangement() {
                     </h1>
                     <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">{t.arrangement.subtitle}</p>
                 </div>
-                <button
-                    onClick={fetchOrders}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e2e23] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
-                >
-                    <span className="material-symbols-outlined text-primary">refresh</span>
-                    {t.common.refresh || 'Refresh'}
-                </button>
+                <div className="flex items-center gap-3">
+                    {isLive && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 rounded-full text-xs font-medium text-green-700 dark:text-green-400">
+                            <span className="size-2 bg-green-500 rounded-full animate-pulse"></span>
+                            Live
+                        </div>
+                    )}
+                    <button
+                        onClick={fetchOrders}
+                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e2e23] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
+                    >
+                        <span className="material-symbols-outlined text-primary">refresh</span>
+                        {t.common.refresh || 'Refresh'}
+                    </button>
+                </div>
             </div>
 
             {/* Content */}

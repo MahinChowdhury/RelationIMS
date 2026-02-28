@@ -1,7 +1,9 @@
-﻿ using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Filters;
+using Relation_IMS.Hubs;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Services;
 
@@ -13,11 +15,13 @@ namespace Relation_IMS.Controllers
     {
         private readonly IOrderRepository _repo;
         private readonly IConcurrencyLockService _lockService;
+        private readonly IHubContext<ArrangementHub> _hubContext;
 
-        public OrderController(IOrderRepository repo, IConcurrencyLockService lockService)
+        public OrderController(IOrderRepository repo, IConcurrencyLockService lockService, IHubContext<ArrangementHub> hubContext)
         {
             _repo = repo;
             _lockService = lockService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -48,6 +52,14 @@ namespace Relation_IMS.Controllers
                     return NotFound(new { message = $"Orders with id : {id} not found." });
                 }
 
+                // Invalidate cache BEFORE sending SignalR to avoid race condition
+                var cacheService = HttpContext.RequestServices.GetRequiredService<IRedisCacheService>();
+                await cacheService.InvalidateCacheByPrefixAsync("order");
+                await cacheService.InvalidateCacheByPrefixAsync("orderitem");
+                await cacheService.InvalidateCacheByPrefixAsync("arrangement");
+
+                await _hubContext.Clients.Group("arrangement").SendAsync(ArrangementHubEvents.OrderListUpdated);
+
                 return Ok(order);
             }
         }
@@ -59,6 +71,15 @@ namespace Relation_IMS.Controllers
             using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
             {
                 var created = await _repo.CreateNewOrderAsync(orderDto);
+
+                // Invalidate cache BEFORE sending SignalR to avoid race condition
+                var cacheService = HttpContext.RequestServices.GetRequiredService<IRedisCacheService>();
+                await cacheService.InvalidateCacheByPrefixAsync("order");
+                await cacheService.InvalidateCacheByPrefixAsync("orderitem");
+                await cacheService.InvalidateCacheByPrefixAsync("arrangement");
+
+                Console.WriteLine($"[SignalR] Broadcasting OrderListUpdated after creating order {created?.Id}");
+                await _hubContext.Clients.Group("arrangement").SendAsync(ArrangementHubEvents.OrderListUpdated);
 
                 return CreatedAtAction(nameof(GetOrderById), new { id = created!.Id }, created);
             }
