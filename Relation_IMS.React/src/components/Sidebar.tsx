@@ -43,9 +43,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         { name: t.nav.dashboard, path: '/dashboard', icon: 'dashboard' },
         { name: t.nav.products, path: '/products', icon: 'shopping_bag' },
         { name: t.nav.orders, path: '/orders', icon: 'receipt_long' },
+        { name: t.nav.arrangement, path: '/arrangement', icon: 'conveyor_belt' },
         { name: t.nav.customers, path: '/customers', icon: 'group' },
         { name: t.nav.inventory, path: '/inventory', icon: 'inventory_2' },
-        { name: t.nav.arrangement, path: '/arrangement', icon: 'conveyor_belt' },
         { name: t.nav.accounts, path: '/accounts', icon: 'bar_chart' },
     ];
 

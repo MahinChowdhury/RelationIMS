@@ -30,6 +30,12 @@ export default function ProductsPage() {
     const [selectedQuarter, setSelectedQuarter] = useState<string>('');
     const [stockOrder, setStockOrder] = useState('');
 
+    // Grid Density
+    const [gridDensity, setGridDensity] = useState<4 | 6 | 8>(() => {
+        const saved = localStorage.getItem('productGridDensity');
+        return saved ? (parseInt(saved) as 4 | 6 | 8) : 6;
+    });
+
     // Dropdown Data
     const [categories, setCategories] = useState<any[]>([]);
     const [brands, setBrands] = useState<any[]>([]);
@@ -287,10 +293,6 @@ export default function ProductsPage() {
 
     // CREATE PRODUCT
     const openCreateModal = () => {
-        setCurrentProduct(initialProductState);
-        setSelectedImages([]);
-        setImageFiles([]);
-        setStockItems([]);
         setShowCreateModal(true);
     };
 
@@ -320,7 +322,9 @@ export default function ProductsPage() {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
+            console.log('Product created response:', res.data);
             const productId = res.data.id || res.data.Id;
+            console.log('Product ID:', productId, 'Stock items:', stockItems);
 
             // Add Variants (Keep existing logic as it uses a separate endpoint)
             if (productId && stockItems.length > 0) {
@@ -328,22 +332,36 @@ export default function ProductsPage() {
                     const colorId = colors.find(c => c.name === stock.color)?.id;
                     const sizeId = availableSizes.find(s => s.name === stock.size)?.id;
 
+                    console.log('Adding variant:', { color: stock.color, size: stock.size, colorId, sizeId, quantity: stock.quantity });
+
                     if (colorId && sizeId) {
-                        await api.post('/ProductVariants', {
-                            ProductId: productId,
-                            ProductColorId: colorId,
-                            ProductSizeId: sizeId,
-                            VariantPrice: currentProduct.BasePrice,
-                            CostPrice: currentProduct.CostPrice,
-                            MSRP: currentProduct.MSRP,
-                            Quantity: stock.quantity,
-                            DefaultInventoryId: 1
-                        });
+                        try {
+                            const variantRes = await api.post('/ProductVariants', {
+                                ProductId: productId,
+                                ProductColorId: colorId,
+                                ProductSizeId: sizeId,
+                                VariantPrice: currentProduct.BasePrice,
+                                CostPrice: currentProduct.CostPrice,
+                                MSRP: currentProduct.MSRP,
+                                Quantity: stock.quantity,
+                                DefaultInventoryId: 1
+                            });
+                            console.log('Variant created:', variantRes.data);
+                        } catch (variantErr) {
+                            console.error('Failed to create variant:', variantErr);
+                        }
+                    } else {
+                        console.warn('Color or Size not found:', { stock, colorId, sizeId });
                     }
                 }
             }
 
             setShowCreateModal(false);
+            setCurrentProduct(initialProductState);
+            setSelectedImages([]);
+            setImageFiles([]);
+            setStockItems([]);
+            setNewStock({ color: '', size: '', quantity: 0 });
             loadProducts(true);
 
         } catch (e) {
@@ -394,6 +412,10 @@ export default function ProductsPage() {
                 }
             }
         }
+    };
+
+    const reorderImages = (newOrder: string[]) => {
+        setSelectedImages(newOrder);
     };
 
     // Stock Handlers
@@ -651,11 +673,40 @@ export default function ProductsPage() {
                             <option value="out-of-stock">out-of-stock</option>
                         </select>
                     </div>
+
+                    {/* Grid Density Toggle */}
+                    <div className="flex items-center bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md">
+                        {[
+                            { value: 4, icon: 'grid_view' },
+                            { value: 6, icon: 'view_module' },
+                            { value: 8, icon: 'dashboard' },
+                        ].map(({ value, icon }) => (
+                            <button
+                                key={value}
+                                onClick={() => {
+                                    setGridDensity(value as 4 | 6 | 8);
+                                    localStorage.setItem('productGridDensity', value.toString());
+                                }}
+                                className={`p-1 rounded transition-all ${
+                                    gridDensity === value
+                                        ? 'bg-[#4e9767] text-white'
+                                        : 'text-gray-500 hover:text-[#4e9767] hover:bg-gray-100 dark:hover:bg-white/5'
+                                }`}
+                                title={`${value} per row`}
+                            >
+                                <span className="material-symbols-outlined text-[16px]">{icon}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 pb-6">
+            <div className={`grid gap-3 sm:gap-4 pb-6 ${
+                gridDensity === 4 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' :
+                gridDensity === 6 ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6' :
+                'grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8'
+            }`}>
                 {products.map(product => (
                     <div key={product.Id} className="relative group">
                         <ProductCard
@@ -664,6 +715,7 @@ export default function ProductsPage() {
                             getStockStatus={getStockStatus}
                             getCategoryNameById={(id) => getCategoryNameById(Number(id))}
                             getBrandName={(id) => getBrandName(Number(id))}
+                            gridDensity={gridDensity}
                             onEdit={openEditModal}
                             onDelete={(id) => { setProductToDelete(id); setShowDeleteModal(true); }}
                         />
@@ -720,6 +772,7 @@ export default function ProductsPage() {
                 onCategoryChange={onCategoryChange}
                 onImagesSelected={onImagesSelected}
                 removeImage={removeImage}
+                reorderImages={reorderImages}
                 newStock={newStock}
                 setNewStock={setNewStock}
                 addStock={addStock}
@@ -750,6 +803,7 @@ export default function ProductsPage() {
                 onCategoryChange={onCategoryChange}
                 onImagesSelected={onImagesSelected}
                 removeImage={removeImage}
+                reorderImages={reorderImages}
                 newStock={newStock}
                 setNewStock={setNewStock}
                 addStock={addStock}

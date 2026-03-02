@@ -57,6 +57,7 @@ interface ProductFormModalProps {
     // Image Handlers
     onImagesSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
     removeImage: (img: string) => void;
+    reorderImages: (newOrder: string[]) => void;
 
     // Stock Handlers
     newStock: StockItem;
@@ -76,7 +77,7 @@ interface ProductFormModalProps {
 export function ProductFormModal({
     show, mode, product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
     onClose, onSave, onChange, onCategoryChange,
-    onImagesSelected, removeImage,
+    onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
     getColorHex
@@ -88,7 +89,7 @@ export function ProductFormModal({
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn overflow-y-auto p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-3xl border-2 border-[#d0e7d7] max-h-[95vh] overflow-y-auto relative my-8">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-4xl border-2 border-[#d0e7d7] max-h-[95vh] overflow-y-auto relative my-8">
                 {/* Close Button */}
                 <button
                     type="button"
@@ -125,6 +126,7 @@ export function ProductFormModal({
                     onCategoryChange={onCategoryChange}
                     onImagesSelected={onImagesSelected}
                     removeImage={removeImage}
+                    reorderImages={reorderImages}
                     newStock={newStock}
                     setNewStock={setNewStock}
                     addStock={addStock}
