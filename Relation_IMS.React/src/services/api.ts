@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAccessToken, getRefreshToken, setTokens, clearTokens, type AuthResponse } from './authService';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1'; // Use HTTP directly
+export const API_BASE_URL = 'http://localhost:5051/api/v1'; // Use HTTP directly
 const CLIENT_ID = 'client-app-one';
 
 export const api = axios.create({
@@ -73,7 +73,7 @@ api.interceptors.response.use(
             const refreshToken = getRefreshToken();
             if (!refreshToken) {
                 clearTokens();
-                if (window.location.pathname !== '/login') {
+                if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/products/share-catalog')) {
                     window.location.href = '/login';
                 }
                 return Promise.reject(error);
@@ -96,7 +96,7 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 processQueue(refreshError, null);
                 clearTokens();
-                if (window.location.pathname !== '/login') {
+                if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/products/share-catalog')) {
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);

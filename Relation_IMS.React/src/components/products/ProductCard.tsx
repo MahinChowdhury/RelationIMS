@@ -9,6 +9,8 @@ interface ProductCardProps {
     gridDensity?: 4 | 6 | 8;
     onEdit?: (product: any) => void;
     onDelete?: (id: number) => void;
+    onCardClick?: (id: number) => void;
+    isGuestView?: boolean;
 }
 
 export default function ProductCard({
@@ -17,30 +19,34 @@ export default function ProductCard({
     getCategoryNameById,
     getBrandName,
     gridDensity,
+    onCardClick,
+    isGuestView
 }: ProductCardProps) {
     const navigate = useNavigate();
 
     const quantity = product.TotalQuantity || 0;
 
     let statusBadge;
-    if (quantity === 0) {
-        statusBadge = (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold bg-gray-200/90 text-gray-600 backdrop-blur-md shadow-sm">
-                No Stock
-            </span>
-        );
-    } else if (quantity < 10) {
-        statusBadge = (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold bg-yellow-100/90 text-yellow-800 backdrop-blur-md shadow-sm">
-                Low Stock
-            </span>
-        );
+    if (!isGuestView) {
+        if (quantity === 0) {
+            statusBadge = (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold bg-gray-200/90 text-gray-600 backdrop-blur-md shadow-sm">
+                    No Stock
+                </span>
+            );
+        } else if (quantity < 10) {
+            statusBadge = (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold bg-yellow-100/90 text-yellow-800 backdrop-blur-md shadow-sm">
+                    Low Stock
+                </span>
+            );
+        }
     }
 
     return (
         <div
             className="group relative w-full rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm hover:shadow-lg hover:shadow-green-900/10 transition-all duration-300 border border-gray-100 dark:border-[#2a4032] cursor-pointer flex flex-col"
-            onClick={() => navigate(`/products/${product.Id}`)}
+            onClick={() => onCardClick ? onCardClick(product.Id) : navigate(`/products/${product.Id}`)}
         >
             {/* Image */}
             <div className="relative aspect-[3/4] w-full overflow-hidden">
@@ -49,7 +55,7 @@ export default function ProductCard({
                     style={{ backgroundImage: `url(${product.ImageUrls?.[0] || placeholderImage})` }}
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                
+
                 <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
                     {statusBadge && statusBadge}
                 </div>

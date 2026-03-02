@@ -220,5 +220,68 @@ namespace Relation_IMS.Datas.Repositories
             await _context.SaveChangesAsync();
             return product;
         }
+
+        public async Task<List<Product>> GetProductsByOwnerIdAsync(int ownerId, string? search, string? sortBy, string? stockOrder, int brandId, int categoryId, int quarterId, int pageNumber, int pageSize)
+        {
+            var query = _context.Products
+                .Where(p => p.CreatedBy == ownerId)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var searchLower = search.ToLower();
+                query = query.Where(p => p.Name.ToLower().Contains(searchLower) || 
+                                         (p.Brand.Name.ToLower().Contains(searchLower)) ||
+                                         (p.Category.Name.ToLower().Contains(searchLower)) ||
+                                         (p.Quarters.Any(q => q.Name.ToLower().Contains(searchLower))));
+            }
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                if (sortBy.Equals("SKU")) query = query.OrderBy(p => p.Id);
+                if (sortBy.Equals("Brand")) query = query.OrderBy(p => p.BrandId);
+                if (sortBy.Equals("Price Ascending")) query = query.OrderBy(p => p.BasePrice);
+                if (sortBy.Equals("Price Descending")) query = query.OrderByDescending(p => p.BasePrice);
+            }
+            else
+            {
+                query = query.OrderBy(p => p.Id);
+            }
+
+            if (brandId != -1)
+            {
+                query = query.Where(p => p.BrandId == brandId);
+            }
+
+            if (categoryId != -1)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            if (quarterId != -1)
+            {
+                query = query.Where(p => p.Quarters.Any(q => q.Id == quarterId));
+            }
+
+            if (!string.IsNullOrEmpty(stockOrder))
+            {
+                if (stockOrder.Equals("Ascending")) query = query.OrderBy(p => p.TotalQuantity);
+                if (stockOrder.Equals("Descending")) query = query.OrderByDescending(p => p.TotalQuantity);
+
+                if (stockOrder.Equals("in-stock")) query = query.Where(p => p.TotalQuantity > 0);
+                if (stockOrder.Equals("out-of-stock")) query = query.Where(p => p.TotalQuantity == 0);
+                if (stockOrder.Equals("low-stock")) query = query.Where(p => p.TotalQuantity > 0 && p.TotalQuantity < 10);
+            }
+
+            var products = await query
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Quarters)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return products;
+        }
     }
 }

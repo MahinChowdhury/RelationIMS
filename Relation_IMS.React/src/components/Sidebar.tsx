@@ -3,6 +3,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 import LogoutConfirmModal from './LogoutConfirmModal';
+import ShareCatalogModal from './ShareCatalogModal';
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -16,6 +17,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [showShareCatalog, setShowShareCatalog] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -176,6 +178,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             {/* Profile Menu Popup */}
                             {isProfileMenuOpen && (
                                 <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[#203326] border border-gray-100 dark:border-[#2a4032] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50">
+                                    <button
+                                        onClick={() => { setIsProfileMenuOpen(false); setShowShareCatalog(true); }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
+                                        Share Catalog
+                                    </button>
                                     <Link
                                         to="/userprofile"
                                         onClick={() => { setIsProfileMenuOpen(false); if (onClose) onClose(); }}
@@ -202,6 +211,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 show={showLogoutConfirm}
                 onCancel={() => setShowLogoutConfirm(false)}
                 onConfirm={logout}
+            />
+
+            <ShareCatalogModal
+                show={showShareCatalog}
+                onClose={() => setShowShareCatalog(false)}
             />
         </>
     );

@@ -10,12 +10,15 @@ import type { Product, InventoryStock, ProductVariant } from '../../types';
 
 interface ProductDetailsProps {
     productId?: string;
+    isGuestView?: boolean;
 }
 
-export default function ProductDetails({ productId }: ProductDetailsProps) {
-    const { id } = useParams<{ id: string }>();
-    const activeId = productId || id;
+export default function ProductDetails({ productId, isGuestView: propGuestView }: ProductDetailsProps) {
+    const { id, hash, productId: urlProductId } = useParams<{ id: string, hash: string, productId: string }>();
+    const activeId = productId || urlProductId || id;
     const { t } = useLanguage();
+
+    const isGuest = propGuestView || false;
     const [productDetail, setProductDetail] = useState<Product | null>(null);
     const [selectedImage, setSelectedImage] = useState<string>('');
 
@@ -91,24 +94,43 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
             {/* Breadcrumb */}
             <nav aria-label="Breadcrumb" className="flex justify-between items-center">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li className="inline-flex items-center">
-                        <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to="/dashboard">
-                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            {t.nav.dashboard}
-                        </Link>
-                    </li>
-                    <li>
-                        <div className="flex items-center">
-                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <Link className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white" to="/products">{t.nav.products}</Link>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div className="flex items-center">
-                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{productDetail.Name}</span>
-                        </div>
-                    </li>
+                    {isGuest && hash ? (
+                        <>
+                            <li className="inline-flex items-center">
+                                <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to={`/products/share-catalog/${hash}`}>
+                                    <span className="material-symbols-outlined text-[18px] mr-1">list</span>
+                                    {'Catalog'}
+                                </Link>
+                            </li>
+                            <li aria-current="page">
+                                <div className="flex items-center">
+                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                                    <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{productDetail.Name}</span>
+                                </div>
+                            </li>
+                        </>
+                    ) : (
+                        <>
+                            <li className="inline-flex items-center">
+                                <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to="/dashboard">
+                                    <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                                    {t.nav.dashboard}
+                                </Link>
+                            </li>
+                            <li>
+                                <div className="flex items-center">
+                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                                    <Link className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white" to="/products">{t.nav.products}</Link>
+                                </div>
+                            </li>
+                            <li aria-current="page">
+                                <div className="flex items-center">
+                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                                    <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{productDetail.Name}</span>
+                                </div>
+                            </li>
+                        </>
+                    )}
                 </ol>
             </nav>
 
@@ -134,9 +156,11 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                     <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}></div>
                                 </button>
                             ))}
-                            <button className="w-16 h-16 shrink-0 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative flex items-center justify-center bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary hover:bg-primary/5 transition-all">
-                                <span className="material-symbols-outlined">add_a_photo</span>
-                            </button>
+                            {!isGuest && (
+                                <button className="w-16 h-16 shrink-0 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden relative flex items-center justify-center bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary hover:bg-primary/5 transition-all">
+                                    <span className="material-symbols-outlined">add_a_photo</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -144,67 +168,90 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                 {/* Right Column: Stock & Info */}
                 <div className="lg:col-span-7 flex flex-col gap-6">
 
-                    {/* Stock Table */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
-                        <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">inventory_2</span>
-                            {t.products.stockAndVariants}
-                        </h2>
-                        <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-[#2a4032]">
-                            <table className="w-full text-sm text-center">
-                                <thead>
-                                    <tr className="bg-[#4e9767] text-white">
-                                        <th className="py-3 px-4 font-bold uppercase text-xs">{t.products.color}</th>
-                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.size}</th>
-                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.common.quantity}</th>
-                                        <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.defects}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white dark:bg-[#112116] divide-y divide-gray-100 dark:divide-[#2a4032]">
-                                    {Array.from(groupedVariants).map(([_, variants]) => (
-                                        variants.map((variant, idx) => {
-                                            const isFirst = idx === 0;
-                                            return (
-                                                <tr key={variant.Id}>
-                                                    {isFirst && (
-                                                        <td
-                                                            rowSpan={variants.length}
-                                                            className="py-3 px-4 border-r border-gray-100 dark:border-[#2a4032]"
-                                                        >
-                                                            <div className="flex items-center gap-2 justify-center">
-                                                                <span
-                                                                    className="w-4 h-4 rounded shadow-sm border border-gray-200"
-                                                                    style={{ backgroundColor: variant.Color?.HexCode || '#fff' }}
-                                                                ></span>
-                                                                <span className="font-medium text-text-main dark:text-white">{variant.Color?.Name || 'N/A'}</span>
-                                                            </div>
+                    {/* Stock Table or Guest Colors list */}
+                    {!isGuest ? (
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                            <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">inventory_2</span>
+                                {t.products.stockAndVariants}
+                            </h2>
+                            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-[#2a4032]">
+                                <table className="w-full text-sm text-center">
+                                    <thead>
+                                        <tr className="bg-[#4e9767] text-white">
+                                            <th className="py-3 px-4 font-bold uppercase text-xs">{t.products.color}</th>
+                                            <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.size}</th>
+                                            <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.common.quantity}</th>
+                                            <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.defects}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white dark:bg-[#112116] divide-y divide-gray-100 dark:divide-[#2a4032]">
+                                        {Array.from(groupedVariants).map(([_, variants]) => (
+                                            variants.map((variant, idx) => {
+                                                const isFirst = idx === 0;
+                                                return (
+                                                    <tr key={variant.Id}>
+                                                        {isFirst && (
+                                                            <td rowSpan={variants.length} className="py-3 px-4">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    {variant.Color?.HexCode && (
+                                                                        <span
+                                                                            className="w-4 h-4 rounded-full border border-gray-300"
+                                                                            style={{ backgroundColor: variant.Color.HexCode }}
+                                                                        ></span>
+                                                                    )}
+                                                                    <span className="text-text-main dark:text-gray-300">{variant.Color?.Name}</span>
+                                                                </div>
+                                                            </td>
+                                                        )}
+                                                        <td className="py-3 px-4 text-text-main dark:text-gray-300">{variant.Size?.Name || 'N/A'}</td>
+                                                        <td className="py-3 px-4">
+                                                            <button
+                                                                onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'available')}
+                                                                className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold dark:bg-green-900/40 dark:text-green-300 hover:underline cursor-pointer"
+                                                            >
+                                                                {variant.Quantity}
+                                                            </button>
                                                         </td>
-                                                    )}
-                                                    <td className="py-3 px-4 text-text-main dark:text-gray-300">{variant.Size?.Name || 'N/A'}</td>
-                                                    <td className="py-3 px-4">
-                                                        <button
-                                                            onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'available')}
-                                                            className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold dark:bg-green-900/40 dark:text-green-300 hover:underline cursor-pointer"
-                                                        >
-                                                            {variant.Quantity}
-                                                        </button>
-                                                    </td>
-                                                    <td className="py-3 px-4">
-                                                        <button
-                                                            onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'defect')}
-                                                            className={`inline-block px-2 py-1 rounded text-xs font-bold hover:underline cursor-pointer ${variant.Defects > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'}`}
-                                                        >
-                                                            {variant.Defects}
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    ))}
-                                </tbody>
-                            </table>
+                                                        <td className="py-3 px-4">
+                                                            <button
+                                                                onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'defect')}
+                                                                className={`inline-block px-2 py-1 rounded text-xs font-bold hover:underline cursor-pointer ${variant.Defects > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'}`}
+                                                            >
+                                                                {variant.Defects}
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                            <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">palette</span>
+                                {t.products.color}
+                            </h2>
+                            <div className="flex flex-wrap gap-4">
+                                {Array.from(groupedVariants).map(([_, variants]) => (
+                                    <div key={variants[0].Id} className="flex items-center gap-2 bg-gray-50 dark:bg-[#112116] border border-gray-100 dark:border-[#2a4032] px-3 py-2 rounded-lg">
+                                        {variants[0].Color?.HexCode && (
+                                            <span
+                                                className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm"
+                                                style={{ backgroundColor: variants[0].Color.HexCode }}
+                                            ></span>
+                                        )}
+                                        <span className="text-sm font-semibold text-text-main dark:text-gray-300">
+                                            {variants[0].Color?.Name || 'Unknown Color'}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Product Header Card */}
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -214,10 +261,12 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                 <span className="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wide">
                                     SKU: {productDetail.Id}
                                 </span>
-                                <span className={`bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide flex items-center gap-1`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${getStockStatus() ? 'bg-primary' : 'bg-red-500'}`}></span>
-                                    {getStockStatus() ? t.products.inStock : t.products.outOfStock}
-                                </span>
+                                {!isGuest && (
+                                    <span className={`bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide flex items-center gap-1`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${getStockStatus() ? 'bg-primary' : 'bg-red-500'}`}></span>
+                                        {getStockStatus() ? t.products.inStock : t.products.outOfStock}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="text-right hidden sm:block">
@@ -259,31 +308,35 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                                         </div>
                                     </div>
 
-                                    {/* Base Price */}
-                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                        <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-red-500/20 shrink-0">
-                                            <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                    {/* Base Price - Hide for guests */}
+                                    {!isGuest && (
+                                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                            <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-red-500/20 shrink-0">
+                                                <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.basePrice}</span>
+                                                <span className="text-lg font-extrabold text-red-500 dark:text-white">
+                                                    ${(productDetail.BasePrice || 0).toFixed(2)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.basePrice}</span>
-                                            <span className="text-lg font-extrabold text-red-500 dark:text-white">
-                                                ${(productDetail.BasePrice || 0).toFixed(2)}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    )}
 
-                                    {/* Cost Price */}
-                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                        <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-green-500/20 shrink-0">
-                                            <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                    {/* Cost Price - Hide for guests */}
+                                    {!isGuest && (
+                                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                            <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-green-500/20 shrink-0">
+                                                <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
+                                                <span className="text-lg font-extrabold text-blue-500 dark:text-white">
+                                                    ${(productDetail.CostPrice || 0).toFixed(2)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
-                                            <span className="text-lg font-extrabold text-blue-500 dark:text-white">
-                                                ${(productDetail.CostPrice || 0).toFixed(2)}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    )}
 
                                 </div>
 
@@ -337,16 +390,18 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                     </div>
 
                 </div>
-            </div>
+            </div >
 
-            <InventoryStockModal
-                show={showInventoryModal}
-                onClose={() => setShowInventoryModal(false)}
-                stockData={stockData}
-                loading={inventoryLoading}
-                variantName={selectedVariantName}
-                mode={stockModalMode}
-            />
-        </div>
+            {!isGuest && (
+                <InventoryStockModal
+                    show={showInventoryModal}
+                    onClose={() => setShowInventoryModal(false)}
+                    stockData={stockData}
+                    loading={inventoryLoading}
+                    variantName={selectedVariantName}
+                    mode={stockModalMode}
+                />
+            )}
+        </div >
     );
 }
