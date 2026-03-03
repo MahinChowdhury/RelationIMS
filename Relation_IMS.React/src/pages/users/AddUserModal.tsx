@@ -17,6 +17,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
+        email: '',
         phoneNumber: '',
         password: '',
         confirmPassword: '',
@@ -53,6 +54,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
             await createUser({
                 Firstname: formData.firstName,
                 Lastname: formData.lastName || undefined,
+                Email: formData.email || undefined,
                 PhoneNumber: formData.phoneNumber,
                 Password: formData.password,
                 Role: formData.role,
@@ -61,7 +63,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
             });
             onAdd();
             onClose();
-            setFormData({ firstName: '', lastName: '', phoneNumber: '', password: '', confirmPassword: '', role: roles[0]?.Name || 'Salesman', address: '', currentSalary: 0 });
+            setFormData({ firstName: '', lastName: '', email: '', phoneNumber: '', password: '', confirmPassword: '', role: roles[0]?.Name || 'Salesman', address: '', currentSalary: 0 });
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Failed to create user.');
         } finally {
@@ -105,6 +107,12 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                                 <input type="text" name="lastName" value={formData.lastName} onChange={handleChange}
                                     className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Doe" />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Email</label>
+                            <input type="email" name="email" value={formData.email} onChange={handleChange}
+                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="jane@example.com" />
                         </div>
 
                         <div>

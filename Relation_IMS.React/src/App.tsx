@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Products from './pages/products/Products';
+import ShareCatalogView from './pages/products/ShareCatalogView';
 import Customers from './pages/customers/Customers';
 import CustomerDetails from './pages/customers/CustomerDetails';
 import ProductDetails from './pages/products/ProductDetails';
@@ -38,6 +39,8 @@ function App() {
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/products/share-catalog/:hash" element={<ShareCatalogView />} />
+      <Route path="/products/share-catalog/:hash/:productId" element={<ProductDetails isGuestView={true} />} />
 
       {/* Protected routes */}
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
