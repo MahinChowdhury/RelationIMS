@@ -20,7 +20,7 @@ namespace Relation_IMS.Datas.Repositories
             {
                 ShareHash = Guid.NewGuid().ToString("N"),
                 OwnerId = ownerId,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                Password = password,
                 ExpiresAt = DateTime.UtcNow.AddDays(30)
             };
 
@@ -48,7 +48,7 @@ namespace Relation_IMS.Datas.Repositories
             if (shareCatalog.ExpiresAt < DateTime.UtcNow)
                 return false;
 
-            return BCrypt.Net.BCrypt.Verify(password, shareCatalog.PasswordHash);
+            return password == shareCatalog.Password;
         }
 
         public async Task<ShareCatalog?> GetValidCatalogWithPasswordAsync(string password)
@@ -59,7 +59,7 @@ namespace Relation_IMS.Datas.Repositories
 
             foreach (var sc in shareCatalogs)
             {
-                if (BCrypt.Net.BCrypt.Verify(password, sc.PasswordHash))
+                if (password == sc.Password)
                     return sc;
             }
 

@@ -17,7 +17,7 @@ namespace Relation_IMS.Models
 
         [Required]
         [MaxLength(100)]
-        public string PasswordHash { get; set; } = null!;
+        public string Password { get; set; } = null!;
 
         [Required]
         public DateTime ExpiresAt { get; set; }

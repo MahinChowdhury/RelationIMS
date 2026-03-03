@@ -210,6 +210,7 @@ namespace Relation_IMS.Controllers
             return Ok(shares.Select(s => new
             {
                 shareHash = s.ShareHash,
+                password = s.Password,
                 createdAt = s.CreatedAt,
                 expiresAt = s.ExpiresAt,
                 isExpired = s.ExpiresAt < DateTime.UtcNow
