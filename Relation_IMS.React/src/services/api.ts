@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getAccessToken, getRefreshToken, setTokens, clearTokens, type AuthResponse } from './authService';
 
-export const API_BASE_URL = 'http://localhost:5051/api/v1'; // Use HTTP directly
-const CLIENT_ID = 'client-app-one';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID || 'client-app-one';
 
 export const api = axios.create({
     baseURL: API_BASE_URL,

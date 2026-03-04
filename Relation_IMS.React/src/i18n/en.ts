@@ -79,6 +79,12 @@ const en = {
         dateLocale: 'en-US',
         oneSize: 'One Size',
         amount: 'Amount',
+        optional: 'Optional',
+        firstname: 'First Name',
+        lastname: 'Last Name',
+        currentPassword: 'Current Password',
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm Password',
     },
 
     // App / Brand
@@ -603,6 +609,9 @@ const en = {
         notes: 'Notes',
         notesPlaceholder: 'Add any notes...',
         address: 'Address',
+        currentPasswordLabel: 'Current Password',
+        newPasswordLabel: 'New Password',
+        confirmPasswordLabel: 'Confirm New Password',
     },
 };
 

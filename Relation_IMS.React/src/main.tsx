@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
@@ -7,20 +7,33 @@ import { AlertProvider } from './context/AlertContext'
 import { AuthProvider } from './context/AuthContext'
 import { LanguageProvider } from './i18n/LanguageContext'
 import { setupGlobalAlerts } from './services/DialogService'
+import ErrorBoundary from './components/ErrorBoundary.tsx'
 
-// Replace standard window.alert with our nice dialog
 setupGlobalAlerts()
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <LanguageProvider>
-          <AlertProvider>
-            <App />
-          </AlertProvider>
-        </LanguageProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <LanguageProvider>
+            <AlertProvider>
+              <Suspense fallback={<PageLoader />}>
+                <App />
+              </Suspense>
+            </AlertProvider>
+          </LanguageProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>,
 )

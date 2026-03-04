@@ -81,6 +81,12 @@ const bn: Translations = {
         dateLocale: 'bn-BD',
         oneSize: 'এক সাইজ',
         amount: 'পরিমাণ',
+        optional: 'ঐচ্ছিক',
+        firstname: 'নামের প্রথম অংশ',
+        lastname: 'নামের শেষ অংশ',
+        currentPassword: 'বর্তমান পাসওয়ার্ড',
+        newPassword: 'নতুন পাসওয়ার্ড',
+        confirmPassword: 'পাসওয়ার্ড নিশ্চিত করুন',
     },
 
     // App / Brand
@@ -605,6 +611,9 @@ const bn: Translations = {
         notes: 'নোট',
         notesPlaceholder: 'কোনো নোট যোগ করুন...',
         address: 'ঠিকানা',
+        currentPasswordLabel: 'বর্তমান পাসওয়ার্ড',
+        newPasswordLabel: 'নতুন পাসওয়ার্ড',
+        confirmPasswordLabel: 'নতুন পাসওয়ার্ড নিশ্চিত করুন',
     },
 };
 
