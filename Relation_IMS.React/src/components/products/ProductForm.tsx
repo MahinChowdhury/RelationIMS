@@ -1,6 +1,23 @@
 import { useRef, useState, useEffect } from 'react';
 import type { StockItem, Product } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ProductFormProps {
     product: Product;
@@ -17,6 +34,7 @@ interface ProductFormProps {
 
     onImagesSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
     removeImage: (img: string) => void;
+    reorderImages: (newOrder: string[]) => void;
 
     newStock: StockItem;
     setNewStock: (stock: StockItem) => void;
@@ -37,13 +55,29 @@ interface ProductFormProps {
 export function ProductForm({
     product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
     onChange, onCategoryChange,
-    onImagesSelected, removeImage,
+    onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
     getColorHex, isLotMode = false
 }: ProductFormProps) {
     const { t } = useLanguage();
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = selectedImages.indexOf(active.id as string);
+            const newIndex = selectedImages.indexOf(over.id as string);
+            reorderImages(arrayMove(selectedImages, oldIndex, newIndex));
+        }
+    }
 
     // Filter brands by selected category
     const [filteredBrands, setFilteredBrands] = useState<any[]>([]);
@@ -65,15 +99,15 @@ export function ProductForm({
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Images Section */}
-                <div className="lg:col-span-4 flex flex-col gap-3">
+                <div className="lg:col-span-4 flex flex-col gap-3 self-start">
                     <label className="block text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Image</label>
                     <div
-                        className="flex-1 w-full min-h-[200px] border-2 border-dashed border-[#d0e7d7] rounded-xl flex flex-col items-center justify-center p-6 cursor-pointer hover:border-[#4e9767] hover:bg-[#primary]/5 transition-all group bg-white/40 dark:bg-black/20"
+                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-[#primary]/5 transition-all group bg-white/40 dark:bg-black/20"
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        <span className="material-symbols-outlined text-4xl text-gray-400 group-hover:text-[#4e9767] mb-2 transition-colors">cloud_upload</span>
+                        <span className="material-symbols-outlined text-3xl text-gray-400 group-hover:text-[#4e9767] mb-2 transition-colors">cloud_upload</span>
                         <p className="text-xs text-center text-gray-500 dark:text-gray-400">
                             <span className="font-bold text-[#4e9767]">{t.products.uploadClick}</span> {t.products.dragAndDrop}
                         </p>
@@ -88,21 +122,31 @@ export function ProductForm({
                         className="hidden"
                     />
 
-                    {/* Preview */}
+                    {/* Preview - Draggable Column */}
                     {selectedImages.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {selectedImages.map((img, idx) => (
-                                <div key={idx} className="relative w-16 h-16 border border-gray-200 rounded-lg overflow-hidden group">
-                                    <img src={img} className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeImage(img)}
-                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
+                        <div className="mt-2 max-h-[320px] overflow-y-auto">
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={selectedImages}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <div className="flex flex-col gap-2">
+                                        {selectedImages.map((img, idx) => (
+                                            <SortableImage
+                                                key={img}
+                                                id={img}
+                                                src={img}
+                                                index={idx}
+                                                onRemove={() => removeImage(img)}
+                                            />
+                                        ))}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
                         </div>
                     )}
                 </div>
@@ -129,7 +173,7 @@ export function ProductForm({
                                 onChange('CategoryId', val);
                                 onCategoryChange(val);
                             }}
-                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
+                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5 cursor-pointer"
                         >
                             <option value={0}>{t.common.search} {t.products.category}</option>
                             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -141,7 +185,7 @@ export function ProductForm({
                         <select
                             value={product.BrandId}
                             onChange={(e) => onChange('BrandId', e.target.value)}
-                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
+                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5 cursor-pointer"
                             disabled={!product.CategoryId || product.CategoryId === 0}
                         >
                             <option value={0}>{!product.CategoryId || product.CategoryId === 0 ? `${t.common.search} ${t.products.category} ${t.common.first || 'First'}` : `${t.common.search} ${t.products.brand}`}</option>
@@ -245,7 +289,7 @@ export function ProductForm({
                             <select
                                 value={newStock.color}
                                 onChange={(e) => setNewStock({ ...newStock, color: e.target.value })}
-                                className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
+                                className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                             >
                                 <option value="" disabled hidden>{t.common.search}</option>
                                 {colors.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -264,7 +308,7 @@ export function ProductForm({
                         <select
                             value={newStock.size}
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}
-                            className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
+                            className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                         >
                             <option value="" disabled hidden>{t.common.search}</option>
                             {availableSizes.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
@@ -359,6 +403,56 @@ export function ProductForm({
                     )}
                 </div>
             </div>
+        </div>
+    );
+}
+
+interface SortableImageProps {
+    id: string;
+    src: string;
+    index: number;
+    onRemove: () => void;
+}
+
+function SortableImage({ id, src, index, onRemove }: SortableImageProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`relative flex items-center gap-3 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-black/20 group ${isDragging ? 'opacity-50 ring-2 ring-[#4e9767]' : ''}`}
+        >
+            <div
+                {...attributes}
+                {...listeners}
+                className="cursor-grab active:cursor-grabbing flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 hover:bg-[#4e9767]/20 text-gray-400 hover:text-[#4e9767] transition-colors"
+            >
+                <span className="material-symbols-outlined text-[18px]">drag_indicator</span>
+            </div>
+            <span className="text-xs font-bold text-gray-400 w-4">{index + 1}</span>
+            <div className="w-20 h-20 rounded border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0">
+                <img src={src} className="w-full h-full object-cover" alt="" />
+            </div>
+            <button
+                type="button"
+                onClick={onRemove}
+                className="ml-auto p-1 bg-red-100 dark:bg-red-900/30 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
+            >
+                <span className="material-symbols-outlined text-[14px]">delete</span>
+            </button>
         </div>
     );
 }

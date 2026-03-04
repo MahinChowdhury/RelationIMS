@@ -20,7 +20,7 @@ namespace Relation_IMS.Services
         {
             get
             {
-                var sub = User?.FindFirstValue(JwtRegisteredClaimNames.Sub);
+                var sub = User?.FindFirstValue(ClaimTypes.NameIdentifier);
                 return int.TryParse(sub, out var id) ? id : null;
             }
         }

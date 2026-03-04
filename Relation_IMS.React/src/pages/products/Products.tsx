@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import api from '../../services/api';
+import { useNavigate, Link, useParams } from 'react-router-dom';
+import api, { API_BASE_URL } from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
@@ -9,9 +9,16 @@ import { BarcodeSheet } from '../../components/products/BarcodeSheet';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { Product, StockItem } from '../../types';
+import axios from 'axios';
 
-export default function ProductsPage() {
+interface ProductsPageProps {
+    isGuestView?: boolean;
+    password?: string;
+}
+
+export default function ProductsPage({ isGuestView = false, password }: ProductsPageProps) {
     const navigate = useNavigate();
+    const { hash } = useParams<{ hash: string }>();
     const { t } = useLanguage();
 
     // State
@@ -29,6 +36,12 @@ export default function ProductsPage() {
     const [selectedBrand, setSelectedBrand] = useState<string>('');
     const [selectedQuarter, setSelectedQuarter] = useState<string>('');
     const [stockOrder, setStockOrder] = useState('');
+
+    // Grid Density
+    const [gridDensity, setGridDensity] = useState<4 | 6 | 8>(() => {
+        const saved = localStorage.getItem('productGridDensity');
+        return saved ? (parseInt(saved) as 4 | 6 | 8) : 6;
+    });
 
     // Dropdown Data
     const [categories, setCategories] = useState<any[]>([]);
@@ -123,12 +136,23 @@ export default function ProductsPage() {
                 pageSize: '20',
             });
 
-            const res = await api.get(`/Product?${params.toString()}`);
+            let res;
+            if (isGuestView && password) {
+                params.append('password', password);
+                res = await axios.get(`${API_BASE_URL}/ShareCatalog/${hash}?${params.toString()}`);
+                if (res.data.products) {
+                    res = { data: res.data.products };
+                } else {
+                    res = { data: [] };
+                }
+            } else {
+                res = await api.get(`/Product?${params.toString()}`);
+            }
+
             if (reset) {
                 setProducts(res.data);
             } else {
                 setProducts(prev => {
-                    // dedupe just in case
                     const newProducts = res.data.filter((p: Product) => !prev.some(existing => existing.Id === p.Id));
                     return [...prev, ...newProducts];
                 });
@@ -287,10 +311,6 @@ export default function ProductsPage() {
 
     // CREATE PRODUCT
     const openCreateModal = () => {
-        setCurrentProduct(initialProductState);
-        setSelectedImages([]);
-        setImageFiles([]);
-        setStockItems([]);
         setShowCreateModal(true);
     };
 
@@ -320,7 +340,9 @@ export default function ProductsPage() {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
+            console.log('Product created response:', res.data);
             const productId = res.data.id || res.data.Id;
+            console.log('Product ID:', productId, 'Stock items:', stockItems);
 
             // Add Variants (Keep existing logic as it uses a separate endpoint)
             if (productId && stockItems.length > 0) {
@@ -328,22 +350,36 @@ export default function ProductsPage() {
                     const colorId = colors.find(c => c.name === stock.color)?.id;
                     const sizeId = availableSizes.find(s => s.name === stock.size)?.id;
 
+                    console.log('Adding variant:', { color: stock.color, size: stock.size, colorId, sizeId, quantity: stock.quantity });
+
                     if (colorId && sizeId) {
-                        await api.post('/ProductVariants', {
-                            ProductId: productId,
-                            ProductColorId: colorId,
-                            ProductSizeId: sizeId,
-                            VariantPrice: currentProduct.BasePrice,
-                            CostPrice: currentProduct.CostPrice,
-                            MSRP: currentProduct.MSRP,
-                            Quantity: stock.quantity,
-                            DefaultInventoryId: 1
-                        });
+                        try {
+                            const variantRes = await api.post('/ProductVariants', {
+                                ProductId: productId,
+                                ProductColorId: colorId,
+                                ProductSizeId: sizeId,
+                                VariantPrice: currentProduct.BasePrice,
+                                CostPrice: currentProduct.CostPrice,
+                                MSRP: currentProduct.MSRP,
+                                Quantity: stock.quantity,
+                                DefaultInventoryId: 1
+                            });
+                            console.log('Variant created:', variantRes.data);
+                        } catch (variantErr) {
+                            console.error('Failed to create variant:', variantErr);
+                        }
+                    } else {
+                        console.warn('Color or Size not found:', { stock, colorId, sizeId });
                     }
                 }
             }
 
             setShowCreateModal(false);
+            setCurrentProduct(initialProductState);
+            setSelectedImages([]);
+            setImageFiles([]);
+            setStockItems([]);
+            setNewStock({ color: '', size: '', quantity: 0 });
             loadProducts(true);
 
         } catch (e) {
@@ -394,6 +430,10 @@ export default function ProductsPage() {
                 }
             }
         }
+    };
+
+    const reorderImages = (newOrder: string[]) => {
+        setSelectedImages(newOrder);
     };
 
     // Stock Handlers
@@ -480,24 +520,35 @@ export default function ProductsPage() {
             {/* Breadcrumb */}
             <nav aria-label="Breadcrumb" className="flex">
                 <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li className="inline-flex items-center">
-                        <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
-                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            {t.nav.dashboard}
-                        </Link>
-                    </li>
-                    <li>
-                        <div className="flex items-center">
-                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">{t.nav.products}</span>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div className="flex items-center">
-                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.products.allProducts}</span>
-                        </div>
-                    </li>
+                    {isGuestView && hash ? (
+                        <li aria-current="page">
+                            <div className="flex items-center">
+                                <span className="material-symbols-outlined text-[18px] mr-1">list</span>
+                                <span className="text-sm font-bold text-text-main md:ms-2 dark:text-white">{'Catalog'}</span>
+                            </div>
+                        </li>
+                    ) : (
+                        <>
+                            <li className="inline-flex items-center">
+                                <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
+                                    <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
+                                    {t.nav.dashboard}
+                                </Link>
+                            </li>
+                            <li>
+                                <div className="flex items-center">
+                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                                    <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">{t.nav.products}</span>
+                                </div>
+                            </li>
+                            <li aria-current="page">
+                                <div className="flex items-center">
+                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
+                                    <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.products.allProducts}</span>
+                                </div>
+                            </li>
+                        </>
+                    )}
                 </ol>
             </nav>
 
@@ -534,25 +585,29 @@ export default function ProductsPage() {
                     <div className="bg-primary text-white p-2 rounded-lg shadow-sm">
                         <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
                     </div>
-                    <h1 className="text-2xl font-extrabold text-text-main dark:text-white tracking-tight">{t.products.title}</h1>
+                    <h1 className="text-2xl font-extrabold text-text-main dark:text-white tracking-tight">
+                        {isGuestView ? t.products.title : t.products.title}
+                    </h1>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                        <span className="hidden sm:inline">{t.common.scan}</span>
-                    </button>
-                    <button
-                        onClick={openCreateModal}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        <span className="hidden sm:inline">{t.products.addProduct}</span>
-                        <span className="sm:hidden">{t.common.add}</span>
-                    </button>
-                </div>
+                {!isGuestView && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
+                            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                            <span className="hidden sm:inline">{t.common.scan}</span>
+                        </button>
+                        <button
+                            onClick={openCreateModal}
+                            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">add</span>
+                            <span className="hidden sm:inline">{t.products.addProduct}</span>
+                            <span className="sm:hidden">{t.common.add}</span>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Search & Filters */}
@@ -651,11 +706,38 @@ export default function ProductsPage() {
                             <option value="out-of-stock">out-of-stock</option>
                         </select>
                     </div>
+
+                    {/* Grid Density Toggle */}
+                    <div className="flex items-center bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md">
+                        {[
+                            { value: 4, icon: 'grid_view' },
+                            { value: 6, icon: 'view_module' },
+                            { value: 8, icon: 'dashboard' },
+                        ].map(({ value, icon }) => (
+                            <button
+                                key={value}
+                                onClick={() => {
+                                    setGridDensity(value as 4 | 6 | 8);
+                                    localStorage.setItem('productGridDensity', value.toString());
+                                }}
+                                className={`p-1 rounded transition-all ${gridDensity === value
+                                    ? 'bg-[#4e9767] text-white'
+                                    : 'text-gray-500 hover:text-[#4e9767] hover:bg-gray-100 dark:hover:bg-white/5'
+                                    }`}
+                                title={`${value} per row`}
+                            >
+                                <span className="material-symbols-outlined text-[16px]">{icon}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 pb-6">
+            <div className={`grid gap-3 sm:gap-4 pb-6 ${gridDensity === 4 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' :
+                gridDensity === 6 ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6' :
+                    'grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8'
+                }`}>
                 {products.map(product => (
                     <div key={product.Id} className="relative group">
                         <ProductCard
@@ -664,19 +746,24 @@ export default function ProductsPage() {
                             getStockStatus={getStockStatus}
                             getCategoryNameById={(id) => getCategoryNameById(Number(id))}
                             getBrandName={(id) => getBrandName(Number(id))}
-                            onEdit={openEditModal}
-                            onDelete={(id) => { setProductToDelete(id); setShowDeleteModal(true); }}
+                            gridDensity={gridDensity}
+                            onEdit={isGuestView ? undefined : openEditModal}
+                            onDelete={isGuestView ? undefined : ((id: number) => { setProductToDelete(id); setShowDeleteModal(true); })}
+                            onCardClick={isGuestView && hash ? (id) => navigate(`/products/share-catalog/${hash}/${id}`) : undefined}
+                            isGuestView={isGuestView}
                         />
                         {/* Print Button Overlay on Card */}
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handlePrintBarcodes(product.Id); }}
-                                className="p-1.5 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 hover:text-blue-600"
-                                title="Print Barcodes"
-                            >
-                                <span className="material-symbols-outlined text-[20px]">print</span>
-                            </button>
-                        </div>
+                        {!isGuestView && (
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handlePrintBarcodes(product.Id); }}
+                                    className="p-1.5 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 hover:text-blue-600"
+                                    title="Print Barcodes"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">print</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -720,6 +807,7 @@ export default function ProductsPage() {
                 onCategoryChange={onCategoryChange}
                 onImagesSelected={onImagesSelected}
                 removeImage={removeImage}
+                reorderImages={reorderImages}
                 newStock={newStock}
                 setNewStock={setNewStock}
                 addStock={addStock}
@@ -750,6 +838,7 @@ export default function ProductsPage() {
                 onCategoryChange={onCategoryChange}
                 onImagesSelected={onImagesSelected}
                 removeImage={removeImage}
+                reorderImages={reorderImages}
                 newStock={newStock}
                 setNewStock={setNewStock}
                 addStock={addStock}

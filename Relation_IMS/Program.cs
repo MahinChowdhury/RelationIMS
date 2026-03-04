@@ -96,6 +96,7 @@ builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+builder.Services.AddScoped<IShareCatalogRepository, ShareCatalogRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
 // ============================================

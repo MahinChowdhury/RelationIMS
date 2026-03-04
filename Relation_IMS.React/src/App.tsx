@@ -2,6 +2,13 @@ import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import Products from './pages/products/Products';
+import ShareCatalogView from './pages/products/ShareCatalogView';
+import Customers from './pages/customers/Customers';
+import CustomerDetails from './pages/customers/CustomerDetails';
+import ProductDetails from './pages/products/ProductDetails';
 
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
@@ -52,8 +59,12 @@ function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        
+      {/* Public routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/products/share-catalog/:hash" element={<ShareCatalogView />} />
+      <Route path="/products/share-catalog/:hash/:productId" element={<ProductDetails isGuestView={true} />} />
 
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Welcome />} />

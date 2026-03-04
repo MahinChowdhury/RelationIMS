@@ -73,7 +73,7 @@ api.interceptors.response.use(
             const refreshToken = getRefreshToken();
             if (!refreshToken) {
                 clearTokens();
-                if (window.location.pathname !== '/login') {
+                if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/products/share-catalog')) {
                     window.location.href = '/login';
                 }
                 return Promise.reject(error);
@@ -96,7 +96,7 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 processQueue(refreshError, null);
                 clearTokens();
-                if (window.location.pathname !== '/login') {
+                if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/products/share-catalog')) {
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);

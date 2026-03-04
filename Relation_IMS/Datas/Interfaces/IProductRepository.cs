@@ -7,6 +7,7 @@ namespace Relation_IMS.Datas.Interfaces
     public interface IProductRepository
     {
         Task<List<Product>> GetAllProductsAsync(string? search, string? sortBy, string? stockOrder, int brandId, int categoryId, int quarterId, int pageNumber,int pageSize);
+        Task<List<Product>> GetProductsByOwnerIdAsync(int ownerId, string? search, string? sortBy, string? stockOrder, int brandId, int categoryId, int quarterId, int pageNumber, int pageSize);
         Task<Product?> GetProductByIdAsync(int id);
         Task<Product?> DeleteProductByIdAsync(int id);
         Task<Product?> CreateProductAsync(CreateNewProductDTO productDto);

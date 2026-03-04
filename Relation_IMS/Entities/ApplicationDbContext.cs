@@ -113,6 +113,11 @@ public class ApplicationDbContext : DbContext
             .HasOne(s => s.User)
             .WithMany(u => u.SalaryRecords)
             .HasForeignKey(s => s.UserId);
+
+        // SalaryRecord: unique constraint - no duplicate month/year for same user
+        modelBuilder.Entity<Relation_IMS.Models.UserProfileModels.SalaryRecord>()
+            .HasIndex(s => new { s.UserId, s.Month, s.Year })
+            .IsUnique();
     }
 
     //For JWT
@@ -144,4 +149,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<CustomerReturnItem> CustomerReturnItems { get; set; }
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<SalaryRecord> SalaryRecords { get; set; }
+    public DbSet<ShareCatalog> ShareCatalogs { get; set; }
 }

@@ -4,11 +4,13 @@ import BottomNav from './BottomNav';
 import { useState, useRef, useEffect } from 'react';
 import GlobalSearch from './GlobalSearch';
 import { useAuth } from '../context/AuthContext';
+import ShareCatalogModal from './ShareCatalogModal';
 
 export default function Layout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showMobileProfile, setShowMobileProfile] = useState(true);
     const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
+    const [showShareCatalog, setShowShareCatalog] = useState(false);
     const mobileProfileRef = useRef<HTMLDivElement>(null);
     const { user, logout } = useAuth();
 
@@ -67,6 +69,13 @@ export default function Layout() {
                                     {user?.Roles?.join(', ')}
                                 </p>
                             </div>
+                            <button
+                                onClick={() => { setIsMobileProfileMenuOpen(false); setShowShareCatalog(true); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
+                                Share Catalog
+                            </button>
                             <Link
                                 to="/userprofile"
                                 onClick={() => setIsMobileProfileMenuOpen(false)}
@@ -94,6 +103,11 @@ export default function Layout() {
 
             {/* Bottom Navigation (Mobile Only) */}
             <BottomNav />
+
+            <ShareCatalogModal
+                show={showShareCatalog}
+                onClose={() => setShowShareCatalog(false)}
+            />
         </div>
     );
 }
