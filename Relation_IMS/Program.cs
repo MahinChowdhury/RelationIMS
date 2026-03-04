@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Microsoft.IdentityModel.Tokens;
@@ -9,11 +10,13 @@ using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Datas.Repositories.ProductVariantsRepo;
 using Relation_IMS.Entities;
 using Relation_IMS.Factory;
+using Relation_IMS.Hubs;
 using Relation_IMS.Services;
 using Relation_IMS.Services.AzureServices;
 using Relation_IMS.Services.JWTServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +44,33 @@ builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration["
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 
 builder.Services.AddMemoryCache();
+
+// Rate Limiting
+var rateLimitPermit = builder.Configuration.GetValue<int>("RateLimiting:PermitLimit", 100);
+var rateLimitWindow = builder.Configuration.GetValue<int>("RateLimiting:WindowSeconds", 60);
+var rateLimitQueue = builder.Configuration.GetValue<int>("RateLimiting:QueueLimit", 0);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("fixed", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimitPermit,
+                Window = TimeSpan.FromSeconds(rateLimitWindow),
+                QueueLimit = rateLimitQueue
+            }));
+});
+
+// Forwarded Headers (for Nginx reverse proxy)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // Redis Distributed Cache
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -154,15 +184,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+// CORS - read allowed origins from configuration / environment
+var corsOrigins = builder.Configuration["AllowedCorsOrigins"] ??
+    "http://localhost:4200,http://localhost:5173,https://localhost:5173";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApps", policy =>
     {
-        policy.WithOrigins(
-              "http://localhost:4200",
-              "http://localhost:5173",
-              "https://localhost:5173"
-              )
+        policy.WithOrigins(corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -184,18 +214,44 @@ var app = builder.Build();
 clientCacheInstance = new Lazy<IClientCacheService>(() =>
                 app.Services.GetRequiredService<IClientCacheService>());
 
+// Apply Database Migrations on Startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (dbContext.Database.IsRelational())
+        {
+            dbContext.Database.Migrate();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
+
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseRateLimiter();
 app.UseCors("AllowClientApps");
-// app.UseHttpsRedirection(); // Commented out to allow HTTP to port 5000
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
-app.MapHub<Relation_IMS.Hubs.ArrangementHub>("/hubs/arrangement");
+
+// Health check endpoint (no auth, no rate limit)
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+    .AllowAnonymous()
+    .ExcludeFromDescription();
+
+app.MapControllers().RequireRateLimiting("fixed");
+app.MapHub<ArrangementHub>("/hubs/arrangement");
 
 app.Run();

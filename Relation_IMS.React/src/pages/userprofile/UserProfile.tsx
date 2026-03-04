@@ -36,8 +36,6 @@ export default function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const [darkModeEnabled, setDarkModeEnabled] = useState(false);
     const [paySalaryModalOpen, setPaySalaryModalOpen] = useState(false);
     const [salaryForm, setSalaryForm] = useState({
@@ -582,7 +580,9 @@ export default function UserProfile() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.notes || 'Notes'} ({t.common.optional || 'Optional'})</label>
+                                    <label className="text-xs font-bold uppercase text-gray-400">
+                                        {(t.profile as any)?.notes || 'Notes'} ({(t.common as any)?.optional || 'Optional'})
+                                    </label>
                                     <textarea
                                         value={salaryForm.notes}
                                         onChange={(e) => setSalaryForm({ ...salaryForm, notes: e.target.value })}
@@ -640,7 +640,7 @@ export default function UserProfile() {
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase text-gray-400">{t.common?.firstname || 'First Name'}</label>
+                                        <label className="text-xs font-bold uppercase text-gray-400">{(t.common as any)?.firstname || 'First Name'}</label>
                                         <input
                                             type="text"
                                             value={editForm.firstname}
@@ -649,7 +649,7 @@ export default function UserProfile() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold uppercase text-gray-400">{t.common?.lastname || 'Last Name'}</label>
+                                        <label className="text-xs font-bold uppercase text-gray-400">{(t.common as any)?.lastname || 'Last Name'}</label>
                                         <input
                                             type="text"
                                             value={editForm.lastname}
@@ -751,7 +751,7 @@ export default function UserProfile() {
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.currentPasswordLabel || 'Current Password'}</label>
+                                    <label className="text-xs font-bold uppercase text-gray-400">{(t.profile as any)?.currentPasswordLabel || 'Current Password'}</label>
                                     <input
                                         type="password"
                                         value={passwordForm.currentPassword}
@@ -762,7 +762,7 @@ export default function UserProfile() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.newPasswordLabel || 'New Password'}</label>
+                                    <label className="text-xs font-bold uppercase text-gray-400">{(t.profile as any)?.newPasswordLabel || 'New Password'}</label>
                                     <input
                                         type="password"
                                         value={passwordForm.newPassword}
@@ -773,7 +773,7 @@ export default function UserProfile() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.confirmPasswordLabel || 'Confirm New Password'}</label>
+                                    <label className="text-xs font-bold uppercase text-gray-400">{(t.profile as any)?.confirmPasswordLabel || 'Confirm New Password'}</label>
                                     <input
                                         type="password"
                                         value={passwordForm.confirmPassword}
