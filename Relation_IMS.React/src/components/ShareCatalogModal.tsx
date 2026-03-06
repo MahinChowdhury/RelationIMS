@@ -22,7 +22,6 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [creating, setCreating] = useState(false);
-    const [created, setCreated] = useState(false);
     const [copiedHash, setCopiedHash] = useState<string | null>(null);
     const [deletingHash, setDeletingHash] = useState<string | null>(null);
 
@@ -30,7 +29,6 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
         if (show) {
             fetchShareCatalogs();
             setShowCreateForm(false);
-            setCreated(false);
             setPassword('');
             setConfirmPassword('');
             setError('');
@@ -67,7 +65,6 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
             await api.post('/ShareCatalog', { password });
             setPassword('');
             setConfirmPassword('');
-            setCreated(true);
             setShowCreateForm(false);
             fetchShareCatalogs();
         } catch (err: any) {
@@ -113,7 +110,6 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
         setPassword('');
         setConfirmPassword('');
         setError('');
-        setCreated(false);
         setShowCreateForm(false);
         onClose();
     };
@@ -183,7 +179,7 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                                         <span className="material-symbols-outlined text-[18px]">delete</span>
                                     </button>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-4 mb-2">
                                     <div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Password</p>

@@ -12,7 +12,7 @@ interface Size { id: number; name: string; categoryId?: number; }
 // --- Types for API Payloads ---
 
 export default function Configuration() {
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
 
     // --- State ---
     const [brands, setBrands] = useState<Brand[]>([]);

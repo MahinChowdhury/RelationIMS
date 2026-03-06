@@ -1,8 +1,13 @@
 import * as signalR from '@microsoft/signalr';
 
-const SIGNALR_URL = import.meta.env.VITE_API_URL 
-    ? `${import.meta.env.VITE_API_URL.replace('/api', '')}/hubs/arrangement`
-    : 'http://localhost:5000/hubs/arrangement';
+const getSignalRUrl = (): string => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5051/api/v1';
+    // Strip /api/v1 (or /api) suffix and append the hub path
+    const baseUrl = apiUrl.replace(/\/api(\/v\d+)?$/, '');
+    return `${baseUrl}/hubs/arrangement`;
+};
+
+const SIGNALR_URL = getSignalRUrl();
 
 class SignalRService {
     private connection: signalR.HubConnection | null = null;

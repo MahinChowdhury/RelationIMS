@@ -55,7 +55,6 @@ nunit-*.xml
 
 .vs/
 
-# Environment files (secrets)
+# Environment variables (secrets)
 .env
-.env.*
 !.env.example
