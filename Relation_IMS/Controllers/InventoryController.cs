@@ -106,7 +106,7 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory/transfer
         [HttpPost("transfer")]
-        [InvalidateCache("inventory", "productitem")]
+        [InvalidateCache("inventory", "productitem", "product", "productvariant")]
         public async Task<IActionResult> TransferProductItem([FromBody] TransferProductItemsDTO transferDto)
         {
             if (!ModelState.IsValid)
@@ -196,7 +196,7 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory/customer-return
         [HttpPost("customer-return")]
-        [InvalidateCache("inventory", "productitem")]
+        [InvalidateCache("inventory", "productitem", "product", "productvariant")]
         public async Task<IActionResult> ProcessCustomerReturn([FromBody] CustomerReturnRequestDTO returnDto)
         {
             if (!ModelState.IsValid)

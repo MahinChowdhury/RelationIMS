@@ -1,6 +1,8 @@
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
@@ -267,13 +269,6 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("fixed", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 100;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 5;
-    });
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",

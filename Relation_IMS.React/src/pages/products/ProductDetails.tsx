@@ -181,7 +181,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                         <tr className="bg-[#4e9767] text-white">
                                             <th className="py-3 px-4 font-bold uppercase text-xs">{t.products.color}</th>
                                             <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.size}</th>
-                                            <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.common.quantity}</th>
+                                            <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Available</th>
+                                            <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">Reserved</th>
                                             <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.defects}</th>
                                         </tr>
                                     </thead>
@@ -210,8 +211,13 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                                 onClick={() => fetchInventoryStock(variant.Id, variant.Color?.Name || '', variant.Size?.Name || '', 'available')}
                                                                 className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold dark:bg-green-900/40 dark:text-green-300 hover:underline cursor-pointer"
                                                             >
-                                                                {variant.Quantity}
+                                                                {(variant.Quantity || 0) - (variant.ReservedQuantity || 0)}
                                                             </button>
+                                                        </td>
+                                                        <td className="py-3 px-4">
+                                                            <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${(variant.ReservedQuantity ?? 0) > 0 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300' : 'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400'}`}>
+                                                                {(variant.ReservedQuantity ?? 0)}
+                                                            </span>
                                                         </td>
                                                         <td className="py-3 px-4">
                                                             <button

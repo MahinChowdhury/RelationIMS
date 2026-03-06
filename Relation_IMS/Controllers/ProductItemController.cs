@@ -57,7 +57,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
-        [InvalidateCache("productitem", "product", "inventory")]
+        [InvalidateCache("productitem", "product", "inventory", "productvariant")]
         public async Task<ActionResult<ProductItem>> CreateNewProductItem(CreateProductItemDTO itemDto)
         {
             // Lock the variant to prevent concurrent item creation
@@ -70,7 +70,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [InvalidateCache("productitem", "product", "inventory")]
+        [InvalidateCache("productitem", "product", "inventory", "productvariant")]
         public async Task<ActionResult<ProductItem?>> UpdateProductItem([FromRoute] int id, CreateProductItemDTO itemDto)
         {
             using (await _lockService.AcquireLockAsync($"productitem:{id}"))
@@ -83,7 +83,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [InvalidateCache("productitem", "product", "inventory")]
+        [InvalidateCache("productitem", "product", "inventory", "productvariant")]
         public async Task<ActionResult<ProductItem?>> DeleteProductItem([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"productitem:{id}"))
@@ -104,7 +104,7 @@ namespace Relation_IMS.Controllers
         //}
 
         [HttpPost("{code}/defect")]
-        [InvalidateCache("productitem", "product", "inventory")]
+        [InvalidateCache("productitem", "product", "inventory", "productvariant")]
         public async Task<ActionResult<DefectItemResDTO?>> DefectProductItemByCode([FromRoute] string code, [FromBody] DefectRequestDTO defectDto)
         {
             // Extract user ID from claims

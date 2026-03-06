@@ -458,7 +458,7 @@ namespace Relation_IMS.Datas.Repositories
         {
             var items = await _context.ProductItems
                 .AsNoTracking()
-                .Where(pi => pi.ProductVariantId == variantId && !pi.IsSold)
+                .Where(pi => pi.ProductVariantId == variantId && !pi.IsSold && pi.OrderItemId == null)
                 .Select(pi => new 
                 { 
                     pi.InventoryId, 

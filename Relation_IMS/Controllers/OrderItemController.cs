@@ -31,7 +31,7 @@ namespace Relation_IMS.Controllers
             return Ok(orderItem);
         }
         [HttpDelete("{id:int}")]
-        [InvalidateCache("orderitem", "order", "arrangement")]
+        [InvalidateCache("orderitem", "order", "arrangement", "product", "productvariant")]
         public async Task<ActionResult<OrderItem>> DeleteOrderItemsById([FromRoute] int id)
         {
             // Fetch first to get OrderId
@@ -56,7 +56,7 @@ namespace Relation_IMS.Controllers
             }
         }
         [HttpPost]
-        [InvalidateCache("orderitem", "order", "arrangement")]
+        [InvalidateCache("orderitem", "order", "arrangement", "product", "productvariant")]
         public async Task<ActionResult<OrderItem>> CreateNewOrderItem(CreateOrderItemDTO orderItemDto) {
             using (await _lockService.AcquireLockAsync($"order:{orderItemDto.OrderId}"))
             {
@@ -66,7 +66,7 @@ namespace Relation_IMS.Controllers
             }
         }
         [HttpPut("{id:int}")]
-        [InvalidateCache("orderitem", "order", "arrangement")]
+        [InvalidateCache("orderitem", "order", "arrangement", "product", "productvariant")]
         public async Task<ActionResult<OrderItem>> UpdateOrderItemById([FromRoute] int id, UpdateOrderItemDTO updateDto) {
              // Fetch first to get OrderId
             var item = await _repo.GetOrderItemsByIdAsync(id);

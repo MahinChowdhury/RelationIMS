@@ -14,9 +14,11 @@ public class ProductVariant : BaseAuditableEntity
     public int ProductSizeId { get; set; }
     public ProductSize? Size { get; set; }
     public int Quantity => ProductItems?
-            .Count(pi => !pi.IsDefected && !pi.IsSold) ?? 0;
+            .Count(pi => !pi.IsDefected && !pi.IsSold && pi.OrderItemId == null) ?? 0;
+    public int ReservedQuantity { get; set; }
     public int Defects => ProductItems?
             .Count(pi => pi.IsDefected) ?? 0;
+    public int AvailableForSale => Quantity - ReservedQuantity;
     [Column(TypeName = "decimal(18,2)")]
     public decimal VariantPrice { get; set; }
     public List<ProductItem>? ProductItems { get; set; }
