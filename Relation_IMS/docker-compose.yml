@@ -89,6 +89,12 @@ services:
     restart: unless-stopped
     networks:
       - relationims-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # =========================================
   # Redis
@@ -106,6 +112,7 @@ services:
     restart: unless-stopped
     networks:
       - relationims-network
+    restart: unless-stopped
 
   # =========================================
   # Azure Blob Storage Emulator
@@ -123,6 +130,7 @@ services:
     restart: unless-stopped
     networks:
       - relationims-network
+    restart: unless-stopped
 
   # =========================================
   # PgAdmin (development/tools only)
@@ -142,6 +150,12 @@ services:
       - tools
     networks:
       - relationims-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
