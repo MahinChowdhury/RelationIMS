@@ -1,22 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import type { Customer, Order } from '../../types';
+
+interface CustomerStats {
+    totalPurchases: number;
+    totalDue: number;
+    lastOrderDate: string | null;
+}
 
 export default function CustomerDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const customerId = Number(id);
     const [customer, setCustomer] = useState<Customer | null>(null);
-    const [allOrders, setAllOrders] = useState<Order[]>([]);
-    const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+    const [stats, setStats] = useState<CustomerStats | null>(null);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loadingFilters, setLoadingFilters] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Filters
+    // Pagination & Filters
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [yearFilter, setYearFilter] = useState<string>('');
+
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastOrderElementRef = useCallback((node: HTMLTableRowElement | null) => {
+        if (loadingMore) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => prevPage + 1);
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loadingMore, hasMore]);
 
     useEffect(() => {
         if (!customerId || isNaN(customerId)) {
@@ -28,20 +49,28 @@ export default function CustomerDetailsPage() {
     }, [customerId]);
 
     useEffect(() => {
-        if (!customerId || isNaN(customerId)) return;
-        loadFilteredOrders();
+        setPage(1);
+        setOrders([]);
+        setHasMore(true);
     }, [customerId, statusFilter, yearFilter]);
+
+    useEffect(() => {
+        if (!customerId || isNaN(customerId)) return;
+        loadOrders(page === 1);
+    }, [customerId, statusFilter, yearFilter, page]);
 
     const loadInitialData = async () => {
         try {
             setLoading(true);
             setError('');
 
-            const custRes = await api.get(`/Customer/${customerId}`);
-            setCustomer(custRes.data);
+            const [custRes, statsRes] = await Promise.all([
+                api.get(`/Customer/${customerId}`),
+                api.get(`/Customer/${customerId}/stats`)
+            ]);
 
-            const ordRes = await api.get(`/Order/customer/${customerId}`);
-            setAllOrders(ordRes.data || []);
+            setCustomer(custRes.data);
+            setStats(statsRes.data);
         } catch (err: any) {
             console.error('Failed to load initial data:', err);
             setError(err.response?.data?.message || 'Failed to load customer data.');
@@ -50,29 +79,44 @@ export default function CustomerDetailsPage() {
         }
     };
 
-    const loadFilteredOrders = async () => {
+    const loadOrders = async (isFirstPage: boolean) => {
         try {
-            setLoadingFilters(true);
+            if (isFirstPage) {
+                setLoadingFilters(true);
+            } else {
+                setLoadingMore(true);
+            }
+
             const queryParams = new URLSearchParams();
             if (statusFilter !== '') queryParams.append('status', statusFilter);
             if (yearFilter !== '') queryParams.append('year', yearFilter);
+            queryParams.append('pageNumber', page.toString());
+            queryParams.append('pageSize', '20');
 
             const ordRes = await api.get(`/Order/customer/${customerId}?${queryParams.toString()}`);
-            setFilteredOrders(ordRes.data || []);
+            const newOrders = ordRes.data || [];
+
+            setHasMore(newOrders.length === 20);
+
+            if (isFirstPage) {
+                setOrders(newOrders);
+            } else {
+                setOrders(prev => [...prev, ...newOrders]);
+            }
         } catch (err: any) {
-            console.error('Failed to load filtered orders:', err);
+            console.error('Failed to load orders:', err);
         } finally {
             setLoadingFilters(false);
+            setLoadingMore(false);
         }
     };
 
     // --- Derived Logic ---
-    const totalSpent = allOrders.reduce((sum, o) => sum + (o.NetAmount || 0), 0);
-    const totalDue = allOrders.reduce((sum, o) =>
-        sum + (o.NetAmount - (o.PaidAmount ?? (o.PaymentStatus === 2 ? o.NetAmount : 0))), 0);
+    const totalSpent = stats?.totalPurchases || 0;
+    const totalDue = stats?.totalDue || 0;
 
-    const lastOrderDate = allOrders.length > 0
-        ? new Date(Math.max(...allOrders.map(o => new Date(o.CreatedAt).getTime()))).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const lastOrderDate = stats?.lastOrderDate
+        ? new Date(stats.lastOrderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : 'N/A';
 
     const formatDate = (dateString?: string) => {
@@ -113,7 +157,7 @@ export default function CustomerDetailsPage() {
 
     const getCustomerStatus = () => {
         if (totalSpent > 2000) return 'VIP Customer';
-        if (allOrders.length > 5) return 'Loyal Customer';
+        if (totalSpent > 500) return 'Loyal Customer';
         return 'Retail Customer';
     };
 
@@ -330,7 +374,7 @@ export default function CustomerDetailsPage() {
                             <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">receipt_long</span>
                                 Recent Orders
-                                <span className="text-sm font-medium text-text-secondary ml-2 whitespace-nowrap">({filteredOrders.length} found)</span>
+                                <span className="text-sm font-medium text-text-secondary ml-2 whitespace-nowrap">({orders.length} loaded)</span>
                             </h2>
                             <div className="flex items-center gap-3">
                                 <select
@@ -361,7 +405,7 @@ export default function CustomerDetailsPage() {
                             <div className="p-8 flex justify-center">
                                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary border-gray-200"></div>
                             </div>
-                        ) : filteredOrders.length === 0 ? (
+                        ) : orders.length === 0 ? (
                             <div className="p-8 text-center text-text-secondary">
                                 No orders found for this customer.
                             </div>
@@ -380,43 +424,46 @@ export default function CustomerDetailsPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-[#1a2e22]">
-                                        {filteredOrders.map((order) => (
-                                            <tr key={order.Id} className="border-b dark:border-[#2a4032] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                                <td className="px-6 py-4 font-medium text-primary">#ORD-{order.Id}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-text-secondary">{formatFullDate(order.CreatedAt)}</td>
-                                                <td className="px-6 py-4">
-                                                    {getPaymentStatusBadge(order.PaymentStatus)}
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-right text-red-500">
-                                                    {(order.Discount || 0) > 0 ? `-${order.Discount.toFixed(2)}` : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 font-bold text-right">${order.NetAmount.toFixed(2)}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => navigate(`/orders/${order.Id}`)}
-                                                        className="text-gray-400 hover:text-primary transition-colors"
-                                                        title="View Order"
-                                                    >
-                                                        <span className="material-symbols-outlined">visibility</span>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {orders.map((order, index) => {
+                                            const isLastElement = orders.length === index + 1;
+                                            return (
+                                                <tr
+                                                    key={order.Id}
+                                                    ref={isLastElement ? lastOrderElementRef : null}
+                                                    className="border-b dark:border-[#2a4032] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                                                >
+                                                    <td className="px-6 py-4 font-medium text-primary">#ORD-{order.Id}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-text-secondary">{formatFullDate(order.CreatedAt)}</td>
+                                                    <td className="px-6 py-4">
+                                                        {getPaymentStatusBadge(order.PaymentStatus)}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-medium text-right text-red-500">
+                                                        {(order.Discount || 0) > 0 ? `-${order.Discount.toFixed(2)}` : '-'}
+                                                    </td>
+                                                    <td className="px-6 py-4 font-bold text-right">${order.NetAmount.toFixed(2)}</td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <button
+                                                            onClick={() => navigate(`/orders/${order.Id}`)}
+                                                            className="text-gray-400 hover:text-primary transition-colors"
+                                                            title="View Order"
+                                                        >
+                                                            <span className="material-symbols-outlined">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
                         )}
 
-                        {filteredOrders.length > 5 && (
+                        {loadingMore && (
                             <div className="p-4 border-t border-gray-100 dark:border-[#2a4032] flex justify-center">
-                                <button className="text-sm font-medium text-text-secondary hover:text-primary transition-colors flex items-center gap-1">
-                                    Show All Orders
-                                    <span className="material-symbols-outlined text-[16px]">expand_more</span>
-                                </button>
+                                <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-gray-200"></div>
                             </div>
                         )}
                     </div>
-
                 </div>
             </div>
         </div>

@@ -40,6 +40,19 @@ namespace Relation_IMS.Controllers
             }
             return Ok(customer);
         }
+
+        [HttpGet("{id:int}/stats")]
+        [RedisCache("customer")]
+        public async Task<ActionResult<CustomerStatsDTO>> GetCustomerStats([FromRoute] int id)
+        {
+            var stats = await _repo.GetCustomerStatsAsync(id);
+            if (stats == null)
+            {
+                return NotFound(new { message = $"Customer with id : {id} not found." });
+            }
+            return Ok(stats);
+        }
+
         [HttpDelete("{id:int}")]
         [InvalidateCache("customer", "order", "arrangement")]
         public async Task<ActionResult<Customer?>> DeleteCustomerByIdAsync([FromRoute] int id)

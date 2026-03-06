@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import InventoryStockModal from '../../components/products/InventoryStockModal';
@@ -7,6 +7,27 @@ import InventoryStockModal from '../../components/products/InventoryStockModal';
 // ---------- Interfaces ----------
 // Imported from ../../types
 import type { Product, InventoryStock, ProductVariant } from '../../types';
+
+interface ProductOrderItem {
+    Id: number;
+    OrderId: number;
+    ProductId: number;
+    Quantity: number;
+    UnitPrice: number;
+    Subtotal: number;
+    Discount: number;
+    CreatedAt: string;
+    Order?: {
+        Id: number;
+        Customer?: { Id: number; Name: string };
+        CreatedAt: string;
+        PaymentStatus: number;
+    };
+    ProductVariant?: {
+        Color?: { Id: number; Name: string };
+        Size?: { Id: number; Name: string };
+    };
+}
 
 interface ProductDetailsProps {
     productId?: string;
@@ -17,6 +38,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const { id, hash, productId: urlProductId } = useParams<{ id: string, hash: string, productId: string }>();
     const activeId = productId || urlProductId || id;
     const { t } = useLanguage();
+    const navigate = useNavigate();
 
     const isGuest = propGuestView || false;
     const [productDetail, setProductDetail] = useState<Product | null>(null);
@@ -29,11 +51,58 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const [selectedVariantName, setSelectedVariantName] = useState('');
     const [stockModalMode, setStockModalMode] = useState<'available' | 'defect'>('available');
 
+    // Product Orders State
+    const [productOrders, setProductOrders] = useState<ProductOrderItem[]>([]);
+    const [ordersPage, setOrdersPage] = useState(1);
+    const [ordersHasMore, setOrdersHasMore] = useState(true);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    const [ordersInitialLoading, setOrdersInitialLoading] = useState(true);
+    const [ordersVisible, setOrdersVisible] = useState(false);
+
+    const sectionObserver = useRef<IntersectionObserver | null>(null);
+    const ordersSectionRef = useCallback((node: HTMLDivElement | null) => {
+        if (sectionObserver.current) sectionObserver.current.disconnect();
+        if (!node || isGuest) return;
+        sectionObserver.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setOrdersVisible(true);
+                    sectionObserver.current?.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+        sectionObserver.current.observe(node);
+    }, [isGuest]);
+
+    const ordersObserver = useRef<IntersectionObserver | null>(null);
+    const lastOrderRef = useCallback((node: HTMLTableRowElement | null) => {
+        if (ordersLoading) return;
+        if (ordersObserver.current) ordersObserver.current.disconnect();
+        ordersObserver.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && ordersHasMore) {
+                setOrdersPage(prev => prev + 1);
+            }
+        });
+        if (node) ordersObserver.current.observe(node);
+    }, [ordersLoading, ordersHasMore]);
+
     useEffect(() => {
         if (activeId) {
             loadProductDetail(activeId);
+            setProductOrders([]);
+            setOrdersPage(1);
+            setOrdersHasMore(true);
+            setOrdersInitialLoading(true);
+            setOrdersVisible(false);
         }
     }, [activeId]);
+
+    useEffect(() => {
+        if (activeId && !isGuest && ordersVisible) {
+            loadProductOrders(ordersPage === 1);
+        }
+    }, [activeId, ordersPage, ordersVisible]);
 
     const loadProductDetail = async (productId: string) => {
         try {
@@ -63,6 +132,92 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
             console.error('Failed to load inventory stock:', err);
         } finally {
             setInventoryLoading(false);
+        }
+    };
+
+    const loadProductOrders = async (isFirstPage: boolean) => {
+        try {
+            if (isFirstPage) {
+                setOrdersInitialLoading(true);
+            } else {
+                setOrdersLoading(true);
+            }
+            const res = await api.get(`/OrderItem/product/${activeId}?pageNumber=${ordersPage}&pageSize=15`);
+            const newItems: ProductOrderItem[] = res.data || [];
+            setOrdersHasMore(newItems.length === 15);
+            if (isFirstPage) {
+                setProductOrders(newItems);
+            } else {
+                setProductOrders(prev => [...prev, ...newItems]);
+            }
+        } catch (err) {
+            console.error('Failed to load product orders:', err);
+        } finally {
+            setOrdersInitialLoading(false);
+            setOrdersLoading(false);
+        }
+    };
+
+    const formatOrderDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    // Group items by OrderId and Color
+    const groupedProductOrders = useMemo(() => {
+        const groups = new Map<string, ProductOrderItem & { sizesWithQty: { name: string, qty: number }[], totalQuantity: number, totalSubtotal: number }>();
+
+        productOrders.forEach(item => {
+            const colorId = item.ProductVariant?.Color?.Id || 'no-color';
+            const key = `${item.OrderId}_${colorId}`;
+            const sizeName = item.ProductVariant?.Size?.Name || 'N/A';
+
+            if (groups.has(key)) {
+                const group = groups.get(key)!;
+                const existingSize = group.sizesWithQty.find(s => s.name === sizeName);
+                if (existingSize) {
+                    existingSize.qty += item.Quantity;
+                } else {
+                    group.sizesWithQty.push({ name: sizeName, qty: item.Quantity });
+                }
+                group.totalQuantity += item.Quantity;
+                group.totalSubtotal += item.Subtotal;
+            } else {
+                groups.set(key, {
+                    ...item,
+                    sizesWithQty: [{ name: sizeName, qty: item.Quantity }],
+                    totalQuantity: item.Quantity,
+                    totalSubtotal: item.Subtotal
+                });
+            }
+        });
+
+        return Array.from(groups.values());
+    }, [productOrders]);
+
+    const getPaymentStatusBadge = (status?: number) => {
+        switch (status) {
+            case 2: // Paid
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/30">
+                        <span className="size-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                        Paid
+                    </span>
+                );
+            case 1: // Partial
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800/30">
+                        <span className="size-1.5 rounded-full bg-yellow-500"></span>
+                        Partial
+                    </span>
+                );
+            default: // Pending / Unknown
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                        <span className="size-1.5 rounded-full bg-gray-500"></span>
+                        Pending
+                    </span>
+                );
         }
     };
 
@@ -236,25 +391,55 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
-                            <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">palette</span>
-                                {t.products.color}
-                            </h2>
-                            <div className="flex flex-wrap gap-4">
-                                {Array.from(groupedVariants).map(([_, variants]) => (
-                                    <div key={variants[0].Id} className="flex items-center gap-2 bg-gray-50 dark:bg-[#112116] border border-gray-100 dark:border-[#2a4032] px-3 py-2 rounded-lg">
-                                        {variants[0].Color?.HexCode && (
-                                            <span
-                                                className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm"
-                                                style={{ backgroundColor: variants[0].Color.HexCode }}
-                                            ></span>
-                                        )}
-                                        <span className="text-sm font-semibold text-text-main dark:text-gray-300">
-                                            {variants[0].Color?.Name || 'Unknown Color'}
-                                        </span>
-                                    </div>
-                                ))}
+                        <div className="flex flex-col gap-6">
+                            <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                                <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">palette</span>
+                                    {t.products.color}
+                                </h2>
+                                <div className="flex flex-wrap gap-4">
+                                    {Array.from(groupedVariants).map(([_, variants]) => (
+                                        <div key={variants[0].Id} className="flex items-center gap-2 bg-gray-50 dark:bg-[#112116] border border-gray-100 dark:border-[#2a4032] px-3 py-2 rounded-lg">
+                                            {variants[0].Color?.HexCode && (
+                                                <span
+                                                    className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm"
+                                                    style={{ backgroundColor: variants[0].Color.HexCode }}
+                                                ></span>
+                                            )}
+                                            <span className="text-sm font-semibold text-text-main dark:text-gray-300">
+                                                {variants[0].Color?.Name || 'Unknown Color'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                                <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">straighten</span>
+                                    {t.products.size}
+                                </h2>
+                                <div className="flex flex-wrap gap-4">
+                                    {(() => {
+                                        const availableSizes = Array.from(new Set(
+                                            Array.from(groupedVariants).flatMap(([_, variants]) =>
+                                                variants.filter(v => ((v.Quantity || 0) - (v.ReservedQuantity || 0)) > 0).map(v => v.Size?.Name)
+                                            ).filter(Boolean)
+                                        ));
+
+                                        if (availableSizes.length === 0) {
+                                            return <span className="text-sm text-gray-500">No available sizes</span>;
+                                        }
+
+                                        return availableSizes.map((sizeName, idx) => (
+                                            <div key={idx} className="flex items-center justify-center bg-gray-50 dark:bg-[#112116] border border-gray-100 dark:border-[#2a4032] min-w-[3rem] px-3 py-2 rounded-lg">
+                                                <span className="text-sm font-semibold text-text-main dark:text-gray-300">
+                                                    {sizeName}
+                                                </span>
+                                            </div>
+                                        ));
+                                    })()}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -397,6 +582,124 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                 </div>
             </div >
+
+            {/* Product Orders Section */}
+            {!isGuest && (
+                <div ref={ordersSectionRef} className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[#2a4032] overflow-hidden flex flex-col">
+                    <div className="p-5 border-b border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between">
+                        <h2 className="text-base font-extrabold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
+                            Order History
+                            <span className="text-xs font-medium text-text-secondary ml-1">({productOrders.length} loaded)</span>
+                        </h2>
+                    </div>
+
+                    {ordersInitialLoading ? (
+                        <div className="flex-1 flex items-center justify-center py-12">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                                <p className="text-text-secondary text-sm">Loading orders...</p>
+                            </div>
+                        </div>
+                    ) : productOrders.length === 0 ? (
+                        <div className="py-12 text-center text-text-secondary">
+                            <span className="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2 block">receipt_long</span>
+                            No orders found for this product.
+                        </div>
+                    ) : (
+                        <>
+                            <div className="overflow-x-auto flex-1">
+                                <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
+                                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[#2a4032]">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Order ID</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Customer</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Variant</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-center">Qty</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-right">Sold Price</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Status</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Date</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100/50 dark:divide-[#2a4032]">
+                                        {groupedProductOrders.map((item, index) => {
+                                            const isLast = groupedProductOrders.length === index + 1;
+
+                                            // Format the variant string to show Color / [Size1, Size2, ...]
+                                            const colorName = item.ProductVariant?.Color?.Name || '—';
+
+                                            return (
+                                                <tr
+                                                    key={`${item.OrderId}_${item.ProductVariant?.Color?.Id || 'no-color'}`}
+                                                    ref={isLast ? lastOrderRef : null}
+                                                    className="hover:bg-white/50 dark:hover:bg-white/5 transition-colors group"
+                                                >
+                                                    <td className="px-6 py-4 align-top">
+                                                        <span className="font-bold text-primary mt-1 block">#ORD-{item.OrderId}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 align-top">
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white dark:border-[#2a4032] shadow-sm">
+                                                                {item.Order?.Customer?.Name?.substring(0, 2).toUpperCase() || '?'}
+                                                            </div>
+                                                            <span className="font-medium text-text-main dark:text-gray-200 truncate max-w-[140px]">{item.Order?.Customer?.Name || 'N/A'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 align-top">
+                                                        <div className="flex flex-col gap-2">
+                                                            <div>
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-[#112116] dark:text-gray-300 border border-gray-200 dark:border-[#2a4032] shadow-sm">
+                                                                    {colorName}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex flex-col gap-1 w-full max-w-[150px]">
+                                                                {item.sizesWithQty.map((s, idx) => (
+                                                                    <div key={idx} className="flex items-center justify-between bg-gray-50 dark:bg-black/20 px-2 py-1 rounded text-[11px] text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-white/5">
+                                                                        <span className="truncate mr-2 font-medium">{s.name !== 'N/A' ? s.name : 'No Size'}</span>
+                                                                        <span className="font-bold text-gray-800 dark:text-gray-200 bg-gray-200 dark:bg-[#2a4032] px-1.5 rounded">x{s.qty}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center align-top">
+                                                        <span className="font-bold text-lg text-primary mt-1 block">{item.totalQuantity}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 font-bold text-right align-top">
+                                                        <span className="mt-1 block">${item.totalSubtotal.toFixed(2)}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        {getPaymentStatusBadge(item.Order?.PaymentStatus)}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-text-secondary whitespace-nowrap">{formatOrderDate(item.Order?.CreatedAt)}</td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button
+                                                            onClick={() => navigate(`/orders/${item.OrderId}`)}
+                                                            className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-transparent hover:border-blue-200"
+                                                            title="View Order"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {ordersLoading && (
+                                <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex justify-center">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-gray-200"></div>
+                                </div>
+                            )}
+                            <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
+                                <span className="text-xs text-text-secondary">Showing {groupedProductOrders.length} variant groups from {productOrders.length} total items</span>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
 
             {!isGuest && (
                 <InventoryStockModal

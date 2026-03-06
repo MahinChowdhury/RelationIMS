@@ -110,9 +110,9 @@ namespace Relation_IMS.Controllers
 
         [HttpGet("customer/{customerId:int}")]
         [RedisCache("order")]
-        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId, [FromQuery] int? status, [FromQuery] int? year)
+        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId, [FromQuery] int? status, [FromQuery] int? year, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var orders = await _repo.GetOrderByCustomerIdAsync(customerId, status, year);
+            var orders = await _repo.GetOrderByCustomerIdAsync(customerId, status, year, pageNumber, pageSize);
 
             if (orders == null) {
                 return NotFound(new {message = $"Customer with id : {customerId} not found." });

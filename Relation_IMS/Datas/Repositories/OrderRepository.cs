@@ -135,7 +135,7 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
-        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null)
+        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null, int pageNumber = 1, int pageSize = 20)
         {
             var query = _context.Orders.Where(o => o.CustomerId == customerId);
 
@@ -149,7 +149,11 @@ namespace Relation_IMS.Datas.Repositories
                 query = query.Where(o => o.CreatedAt.Year == year.Value);
             }
 
-            var orders = await query.ToListAsync();
+            var orders = await query
+                .OrderByDescending(o => o.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             return orders;
         }

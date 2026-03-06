@@ -199,5 +199,23 @@ namespace Relation_IMS.Datas.Repositories
 
             return orderItem;
         }
+
+        public async Task<List<OrderItem>> GetOrderItemsByProductIdAsync(int productId, int pageNumber = 1, int pageSize = 20)
+        {
+            var items = await _context.OrderItems
+                .Where(oi => oi.ProductId == productId)
+                .Include(oi => oi.Order!)
+                    .ThenInclude(o => o.Customer)
+                .Include(oi => oi.ProductVariant!)
+                    .ThenInclude(pv => pv!.Color)
+                .Include(oi => oi.ProductVariant!)
+                    .ThenInclude(pv => pv!.Size)
+                .OrderByDescending(oi => oi.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return items;
+        }
     }
 }

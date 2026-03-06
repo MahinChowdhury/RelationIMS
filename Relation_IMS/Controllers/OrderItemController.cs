@@ -86,5 +86,13 @@ namespace Relation_IMS.Controllers
             }
         }
 
+
+        [HttpGet("product/{productId:int}")]
+        [RedisCache("orderitem")]
+        public async Task<ActionResult<List<OrderItem>>> GetOrderItemsByProductId([FromRoute] int productId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            var items = await _repo.GetOrderItemsByProductIdAsync(productId, pageNumber, pageSize);
+            return Ok(items);
+        }
     }
 }

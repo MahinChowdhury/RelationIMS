@@ -5,6 +5,7 @@ using Relation_IMS.Dtos.CustomerDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Models.OrderModels;
 
 namespace Relation_IMS.Datas.Repositories
 {
@@ -83,6 +84,26 @@ namespace Relation_IMS.Datas.Repositories
             await _context.SaveChangesAsync();
 
             return customer;
+        }
+
+        public async Task<CustomerStatsDTO?> GetCustomerStatsAsync(int id)
+        {
+            var customerExists = await _context.Customers.AnyAsync(c => c.Id == id);
+            if (!customerExists) return null;
+
+            var orders = await _context.Orders
+                .Where(o => o.CustomerId == id)
+                .Select(o => new { o.NetAmount, o.PaidAmount, o.PaymentStatus, o.CreatedAt })
+                .ToListAsync();
+
+            var stats = new CustomerStatsDTO
+            {
+                TotalPurchases = orders.Sum(o => o.NetAmount),
+                TotalDue = orders.Sum(o => o.NetAmount - (o.PaidAmount == 0 && (int)o.PaymentStatus == 2 ? o.NetAmount : o.PaidAmount)),
+                LastOrderDate = orders.Any() ? orders.Max(o => o.CreatedAt) : null
+            };
+
+            return stats;
         }
     }
 }

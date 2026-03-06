@@ -12,6 +12,6 @@ namespace Relation_IMS.Datas.Interfaces
         Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto);
         Task<Order?> UpdateOrderByIdAsync(int id,UpdateOrderDTO updateDto);
         Task<List<OrderItem>> GetItemsByOrderIdAsync(int id);
-        Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null);
+        Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null, int pageNumber = 1, int pageSize = 20);
     }
 }

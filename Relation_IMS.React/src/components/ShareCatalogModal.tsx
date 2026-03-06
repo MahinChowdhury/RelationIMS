@@ -23,6 +23,7 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
     const [confirmPassword, setConfirmPassword] = useState('');
     const [creating, setCreating] = useState(false);
     const [copiedHash, setCopiedHash] = useState<string | null>(null);
+    const [copiedPasswordHash, setCopiedPasswordHash] = useState<string | null>(null);
     const [deletingHash, setDeletingHash] = useState<string | null>(null);
 
     useEffect(() => {
@@ -102,8 +103,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
         setTimeout(() => setCopiedHash(null), 2000);
     };
 
-    const handleCopyPassword = (password: string) => {
+    const handleCopyPassword = (hash: string, password: string) => {
         navigator.clipboard.writeText(password);
+        setCopiedPasswordHash(hash);
+        setTimeout(() => setCopiedPasswordHash(null), 2000);
     };
 
     const handleClose = () => {
@@ -188,10 +191,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                                                 {catalog.password}
                                             </p>
                                             <button
-                                                onClick={() => handleCopyPassword(catalog.password)}
+                                                onClick={() => handleCopyPassword(catalog.shareHash, catalog.password)}
                                                 className="text-primary hover:text-primary/80 text-xs"
                                             >
-                                                Copy
+                                                {copiedPasswordHash === catalog.shareHash ? 'Copied!' : 'Copy'}
                                             </button>
                                         </div>
                                     </div>
