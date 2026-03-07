@@ -201,21 +201,21 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/30">
                         <span className="size-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                        Paid
+                        {t.common.paid}
                     </span>
                 );
             case 1: // Partial
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800/30">
                         <span className="size-1.5 rounded-full bg-yellow-500"></span>
-                        Partial
+                        {t.orders.partial}
                     </span>
                 );
             default: // Pending / Unknown
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
                         <span className="size-1.5 rounded-full bg-gray-500"></span>
-                        Pending
+                        {t.common.pending}
                     </span>
                 );
         }
@@ -589,8 +589,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                     <div className="p-5 border-b border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between">
                         <h2 className="text-base font-extrabold text-text-main dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
-                            Order History
-                            <span className="text-xs font-medium text-text-secondary ml-1">({productOrders.length} loaded)</span>
+                            {t.products.orderHistory}
+                            <span className="text-xs font-medium text-text-secondary ml-1">({productOrders.length} {t.products.loaded})</span>
                         </h2>
                     </div>
 
@@ -598,13 +598,13 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         <div className="flex-1 flex items-center justify-center py-12">
                             <div className="flex flex-col items-center gap-3">
                                 <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                                <p className="text-text-secondary text-sm">Loading orders...</p>
+                                <p className="text-text-secondary text-sm">{t.orders.loadingOrders}</p>
                             </div>
                         </div>
                     ) : productOrders.length === 0 ? (
                         <div className="py-12 text-center text-text-secondary">
                             <span className="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2 block">receipt_long</span>
-                            No orders found for this product.
+                            {t.products.noOrdersFound}
                         </div>
                     ) : (
                         <>
@@ -612,14 +612,14 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
                                     <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[#2a4032]">
                                         <tr>
-                                            <th scope="col" className="px-6 py-4 font-semibold">Order ID</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold">Customer</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold">Variant</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-center">Qty</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-right">Sold Price</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold">Status</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold">Date</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-right">Actions</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">{t.orders.orderId}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">{t.common.customer}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">{t.inventory.variant}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-center">{t.common.quantity}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-right">{t.products.soldPrice}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">{t.common.status}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">{t.common.date}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold text-right">{t.common.actions}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100/50 dark:divide-[#2a4032]">
@@ -643,7 +643,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                             <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white dark:border-[#2a4032] shadow-sm">
                                                                 {item.Order?.Customer?.Name?.substring(0, 2).toUpperCase() || '?'}
                                                             </div>
-                                                            <span className="font-medium text-text-main dark:text-gray-200 truncate max-w-[140px]">{item.Order?.Customer?.Name || 'N/A'}</span>
+                                                            <span className="font-medium text-text-main dark:text-gray-200 truncate max-w-[140px]">{item.Order?.Customer?.Name || t.common.notAvailable}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 align-top">
@@ -656,7 +656,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                             <div className="flex flex-col gap-1 w-full max-w-[150px]">
                                                                 {item.sizesWithQty.map((s, idx) => (
                                                                     <div key={idx} className="flex items-center justify-between bg-gray-50 dark:bg-black/20 px-2 py-1 rounded text-[11px] text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-white/5">
-                                                                        <span className="truncate mr-2 font-medium">{s.name !== 'N/A' ? s.name : 'No Size'}</span>
+                                                                        <span className="truncate mr-2 font-medium">{s.name !== 'N/A' && s.name !== '-' ? s.name : t.common.notAvailable}</span>
                                                                         <span className="font-bold text-gray-800 dark:text-gray-200 bg-gray-200 dark:bg-[#2a4032] px-1.5 rounded">x{s.qty}</span>
                                                                     </div>
                                                                 ))}
@@ -677,7 +677,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                         <button
                                                             onClick={() => navigate(`/orders/${item.OrderId}`)}
                                                             className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-transparent hover:border-blue-200"
-                                                            title="View Order"
+                                                            title={t.products.viewOrder}
                                                         >
                                                             <span className="material-symbols-outlined text-[18px]">visibility</span>
                                                         </button>
@@ -694,7 +694,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 </div>
                             )}
                             <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
-                                <span className="text-xs text-text-secondary">Showing {groupedProductOrders.length} variant groups from {productOrders.length} total items</span>
+                                <span className="text-xs text-text-secondary">{t.products.showingVariantGroups.replace('{groups}', groupedProductOrders.length.toString()).replace('{total}', productOrders.length.toString())}</span>
                             </div>
                         </>
                     )}

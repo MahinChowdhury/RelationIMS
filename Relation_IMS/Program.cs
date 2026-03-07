@@ -1,11 +1,7 @@
-using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Relation_IMS.Datas.Interfaces;
@@ -16,11 +12,10 @@ using Relation_IMS.Entities;
 using Relation_IMS.Factory;
 using Relation_IMS.Hubs;
 using Relation_IMS.Services;
-using Relation_IMS.Services.AzureServices;
+using Relation_IMS.Services.MinIOServices;
 using Relation_IMS.Services.JWTServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO.Compression;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -48,10 +43,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 // ============================================
-// Azure Storage
+// MinIO Storage
 // ============================================
-builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration["AzureStorage:ConnectionString"]));
-builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
+builder.Services.AddScoped<IMinioBlobService, MinioBlobService>();
 
 // ============================================
 // Caching (Memory + Redis)
@@ -222,16 +216,6 @@ builder.Services.AddCors(options =>
 // SignalR
 // ============================================
 builder.Services.AddSignalR();
-
-// ============================================
-// Azure Clients
-// ============================================
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    clientBuilder.AddBlobServiceClient(builder.Configuration["StorageConnection:blobServiceUri"]!).WithName("StorageConnection");
-    clientBuilder.AddQueueServiceClient(builder.Configuration["StorageConnection:queueServiceUri"]!).WithName("StorageConnection");
-    clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnection:tableServiceUri"]!).WithName("StorageConnection");
-});
 
 // ============================================
 // Health Checks

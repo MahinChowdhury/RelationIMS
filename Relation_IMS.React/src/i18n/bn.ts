@@ -188,6 +188,12 @@ const bn: Translations = {
         checkingAvailability: 'উপলব্ধতা যাচাই করা হচ্ছে...',
         totalAvailable: 'মোট উপলব্ধ',
         totalDefects: 'মোট ত্রুটি',
+        orderHistory: 'অর্ডারের ইতিহাস',
+        noOrdersFound: 'এই পণ্যের জন্য কোন অর্ডার পাওয়া যায়নি।',
+        soldPrice: 'বিক্রয় মূল্য',
+        showingVariantGroups: '{total} টি আইটেম থেকে {groups} টি ভেরিয়েন্ট গ্রুপ দেখানো হচ্ছে',
+        loaded: 'লোড হয়েছে',
+        viewOrder: 'অর্ডার দেখুন',
     },
 
     // Orders
@@ -565,7 +571,7 @@ const bn: Translations = {
         scanBarcode: 'বারকোড স্ক্যান',
     },
 
-// Dialog / Alerts
+    // Dialog / Alerts
     dialog: {
         notification: 'বিজ্ঞপ্তি',
         error: 'ত্রুটি',

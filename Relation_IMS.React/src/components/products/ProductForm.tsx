@@ -1,23 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import type { StockItem, Product } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
-import {
-    DndContext,
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-    type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-    useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+
 
 interface ProductFormProps {
     product: Product;
@@ -63,21 +47,7 @@ export function ProductForm({
     const { t } = useLanguage();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
 
-    function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event;
-        if (over && active.id !== over.id) {
-            const oldIndex = selectedImages.indexOf(active.id as string);
-            const newIndex = selectedImages.indexOf(over.id as string);
-            reorderImages(arrayMove(selectedImages, oldIndex, newIndex));
-        }
-    }
 
     // Filter brands by selected category
     const [filteredBrands, setFilteredBrands] = useState<any[]>([]);
@@ -122,31 +92,27 @@ export function ProductForm({
                         className="hidden"
                     />
 
-                    {/* Preview - Draggable Column */}
+                    {/* Preview - Image Column */}
                     {selectedImages.length > 0 && (
                         <div className="mt-2 max-h-[320px] overflow-y-auto">
-                            <DndContext
-                                sensors={sensors}
-                                collisionDetection={closestCenter}
-                                onDragEnd={handleDragEnd}
-                            >
-                                <SortableContext
-                                    items={selectedImages}
-                                    strategy={verticalListSortingStrategy}
-                                >
-                                    <div className="flex flex-col gap-2">
-                                        {selectedImages.map((img, idx) => (
-                                            <SortableImage
-                                                key={img}
-                                                id={img}
-                                                src={img}
-                                                index={idx}
-                                                onRemove={() => removeImage(img)}
-                                            />
-                                        ))}
-                                    </div>
-                                </SortableContext>
-                            </DndContext>
+                            <div className="flex flex-col gap-2">
+                                {selectedImages.map((img, idx) => (
+                                    <ImageItem
+                                        key={img}
+                                        src={img}
+                                        index={idx}
+                                        totalImages={selectedImages.length}
+                                        onRemove={() => removeImage(img)}
+                                        onReorder={(newIndex) => {
+                                            if (newIndex === idx) return;
+                                            const newOrder = [...selectedImages];
+                                            const [movedItem] = newOrder.splice(idx, 1);
+                                            newOrder.splice(newIndex, 0, movedItem);
+                                            reorderImages(newOrder);
+                                        }}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -407,42 +373,26 @@ export function ProductForm({
     );
 }
 
-interface SortableImageProps {
-    id: string;
+interface ImageItemProps {
     src: string;
     index: number;
+    totalImages: number;
     onRemove: () => void;
+    onReorder: (newIndex: number) => void;
 }
 
-function SortableImage({ id, src, index, onRemove }: SortableImageProps) {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
+function ImageItem({ src, index, totalImages, onRemove, onReorder }: ImageItemProps) {
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={`relative flex items-center gap-3 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-black/20 group ${isDragging ? 'opacity-50 ring-2 ring-[#4e9767]' : ''}`}
-        >
-            <div
-                {...attributes}
-                {...listeners}
-                className="cursor-grab active:cursor-grabbing flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 hover:bg-[#4e9767]/20 text-gray-400 hover:text-[#4e9767] transition-colors"
+        <div className="relative flex items-center gap-3 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-black/20 group">
+            <select
+                value={index}
+                onChange={(e) => onReorder(Number(e.target.value))}
+                className="w-16 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-1 text-center font-bold focus:ring-[#4e9767] cursor-pointer"
             >
-                <span className="material-symbols-outlined text-[18px]">drag_indicator</span>
-            </div>
-            <span className="text-xs font-bold text-gray-400 w-4">{index + 1}</span>
+                {Array.from({ length: totalImages }).map((_, i) => (
+                    <option key={i} value={i}>{i + 1}</option>
+                ))}
+            </select>
             <div className="w-20 h-20 rounded border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0">
                 <img src={src} className="w-full h-full object-cover" alt="" />
             </div>
@@ -450,6 +400,7 @@ function SortableImage({ id, src, index, onRemove }: SortableImageProps) {
                 type="button"
                 onClick={onRemove}
                 className="ml-auto p-1 bg-red-100 dark:bg-red-900/30 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
+                title="Remove image"
             >
                 <span className="material-symbols-outlined text-[14px]">delete</span>
             </button>

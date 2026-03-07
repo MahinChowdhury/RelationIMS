@@ -186,6 +186,12 @@ const en = {
         checkingAvailability: 'Checking availability...',
         totalAvailable: 'Total Available',
         totalDefects: 'Total Defects',
+        orderHistory: 'Order History',
+        noOrdersFound: 'No orders found for this product.',
+        soldPrice: 'Sold Price',
+        showingVariantGroups: 'Showing {groups} variant groups from {total} total items',
+        loaded: 'loaded',
+        viewOrder: 'View Order',
     },
 
     // Orders
@@ -563,7 +569,7 @@ const en = {
         scanBarcode: 'Scan Barcode',
     },
 
-// Dialog / Alerts
+    // Dialog / Alerts
     dialog: {
         notification: 'Notification',
         error: 'Error',

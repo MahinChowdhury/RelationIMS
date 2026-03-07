@@ -44,7 +44,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - Redis__ConnectionString=redis:6379
-      - AzureStorage__ConnectionString=${AZURE_STORAGE_CONNECTION_STRING}
+      - MinIO__Endpoint=${MINIO_ENDPOINT}
+      - MinIO__PublicBaseUrl=${MINIO_PUBLIC_URL}
+      - MinIO__AccessKey=${MINIO_ACCESS_KEY}
+      - MinIO__SecretKey=${MINIO_SECRET_KEY}
+      - MinIO__BucketName=${MINIO_BUCKET_NAME}
+      - MinIO__UseSSL=${MINIO_USE_SSL}
       - JwtSettings__Issuer=${JWT_ISSUER:-JWTDemoApi}
       - JwtSettings__AccessTokenExpirationMinutes=${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:-15}
       - JwtSettings__RefreshTokenExpirationDays=${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:-7}
@@ -56,6 +61,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s
@@ -107,19 +114,42 @@ services:
       - relationims-network
 
   # =========================================
-  # Azure Blob Storage Emulator
+  # MinIO Object Storage
   # =========================================
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    container_name: relationims-azurite
-    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --location /data --debug /data/debug.log
+  minio:
+    image: minio/minio:latest
+    container_name: relationims-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     volumes:
-      - azurite_data:/data
-    expose:
-      - "10000"
-      - "10001"
-      - "10002"
+      - minio_data:/data
+      - ./minio/cors.json:/etc/minio/cors.json:ro
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     restart: unless-stopped
+    networks:
+      - relationims-network
+
+  # =========================================
+  # MinIO Init (CORS Configuration)
+  # =========================================
+  minio-init:
+    image: minio/mc:latest
+    container_name: relationims-minio-init
+    depends_on:
+      minio:
+        condition: service_started
+    volumes:
+      - ./minio/cors.json:/cors.json:ro
+      - ./minio/init-cors.sh:/init-cors.sh:ro
+    entrypoint: ["/bin/sh", "/init-cors.sh"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    restart: "no"
     networks:
       - relationims-network
 
@@ -151,7 +181,7 @@ services:
 
 volumes:
   postgres_data:
-  azurite_data:
+  minio_data:
 
 networks:
   relationims-network:

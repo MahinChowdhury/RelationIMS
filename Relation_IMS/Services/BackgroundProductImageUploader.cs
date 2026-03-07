@@ -1,5 +1,5 @@
 using Relation_IMS.Datas.Interfaces;
-using Relation_IMS.Services.AzureServices;
+using Relation_IMS.Services.MinIOServices;
 using System.Threading.Channels;
 
 namespace Relation_IMS.Services
@@ -31,7 +31,7 @@ namespace Relation_IMS.Services
                     _logger.LogInformation("Starting background image upload for Product ID {ProductId} with {Count} images.", task.ProductId, task.Images.Count);
 
                     using var scope = _scopeFactory.CreateScope();
-                    var blobService = scope.ServiceProvider.GetRequiredService<IAzureBlobService>();
+                    var blobService = scope.ServiceProvider.GetRequiredService<IMinioBlobService>();
                     var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
 
                     var uploadedUrls = new List<string>();

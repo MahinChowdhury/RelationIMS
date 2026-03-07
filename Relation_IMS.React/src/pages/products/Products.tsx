@@ -82,7 +82,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Images
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imageMap, setImageMap] = useState<Record<string, File>>({});
 
     const placeholderImage = 'https://via.placeholder.com/80x80.png?text=No+Image';
 
@@ -220,7 +220,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     const openEditModal = async (product: Product) => {
         setCurrentProduct({ ...product, CategoryId: product.CategoryId || product.Category?.Id || 0 });
         setSelectedImages(product.ImageUrls ? [...product.ImageUrls] : []);
-        setImageFiles([]);
+        setImageMap({});
         setStockItems([]);
         setDeletedVariantIds([]);
         await onCategoryChange(Number(product.CategoryId)); // Load relevant sizes
@@ -253,17 +253,18 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     const saveEdit = async () => {
         if (!currentProduct.Id) return;
         try {
-            // 1. Upload new images
-            const newImageUrls: string[] = [];
-            for (const file of imageFiles) {
-                const formData = new FormData();
-                formData.append('file', file);
-                const res = await api.post('/Blob/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                newImageUrls.push(res.data);
+            // 1. Upload new images in the correct order mapped by state
+            const finalImageUrls: string[] = [];
+            for (const img of selectedImages) {
+                if (img.startsWith('http') && !img.startsWith('blob:')) {
+                    finalImageUrls.push(img);
+                } else if (imageMap[img]) {
+                    const formData = new FormData();
+                    formData.append('file', imageMap[img]);
+                    const res = await api.post('/Blob/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                    finalImageUrls.push(res.data);
+                }
             }
-
-            const existingUrls = selectedImages.filter(img => img.startsWith('http'));
-            const finalImageUrls = [...existingUrls, ...newImageUrls];
 
             // 2. Delete removed variants
             for (const vId of deletedVariantIds) {
@@ -312,6 +313,11 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // CREATE PRODUCT
     const openCreateModal = () => {
         setShowCreateModal(true);
+        setCurrentProduct(initialProductState);
+        setSelectedImages([]);
+        setImageMap({});
+        setStockItems([]);
+        setNewStock({ color: '', size: '', quantity: 0 });
     };
 
     const createProduct = async () => {
@@ -330,9 +336,11 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 });
             }
 
-            // Append images
-            imageFiles.forEach(file => {
-                formData.append('Images', file);
+            // Append images inside correctly ordered bounds
+            selectedImages.forEach(img => {
+                if (imageMap[img]) {
+                    formData.append('Images', imageMap[img]);
+                }
             });
 
             // Note: Product creation is now instant, images upload in background.
@@ -377,7 +385,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             setShowCreateModal(false);
             setCurrentProduct(initialProductState);
             setSelectedImages([]);
-            setImageFiles([]);
+            setImageMap({});
             setStockItems([]);
             setNewStock({ color: '', size: '', quantity: 0 });
             loadProducts(true);
@@ -410,25 +418,26 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     const onImagesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-            setImageFiles(prev => [...prev, ...files]);
+            const newMap = { ...imageMap };
+            const newUrls: string[] = [];
             files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (ev) => setSelectedImages(prev => [...prev, ev.target?.result as string]);
-                reader.readAsDataURL(file);
+                const url = URL.createObjectURL(file);
+                newMap[url] = file;
+                newUrls.push(url);
             });
+            setImageMap(newMap);
+            setSelectedImages(prev => [...prev, ...newUrls]);
         }
     };
 
     const removeImage = (img: string) => {
-        const idx = selectedImages.indexOf(img);
-        if (idx > -1) {
-            setSelectedImages(prev => prev.filter((_, i) => i !== idx));
-            if (!img.startsWith('http')) {
-                const fileIdx = idx - selectedImages.filter(im => im.startsWith('http')).length;
-                if (fileIdx >= 0) {
-                    setImageFiles(prev => prev.filter((_, i) => i !== fileIdx));
-                }
-            }
+        setSelectedImages(prev => prev.filter(i => i !== img));
+        if (imageMap[img]) {
+            setImageMap(prev => {
+                const newMap = { ...prev };
+                delete newMap[img];
+                return newMap;
+            });
         }
     };
 
