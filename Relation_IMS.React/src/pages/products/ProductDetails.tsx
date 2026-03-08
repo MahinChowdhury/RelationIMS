@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import InventoryStockModal from '../../components/products/InventoryStockModal';
+import { DeleteProductModal } from '../../components/products/ProductModals';
 
 // ---------- Interfaces ----------
 // Imported from ../../types
@@ -53,6 +54,9 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const [stockData, setStockData] = useState<InventoryStock[]>([]);
     const [selectedVariantName, setSelectedVariantName] = useState('');
     const [stockModalMode, setStockModalMode] = useState<'available' | 'defect'>('available');
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Product Orders State
     const [productOrders, setProductOrders] = useState<ProductOrderItem[]>([]);
@@ -207,6 +211,19 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
         } finally {
             setOrdersInitialLoading(false);
             setOrdersLoading(false);
+        }
+    };
+
+    const deleteProduct = async () => {
+        if (!productDetail?.Id) return;
+        try {
+            await api.delete(`/Product/${productDetail.Id}`);
+            setShowDeleteModal(false);
+            navigate('/products');
+        } catch (err) {
+            console.error('Failed to delete product:', err);
+            alert(t.products.failedToDelete);
+            setShowDeleteModal(false);
         }
     };
 
@@ -546,10 +563,21 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                     {/* Product Details Cards */}
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
-                        <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary">info</span>
-                            {t.products.productDetails}
-                        </h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">info</span>
+                                {t.products.productDetails}
+                            </h2>
+                            {!isGuest && (
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    className="px-2 py-1.5 bg-red-400 hover:bg-red-500 text-white font-medium text-xs rounded-md transition-colors flex items-center gap-1.5 shadow-sm"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                    {t.products.deleteProduct}
+                                </button>
+                            )}
+                        </div>
                         <div className="flex flex-col gap-6">
                             <div>
                                 <label className="block text-xs font-bold uppercase text-text-secondary mb-2 tracking-wide">{t.common.description}</label>
@@ -787,6 +815,14 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                     loading={inventoryLoading}
                     variantName={selectedVariantName}
                     mode={stockModalMode}
+                />
+            )}
+
+            {!isGuest && (
+                <DeleteProductModal
+                    show={showDeleteModal}
+                    onCancel={() => setShowDeleteModal(false)}
+                    onConfirm={deleteProduct}
                 />
             )}
         </div >

@@ -77,7 +77,7 @@ function ToastItem({ toast, onDismiss }: { toast: UploadToast; onDismiss: (id: s
                         <div className="mt-2">
                             <div className="flex items-center justify-between mb-1">
                                 <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                                    {toast.current} / {toast.total} images
+                                    {typeof toast.current === 'number' ? toast.current.toFixed(2).replace(/\.00$/, '') : toast.current} / {toast.total} images
                                 </span>
                                 <span className="text-[11px] font-bold text-[#4e9767]">{percent}%</span>
                             </div>

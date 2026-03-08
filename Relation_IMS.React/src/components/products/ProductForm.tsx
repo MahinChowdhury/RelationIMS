@@ -15,6 +15,7 @@ import {
     useSortable,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
 import type { StockItem, Product } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -147,6 +148,7 @@ export function ProductForm({
                                 sensors={sensors}
                                 collisionDetection={closestCenter}
                                 onDragEnd={handleDragEnd}
+                                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
                             >
                                 <SortableContext
                                     items={selectedImages}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
+import ConfirmDeleteInput from '../../components/ConfirmDeleteInput';
 
 // --- Types ---
 interface Brand { Id: number; Name: string; Categories: Category[]; }
@@ -27,6 +28,10 @@ export default function Configuration() {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState<'brand' | 'category' | 'quarter' | 'color' | 'size'>('brand');
     const [editingItem, setEditingItem] = useState<any>(null);
+
+    // Delete Modal State
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deleteItem, setDeleteItem] = useState<{ type: 'brand' | 'category' | 'quarter' | 'color' | 'size', id: number } | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0, categoryIds: [] as number[] });
@@ -87,25 +92,39 @@ export default function Configuration() {
         }
     };
 
-    const handleDelete = async (type: 'brand' | 'category' | 'quarter' | 'color' | 'size', id: number) => {
-        if (!window.confirm(t.config.confirmDelete)) return;
+    const handleDeleteClick = (type: 'brand' | 'category' | 'quarter' | 'color' | 'size', id: number) => {
+        setDeleteItem({ type, id });
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteItem) return;
 
         try {
             let endpoint = '';
-            switch (type) {
-                case 'brand': endpoint = `/Brand/${id}`; break;
-                case 'category': endpoint = `/Category/${id}`; break;
-                case 'quarter': endpoint = `/Quarter/${id}`; break;
-                case 'color': endpoint = `/ProductVariantColors/${id}`; break;
-                case 'size': endpoint = `/ProductVariantSizes/${id}`; break;
+            switch (deleteItem.type) {
+                case 'brand': endpoint = `/Brand/${deleteItem.id}`; break;
+                case 'category': endpoint = `/Category/${deleteItem.id}`; break;
+                case 'quarter': endpoint = `/Quarter/${deleteItem.id}`; break;
+                case 'color': endpoint = `/ProductVariantColors/${deleteItem.id}`; break;
+                case 'size': endpoint = `/ProductVariantSizes/${deleteItem.id}`; break;
             }
 
             await api.delete(endpoint);
+            setDeleteModalOpen(false);
+            setDeleteItem(null);
             loadAllData(); // Refresh list
         } catch (error) {
             console.error("Delete failed", error);
             alert(t.config.failedToDelete);
+            setDeleteModalOpen(false);
+            setDeleteItem(null);
         }
+    };
+
+    const cancelDelete = () => {
+        setDeleteModalOpen(false);
+        setDeleteItem(null);
     };
 
     const handleSave = async () => {
@@ -174,7 +193,7 @@ export default function Configuration() {
                     <span className="material-symbols-outlined text-[16px]">edit</span>
                 </button>
                 <button
-                    onClick={() => handleDelete(type, item.Id || item.id)}
+                    onClick={() => handleDeleteClick(type, item.Id || item.id)}
                     className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                 >
                     <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -444,6 +463,29 @@ export default function Configuration() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {deleteModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn">
+                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[#2a4032]">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
+                                <span className="material-symbols-outlined text-red-500 text-[24px]">warning</span>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-text-main dark:text-white">Delete {deleteItem?.type}</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{t.config.confirmDelete || 'This action cannot be undone.'}</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                            Are you sure you want to delete this {deleteItem?.type}? This action cannot be undone.
+                        </p>
+                        <ConfirmDeleteInput
+                            onConfirm={confirmDelete}
+                            onCancel={cancelDelete}
+                        />
                     </div>
                 </div>
             )}

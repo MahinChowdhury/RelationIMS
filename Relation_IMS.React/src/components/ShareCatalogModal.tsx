@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import ConfirmDeleteInput from './ConfirmDeleteInput';
 
 interface ShareCatalog {
     shareHash: string;
@@ -284,20 +285,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
                                 Are you sure you want to delete this share link? Users will no longer be able to access the shared catalog.
                             </p>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={handleDeleteCancel}
-                                    className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-[#2a4032] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#3d5a47] transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDeleteConfirm}
-                                    className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-                                >
-                                    Delete
-                                </button>
-                            </div>
+                            <ConfirmDeleteInput
+                                onConfirm={handleDeleteConfirm}
+                                onCancel={handleDeleteCancel}
+                            />
                         </div>
                     </div>
                 )}

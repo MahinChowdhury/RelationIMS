@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Customer } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import ConfirmDeleteInput from '../ConfirmDeleteInput';
 
 // --- Types ---
 interface CustomerFormModalProps {
@@ -173,7 +175,15 @@ export function CustomerFormModal({
 // --- DELETE MODAL ---
 export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustomerModalProps) {
     const { t } = useLanguage();
+    const [isDeleting, setIsDeleting] = useState(false);
+
     if (!show) return null;
+
+    const handleConfirm = async () => {
+        setIsDeleting(true);
+        await onConfirm();
+        setIsDeleting(false);
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
@@ -189,19 +199,12 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
                         </p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 px-6 pb-6">
-                    <button
-                        onClick={onCancel}
-                        className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
-                    >
-                        {t.common.cancel}
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="px-4 py-2.5 text-sm font-bold text-white bg-red-500 rounded-lg hover:bg-red-600 shadow-md shadow-red-500/20 transition-all"
-                    >
-                        {t.common.yes}, {t.common.delete}
-                    </button>
+                <div className="px-6 pb-6">
+                    <ConfirmDeleteInput
+                        onConfirm={handleConfirm}
+                        onCancel={onCancel}
+                        isDeleting={isDeleting}
+                    />
                 </div>
             </div>
         </div>

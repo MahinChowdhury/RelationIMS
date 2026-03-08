@@ -1,13 +1,24 @@
+import { useState } from 'react';
 import { ProductForm } from './ProductForm';
 import type { Product, StockItem } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import ConfirmDeleteInput from '../ConfirmDeleteInput';
 
 
 
 // ------ DELETE MODAL ------
 export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolean, onCancel: () => void, onConfirm: () => void }) {
     const { t } = useLanguage();
+    const [isDeleting, setIsDeleting] = useState(false);
+
     if (!show) return null;
+
+    const handleConfirm = async () => {
+        setIsDeleting(true);
+        await onConfirm();
+        setIsDeleting(false);
+    };
+
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn">
             <div className="bg-white rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[#d0e7d7] transform transition-all">
@@ -25,10 +36,12 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
                 <p className="text-[#0e1b12] text-base mb-6 leading-relaxed">
                     {t.products.deleteConfirmMessage}
                 </p>
-                <div className="flex justify-end gap-3">
-                    <button onClick={onCancel} className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-semibold transition-all shadow-md hover:shadow-lg">{t.common.cancel}</button>
-                    <button onClick={onConfirm} className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all shadow-md hover:shadow-lg">{t.products.deleteProduct}</button>
-                </div>
+                <ConfirmDeleteInput
+                    onConfirm={handleConfirm}
+                    onCancel={onCancel}
+                    isDeleting={isDeleting}
+                    deleteButtonText={t.products.deleteProduct}
+                />
             </div>
         </div>
     );
