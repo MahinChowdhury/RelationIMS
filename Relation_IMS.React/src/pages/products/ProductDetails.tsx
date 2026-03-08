@@ -43,6 +43,9 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const isGuest = propGuestView || false;
     const [productDetail, setProductDetail] = useState<Product | null>(null);
     const [selectedImage, setSelectedImage] = useState<string>('');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const imageContainerRef = useRef<HTMLDivElement>(null);
+    const touchStartX = useRef<number | null>(null);
 
     // Inventory Modal State
     const [showInventoryModal, setShowInventoryModal] = useState(false);
@@ -104,6 +107,54 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
         }
     }, [activeId, ordersPage, ordersVisible]);
 
+    const imageUrls = productDetail?.ImageUrls || [];
+
+    const goToNextImage = useCallback(() => {
+        if (imageUrls.length === 0) return;
+        const newIndex = (currentImageIndex + 1) % imageUrls.length;
+        setCurrentImageIndex(newIndex);
+        setSelectedImage(imageUrls[newIndex]);
+    }, [currentImageIndex, imageUrls]);
+
+    const goToPrevImage = useCallback(() => {
+        if (imageUrls.length === 0) return;
+        const newIndex = (currentImageIndex - 1 + imageUrls.length) % imageUrls.length;
+        setCurrentImageIndex(newIndex);
+        setSelectedImage(imageUrls[newIndex]);
+    }, [currentImageIndex, imageUrls]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') {
+                goToPrevImage();
+            } else if (e.key === 'ArrowRight') {
+                goToNextImage();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [goToNextImage, goToPrevImage]);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX.current === null) return;
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchStartX.current - touchEndX;
+        const minSwipeDistance = 50;
+
+        if (Math.abs(diff) > minSwipeDistance) {
+            if (diff > 0) {
+                goToNextImage();
+            } else {
+                goToPrevImage();
+            }
+        }
+        touchStartX.current = null;
+    };
+
     const loadProductDetail = async (productId: string) => {
         try {
             const res = await api.get<Product>(`/Product/${productId}`);
@@ -111,6 +162,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
             if (res.data.ImageUrls && res.data.ImageUrls.length > 0) {
                 setSelectedImage(res.data.ImageUrls[0]);
+                setCurrentImageIndex(0);
             }
         } catch (err) {
             console.error(`❌ Failed to load product details of id ${productId}:`, err);
@@ -292,20 +344,46 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
                 {/* Left Column: Images */}
-                <div className="lg:col-span-5 flex flex-col gap-6">
+                <div className="lg:col-span-6 flex flex-col gap-6">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-4 flex flex-col items-center">
-                        <div className="relative w-full aspect-[4/5] bg-gray-50 dark:bg-black/20 rounded-lg overflow-hidden mb-4 group">
+                        <div
+                            className="relative w-full min-h-[400px] flex items-center justify-center bg-gray-50 dark:bg-black/20 rounded-lg overflow-hidden mb-4 group"
+                            ref={imageContainerRef}
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={handleTouchEnd}
+                        >
                             <div
-                                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                                className="absolute inset-0 w-full h-full bg-contain bg-center bg-no-repeat"
                                 style={{ backgroundImage: `url(${selectedImage})` }}
                             ></div>
 
+                            {imageUrls.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); goToPrevImage(); }}
+                                        className="absolute left-2 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-sm"
+                                        aria-label="Previous image"
+                                    >
+                                        <span className="material-symbols-outlined text-[24px]">chevron_left</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); goToNextImage(); }}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 backdrop-blur-sm"
+                                        aria-label="Next image"
+                                    >
+                                        <span className="material-symbols-outlined text-[24px]">chevron_right</span>
+                                    </button>
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs font-medium">
+                                        {currentImageIndex + 1} / {imageUrls.length}
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div className="flex gap-3 w-full overflow-x-auto pb-2">
                             {productDetail.ImageUrls?.map((image, idx) => (
                                 <button
                                     key={idx}
-                                    onClick={() => setSelectedImage(image)}
+                                    onClick={() => { setSelectedImage(image); setCurrentImageIndex(idx); }}
                                     className={`w-16 h-16 shrink-0 rounded-lg border-2 ${selectedImage === image ? 'border-primary' : 'border-gray-200 dark:border-gray-700'} overflow-hidden relative hover:border-primary/50 transition-colors`}
                                 >
                                     <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}></div>
@@ -321,7 +399,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 </div>
 
                 {/* Right Column: Stock & Info */}
-                <div className="lg:col-span-7 flex flex-col gap-6">
+                <div className="lg:col-span-6 flex flex-col gap-6">
 
                     {/* Stock Table or Guest Colors list */}
                     {!isGuest ? (

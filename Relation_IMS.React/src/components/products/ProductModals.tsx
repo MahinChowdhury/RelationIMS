@@ -47,6 +47,7 @@ interface ProductFormModalProps {
     availableSizes: any[];
     stockItems: StockItem[];
     selectedImages: string[];
+    thumbnailMap?: Record<string, string>;
 
     // Handlers
     onClose: () => void;
@@ -76,6 +77,7 @@ interface ProductFormModalProps {
 
 export function ProductFormModal({
     show, mode, product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
+    thumbnailMap,
     onClose, onSave, onChange, onCategoryChange,
     onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
@@ -122,6 +124,7 @@ export function ProductFormModal({
                     availableSizes={availableSizes}
                     stockItems={stockItems}
                     selectedImages={selectedImages}
+                    thumbnailMap={thumbnailMap}
                     onChange={onChange}
                     onCategoryChange={onCategoryChange}
                     onImagesSelected={onImagesSelected}

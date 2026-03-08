@@ -83,6 +83,38 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // Images
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [imageMap, setImageMap] = useState<Record<string, File>>({});
+    const [thumbnailMap, setThumbnailMap] = useState<Record<string, string>>({});
+
+    const generateThumbnail = (file: File): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d')!;
+                const maxSize = 150;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxSize) {
+                        height *= maxSize / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width *= maxSize / height;
+                        height = maxSize;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    };
 
     const placeholderImage = 'https://via.placeholder.com/80x80.png?text=No+Image';
 
@@ -415,17 +447,23 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setCurrentProduct(prev => ({ ...prev, [field]: value }));
     };
 
-    const onImagesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onImagesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
             const newMap = { ...imageMap };
+            const newThumbnails = { ...thumbnailMap };
             const newUrls: string[] = [];
-            files.forEach(file => {
+
+            for (const file of files) {
                 const url = URL.createObjectURL(file);
                 newMap[url] = file;
                 newUrls.push(url);
-            });
+                const thumbnail = await generateThumbnail(file);
+                newThumbnails[url] = thumbnail;
+            }
+
             setImageMap(newMap);
+            setThumbnailMap(newThumbnails);
             setSelectedImages(prev => [...prev, ...newUrls]);
         }
     };
@@ -434,6 +472,13 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setSelectedImages(prev => prev.filter(i => i !== img));
         if (imageMap[img]) {
             setImageMap(prev => {
+                const newMap = { ...prev };
+                delete newMap[img];
+                return newMap;
+            });
+        }
+        if (thumbnailMap[img]) {
+            setThumbnailMap(prev => {
                 const newMap = { ...prev };
                 delete newMap[img];
                 return newMap;
@@ -810,6 +855,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 availableSizes={availableSizes}
                 stockItems={stockItems}
                 selectedImages={selectedImages}
+                thumbnailMap={thumbnailMap}
                 onClose={() => setShowCreateModal(false)}
                 onSave={createProduct}
                 onChange={handleProductChange}
@@ -841,6 +887,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 availableSizes={availableSizes}
                 stockItems={stockItems}
                 selectedImages={selectedImages}
+                thumbnailMap={thumbnailMap}
                 onClose={() => setShowEditModal(false)}
                 onSave={saveEdit}
                 onChange={handleProductChange}

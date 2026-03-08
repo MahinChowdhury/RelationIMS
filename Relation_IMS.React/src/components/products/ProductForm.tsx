@@ -1,4 +1,21 @@
 import { useRef, useState, useEffect } from 'react';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import type { StockItem, Product } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -12,6 +29,7 @@ interface ProductFormProps {
     availableSizes: any[];
     stockItems: StockItem[];
     selectedImages: string[];
+    thumbnailMap?: Record<string, string>;
 
     onChange: (field: string, value: any) => void;
     onCategoryChange: (id: number) => void;
@@ -38,6 +56,7 @@ interface ProductFormProps {
 
 export function ProductForm({
     product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
+    thumbnailMap,
     onChange, onCategoryChange,
     onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
@@ -47,7 +66,25 @@ export function ProductForm({
     const { t } = useLanguage();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = selectedImages.indexOf(active.id as string);
+            const newIndex = selectedImages.indexOf(over.id as string);
+            reorderImages(arrayMove(selectedImages, oldIndex, newIndex));
+        }
+    };
 
     // Filter brands by selected category
     const [filteredBrands, setFilteredBrands] = useState<any[]>([]);
@@ -72,7 +109,14 @@ export function ProductForm({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Images Section */}
                 <div className="lg:col-span-4 flex flex-col gap-3 self-start">
-                    <label className="block text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Image</label>
+                    <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Images</label>
+                        {selectedImages.length > 0 && (
+                            <span className="text-[10px] bg-[#4e9767]/10 text-[#4e9767] px-2 py-0.5 rounded-full font-medium">
+                                {selectedImages.length} image{selectedImages.length > 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
                     <div
                         className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-[#primary]/5 transition-all group bg-white/40 dark:bg-black/20"
                         onClick={() => fileInputRef.current?.click()}
@@ -92,27 +136,37 @@ export function ProductForm({
                         className="hidden"
                     />
 
-                    {/* Preview - Image Column */}
+                    {/* Preview - Drag & Drop Image Column */}
                     {selectedImages.length > 0 && (
-                        <div className="mt-2 max-h-[320px] overflow-y-auto">
-                            <div className="flex flex-col gap-2">
-                                {selectedImages.map((img, idx) => (
-                                    <ImageItem
-                                        key={img}
-                                        src={img}
-                                        index={idx}
-                                        totalImages={selectedImages.length}
-                                        onRemove={() => removeImage(img)}
-                                        onReorder={(newIndex) => {
-                                            if (newIndex === idx) return;
-                                            const newOrder = [...selectedImages];
-                                            const [movedItem] = newOrder.splice(idx, 1);
-                                            newOrder.splice(newIndex, 0, movedItem);
-                                            reorderImages(newOrder);
-                                        }}
-                                    />
-                                ))}
-                            </div>
+                        <div className="mt-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">drag_indicator</span>
+                                Drag to reorder images
+                            </p>
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={selectedImages}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <div className="max-h-[320px] overflow-y-auto">
+                                        <div className="flex flex-col gap-2">
+                                            {selectedImages.map((img, idx) => (
+                                                <SortableImageItem
+                                                    key={img}
+                                                    id={img}
+                                                    src={thumbnailMap?.[img] || img}
+                                                    index={idx}
+                                                    onRemove={() => removeImage(img)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
                         </div>
                     )}
                 </div>
@@ -373,36 +427,61 @@ export function ProductForm({
     );
 }
 
-interface ImageItemProps {
+// --- Sortable Image Item for Drag & Drop ---
+interface SortableImageItemProps {
+    id: string;
     src: string;
     index: number;
-    totalImages: number;
     onRemove: () => void;
-    onReorder: (newIndex: number) => void;
 }
 
-function ImageItem({ src, index, totalImages, onRemove, onReorder }: ImageItemProps) {
+function SortableImageItem({ id, src, index, onRemove }: SortableImageItemProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 50 : 'auto' as const,
+    };
+
     return (
-        <div className="relative flex items-center gap-3 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-black/20 group">
-            <select
-                value={index}
-                onChange={(e) => onReorder(Number(e.target.value))}
-                className="w-16 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-1 text-center font-bold focus:ring-[#4e9767] cursor-pointer"
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`relative flex items-center gap-3 p-3 border rounded-lg bg-white dark:bg-black/20 group transition-colors ${isDragging ? 'border-[#4e9767] shadow-lg ring-2 ring-[#4e9767]/20' : 'border-gray-200 dark:border-gray-700 hover:border-[#4e9767]/50'
+                }`}
+        >
+            {/* Drag Handle */}
+            <button
+                type="button"
+                className="flex flex-col items-center justify-center gap-0.5 cursor-grab active:cursor-grabbing p-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors touch-none"
+                {...attributes}
+                {...listeners}
             >
-                {Array.from({ length: totalImages }).map((_, i) => (
-                    <option key={i} value={i}>{i + 1}</option>
-                ))}
-            </select>
-            <div className="w-20 h-20 rounded border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0">
+                <span className="text-sm font-black text-gray-400 select-none leading-none tracking-widest">::</span>
+            </button>
+
+            {/* Image Thumbnail */}
+            <div className="w-32 h-16 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0 shadow-sm">
                 <img src={src} className="w-full h-full object-cover" alt="" />
             </div>
+
+            {/* Remove Button */}
             <button
                 type="button"
                 onClick={onRemove}
-                className="ml-auto p-1 bg-red-100 dark:bg-red-900/30 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
+                className="ml-auto p-0.5 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
                 title="Remove image"
             >
-                <span className="material-symbols-outlined text-[14px]">delete</span>
+                <span className="material-symbols-outlined mx-0.5 text-[16px]">delete</span>
             </button>
         </div>
     );
