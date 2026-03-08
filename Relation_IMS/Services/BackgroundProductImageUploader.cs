@@ -11,21 +11,26 @@ namespace Relation_IMS.Services
         private readonly Channel<ProductImageUploadTask> _channel;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BackgroundProductImageUploader> _logger;
+        private readonly int _maxDegreeOfParallelism;
 
         public BackgroundProductImageUploader(
             Channel<ProductImageUploadTask> channel,
             IServiceScopeFactory scopeFactory,
-            ILogger<BackgroundProductImageUploader> logger)
+            ILogger<BackgroundProductImageUploader> logger,
+            IConfiguration configuration)
         {
             _channel = channel;
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _maxDegreeOfParallelism = configuration.GetValue("ImageUpload:MaxDegreeOfParallelism", 4);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await foreach (var task in _channel.Reader.ReadAllAsync(stoppingToken))
             {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
                 try
                 {
                     _logger.LogInformation("Starting background image upload for Product ID {ProductId} with {Count} images.", task.ProductId, task.Images.Count);
@@ -35,35 +40,31 @@ namespace Relation_IMS.Services
                     var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
 
                     var uploadedUrls = new List<string>();
-
-                    foreach (var (fileName, content) in task.Images)
+                    var semaphore = new SemaphoreSlim(_maxDegreeOfParallelism);
+                    var uploadTasks = task.Images.Select(async image =>
                     {
+                        await semaphore.WaitAsync(cts.Token);
                         try
                         {
-                            // Create a dummy FormFile since AzureBlobService expects IFormFile
-                            // Or better, we should refactor AzureBlobService to accept Stream, but for now let's wrap it or assuming we can change the service.
-                            // Checking AzureBlobService again... it takes IFormFile. 
-                            // Creating a FormFile wrapper is a bit messy. 
-                            // Let's modify AzureBlobService to accept Stream as well, or just create a simple FormFile wrapper here if needed.
-                            // Actually, let's look at AzureBlobService again.
-                            
-                            // Re-reading AzureBlobService code...
-                            // It uses: using var inputStream = file.OpenReadStream();
-                            // So if I can mock IFormFile it works. 
-                            
-                            // To be cleaner, I will overload UploadFileAsync in IAzureBlobService to accept Stream and fileName.
-                            
-                             var url = await blobService.UploadImageStreamAsync(content, fileName);
-                             uploadedUrls.Add(url);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error uploading image {FileName} for product {ProductId}", fileName, task.ProductId);
+                            var url = await blobService.UploadImageStreamAsync(image.Content, image.FileName);
+                            return url;
                         }
                         finally
                         {
-                            await content.DisposeAsync();
+                            semaphore.Release();
+                            await image.Content.DisposeAsync();
                         }
+                    });
+
+                    try
+                    {
+                        var results = await Task.WhenAll(uploadTasks);
+                        uploadedUrls.AddRange(results.Where(url => !string.IsNullOrEmpty(url)));
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogWarning("Image upload cancelled for product {ProductId}", task.ProductId);
+                        throw;
                     }
 
                     if (uploadedUrls.Any())

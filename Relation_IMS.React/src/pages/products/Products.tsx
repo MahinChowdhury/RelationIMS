@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -6,6 +6,7 @@ import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
 import BarcodeScanner from '../../components/BarcodeScanner';
 import { BarcodeSheet } from '../../components/products/BarcodeSheet';
+import UploadProgressToast, { type UploadToast } from '../../components/products/UploadProgressToast';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { Product, StockItem } from '../../types';
@@ -84,6 +85,21 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [imageMap, setImageMap] = useState<Record<string, File>>({});
     const [thumbnailMap, setThumbnailMap] = useState<Record<string, string>>({});
+
+    // Upload Toast State
+    const [uploadToasts, setUploadToasts] = useState<UploadToast[]>([]);
+
+    const addToast = useCallback((toast: UploadToast) => {
+        setUploadToasts(prev => [...prev, toast]);
+    }, []);
+
+    const updateToast = useCallback((id: string, updates: Partial<UploadToast>) => {
+        setUploadToasts(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+    }, []);
+
+    const dismissToast = useCallback((id: string) => {
+        setUploadToasts(prev => prev.filter(t => t.id !== id));
+    }, []);
 
     const generateThumbnail = (file: File): Promise<string> => {
         return new Promise((resolve) => {
@@ -284,39 +300,62 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // SAVE EDIT
     const saveEdit = async () => {
         if (!currentProduct.Id) return;
+
+        // Capture current state before closing modal
+        const imagesToProcess = [...selectedImages];
+        const imageMapSnapshot = { ...imageMap };
+        const stockSnapshot = [...stockItems];
+        const productSnapshot = { ...currentProduct };
+        const deletedIds = [...deletedVariantIds];
+        const colorsSnapshot = [...colors];
+        const sizesSnapshot = [...availableSizes];
+
+        // Close modal immediately
+        setShowEditModal(false);
+
+        const toastId = `edit-${Date.now()}`;
+        const newImageCount = imagesToProcess.filter(img => !(img.startsWith('http') && !img.startsWith('blob:')) && imageMapSnapshot[img]).length;
+
+        if (newImageCount > 0) {
+            addToast({ id: toastId, type: 'uploading', message: 'Uploading images...', current: 0, total: newImageCount });
+        }
+
         try {
-            // 1. Upload new images in the correct order mapped by state
+            // 1. Upload new images in the correct order
+            let uploaded = 0;
             const finalImageUrls: string[] = [];
-            for (const img of selectedImages) {
+            for (const img of imagesToProcess) {
                 if (img.startsWith('http') && !img.startsWith('blob:')) {
                     finalImageUrls.push(img);
-                } else if (imageMap[img]) {
+                } else if (imageMapSnapshot[img]) {
                     const formData = new FormData();
-                    formData.append('file', imageMap[img]);
+                    formData.append('file', imageMapSnapshot[img]);
                     const res = await api.post('/Blob/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
                     finalImageUrls.push(res.data);
+                    uploaded++;
+                    updateToast(toastId, { current: uploaded, message: `Uploading image ${uploaded} of ${newImageCount}...` });
                 }
             }
 
             // 2. Delete removed variants
-            for (const vId of deletedVariantIds) {
+            for (const vId of deletedIds) {
                 await api.delete(`/ProductVariants/${vId}`).catch(e => console.error(e));
             }
 
             // 3. Update/Create variants
-            for (const item of stockItems) {
-                const colorId = colors.find(c => c.name === item.color)?.id;
-                const sizeId = availableSizes.find(s => s.name === item.size)?.id;
+            for (const item of stockSnapshot) {
+                const colorId = colorsSnapshot.find(c => c.name === item.color)?.id;
+                const sizeId = sizesSnapshot.find(s => s.name === item.size)?.id;
 
                 if (!colorId || !sizeId) continue;
 
                 const payload = {
-                    ProductId: currentProduct.Id,
+                    ProductId: productSnapshot.Id,
                     ProductColorId: colorId,
                     ProductSizeId: sizeId,
-                    VariantPrice: currentProduct.BasePrice,
-                    CostPrice: currentProduct.CostPrice,
-                    MSRP: currentProduct.MSRP,
+                    VariantPrice: productSnapshot.BasePrice,
+                    CostPrice: productSnapshot.CostPrice,
+                    MSRP: productSnapshot.MSRP,
                     Quantity: item.quantity
                 };
 
@@ -328,17 +367,23 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             }
 
             // 4. Update Product
-            await api.put(`/Product/${currentProduct.Id}`, {
-                ...currentProduct,
+            await api.put(`/Product/${productSnapshot.Id}`, {
+                ...productSnapshot,
                 ImageUrls: finalImageUrls
             });
 
-            setShowEditModal(false);
+            // Show success toast
+            if (newImageCount > 0) {
+                updateToast(toastId, { type: 'success', message: `Product updated! ${newImageCount} image${newImageCount > 1 ? 's' : ''} uploaded.` });
+            } else {
+                addToast({ id: toastId, type: 'success', message: 'Product updated successfully!' });
+            }
+
             loadProducts(true);
 
         } catch (e) {
             console.error(e);
-            alert(t.products.failedToUpdate);
+            updateToast(toastId, { type: 'success', message: 'Failed to update product. Please try again.' });
         }
     };
 
@@ -353,78 +398,132 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     };
 
     const createProduct = async () => {
+        // Capture state snapshots before closing modal
+        const imagesToUpload = [...selectedImages];
+        const imageMapSnapshot = { ...imageMap };
+        const stockSnapshot = [...stockItems];
+        const productSnapshot = { ...currentProduct };
+        const colorsSnapshot = [...colors];
+        const sizesSnapshot = [...availableSizes];
+        const imageCount = imagesToUpload.filter(img => imageMapSnapshot[img]).length;
+
+        // Close modal immediately
+        setShowCreateModal(false);
+        setCurrentProduct(initialProductState);
+        setSelectedImages([]);
+        setImageMap({});
+        setStockItems([]);
+        setNewStock({ color: '', size: '', quantity: 0 });
+
+        const toastId = `create-${Date.now()}`;
+        addToast({ id: toastId, type: 'uploading', message: 'Creating product...', current: 0, total: 1 });
+
         try {
             const formData = new FormData();
-            formData.append('Name', currentProduct.Name);
-            formData.append('Description', currentProduct.Description || '');
-            formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
-            formData.append('CostPrice', currentProduct.CostPrice?.toString() || '0');
-            formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
-            formData.append('CategoryId', currentProduct.CategoryId.toString());
-            formData.append('BrandId', currentProduct.BrandId.toString());
-            if (currentProduct.QuarterIds && currentProduct.QuarterIds.length > 0) {
-                currentProduct.QuarterIds.forEach((id: number) => {
+            formData.append('Name', productSnapshot.Name);
+            formData.append('Description', productSnapshot.Description || '');
+            formData.append('BasePrice', productSnapshot.BasePrice?.toString() || '0');
+            formData.append('CostPrice', productSnapshot.CostPrice?.toString() || '0');
+            formData.append('MSRP', productSnapshot.MSRP?.toString() || '0');
+            formData.append('CategoryId', productSnapshot.CategoryId.toString());
+            formData.append('BrandId', productSnapshot.BrandId.toString());
+            if (productSnapshot.QuarterIds && productSnapshot.QuarterIds.length > 0) {
+                productSnapshot.QuarterIds.forEach((id: number) => {
                     formData.append('QuarterIds', id.toString());
                 });
             }
 
-            // Append images inside correctly ordered bounds
-            selectedImages.forEach(img => {
-                if (imageMap[img]) {
-                    formData.append('Images', imageMap[img]);
+            // Append images
+            imagesToUpload.forEach(img => {
+                if (imageMapSnapshot[img]) {
+                    formData.append('Images', imageMapSnapshot[img]);
                 }
             });
 
-            // Note: Product creation is now instant, images upload in background.
+            // Product creation - backend handles image upload in background
             const res = await api.post('/Product', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            console.log('Product created response:', res.data);
             const productId = res.data.id || res.data.Id;
-            console.log('Product ID:', productId, 'Stock items:', stockItems);
 
-            // Add Variants (Keep existing logic as it uses a separate endpoint)
-            if (productId && stockItems.length > 0) {
-                for (const stock of stockItems) {
-                    const colorId = colors.find(c => c.name === stock.color)?.id;
-                    const sizeId = availableSizes.find(s => s.name === stock.size)?.id;
-
-                    console.log('Adding variant:', { color: stock.color, size: stock.size, colorId, sizeId, quantity: stock.quantity });
+            // Add Variants
+            if (productId && stockSnapshot.length > 0) {
+                for (const stock of stockSnapshot) {
+                    const colorId = colorsSnapshot.find(c => c.name === stock.color)?.id;
+                    const sizeId = sizesSnapshot.find(s => s.name === stock.size)?.id;
 
                     if (colorId && sizeId) {
                         try {
-                            const variantRes = await api.post('/ProductVariants', {
+                            await api.post('/ProductVariants', {
                                 ProductId: productId,
                                 ProductColorId: colorId,
                                 ProductSizeId: sizeId,
-                                VariantPrice: currentProduct.BasePrice,
-                                CostPrice: currentProduct.CostPrice,
-                                MSRP: currentProduct.MSRP,
+                                VariantPrice: productSnapshot.BasePrice,
+                                CostPrice: productSnapshot.CostPrice,
+                                MSRP: productSnapshot.MSRP,
                                 Quantity: stock.quantity,
                                 DefaultInventoryId: 1
                             });
-                            console.log('Variant created:', variantRes.data);
                         } catch (variantErr) {
                             console.error('Failed to create variant:', variantErr);
                         }
-                    } else {
-                        console.warn('Color or Size not found:', { stock, colorId, sizeId });
                     }
                 }
             }
 
-            setShowCreateModal(false);
-            setCurrentProduct(initialProductState);
-            setSelectedImages([]);
-            setImageMap({});
-            setStockItems([]);
-            setNewStock({ color: '', size: '', quantity: 0 });
-            loadProducts(true);
+            // If images were included, poll until backend finishes processing
+            if (imageCount > 0 && productId) {
+                updateToast(toastId, { type: 'uploading', message: `Product created! Processing ${imageCount} image${imageCount > 1 ? 's' : ''}...`, current: 0, total: imageCount });
+
+                // Poll every 1.5s for up to 60s
+                const maxAttempts = 40;
+                let attempt = 0;
+                let simulatedCount = 0;
+
+                const pollInterval = setInterval(async () => {
+                    attempt++;
+                    try {
+                        const productRes = await api.get<Product>(`/Product/${productId}`);
+                        const uploadedCount = productRes.data.ImageUrls?.length || 0;
+
+                        // Calculate simulated progress
+                        // Increment faster to make the bar feel snappier.
+                        // Cap the simulation at `imageCount - 0.2` (around ~95% of the bar)
+                        if (uploadedCount < imageCount) {
+                            simulatedCount = Math.min(simulatedCount + (1.6 / imageCount), imageCount - 0.2);
+                        } else {
+                            simulatedCount = uploadedCount; // Snap to 100%
+                        }
+
+                        // Use actual count if it's magically higher, else simulated
+                        const displayCount = Math.max(uploadedCount, simulatedCount);
+
+                        updateToast(toastId, {
+                            current: displayCount,
+                            message: `Processing images... (${Math.floor(displayCount)}/${imageCount})`
+                        });
+
+                        if (uploadedCount >= imageCount || attempt >= maxAttempts) {
+                            clearInterval(pollInterval);
+                            loadProducts(true);
+                            if (uploadedCount >= imageCount) {
+                                updateToast(toastId, { type: 'success', message: `All ${imageCount} image${imageCount > 1 ? 's' : ''} uploaded successfully!` });
+                            } else {
+                                updateToast(toastId, { type: 'info', message: `Processing taking longer than expected. Images will appear soon.` });
+                            }
+                        }
+                    } catch {
+                        // Silently continue polling
+                    }
+                }, 1000);
+            } else {
+                updateToast(toastId, { type: 'success', message: 'Product created successfully!' });
+            }
 
         } catch (e) {
             console.error(e);
-            alert(t.products.failedToCreate);
+            updateToast(toastId, { type: 'success', message: 'Failed to create product. Please try again.' });
         }
     };
 
@@ -907,6 +1006,9 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 setEditedStock={setEditedStock}
                 getColorHex={getColorHex}
             />
+
+            {/* Floating Upload Progress Toast */}
+            <UploadProgressToast toasts={uploadToasts} onDismiss={dismissToast} />
         </div>
     );
 }

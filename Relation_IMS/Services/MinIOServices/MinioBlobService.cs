@@ -11,6 +11,8 @@ namespace Relation_IMS.Services.MinIOServices
         private readonly IMinioClient _minioClient;
         private readonly string _bucketName;
         private readonly string _publicBaseUrl;
+        private readonly SemaphoreSlim _initLock = new(1, 1);
+        private bool _bucketInitialized;
 
         public MinioBlobService(IConfiguration configuration)
         {
@@ -29,12 +31,25 @@ namespace Relation_IMS.Services.MinIOServices
                 .Build();
         }
 
-        public async Task InitializeBucketAsync()
+        private async Task EnsureBucketInitializedAsync()
         {
-            var found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucketName));
-            if (!found)
+            if (_bucketInitialized) return;
+
+            await _initLock.WaitAsync();
+            try
             {
-                await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucketName));
+                if (_bucketInitialized) return;
+
+                var found = await _minioClient.BucketExistsAsync(new BucketExistsArgs().WithBucket(_bucketName));
+                if (!found)
+                {
+                    await _minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(_bucketName));
+                }
+                _bucketInitialized = true;
+            }
+            finally
+            {
+                _initLock.Release();
             }
         }
 
@@ -43,7 +58,7 @@ namespace Relation_IMS.Services.MinIOServices
             if (file == null || file.Length == 0)
                 throw new ArgumentException("File is empty");
 
-            await InitializeBucketAsync();
+            await EnsureBucketInitializedAsync();
 
             var baseName = Path.GetFileNameWithoutExtension(file.FileName);
             var safeFileName = CleanFileName(baseName) + ".webp";
@@ -72,7 +87,7 @@ namespace Relation_IMS.Services.MinIOServices
             if (stream == null || stream.Length == 0)
                 throw new ArgumentException("Stream is empty");
 
-            await InitializeBucketAsync();
+            await EnsureBucketInitializedAsync();
 
             var baseName = Path.GetFileNameWithoutExtension(fileName);
             var safeFileName = CleanFileName(baseName) + ".webp";

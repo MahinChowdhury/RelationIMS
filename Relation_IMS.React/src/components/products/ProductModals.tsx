@@ -85,7 +85,6 @@ export function ProductFormModal({
     getColorHex
 }: ProductFormModalProps) {
     const { t } = useLanguage();
-    // const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!show) return null;
 
