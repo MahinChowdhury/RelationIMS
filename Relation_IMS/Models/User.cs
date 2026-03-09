@@ -43,6 +43,9 @@ namespace Relation_IMS.Models
         [MaxLength(5)]
         public string PreferredLanguage { get; set; } = "en";
 
+        [MaxLength(10)]
+        public string PreferredTheme { get; set; } = "light";
+
         public Relation_IMS.Models.UserProfileModels.UserProfile? UserProfile { get; set; }
         public ICollection<Relation_IMS.Models.UserProfileModels.SalaryRecord> SalaryRecords { get; set; } = new List<Relation_IMS.Models.UserProfileModels.SalaryRecord>();
     }

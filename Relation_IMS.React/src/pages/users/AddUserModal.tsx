@@ -101,31 +101,31 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">First Name</label>
                                 <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Jane" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Jane" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Last Name</label>
                                 <input type="text" name="lastName" value={formData.lastName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Doe" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Doe" />
                             </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Email</label>
                             <input type="email" name="email" value={formData.email} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="jane@example.com" />
+                                className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="jane@example.com" />
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Phone Number</label>
                             <input type="tel" name="phoneNumber" required value={formData.phoneNumber} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="01XXXXXXXXX" />
+                                className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="01XXXXXXXXX" />
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Role</label>
                             <select name="role" value={formData.role} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
                                 {roles.map(role => (
                                     <option key={role.Id} value={role.Name}>{role.Name}</option>
                                 ))}
@@ -136,19 +136,19 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Password</label>
                                 <input type="password" name="password" required value={formData.password} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Confirm Password</label>
                                 <input type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
                             </div>
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Address</label>
                             <input type="text" name="address" value={formData.address} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="123 Main Street, Dhaka" />
+                                className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="123 Main Street, Dhaka" />
                         </div>
 
                         <div>

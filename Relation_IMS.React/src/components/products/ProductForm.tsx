@@ -120,7 +120,7 @@ export function ProductForm({
                         )}
                     </div>
                     <div
-                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-[#primary]/5 transition-all group bg-white/40 dark:bg-black/20"
+                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] dark:border-[#2a4032] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-green-50/50 dark:hover:bg-green-900/20 transition-all group bg-white/40 dark:bg-black/20"
                         onClick={() => fileInputRef.current?.click()}
                     >
                         <span className="material-symbols-outlined text-3xl text-gray-400 group-hover:text-[#4e9767] mb-2 transition-colors">cloud_upload</span>
@@ -332,14 +332,14 @@ export function ProductForm({
                 </div>
 
                 {/* Stock Input Row */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-[#132219]/20 p-4 rounded-xl border border-gray-200 dark:border-[#2a4032]">
                     <div>
                         <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.color}</label>
                         <div className="flex items-center gap-2">
                             <select
                                 value={newStock.color}
                                 onChange={(e) => setNewStock({ ...newStock, color: e.target.value })}
-                                className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
+                                className="flex-1 bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                             >
                                 <option value="" disabled hidden>{t.common.search}</option>
                                 {colors.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -358,7 +358,7 @@ export function ProductForm({
                         <select
                             value={newStock.size}
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}
-                            className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
+                            className="w-full bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                         >
                             <option value="" disabled hidden>{t.common.search}</option>
                             {availableSizes.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
@@ -390,20 +390,20 @@ export function ProductForm({
                 {/* Stock List Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {stockItems.map((s, i) => (
-                        <div key={i} className="bg-white/40 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/10 p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 transition-colors group relative">
+                        <div key={i} className="bg-white/40 dark:bg-[#132219] rounded-xl border border-gray-200/60 dark:border-[#2a4032] p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 dark:hover:border-[#4e9767] transition-colors group relative">
                             {/* Actions Overlay */}
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                 {!isLotMode && (
                                     <button
                                         onClick={() => startStockEdit(i, s)}
-                                        className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-[#4e9767]"
+                                        className="p-1 bg-white dark:bg-[#2a4032] rounded shadow text-gray-500 dark:text-gray-300 hover:text-[#4e9767] dark:hover:text-[#4e9767]"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">edit</span>
                                     </button>
                                 )}
                                 <button
                                     onClick={() => removeStock(i)}
-                                    className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-red-500"
+                                    className="p-1 bg-white dark:bg-[#2a4032] rounded shadow text-gray-500 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">delete</span>
                                 </button>
@@ -443,7 +443,7 @@ export function ProductForm({
                     ))}
 
                     {stockItems.length === 0 && (
-                        <div className="col-span-full py-8 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                        <div className="col-span-full py-8 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-[#2a4032] rounded-xl">
                             {t.products.noVariantsFound}
                         </div>
                     )}
@@ -482,7 +482,7 @@ function SortableImageItem({ id, src, index, onRemove }: SortableImageItemProps)
         <div
             ref={setNodeRef}
             style={style}
-            className={`relative flex items-center gap-3 p-3 border rounded-lg bg-white dark:bg-black/20 group transition-colors ${isDragging ? 'border-[#4e9767] shadow-lg ring-2 ring-[#4e9767]/20' : 'border-gray-200 dark:border-gray-700 hover:border-[#4e9767]/50'
+            className={`relative flex items-center gap-3 p-3 border rounded-lg bg-white dark:bg-[#132219] group transition-colors ${isDragging ? 'border-[#4e9767] shadow-lg ring-2 ring-[#4e9767]/20' : 'border-gray-200 dark:border-[#2a4032] hover:border-[#4e9767]/50'
                 }`}
         >
             {/* Drag Handle */}

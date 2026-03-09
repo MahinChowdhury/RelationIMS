@@ -142,6 +142,7 @@ namespace Relation_IMS.Services.JWTServices
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 PreferredLanguage = user.PreferredLanguage,
+                PreferredTheme = user.PreferredTheme,
                 Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList()
             };
         }
@@ -155,6 +156,19 @@ namespace Relation_IMS.Services.JWTServices
             if (!validLanguages.Contains(language)) return false;
 
             user.PreferredLanguage = language;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdatePreferredThemeAsync(int userId, string theme)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            var validThemes = new[] { "light", "dark" };
+            if (!validThemes.Contains(theme)) return false;
+
+            user.PreferredTheme = theme;
             await _dbContext.SaveChangesAsync();
             return true;
         }

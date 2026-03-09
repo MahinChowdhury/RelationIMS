@@ -114,6 +114,36 @@ namespace Relation_IMS.Controllers.JWTControllers
             return Ok(new { preferredLanguage = userInfo.PreferredLanguage });
         }
 
+        // PUT api/auth/me/theme
+        // Updates the user's preferred theme
+        [Authorize]
+        [HttpPut("me/theme")]
+        public async Task<IActionResult> UpdateTheme([FromBody] UserPreferenceDTO preference)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var success = await _userService.UpdatePreferredThemeAsync(userId.Value, preference.PreferredTheme);
+            if (!success) return BadRequest(new { message = "Invalid theme. Supported: light, dark" });
+
+            return Ok(new { message = "Theme preference updated.", preferredTheme = preference.PreferredTheme });
+        }
+
+        // GET api/auth/me/theme
+        // Gets the user's preferred theme
+        [Authorize]
+        [HttpGet("me/theme")]
+        public async Task<IActionResult> GetTheme()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var userInfo = await _userService.GetUserInfoAsync(userId.Value);
+            if (userInfo == null) return NotFound();
+
+            return Ok(new { preferredTheme = userInfo.PreferredTheme });
+        }
+
         // Helper: Extract current user Id from JWT claims
         private int? GetCurrentUserId()
         {

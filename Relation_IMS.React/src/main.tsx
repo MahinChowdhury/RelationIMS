@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { AlertProvider } from './context/AlertContext'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { LanguageProvider } from './i18n/LanguageContext'
 import { setupGlobalAlerts } from './services/DialogService'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
@@ -25,15 +26,18 @@ createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <LanguageProvider>
-            <AlertProvider>
-              <Suspense fallback={<PageLoader />}>
-                <App />
-              </Suspense>
-            </AlertProvider>
-          </LanguageProvider>
+          <ThemeProvider>
+            <LanguageProvider>
+              <AlertProvider>
+                <Suspense fallback={<PageLoader />}>
+                  <App />
+                </Suspense>
+              </AlertProvider>
+            </LanguageProvider>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>,
 )
+

@@ -772,13 +772,13 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                     <td className="px-6 py-4 text-center align-top">
                                                         <span className="font-bold text-lg text-primary mt-1 block">{item.totalQuantity}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 font-bold text-right align-top">
+                                                    <td className="px-6 py-4 font-bold text-right align-top text-text-main dark:text-white">
                                                         <span className="mt-1 block">৳{item.totalSubtotal.toFixed(2)}</span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {getPaymentStatusBadge(item.Order?.PaymentStatus)}
                                                     </td>
-                                                    <td className="px-6 py-4 text-text-secondary whitespace-nowrap">{formatOrderDate(item.Order?.CreatedAt)}</td>
+                                                    <td className="px-6 py-4 text-text-secondary dark:text-gray-400 whitespace-nowrap">{formatOrderDate(item.Order?.CreatedAt)}</td>
                                                     <td className="px-6 py-4 text-right">
                                                         <button
                                                             onClick={() => navigate(`/orders/${item.OrderId}`)}

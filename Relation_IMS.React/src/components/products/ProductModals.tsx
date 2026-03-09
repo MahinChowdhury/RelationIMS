@@ -21,19 +21,19 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[#d0e7d7] transform transition-all">
+            <div className="bg-white dark:bg-[#1a2e22] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[#d0e7d7] dark:border-[#2a4032] transform transition-all">
                 <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center">
+                    <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center">
                         <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-[#0e1b12] text-xl font-black">{t.products.confirmDeletion}</h2>
+                        <h2 className="text-[#0e1b12] dark:text-white text-xl font-black">{t.products.confirmDeletion}</h2>
                         <p className="text-[#4e9767] text-sm">{t.products.cannotBeUndone}</p>
                     </div>
                 </div>
-                <p className="text-[#0e1b12] text-base mb-6 leading-relaxed">
+                <p className="text-[#0e1b12] dark:text-gray-300 text-base mb-6 leading-relaxed">
                     {t.products.deleteConfirmMessage}
                 </p>
                 <ConfirmDeleteInput
@@ -103,12 +103,12 @@ export function ProductFormModal({
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn overflow-y-auto p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 w-[95%] max-w-4xl border-2 border-[#d0e7d7] max-h-[95vh] overflow-y-auto relative my-8">
+            <div className="bg-white dark:bg-[#1a2e22] rounded-3xl shadow-2xl p-8 w-[95%] max-w-4xl border-2 border-[#d0e7d7] dark:border-[#2a4032] max-h-[95vh] overflow-y-auto relative my-8">
                 {/* Close Button */}
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all text-2xl font-bold"
+                    className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all text-2xl font-bold"
                     aria-label="Close"
                 >
                     ×
@@ -122,7 +122,7 @@ export function ProductFormModal({
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-[#0e1b12] text-2xl font-black">{mode === 'create' ? t.products.addProduct : t.products.editProduct}</h2>
+                        <h2 className="text-[#0e1b12] dark:text-white text-2xl font-black">{mode === 'create' ? t.products.addProduct : t.products.editProduct}</h2>
                         <p className="text-[#4e9767] text-sm font-medium">{mode === 'create' ? t.products.createProduct : t.products.productDetails}</p>
                     </div>
                 </div>
@@ -156,11 +156,11 @@ export function ProductFormModal({
                 />
 
                 {/* Action Buttons */}
-                <div className="flex justify-end gap-3 pt-4 border-t-2 border-[#e7f3eb]">
+                <div className="flex justify-end gap-3 pt-4 border-t-2 border-[#e7f3eb] dark:border-[#2a4032]">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-3 rounded-xl text-[#0e1b12] bg-[#e7f3eb] hover:bg-[#d0e7d7] font-bold transition-all shadow-md hover:shadow-lg"
+                        className="px-6 py-3 rounded-xl text-[#0e1b12] dark:text-gray-300 bg-[#e7f3eb] dark:bg-[#132219] hover:bg-[#d0e7d7] dark:hover:bg-white/5 font-bold transition-all shadow-md hover:shadow-lg"
                     >
                         {t.common.cancel}
                     </button>

@@ -138,7 +138,7 @@ export default function Configuration() {
             await api.delete(endpoint);
             setDeleteModalOpen(false);
             setDeleteItem(null);
-            
+
             // Only refresh the specific section instead of all
             switch (deleteItem.type) {
                 case 'brand': loadBrands(); break;
@@ -197,7 +197,7 @@ export default function Configuration() {
             }
 
             setModalOpen(false);
-            
+
             // Only refresh the specific section instead of all
             switch (modalType) {
                 case 'brand': loadBrands(); break;
@@ -263,157 +263,157 @@ export default function Configuration() {
                 </div>
 
                 {/* Categories Section */}
-                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">category</span>
-                                    {t.config.categories}
-                                </h2>
-                                <button
-                                    onClick={() => openModal('category')}
-                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">add</span>
-                                    {t.config.addCategory}
-                                </button>
-                            </div>
-                            <div className="p-4">
-                                {loadingCategories ? (
-                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[#17cf54]">category</span>
+                            {t.config.categories}
+                        </h2>
+                        <button
+                            onClick={() => openModal('category')}
+                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                            {t.config.addCategory}
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        {loadingCategories ? (
+                            <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                {categories.length > 0 ? (
+                                    categories.map(c => renderCard(c.Name, null, 'category', c))
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                        {categories.length > 0 ? (
-                                            categories.map(c => renderCard(c.Name, null, 'category', c))
-                                        ) : (
-                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noCategories}</p>
-                                        )}
-                                    </div>
+                                    <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noCategories}</p>
                                 )}
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
 
-                        {/* Brands Section */}
-                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">verified</span>
-                                    {t.config.brands}
-                                </h2>
-                                <button
-                                    onClick={() => openModal('brand')}
-                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">add</span>
-                                    {t.config.addBrand}
-                                </button>
-                            </div>
-                            <div className="p-4">
-                                {loadingBrands ? (
-                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                {/* Brands Section */}
+                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[#17cf54]">verified</span>
+                            {t.config.brands}
+                        </h2>
+                        <button
+                            onClick={() => openModal('brand')}
+                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                            {t.config.addBrand}
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        {loadingBrands ? (
+                            <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                {brands.length > 0 ? (
+                                    brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                        {brands.length > 0 ? (
-                                            brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
-                                        ) : (
-                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
-                                        )}
-                                    </div>
+                                    <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
                                 )}
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
 
-                        {/* Quarters Section */}
-                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
-                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">calendar_month</span>
-                                    {t.config.quarters}
-                                </h2>
-                                <button
-                                    onClick={() => openModal('quarter')}
-                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">add</span>
-                                    {t.config.addQuarter}
-                                </button>
-                            </div>
-                            <div className="p-4">
-                                {loadingQuarters ? (
-                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                {/* Quarters Section */}
+                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
+                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[#17cf54]">calendar_month</span>
+                            {t.config.quarters}
+                        </h2>
+                        <button
+                            onClick={() => openModal('quarter')}
+                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                            {t.config.addQuarter}
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        {loadingQuarters ? (
+                            <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                {quarters.length > 0 ? (
+                                    quarters.map(q => renderCard(q.Name, null, 'quarter', q))
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                        {quarters.length > 0 ? (
-                                            quarters.map(q => renderCard(q.Name, null, 'quarter', q))
-                                        ) : (
-                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noQuarters}</p>
-                                        )}
-                                    </div>
+                                    <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noQuarters}</p>
                                 )}
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
 
-                        {/* Colors Section */}
-                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">palette</span>
-                                    {t.config.colors}
-                                </h2>
-                                <button
-                                    onClick={() => openModal('color')}
-                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">add</span>
-                                    {t.config.addColor}
-                                </button>
-                            </div>
-                            <div className="p-4">
-                                {loadingColors ? (
-                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                {/* Colors Section */}
+                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[#17cf54]">palette</span>
+                            {t.config.colors}
+                        </h2>
+                        <button
+                            onClick={() => openModal('color')}
+                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                            {t.config.addColor}
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        {loadingColors ? (
+                            <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                {colors.length > 0 ? (
+                                    colors.map(c => renderCard(c.name, c.hex, 'color', c, c.hex))
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                        {colors.length > 0 ? (
-                                            colors.map(c => renderCard(c.name, c.hex, 'color', c, c.hex))
-                                        ) : (
-                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noColors}</p>
-                                        )}
-                                    </div>
+                                    <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noColors}</p>
                                 )}
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
 
-                        {/* Sizes Section */}
-                        <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                                <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">straighten</span>
-                                    {t.config.sizes}
-                                </h2>
-                                <button
-                                    onClick={() => openModal('size')}
-                                    className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">add</span>
-                                    {t.config.addSize}
-                                </button>
-                            </div>
-                            <div className="p-4">
-                                {loadingSizes ? (
-                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                {/* Sizes Section */}
+                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[#17cf54]">straighten</span>
+                            {t.config.sizes}
+                        </h2>
+                        <button
+                            onClick={() => openModal('size')}
+                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                            {t.config.addSize}
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        {loadingSizes ? (
+                            <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                        ) : (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+                                {sizes.length > 0 ? (
+                                    sortedSizes.map(s => {
+                                        const categoryName = categories.find(c => c.Id === s.categoryId)?.Name;
+                                        return renderCard(s.name, categoryName || t.common.generic, 'size', s);
+                                    })
                                 ) : (
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
-                                        {sizes.length > 0 ? (
-                                            sortedSizes.map(s => {
-                                                const categoryName = categories.find(c => c.Id === s.categoryId)?.Name;
-                                                return renderCard(s.name, categoryName || t.common.generic, 'size', s);
-                                            })
-                                        ) : (
-                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noSizes}</p>
-                                        )}
-                                    </div>
+                                    <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noSizes}</p>
                                 )}
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Modal */}

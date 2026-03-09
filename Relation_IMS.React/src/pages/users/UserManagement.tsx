@@ -169,17 +169,17 @@ export default function UserManagement() {
                         <span className="material-symbols-outlined text-[18px]">search</span>
                     </span>
                     <input type="text" placeholder={t.common.search || "Search users..."} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 pr-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary w-full sm:w-52 transition-shadow backdrop-blur-sm shadow-sm" />
+                        className="pl-9 pr-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary w-full sm:w-52 transition-shadow backdrop-blur-sm shadow-sm" />
                 </div>
                 <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
-                    className="px-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
+                    className="px-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
                     <option value="">All Roles</option>
                     {roles.map((role) => (
                         <option key={role.Id} value={role.Name}>{role.Name}</option>
                     ))}
                 </select>
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 text-xs bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
+                    className="px-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
                     <option value="">All Status</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { getUserProfile, getSalaryRecords, addSalaryRecord, updateUserProfile, changePassword, type UserProfileDTO, type SalaryRecordDTO } from '../../services/userService';
 import LogoutConfirmModal from '../../components/LogoutConfirmModal';
 import { QuantityInput } from '../../components/QuantityInput';
@@ -37,7 +38,7 @@ export default function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+    const { theme, setTheme, isDark } = useTheme();
     const [paySalaryModalOpen, setPaySalaryModalOpen] = useState(false);
     const [salaryForm, setSalaryForm] = useState({
         month: months[new Date().getMonth()],
@@ -477,10 +478,17 @@ export default function UserProfile() {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => setDarkModeEnabled(!darkModeEnabled)}
-                                    className={`w-12 h-6 rounded-full relative transition-colors ${darkModeEnabled ? 'bg-[#17cf54]' : 'bg-gray-300 dark:bg-gray-600'}`}
+                                    onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                                    className={`relative flex items-center p-1 rounded-full w-[72px] h-[36px] cursor-pointer shrink-0 shadow-inner transition-colors duration-300 border ${isDark ? 'bg-indigo-900/40 border-indigo-700/50' : 'bg-amber-100/50 border-amber-200/50'}`}
+                                    aria-label="Toggle Dark Mode"
                                 >
-                                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${darkModeEnabled ? 'right-1' : 'left-1'}`}></span>
+                                    <div
+                                        className={`absolute left-1 shadow-md w-[28px] h-[28px] rounded-full transition-all duration-300 flex items-center justify-center ${isDark ? 'translate-x-[36px] bg-indigo-500' : 'translate-x-0 bg-amber-400'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-white text-[16px]">
+                                            {isDark ? 'dark_mode' : 'light_mode'}
+                                        </span>
+                                    </div>
                                 </button>
                             </div>
 
@@ -546,7 +554,7 @@ export default function UserProfile() {
                                         <select
                                             value={salaryForm.month}
                                             onChange={(e) => setSalaryForm({ ...salaryForm, month: e.target.value })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                            className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
                                         >
                                             {months.map((month) => (
                                                 <option key={month} value={month}>{month}</option>
@@ -558,7 +566,7 @@ export default function UserProfile() {
                                         <select
                                             value={salaryForm.year}
                                             onChange={(e) => setSalaryForm({ ...salaryForm, year: parseInt(e.target.value) })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                            className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
                                         >
                                             {[2026, 2025, 2024, 2023].map((year) => (
                                                 <option key={year} value={year}>{year}</option>
@@ -590,7 +598,7 @@ export default function UserProfile() {
                                         value={salaryForm.notes}
                                         onChange={(e) => setSalaryForm({ ...salaryForm, notes: e.target.value })}
                                         placeholder={t.profile?.notesPlaceholder || 'Add any notes...'}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54] resize-none"
+                                        className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54] resize-none"
                                         rows={2}
                                     />
                                 </div>

@@ -3,6 +3,7 @@ namespace Relation_IMS.Dtos.JWTDtos
     public class UserPreferenceDTO
     {
         public string PreferredLanguage { get; set; } = "en";
+        public string PreferredTheme { get; set; } = "light";
     }
 
     public class UserInfoDTO
@@ -13,6 +14,7 @@ namespace Relation_IMS.Dtos.JWTDtos
         public string Email { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
         public string PreferredLanguage { get; set; } = "en";
+        public string PreferredTheme { get; set; } = "light";
         public List<string> Roles { get; set; } = new();
     }
 }
