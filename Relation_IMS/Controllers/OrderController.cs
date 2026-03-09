@@ -41,7 +41,7 @@ namespace Relation_IMS.Controllers
             return Ok(order);
         }
         [HttpDelete("{id:int}")]
-        [InvalidateCache("order", "orderitem", "arrangement")]
+        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant")]
         public async Task<ActionResult<Order>> DeleteOrderByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
@@ -57,6 +57,8 @@ namespace Relation_IMS.Controllers
                 await cacheService.InvalidateCacheByPrefixAsync("order");
                 await cacheService.InvalidateCacheByPrefixAsync("orderitem");
                 await cacheService.InvalidateCacheByPrefixAsync("arrangement");
+                await cacheService.InvalidateCacheByPrefixAsync("product");
+                await cacheService.InvalidateCacheByPrefixAsync("productvariant");
 
                 await _hubContext.Clients.Group("arrangement").SendAsync(ArrangementHubEvents.OrderListUpdated);
 
@@ -65,7 +67,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
-        [InvalidateCache("order", "orderitem", "arrangement")]
+        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant")]
         public async Task<ActionResult<Order>> CreateNewOrderAsync(CreateOrderDTO orderDto) {
             // Lock the customer to prevent concurrent order creation issues
             using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
@@ -77,6 +79,8 @@ namespace Relation_IMS.Controllers
                 await cacheService.InvalidateCacheByPrefixAsync("order");
                 await cacheService.InvalidateCacheByPrefixAsync("orderitem");
                 await cacheService.InvalidateCacheByPrefixAsync("arrangement");
+                await cacheService.InvalidateCacheByPrefixAsync("product");
+                await cacheService.InvalidateCacheByPrefixAsync("productvariant");
 
                 Console.WriteLine($"[SignalR] Broadcasting OrderListUpdated after creating order {created?.Id}");
                 await _hubContext.Clients.Group("arrangement").SendAsync(ArrangementHubEvents.OrderListUpdated);
@@ -86,7 +90,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [InvalidateCache("order", "orderitem", "arrangement")]
+        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant")]
         public async Task<ActionResult<Order>> UpdateOrderByIdAsync([FromRoute] int id, UpdateOrderDTO updateDto) {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
             {
@@ -106,9 +110,9 @@ namespace Relation_IMS.Controllers
 
         [HttpGet("customer/{customerId:int}")]
         [RedisCache("order")]
-        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId, [FromQuery] int? status, [FromQuery] int? year)
+        public async Task<ActionResult<List<Order>>> GetOrderByCustomerId([FromRoute] int customerId, [FromQuery] int? status, [FromQuery] int? year, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var orders = await _repo.GetOrderByCustomerIdAsync(customerId, status, year);
+            var orders = await _repo.GetOrderByCustomerIdAsync(customerId, status, year, pageNumber, pageSize);
 
             if (orders == null) {
                 return NotFound(new {message = $"Customer with id : {customerId} not found." });

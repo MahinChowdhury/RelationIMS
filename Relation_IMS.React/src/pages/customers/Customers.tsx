@@ -22,6 +22,7 @@ export default function CustomersPage() {
     const debouncedSearch = useDebounce(searchTerm, 300);
     const [sortBy, setSortBy] = useState<'orderFrequency' | 'lastOrderDate' | ''>('');
     const [statusFilter, setStatusFilter] = useState<string>('All');
+    const [showOutstandingOnly, setShowOutstandingOnly] = useState(false);
 
     // Modals
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -45,7 +46,7 @@ export default function CustomersPage() {
     // Initial Load & Filter Trigger
     useEffect(() => {
         loadCustomers(true);
-    }, [sortBy, debouncedSearch]);
+    }, [sortBy, debouncedSearch, showOutstandingOnly]);
 
     // Infinite Scroll Trigger
     useEffect(() => {
@@ -73,6 +74,7 @@ export default function CustomersPage() {
             const params = new URLSearchParams({
                 search: debouncedSearch || '',
                 sortBy: sortBy || '',
+                showOutstandingOnly: showOutstandingOnly ? 'true' : '',
                 pageNumber: reset ? '1' : page.toString(),
                 pageSize: '20'
             });
@@ -128,9 +130,16 @@ export default function CustomersPage() {
 
     // Client-side filtering for derived status
     const filteredCustomers = customers.filter(c => {
+        const stats = getStats(c);
+        if (showOutstandingOnly && stats.dueAmount <= 0) return false;
         if (statusFilter === 'All') return true;
         return getStatus(c) === statusFilter;
     });
+
+    // Sort by outstanding balance (decreasing) when filter is active
+    const sortedCustomers = showOutstandingOnly
+        ? [...filteredCustomers].sort((a, b) => getStats(b).dueAmount - getStats(a).dueAmount)
+        : filteredCustomers;
 
     // --- Handlers ---
     const navigateToDetail = (id: number) => {
@@ -277,6 +286,15 @@ export default function CustomersPage() {
                             <span className="material-symbols-outlined text-[18px]">expand_more</span>
                         </div>
                     </div>
+                    <label className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-gray-50 dark:bg-[#112116] border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                        <input
+                            type="checkbox"
+                            checked={showOutstandingOnly}
+                            onChange={(e) => setShowOutstandingOnly(e.target.checked)}
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:bg-gray-700 dark:border-gray-600"
+                        />
+                        <span className="text-sm font-medium text-text-main dark:text-white whitespace-nowrap">Has Outstanding</span>
+                    </label>
                 </div>
             </div>
 
@@ -295,7 +313,7 @@ export default function CustomersPage() {
 
             {/* Customer List */}
             <div className="flex flex-col gap-3">
-                {filteredCustomers.map((c) => {
+                {sortedCustomers.map((c) => {
                     const stats = getStats(c);
                     const status = getStatus(c);
 
@@ -348,7 +366,7 @@ export default function CustomersPage() {
                             {/* Total Spent */}
                             <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Total Spent</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white">${stats.totalSpent.toFixed(2)}</span>
+                                <span className="text-sm font-bold text-text-main dark:text-white">৳{stats.totalSpent.toFixed(2)}</span>
                             </div>
 
                             {/* Due Amount */}
@@ -357,7 +375,7 @@ export default function CustomersPage() {
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">payments</span>
                                     <span className={`font-bold text-sm lg:text-sm ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                        ${stats.dueAmount.toFixed(2)}
+                                        ৳{stats.dueAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
@@ -412,7 +430,9 @@ export default function CustomersPage() {
                         <p className="text-text-secondary text-sm">No more customers to load.</p>
                     )}
                     {!loading && customers.length === 0 && (
-                        <p className="text-text-secondary text-base">No customers found.</p>
+                        <p className="text-text-secondary text-base">
+                            {showOutstandingOnly ? 'No customers with outstanding balance.' : 'No customers found.'}
+                        </p>
                     )}
                 </div>
             </div>

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Controllers
@@ -17,6 +18,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
+        [RedisCache("quarter")]
         public async Task<ActionResult<List<Quarter>>> GetAllQuarters()
         {
             var quarters = await _repo.GetAllQuartersAsync();
@@ -36,6 +38,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
+        [InvalidateCache("quarter")]
         public async Task<IActionResult> CreateQuarter([FromBody] CreateQuarterDTO createDto)
         {
             if (!ModelState.IsValid)
@@ -48,6 +51,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [InvalidateCache("quarter")]
         public async Task<IActionResult> UpdateQuarter([FromRoute] int id, [FromBody] UpdateQuarterDTO updateDto)
         {
             if (!ModelState.IsValid)
@@ -65,6 +69,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [InvalidateCache("quarter")]
         public async Task<IActionResult> DeleteQuarter([FromRoute] int id)
         {
             var deleted = await _repo.DeleteQuarterByIdAsync(id);

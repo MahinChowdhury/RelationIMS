@@ -49,6 +49,20 @@ namespace Relation_IMS.Datas.Repositories
             await _context.OrderItems.AddAsync(orderItem);
             await _context.SaveChangesAsync();
 
+            // Update global variant reserved quantity
+            if (orderItem.ProductVariantId.HasValue)
+            {
+                using (await _lockService.AcquireLockAsync($"variant_stock:{orderItem.ProductVariantId.Value}", TimeSpan.FromSeconds(10)))
+                {
+                    var variant = await _context.ProductVariants.FindAsync(orderItem.ProductVariantId.Value);
+                    if (variant != null)
+                    {
+                        variant.ReservedQuantity += orderItem.Quantity;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
             // Mark specific ProductItems as Sold AND Link them to this OrderItem
             if (orderItemDto.ProductItemIds != null && orderItemDto.ProductItemIds.Any())
             {
@@ -112,6 +126,20 @@ namespace Relation_IMS.Datas.Repositories
             var orderItem = await _context.OrderItems.FindAsync(id);
             if (orderItem == null) return null;
 
+            if (orderItem.ProductVariantId.HasValue)
+            {
+                using (await _lockService.AcquireLockAsync($"variant_stock:{orderItem.ProductVariantId.Value}", TimeSpan.FromSeconds(10)))
+                {
+                    var variant = await _context.ProductVariants.FindAsync(orderItem.ProductVariantId.Value);
+                    if (variant != null && variant.ReservedQuantity > 0)
+                    {
+                        var releaseQty = orderItem.Quantity - (orderItem.ArrangedQuantity > 0 ? orderItem.ArrangedQuantity : 0);
+                        variant.ReservedQuantity = Math.Max(0, variant.ReservedQuantity - Math.Max(0, releaseQty));
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
             _context.OrderItems.Remove(orderItem);
             await _context.SaveChangesAsync();
 
@@ -141,6 +169,25 @@ namespace Relation_IMS.Datas.Repositories
                  }
             }
 
+            // Adjust reserved quantity if quantity changed, assuming variant didn't change (frontend edit mode doesn't change variant)
+            if (orderItem.ProductVariantId.HasValue && orderItem.Quantity != updateDto.Quantity)
+            {
+                using (await _lockService.AcquireLockAsync($"variant_stock:{orderItem.ProductVariantId.Value}", TimeSpan.FromSeconds(10)))
+                {
+                    var variant = await _context.ProductVariants.FindAsync(orderItem.ProductVariantId.Value);
+                    if (variant != null)
+                    {
+                        int difference = updateDto.Quantity - orderItem.Quantity;
+                        variant.ReservedQuantity += difference;
+                        
+                        // Prevent negative reservations just in case
+                        if (variant.ReservedQuantity < 0) {
+                            variant.ReservedQuantity = 0;
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             orderItem.OrderId = updateDto.OrderId;
             orderItem.ProductId = updateDto.ProductId;
             orderItem.Quantity = updateDto.Quantity;
@@ -151,6 +198,24 @@ namespace Relation_IMS.Datas.Repositories
             await _context.SaveChangesAsync();
 
             return orderItem;
+        }
+
+        public async Task<List<OrderItem>> GetOrderItemsByProductIdAsync(int productId, int pageNumber = 1, int pageSize = 20)
+        {
+            var items = await _context.OrderItems
+                .Where(oi => oi.ProductId == productId)
+                .Include(oi => oi.Order!)
+                    .ThenInclude(o => o.Customer)
+                .Include(oi => oi.ProductVariant!)
+                    .ThenInclude(pv => pv!.Color)
+                .Include(oi => oi.ProductVariant!)
+                    .ThenInclude(pv => pv!.Size)
+                .OrderByDescending(oi => oi.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return items;
         }
     }
 }

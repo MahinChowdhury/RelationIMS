@@ -81,6 +81,12 @@ const bn: Translations = {
         dateLocale: 'bn-BD',
         oneSize: 'এক সাইজ',
         amount: 'পরিমাণ',
+        optional: 'ঐচ্ছিক',
+        firstname: 'নামের প্রথম অংশ',
+        lastname: 'নামের শেষ অংশ',
+        currentPassword: 'বর্তমান পাসওয়ার্ড',
+        newPassword: 'নতুন পাসওয়ার্ড',
+        confirmPassword: 'পাসওয়ার্ড নিশ্চিত করুন',
     },
 
     // App / Brand
@@ -182,6 +188,12 @@ const bn: Translations = {
         checkingAvailability: 'উপলব্ধতা যাচাই করা হচ্ছে...',
         totalAvailable: 'মোট উপলব্ধ',
         totalDefects: 'মোট ত্রুটি',
+        orderHistory: 'অর্ডারের ইতিহাস',
+        noOrdersFound: 'এই পণ্যের জন্য কোন অর্ডার পাওয়া যায়নি।',
+        soldPrice: 'বিক্রয় মূল্য',
+        showingVariantGroups: '{total} টি আইটেম থেকে {groups} টি ভেরিয়েন্ট গ্রুপ দেখানো হচ্ছে',
+        loaded: 'লোড হয়েছে',
+        viewOrder: 'অর্ডার দেখুন',
     },
 
     // Orders
@@ -559,7 +571,7 @@ const bn: Translations = {
         scanBarcode: 'বারকোড স্ক্যান',
     },
 
-// Dialog / Alerts
+    // Dialog / Alerts
     dialog: {
         notification: 'বিজ্ঞপ্তি',
         error: 'ত্রুটি',
@@ -605,6 +617,9 @@ const bn: Translations = {
         notes: 'নোট',
         notesPlaceholder: 'কোনো নোট যোগ করুন...',
         address: 'ঠিকানা',
+        currentPasswordLabel: 'বর্তমান পাসওয়ার্ড',
+        newPasswordLabel: 'নতুন পাসওয়ার্ড',
+        confirmPasswordLabel: 'নতুন পাসওয়ার্ড নিশ্চিত করুন',
     },
 };
 

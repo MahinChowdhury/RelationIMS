@@ -74,6 +74,9 @@ export default function ProductCard({
                 <span className="shrink-0 text-[10px] sm:text-xs text-gray-500 truncate">
                     | {getBrandName(product.BrandId)}
                 </span>
+                <span className="shrink-0 text-[10px] sm:text-xs text-gray-400 font-mono truncate">
+                    | SKU: {product.Sku || product.Id}
+                </span>
             </div>
         </div>
     );

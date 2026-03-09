@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import ConfirmDeleteInput from './ConfirmDeleteInput';
 
 interface ShareCatalog {
     shareHash: string;
@@ -22,15 +23,14 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [creating, setCreating] = useState(false);
-    const [created, setCreated] = useState(false);
     const [copiedHash, setCopiedHash] = useState<string | null>(null);
+    const [copiedPasswordHash, setCopiedPasswordHash] = useState<string | null>(null);
     const [deletingHash, setDeletingHash] = useState<string | null>(null);
 
     useEffect(() => {
         if (show) {
             fetchShareCatalogs();
             setShowCreateForm(false);
-            setCreated(false);
             setPassword('');
             setConfirmPassword('');
             setError('');
@@ -67,7 +67,6 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
             await api.post('/ShareCatalog', { password });
             setPassword('');
             setConfirmPassword('');
-            setCreated(true);
             setShowCreateForm(false);
             fetchShareCatalogs();
         } catch (err: any) {
@@ -105,15 +104,16 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
         setTimeout(() => setCopiedHash(null), 2000);
     };
 
-    const handleCopyPassword = (password: string) => {
+    const handleCopyPassword = (hash: string, password: string) => {
         navigator.clipboard.writeText(password);
+        setCopiedPasswordHash(hash);
+        setTimeout(() => setCopiedPasswordHash(null), 2000);
     };
 
     const handleClose = () => {
         setPassword('');
         setConfirmPassword('');
         setError('');
-        setCreated(false);
         setShowCreateForm(false);
         onClose();
     };
@@ -183,7 +183,7 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                                         <span className="material-symbols-outlined text-[18px]">delete</span>
                                     </button>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-4 mb-2">
                                     <div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">Password</p>
@@ -192,10 +192,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                                                 {catalog.password}
                                             </p>
                                             <button
-                                                onClick={() => handleCopyPassword(catalog.password)}
+                                                onClick={() => handleCopyPassword(catalog.shareHash, catalog.password)}
                                                 className="text-primary hover:text-primary/80 text-xs"
                                             >
-                                                Copy
+                                                {copiedPasswordHash === catalog.shareHash ? 'Copied!' : 'Copy'}
                                             </button>
                                         </div>
                                     </div>
@@ -285,20 +285,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
                                 Are you sure you want to delete this share link? Users will no longer be able to access the shared catalog.
                             </p>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={handleDeleteCancel}
-                                    className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-[#2a4032] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#3d5a47] transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDeleteConfirm}
-                                    className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-                                >
-                                    Delete
-                                </button>
-                            </div>
+                            <ConfirmDeleteInput
+                                onConfirm={handleDeleteConfirm}
+                                onCancel={handleDeleteCancel}
+                            />
                         </div>
                     </div>
                 )}

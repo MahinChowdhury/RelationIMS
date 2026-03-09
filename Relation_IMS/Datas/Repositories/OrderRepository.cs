@@ -13,10 +13,13 @@ namespace Relation_IMS.Datas.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
-        public OrderRepository(ApplicationDbContext context, IMapper mapper)
+        private readonly Relation_IMS.Services.IConcurrencyLockService _lockService;
+
+        public OrderRepository(ApplicationDbContext context, IMapper mapper, Relation_IMS.Services.IConcurrencyLockService lockService)
         {
             _context = context;
             _mapper = mapper;
+            _lockService = lockService;
         }
 
         public async Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto)
@@ -50,13 +53,59 @@ namespace Relation_IMS.Datas.Repositories
             await _context.Orders.AddAsync(newOrder);
             await _context.SaveChangesAsync();
 
+            // Reserve inventory for each order item with concurrency locks
+            if (newOrder.OrderItems != null && newOrder.OrderItems.Any())
+            {
+                // Group by variant to avoid multiple locks for the same variant in one order
+                var itemsByVariant = newOrder.OrderItems
+                    .Where(i => i.ProductVariantId.HasValue)
+                    .GroupBy(i => i.ProductVariantId!.Value);
+
+                foreach (var group in itemsByVariant)
+                {
+                    var variantId = group.Key;
+                    var totalQuantity = group.Sum(i => i.Quantity);
+
+                    using (await _lockService.AcquireLockAsync($"variant_stock:{variantId}", TimeSpan.FromSeconds(10)))
+                    {
+                        var variant = await _context.ProductVariants.FindAsync(variantId);
+                        if (variant != null)
+                        {
+                            variant.ReservedQuantity += totalQuantity;
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+            }
+
             return newOrder;
         }
 
         public async Task<Order?> DeleteOrderByIdAsync(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == id);
+            
             if (order == null) return null;
+
+            // Release reserved inventory for each order item
+            if (order.OrderItems != null && order.OrderItems.Any())
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.ProductVariantId.HasValue)
+                    {
+                        var variant = await _context.ProductVariants.FindAsync(item.ProductVariantId.Value);
+                        if (variant != null && variant.ReservedQuantity > 0)
+                        {
+                            // Only release up to the quantity that was actually arranged (not yet sold)
+                            var releaseQty = item.Quantity - (item.ArrangedQuantity > 0 ? item.ArrangedQuantity : 0);
+                            variant.ReservedQuantity = Math.Max(0, variant.ReservedQuantity - releaseQty);
+                        }
+                    }
+                }
+            }
 
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
@@ -86,7 +135,7 @@ namespace Relation_IMS.Datas.Repositories
             return items;
         }
 
-        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null)
+        public async Task<List<Order>> GetOrderByCustomerIdAsync(int customerId, int? status = null, int? year = null, int pageNumber = 1, int pageSize = 20)
         {
             var query = _context.Orders.Where(o => o.CustomerId == customerId);
 
@@ -100,7 +149,11 @@ namespace Relation_IMS.Datas.Repositories
                 query = query.Where(o => o.CreatedAt.Year == year.Value);
             }
 
-            var orders = await query.ToListAsync();
+            var orders = await query
+                .OrderByDescending(o => o.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             return orders;
         }
@@ -139,6 +192,7 @@ namespace Relation_IMS.Datas.Repositories
             order.NetAmount = updateDto.NetAmount;
             order.UserId = updateDto.UserId;
             order.Remarks = updateDto.Remarks;
+
             // Only update InternalStatus if not confirming via this generic update, usually handled separately, but kept for flexibility
             if (updateDto.InternalStatus.HasValue)
             {
@@ -148,6 +202,20 @@ namespace Relation_IMS.Datas.Repositories
             // Update Order Items if Provided
             if (updateDto.OrderItems != null)
             {
+                // Release old reservations
+                foreach (var oldItem in order.OrderItems!)
+                {
+                    if (oldItem.ProductVariantId.HasValue)
+                    {
+                        var variant = await _context.ProductVariants.FindAsync(oldItem.ProductVariantId.Value);
+                        if (variant != null && variant.ReservedQuantity > 0)
+                        {
+                            var releaseQty = oldItem.Quantity - (oldItem.ArrangedQuantity > 0 ? oldItem.ArrangedQuantity : 0);
+                            variant.ReservedQuantity = Math.Max(0, variant.ReservedQuantity - Math.Max(0, releaseQty));
+                        }
+                    }
+                }
+
                 // Remove existing items
                 _context.OrderItems.RemoveRange(order.OrderItems!);
                 
@@ -156,8 +224,17 @@ namespace Relation_IMS.Datas.Repositories
                 foreach (var item in newItems)
                 {
                     item.OrderId = order.Id; // Ensure link
-                    // Reset IDs to 0 to ensure EF treats them as new additions if mapper kept IDs
                     item.Id = 0; 
+                    
+                    // Reserve new quantities
+                    if (item.ProductVariantId.HasValue)
+                    {
+                        var variant = await _context.ProductVariants.FindAsync(item.ProductVariantId.Value);
+                        if (variant != null)
+                        {
+                            variant.ReservedQuantity += item.Quantity;
+                        }
+                    }
                 }
                 await _context.OrderItems.AddRangeAsync(newItems);
             }

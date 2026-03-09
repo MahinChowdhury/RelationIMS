@@ -780,7 +780,7 @@ export default function CreateOrder() {
                                                         </td>
                                                         <td className="px-6 py-3 text-right text-text-main dark:text-gray-200 font-medium">
                                                             <div className="flex items-center justify-end gap-1">
-                                                                <span className="text-gray-400 text-xs">$</span>
+                                                                <span className="text-gray-400 text-xs">৳</span>
                                                                 <input
                                                                     type="number"
                                                                     onFocus={(e) => e.target.select()}
@@ -795,7 +795,7 @@ export default function CreateOrder() {
                                                                 <span className="font-bold w-6 text-center text-text-main dark:text-white text-sm">{item.Quantity}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white text-sm">${item.Subtotal.toFixed(2)}</td>
+                                                        <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white text-sm">৳{item.Subtotal.toFixed(2)}</td>
                                                         <td className="px-6 py-3 text-center">
                                                             <button
                                                                 onClick={() => removeFromCart(item.Id)}
@@ -826,7 +826,7 @@ export default function CreateOrder() {
                         <div className="space-y-4 mb-6">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-600 dark:text-gray-400 font-medium">{t.orders.orderSummary || 'Subtotal'} ({cart.length} {t.orders.items})</span>
-                                <span className="text-text-main dark:text-white font-bold text-base">${subtotal.toFixed(2)}</span>
+                                <span className="text-text-main dark:text-white font-bold text-base">৳{subtotal.toFixed(2)}</span>
                             </div>
 
                             <div className="flex justify-between items-center text-sm">
@@ -835,7 +835,7 @@ export default function CreateOrder() {
                                 </span>
                                 <div className="flex items-center w-32">
                                     <div className="relative w-full">
-                                        <span className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-gray-500 text-xs">$</span>
+                                        <span className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-gray-500 text-xs">৳</span>
                                         <input
                                             className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-right text-sm py-1.5 px-2 pl-5 focus:border-primary focus:ring-primary text-red-500 font-medium placeholder-gray-300"
                                             placeholder="0.00"
@@ -850,14 +850,14 @@ export default function CreateOrder() {
 
                             <div className="flex justify-between items-center text-sm border-t border-dashed border-gray-300 dark:border-gray-600 pt-3">
                                 <span className="font-bold text-text-main dark:text-white">{t.orders.netAmount}</span>
-                                <span className="font-bold text-text-main dark:text-white text-lg">${netAmount.toFixed(2)}</span>
+                                <span className="font-bold text-text-main dark:text-white text-lg">৳{netAmount.toFixed(2)}</span>
                             </div>
 
                             <div className="bg-[#f8fcf9] dark:bg-gray-800/50 p-4 rounded-lg border border-[#e7f3eb] dark:border-gray-700 space-y-3">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-600 dark:text-gray-400 font-medium">{t.orders.paidAmount}</span>
                                     <div className="flex items-center w-28 relative">
-                                        <span className="absolute left-2 text-sm text-green-600 font-bold">$</span>
+                                        <span className="absolute left-2 text-sm text-green-600 font-bold">৳</span>
                                         <input
                                             className="block w-full rounded border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-right text-sm py-1 px-2 pl-4 font-bold text-green-600 cursor-not-allowed"
                                             type="number"
@@ -868,7 +868,7 @@ export default function CreateOrder() {
                                 </div>
                                 <div className="flex justify-between items-center text-base pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <span className="font-bold text-red-600 dark:text-red-400">{t.orders.dueAmount}</span>
-                                    <span className="font-black text-red-600 dark:text-red-400 text-xl">${dueAmount.toFixed(2)}</span>
+                                    <span className="font-black text-red-600 dark:text-red-400 text-xl">৳{dueAmount.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -983,7 +983,7 @@ export default function CreateOrder() {
                                         {t.common.add}
                                     </button>
                                 </div>
-                                {dueAmount > 0 && <p className="text-xs text-red-500 font-medium text-right">{t.orders.remainingDue}: ${dueAmount.toFixed(2)}</p>}
+                                {dueAmount > 0 && <p className="text-xs text-red-500 font-medium text-right">{t.orders.remainingDue}: ৳{dueAmount.toFixed(2)}</p>}
                             </div>
 
                             {/* Payment List */}
@@ -998,7 +998,7 @@ export default function CreateOrder() {
                                                 <span className="font-bold text-gray-700 dark:text-gray-300">{p.method === 'Cash' ? (t.config?.cash || 'Cash') : p.method === 'Bank' ? (t.config?.bank || 'Bank') : (t.config?.bkash || 'Bkash')}</span>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <span className="font-bold text-text-main dark:text-white">${p.amount.toFixed(2)}</span>
+                                                <span className="font-bold text-text-main dark:text-white">৳{p.amount.toFixed(2)}</span>
                                                 <button
                                                     onClick={() => setPayments(payments.filter((_, i) => i !== idx))}
                                                     className="text-gray-400 hover:text-red-500"

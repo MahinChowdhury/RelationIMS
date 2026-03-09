@@ -10,5 +10,6 @@ namespace Relation_IMS.Datas.Interfaces
         Task<Customer?> DeleteCustomerByIdAsync(int id);
         Task<Customer?> CreateNewCustomerAsync(CreateCustomerDTO customerDto);
         Task<Customer?> UpdateCustomerByIdAsync(int id, UpdateCustomerDTO updateDto);
+        Task<CustomerStatsDTO?> GetCustomerStatsAsync(int id);
     }
 }

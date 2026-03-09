@@ -1,57 +1,187 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:latest
-    container_name: relationims-postgres
+  # =========================================
+  # Nginx Reverse Proxy (Unified Gateway)
+  # =========================================
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: relationims-nginx
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: RelationIMS
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    volumes:
-      - postgres_data:/var/lib/postgresql
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    restart: unless-stopped
     networks:
       - relationims-network
 
+  # =========================================
+  # React Frontend (Serves SPA to Nginx)
+  # =========================================
+  frontend:
+    build:
+      context: ../Relation_IMS.React
+      dockerfile: Dockerfile
+    container_name: relationims-frontend
+    expose:
+      - "3000"
+    restart: unless-stopped
+    networks:
+      - relationims-network
+
+  # =========================================
+  # .NET API
+  # =========================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: relationims-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Redis__ConnectionString=redis:6379
+      - MinIO__Endpoint=${MINIO_ENDPOINT}
+      - MinIO__PublicBaseUrl=${MINIO_PUBLIC_URL}
+      - MinIO__AccessKey=${MINIO_ACCESS_KEY}
+      - MinIO__SecretKey=${MINIO_SECRET_KEY}
+      - MinIO__BucketName=${MINIO_BUCKET_NAME}
+      - MinIO__UseSSL=${MINIO_USE_SSL}
+      - JwtSettings__Issuer=${JWT_ISSUER:-JWTDemoApi}
+      - JwtSettings__AccessTokenExpirationMinutes=${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:-15}
+      - JwtSettings__RefreshTokenExpirationDays=${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:-7}
+      - AllowedCorsOrigins=${ALLOWED_CORS_ORIGINS:-http://localhost:4200,http://localhost:5173}
+    expose:
+      - "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - relationims-network
+
+  # =========================================
+  # PostgreSQL
+  # =========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: relationims-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - relationims-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =========================================
+  # Redis
+  # =========================================
+  redis:
+    image: redis:7-alpine
+    container_name: relationims-redis
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - relationims-network
+
+  # =========================================
+  # MinIO Object Storage
+  # =========================================
+  minio:
+    image: minio/minio:latest
+    container_name: relationims-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+      - ./minio/cors.json:/etc/minio/cors.json:ro
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    restart: unless-stopped
+    networks:
+      - relationims-network
+
+  # =========================================
+  # MinIO Init (CORS Configuration)
+  # =========================================
+  minio-init:
+    image: minio/mc:latest
+    container_name: relationims-minio-init
+    depends_on:
+      minio:
+        condition: service_started
+    volumes:
+      - ./minio/cors.json:/cors.json:ro
+      - ./minio/init-cors.sh:/init-cors.sh:ro
+    entrypoint: ["/bin/sh", "/init-cors.sh"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    restart: "no"
+    networks:
+      - relationims-network
+
+
+  # =========================================
+  # PgAdmin (development/tools only)
+  # =========================================
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin4
+    container_name: relationims-pgadmin
     ports:
       - "5050:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    profiles:
+      - tools
     networks:
       - relationims-network
-
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    container_name: azurite
-    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --location /data --debug /data/debug.log
-    ports:
-      - "10000:10000"
-      - "10001:10001"
-      - "10002:10002"
-    volumes:
-      - azurite_data:/data
-    networks:
-      - relationims-network
-
-  redis:
-    image: redis
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - relationims-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
-  azurite_data:
+  minio_data:
 
 networks:
   relationims-network:

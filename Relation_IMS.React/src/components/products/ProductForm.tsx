@@ -1,6 +1,4 @@
 import { useRef, useState, useEffect } from 'react';
-import type { StockItem, Product } from '../../types';
-import { useLanguage } from '../../i18n/LanguageContext';
 import {
     DndContext,
     closestCenter,
@@ -14,10 +12,15 @@ import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
     useSortable,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
+import type { StockItem, Product } from '../../types';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { QuantityInput } from '../QuantityInput';
+
 
 interface ProductFormProps {
     product: Product;
@@ -28,6 +31,7 @@ interface ProductFormProps {
     availableSizes: any[];
     stockItems: StockItem[];
     selectedImages: string[];
+    thumbnailMap?: Record<string, string>;
 
     onChange: (field: string, value: any) => void;
     onCategoryChange: (id: number) => void;
@@ -54,6 +58,7 @@ interface ProductFormProps {
 
 export function ProductForm({
     product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
+    thumbnailMap,
     onChange, onCategoryChange,
     onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
@@ -64,20 +69,24 @@ export function ProductForm({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const sensors = useSensors(
-        useSensor(PointerSensor),
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
 
-    function handleDragEnd(event: DragEndEvent) {
+    const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
             const oldIndex = selectedImages.indexOf(active.id as string);
             const newIndex = selectedImages.indexOf(over.id as string);
             reorderImages(arrayMove(selectedImages, oldIndex, newIndex));
         }
-    }
+    };
 
     // Filter brands by selected category
     const [filteredBrands, setFilteredBrands] = useState<any[]>([]);
@@ -102,9 +111,16 @@ export function ProductForm({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Images Section */}
                 <div className="lg:col-span-4 flex flex-col gap-3 self-start">
-                    <label className="block text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Image</label>
+                    <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Images</label>
+                        {selectedImages.length > 0 && (
+                            <span className="text-[10px] bg-[#4e9767]/10 text-[#4e9767] px-2 py-0.5 rounded-full font-medium">
+                                {selectedImages.length} image{selectedImages.length > 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
                     <div
-                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-[#primary]/5 transition-all group bg-white/40 dark:bg-black/20"
+                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] dark:border-[#2a4032] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-green-50/50 dark:hover:bg-green-900/20 transition-all group bg-white/40 dark:bg-black/20"
                         onClick={() => fileInputRef.current?.click()}
                     >
                         <span className="material-symbols-outlined text-3xl text-gray-400 group-hover:text-[#4e9767] mb-2 transition-colors">cloud_upload</span>
@@ -122,28 +138,35 @@ export function ProductForm({
                         className="hidden"
                     />
 
-                    {/* Preview - Draggable Column */}
+                    {/* Preview - Drag & Drop Image Column */}
                     {selectedImages.length > 0 && (
-                        <div className="mt-2 max-h-[320px] overflow-y-auto">
+                        <div className="mt-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px]">drag_indicator</span>
+                                Drag to reorder images
+                            </p>
                             <DndContext
                                 sensors={sensors}
                                 collisionDetection={closestCenter}
                                 onDragEnd={handleDragEnd}
+                                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
                             >
                                 <SortableContext
                                     items={selectedImages}
                                     strategy={verticalListSortingStrategy}
                                 >
-                                    <div className="flex flex-col gap-2">
-                                        {selectedImages.map((img, idx) => (
-                                            <SortableImage
-                                                key={img}
-                                                id={img}
-                                                src={img}
-                                                index={idx}
-                                                onRemove={() => removeImage(img)}
-                                            />
-                                        ))}
+                                    <div className="max-h-[320px] overflow-y-auto">
+                                        <div className="flex flex-col gap-2">
+                                            {selectedImages.map((img, idx) => (
+                                                <SortableImageItem
+                                                    key={img}
+                                                    id={img}
+                                                    src={thumbnailMap?.[img] || img}
+                                                    index={idx}
+                                                    onRemove={() => removeImage(img)}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </SortableContext>
                             </DndContext>
@@ -220,11 +243,20 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.costPrice} ($)</label>
                         <input
-                            type="number"
+                            type="text"
                             step="0.01"
                             onFocus={(e) => e.target.select()}
                             value={product.CostPrice}
                             onChange={(e) => onChange('CostPrice', parseFloat(e.target.value))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    onChange('CostPrice', (product.CostPrice || 0) + 1);
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    onChange('CostPrice', Math.max(0, (product.CostPrice || 0) - 1));
+                                }
+                            }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             placeholder="0.00"
                         />
@@ -232,11 +264,20 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.basePrice} ($)</label>
                         <input
-                            type="number"
+                            type="text"
                             step="0.01"
                             onFocus={(e) => e.target.select()}
                             value={product.BasePrice}
                             onChange={(e) => onChange('BasePrice', parseFloat(e.target.value))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    onChange('BasePrice', (product.BasePrice || 0) + 1);
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    onChange('BasePrice', Math.max(0, (product.BasePrice || 0) - 1));
+                                }
+                            }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             placeholder="0.00"
                         />
@@ -245,11 +286,20 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.msrp} ($)</label>
                         <input
-                            type="number"
+                            type="text"
                             step="0.01"
                             onFocus={(e) => e.target.select()}
                             value={product.MSRP}
                             onChange={(e) => onChange('MSRP', parseFloat(e.target.value))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    onChange('MSRP', (product.MSRP || 0) + 1);
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    onChange('MSRP', Math.max(0, (product.MSRP || 0) - 1));
+                                }
+                            }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             placeholder="0.00"
                         />
@@ -282,14 +332,14 @@ export function ProductForm({
                 </div>
 
                 {/* Stock Input Row */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-[#132219]/20 p-4 rounded-xl border border-gray-200 dark:border-[#2a4032]">
                     <div>
                         <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.color}</label>
                         <div className="flex items-center gap-2">
                             <select
                                 value={newStock.color}
                                 onChange={(e) => setNewStock({ ...newStock, color: e.target.value })}
-                                className="flex-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
+                                className="flex-1 bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                             >
                                 <option value="" disabled hidden>{t.common.search}</option>
                                 {colors.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
@@ -308,7 +358,7 @@ export function ProductForm({
                         <select
                             value={newStock.size}
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}
-                            className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
+                            className="w-full bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                         >
                             <option value="" disabled hidden>{t.common.search}</option>
                             {availableSizes.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
@@ -318,13 +368,10 @@ export function ProductForm({
                     {!isLotMode && (
                         <div>
                             <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.quantity}</label>
-                            <input
-                                type="number"
-                                onFocus={(e) => e.target.select()}
+                            <QuantityInput
                                 value={newStock.quantity}
-                                onChange={(e) => setNewStock({ ...newStock, quantity: parseInt(e.target.value) })}
-                                min="0"
-                                className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
+                                onChange={(val) => setNewStock({ ...newStock, quantity: val })}
+                                min={0}
                             />
                         </div>
                     )}
@@ -343,20 +390,20 @@ export function ProductForm({
                 {/* Stock List Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {stockItems.map((s, i) => (
-                        <div key={i} className="bg-white/40 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/10 p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 transition-colors group relative">
+                        <div key={i} className="bg-white/40 dark:bg-[#132219] rounded-xl border border-gray-200/60 dark:border-[#2a4032] p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 dark:hover:border-[#4e9767] transition-colors group relative">
                             {/* Actions Overlay */}
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                 {!isLotMode && (
                                     <button
                                         onClick={() => startStockEdit(i, s)}
-                                        className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-[#4e9767]"
+                                        className="p-1 bg-white dark:bg-[#2a4032] rounded shadow text-gray-500 dark:text-gray-300 hover:text-[#4e9767] dark:hover:text-[#4e9767]"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">edit</span>
                                     </button>
                                 )}
                                 <button
                                     onClick={() => removeStock(i)}
-                                    className="p-1 bg-white dark:bg-gray-800 rounded shadow text-gray-500 hover:text-red-500"
+                                    className="p-1 bg-white dark:bg-[#2a4032] rounded shadow text-gray-500 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">delete</span>
                                 </button>
@@ -375,12 +422,11 @@ export function ProductForm({
                             {(!isLotMode) ? (
                                 editingStockIndex === i ? (
                                     <div className="flex items-center gap-2 mt-1">
-                                        <input
-                                            type="number"
-                                            onFocus={(e) => e.target.select()}
+                                        <QuantityInput
                                             value={editedStock.quantity}
-                                            onChange={(e) => setEditedStock({ ...editedStock, quantity: parseInt(e.target.value) })}
-                                            className="w-full text-center text-xl font-bold p-1 rounded-lg border-gray-200 bg-white"
+                                            onChange={(val) => setEditedStock({ ...editedStock, quantity: val })}
+                                            min={0}
+                                            className="flex-1"
                                         />
                                         <button onClick={() => saveStockEdit(i)} className="text-green-600 font-bold text-xs">{t.common.ok || 'OK'}</button>
                                         <button onClick={cancelStockEdit} className="text-red-500 font-bold text-xs">{t.common.cancel || 'X'}</button>
@@ -397,7 +443,7 @@ export function ProductForm({
                     ))}
 
                     {stockItems.length === 0 && (
-                        <div className="col-span-full py-8 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                        <div className="col-span-full py-8 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-[#2a4032] rounded-xl">
                             {t.products.noVariantsFound}
                         </div>
                     )}
@@ -407,14 +453,15 @@ export function ProductForm({
     );
 }
 
-interface SortableImageProps {
+// --- Sortable Image Item for Drag & Drop ---
+interface SortableImageItemProps {
     id: string;
     src: string;
     index: number;
     onRemove: () => void;
 }
 
-function SortableImage({ id, src, index, onRemove }: SortableImageProps) {
+function SortableImageItem({ id, src, index, onRemove }: SortableImageItemProps) {
     const {
         attributes,
         listeners,
@@ -427,31 +474,40 @@ function SortableImage({ id, src, index, onRemove }: SortableImageProps) {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 50 : 'auto' as const,
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`relative flex items-center gap-3 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-black/20 group ${isDragging ? 'opacity-50 ring-2 ring-[#4e9767]' : ''}`}
+            className={`relative flex items-center gap-3 p-3 border rounded-lg bg-white dark:bg-[#132219] group transition-colors ${isDragging ? 'border-[#4e9767] shadow-lg ring-2 ring-[#4e9767]/20' : 'border-gray-200 dark:border-[#2a4032] hover:border-[#4e9767]/50'
+                }`}
         >
-            <div
+            {/* Drag Handle */}
+            <button
+                type="button"
+                className="flex flex-col items-center justify-center gap-0.5 cursor-grab active:cursor-grabbing p-2 rounded-md bg-gray-100 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors touch-none"
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 hover:bg-[#4e9767]/20 text-gray-400 hover:text-[#4e9767] transition-colors"
             >
-                <span className="material-symbols-outlined text-[18px]">drag_indicator</span>
-            </div>
-            <span className="text-xs font-bold text-gray-400 w-4">{index + 1}</span>
-            <div className="w-20 h-20 rounded border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0">
+                <span className="text-sm font-black text-gray-400 select-none leading-none tracking-widest">::</span>
+            </button>
+
+            {/* Image Thumbnail */}
+            <div className="w-32 h-16 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden flex-shrink-0 shadow-sm">
                 <img src={src} className="w-full h-full object-cover" alt="" />
             </div>
+
+            {/* Remove Button */}
             <button
                 type="button"
                 onClick={onRemove}
-                className="ml-auto p-1 bg-red-100 dark:bg-red-900/30 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
+                className="ml-auto p-0.5 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                title="Remove image"
             >
-                <span className="material-symbols-outlined text-[14px]">delete</span>
+                <span className="material-symbols-outlined mx-0.5 text-[16px]">delete</span>
             </button>
         </div>
     );

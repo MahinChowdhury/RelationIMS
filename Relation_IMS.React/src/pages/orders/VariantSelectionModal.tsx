@@ -81,8 +81,10 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
         selectedSizeIds.forEach(sizeId => {
             const variant = variants.find(v => v.ProductColorId === selectedColorId && v.ProductSizeId === sizeId);
             if (variant) {
-                if (quantity > variant.Quantity) {
-                    invalidSelections.push(`${variant.Size?.Name || 'Size ' + sizeId} (Available: ${variant.Quantity})`);
+                const availableQuantity = (variant.Quantity || 0) - (variant.ReservedQuantity || 0);
+
+                if (quantity > availableQuantity) {
+                    invalidSelections.push(`${variant.Size?.Name || 'Size ' + sizeId} (Available: ${availableQuantity})`);
                 } else {
                     newItems.push({
                         tempId: Math.random(),
@@ -96,7 +98,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
         });
 
         if (invalidSelections.length > 0) {
-            alert(`${t.orders.insufficientStock}\n- ${invalidSelections.join('\n- ')}\n\n${t.orders.pleaseReduceQuantity}`);
+            alert(`${t.orders.insufficientStock || 'Insufficient Stock'}\n- ${invalidSelections.join('\n- ')}\n\n${t.orders.pleaseReduceQuantity || 'Please reduce quantity.'}`);
             return;
         }
 
@@ -228,9 +230,21 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                 <div className="flex flex-wrap gap-2">
                                     {uniqueSizes.map(size => {
                                         const isSelected = selectedSizeIds.includes(size.Id);
+                                        // Find variant for currently selected color (if any) and this size to show available qty
+                                        let availableQty: number | null = null;
+                                        if (selectedColorId) {
+                                            const variant = variants.find(v => v.ProductColorId === selectedColorId && v.ProductSizeId === size.Id);
+                                            if (variant) {
+                                                availableQty = (variant.Quantity || 0) - (variant.ReservedQuantity || 0);
+                                            }
+                                        }
+
+                                        const isDisabled = availableQty !== null && quantity > availableQty;
+
                                         return (
                                             <button
                                                 key={size.Id}
+                                                disabled={isDisabled}
                                                 onClick={() => {
                                                     setSelectedSizeIds(prev =>
                                                         prev.includes(size.Id)
@@ -238,13 +252,20 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                                             : [...prev, size.Id]
                                                     );
                                                 }}
-                                                className={`px-4 py-1.5 rounded-lg border text-sm font-medium transition-all
+                                                className={`px-4 py-1.5 rounded-lg border text-sm font-medium transition-all flex items-center gap-2
                                                     ${isSelected
                                                         ? 'border-primary bg-primary text-white shadow-lg shadow-primary/30'
-                                                        : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-white/5'
+                                                        : isDisabled
+                                                            ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-60 dark:bg-gray-800 dark:border-gray-700'
+                                                            : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-white/5'
                                                     }`}
                                             >
-                                                {size.Name}
+                                                <span>{size.Name}</span>
+                                                {availableQty !== null && (
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                                                        {availableQty}
+                                                    </span>
+                                                )}
                                             </button>
                                         );
                                     })}
@@ -282,7 +303,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.unitPrice}</label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</span>
                                     <input
                                         type="number"
                                         onFocus={(e) => e.target.select()}

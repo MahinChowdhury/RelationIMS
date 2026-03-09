@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ProductForm } from '../../components/products/ProductForm';
+import { QuantityInput } from '../../components/QuantityInput';
 import BarcodeScanner from '../../components/BarcodeScanner';
 import type { Product, StockItem } from '../../types';
 import api from '../../services/api';
@@ -665,14 +666,10 @@ export default function StockIn() {
                                             <div className="mb-6 bg-[#17cf54]/10 dark:bg-[#17cf54]/20 rounded-xl p-4 border border-[#17cf54]/20 flex items-center gap-4">
                                                 <div className="w-32">
                                                     <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        onFocus={(e) => e.target.select()}
+                                                    <QuantityInput
                                                         value={existingLotQuantity}
-                                                        onChange={(e) => setExistingLotQuantity(parseInt(e.target.value) || 0)}
-                                                        className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-lg font-bold rounded-lg p-2 text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                                        placeholder="0"
+                                                        onChange={setExistingLotQuantity}
+                                                        min={0}
                                                     />
                                                 </div>
                                                 <div className="flex-1 text-sm text-gray-600 dark:text-gray-300">
@@ -716,14 +713,11 @@ export default function StockIn() {
                                                                             +{existingLotQuantity}
                                                                         </div>
                                                                     ) : (
-                                                                        <input
-                                                                            type="number"
-                                                                            min="0"
-                                                                            onFocus={(e) => e.target.select()}
-                                                                            className="w-full bg-[#f8fcf9] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-center font-bold focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                                                            placeholder="+0"
-                                                                            value={addStockQuantities[variant.Id] || ''}
-                                                                            onChange={(e) => handleAddStockChange(variant.Id, e.target.value)}
+                                                                        <QuantityInput
+                                                                            value={addStockQuantities[variant.Id] || 0}
+                                                                            onChange={(val) => handleAddStockChange(variant.Id, val.toString())}
+                                                                            min={0}
+                                                                            className="w-full"
                                                                         />
                                                                     )}
                                                                 </div>
@@ -801,13 +795,10 @@ export default function StockIn() {
                                                 </div>
                                                 <div className="w-full md:w-32">
                                                     <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.quantity || 'Quantity'}</label>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        onFocus={(e) => e.target.select()}
+                                                    <QuantityInput
                                                         value={newVariant.quantity}
-                                                        onChange={(e) => setNewVariant({ ...newVariant, quantity: Number(e.target.value) })}
-                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-bold text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                        onChange={(val) => setNewVariant({ ...newVariant, quantity: val })}
+                                                        min={1}
                                                     />
                                                 </div>
                                                 <button
@@ -942,14 +933,11 @@ export default function StockIn() {
                                         <div className="flex flex-col md:flex-row gap-4 items-end">
                                             <div className="w-full md:w-48">
                                                 <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    onFocus={(e) => e.target.select()}
+                                                <QuantityInput
                                                     value={lotQuantity}
-                                                    onChange={(e) => setLotQuantity(parseInt(e.target.value))}
-                                                    className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-lg font-bold rounded-lg p-3 text-center focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                                    placeholder="0"
+                                                    onChange={setLotQuantity}
+                                                    min={0}
+                                                    className="text-lg"
                                                 />
                                             </div>
                                             <div className="flex-1 text-sm text-[#4e9767] font-bold pb-3">

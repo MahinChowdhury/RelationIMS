@@ -35,7 +35,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("CategoriesId");
 
-                    b.ToTable("BrandCategory");
+                    b.ToTable("BrandCategory", (string)null);
                 });
 
             modelBuilder.Entity("ProductQuarter", b =>
@@ -50,7 +50,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("QuartersId");
 
-                    b.ToTable("ProductQuarter");
+                    b.ToTable("ProductQuarter", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.CustomerModels.Customer", b =>
@@ -113,7 +113,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.InventoryModels.CustomerReturnItem", b =>
@@ -148,7 +148,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("ProductItemId");
 
-                    b.ToTable("CustomerReturnItems");
+                    b.ToTable("CustomerReturnItems", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.InventoryModels.CustomerReturnRecord", b =>
@@ -192,7 +192,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("CustomerReturnRecords");
+                    b.ToTable("CustomerReturnRecords", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.InventoryModels.Inventory", b =>
@@ -224,7 +224,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Inventories");
+                    b.ToTable("Inventories", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecord", b =>
@@ -267,7 +267,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("InventoryTransferRecords");
+                    b.ToTable("InventoryTransferRecords", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.InventoryModels.InventoryTransferRecordItem", b =>
@@ -302,7 +302,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("ProductItemId");
 
-                    b.ToTable("InventoryTransferRecordItems");
+                    b.ToTable("InventoryTransferRecordItems", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.JWTModels.Client", b =>
@@ -341,7 +341,7 @@ namespace Relation_IMS.Migrations
                     b.HasIndex(new[] { "ClientId" }, "IX_Unique_ClientId")
                         .IsUnique();
 
-                    b.ToTable("Clients");
+                    b.ToTable("Clients", (string)null);
 
                     b.HasData(
                         new
@@ -410,7 +410,7 @@ namespace Relation_IMS.Migrations
                     b.HasIndex(new[] { "Token" }, "IX_Token_Unique")
                         .IsUnique();
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.JWTModels.Role", b =>
@@ -431,7 +431,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -475,7 +475,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.OrderModels.Order", b =>
@@ -535,7 +535,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.OrderModels.OrderItem", b =>
@@ -593,7 +593,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.PaymentModels.OrderPayment", b =>
@@ -632,7 +632,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderPayments");
+                    b.ToTable("OrderPayments", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Brand", b =>
@@ -661,7 +661,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("Brands", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Category", b =>
@@ -697,7 +697,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Product", b =>
@@ -757,7 +757,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductColor", b =>
@@ -790,7 +790,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductColors");
+                    b.ToTable("ProductColors", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductDefect", b =>
@@ -842,7 +842,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("ReportedByUserId");
 
-                    b.ToTable("ProductDefects");
+                    b.ToTable("ProductDefects", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductItem", b =>
@@ -897,7 +897,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("ProductItems");
+                    b.ToTable("ProductItems", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductLot", b =>
@@ -937,7 +937,7 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("ProductLots");
+                    b.ToTable("ProductLots", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductSize", b =>
@@ -969,7 +969,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductSizes");
+                    b.ToTable("ProductSizes", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.ProductVariant", b =>
@@ -995,6 +995,9 @@ namespace Relation_IMS.Migrations
                     b.Property<int>("ProductSizeId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ReservedQuantity")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1012,7 +1015,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("ProductSizeId");
 
-                    b.ToTable("ProductVariants");
+                    b.ToTable("ProductVariants", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ProductModels.Quarter", b =>
@@ -1041,7 +1044,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Quarters");
+                    b.ToTable("Quarters", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.ShareCatalog", b =>
@@ -1084,7 +1087,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("ShareCatalogs");
+                    b.ToTable("ShareCatalogs", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.User", b =>
@@ -1126,6 +1129,11 @@ namespace Relation_IMS.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("character varying(5)");
 
+                    b.Property<string>("PreferredTheme")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "IX_Unique_Email")
@@ -1134,7 +1142,7 @@ namespace Relation_IMS.Migrations
                     b.HasIndex(new[] { "PhoneNumber" }, "IX_Unique_PhoneNumber")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.UserProfileModels.SalaryRecord", b =>
@@ -1188,7 +1196,7 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("UserId", "Month", "Year")
                         .IsUnique();
 
-                    b.ToTable("SalaryRecords");
+                    b.ToTable("SalaryRecords", (string)null);
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.UserProfileModels.UserProfile", b =>
@@ -1229,7 +1237,7 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserProfiles");
+                    b.ToTable("UserProfiles", (string)null);
                 });
 
             modelBuilder.Entity("BrandCategory", b =>

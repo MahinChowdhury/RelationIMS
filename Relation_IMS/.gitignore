@@ -54,3 +54,7 @@ TestResult.xml
 nunit-*.xml
 
 .vs/
+
+# Environment variables (secrets)
+.env
+!.env.example

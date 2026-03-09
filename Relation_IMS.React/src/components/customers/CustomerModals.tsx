@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Customer } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import ConfirmDeleteInput from '../ConfirmDeleteInput';
 
 // --- Types ---
 interface CustomerFormModalProps {
@@ -98,22 +100,7 @@ export function CustomerFormModal({
                         </div>
                     </div>
 
-                    {/* Address */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.address}</label>
-                        <div className="relative">
-                            <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
-                                <span className="material-symbols-outlined text-[20px]">location_on</span>
-                            </div>
-                            <textarea
-                                value={customer.Address}
-                                onChange={(e) => onChange('Address', e.target.value)}
-                                rows={3}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
-                                placeholder="Enter customer address"
-                            ></textarea>
-                        </div>
-                    </div>
+                    
                     <div className="flex flex-col gap-1.5">
                         <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.customers.shopName}</label>
                         <div className="relative">
@@ -141,6 +128,22 @@ export function CustomerFormModal({
                                 rows={3}
                                 className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
                                 placeholder="Enter shop address"
+                            ></textarea>
+                        </div>
+                    </div>
+                    {/* Address */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.address}</label>
+                        <div className="relative">
+                            <div className="absolute top-3 left-3 pointer-events-none text-gray-400">
+                                <span className="material-symbols-outlined text-[20px]">location_on</span>
+                            </div>
+                            <textarea
+                                value={customer.Address}
+                                onChange={(e) => onChange('Address', e.target.value)}
+                                rows={3}
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                placeholder="Enter customer address"
                             ></textarea>
                         </div>
                     </div>
@@ -172,7 +175,15 @@ export function CustomerFormModal({
 // --- DELETE MODAL ---
 export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustomerModalProps) {
     const { t } = useLanguage();
+    const [isDeleting, setIsDeleting] = useState(false);
+
     if (!show) return null;
+
+    const handleConfirm = async () => {
+        setIsDeleting(true);
+        await onConfirm();
+        setIsDeleting(false);
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
@@ -188,19 +199,12 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
                         </p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 px-6 pb-6">
-                    <button
-                        onClick={onCancel}
-                        className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
-                    >
-                        {t.common.cancel}
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="px-4 py-2.5 text-sm font-bold text-white bg-red-500 rounded-lg hover:bg-red-600 shadow-md shadow-red-500/20 transition-all"
-                    >
-                        {t.common.yes}, {t.common.delete}
-                    </button>
+                <div className="px-6 pb-6">
+                    <ConfirmDeleteInput
+                        onConfirm={handleConfirm}
+                        onCancel={onCancel}
+                        isDeleting={isDeleting}
+                    />
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+    darkMode: 'class',
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
@@ -24,6 +25,15 @@ export default {
                 "lg": "0.5rem",
                 "xl": "0.75rem",
                 "full": "9999px"
+            },
+            keyframes: {
+                slideInRight: {
+                    '0%': { transform: 'translateX(100%)', opacity: '0' },
+                    '100%': { transform: 'translateX(0)', opacity: '1' },
+                },
+            },
+            animation: {
+                slideInRight: 'slideInRight 0.3s ease-out',
             },
         },
     },

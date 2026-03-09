@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Relation_IMS.Services.AzureServices;
+using Microsoft.AspNetCore.Mvc;
+using Relation_IMS.Services.MinIOServices;
 
 namespace Relation_IMS.Controllers.AzureControllers
 {
@@ -7,8 +7,8 @@ namespace Relation_IMS.Controllers.AzureControllers
     [ApiController]
     public class BlobController : ControllerBase
     {
-        private readonly IAzureBlobService _blobService;
-        public BlobController(IAzureBlobService blobService)
+        private readonly IMinioBlobService _blobService;
+        public BlobController(IMinioBlobService blobService)
         {
             _blobService = blobService;
         }

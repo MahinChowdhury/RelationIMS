@@ -79,6 +79,12 @@ const en = {
         dateLocale: 'en-US',
         oneSize: 'One Size',
         amount: 'Amount',
+        optional: 'Optional',
+        firstname: 'First Name',
+        lastname: 'Last Name',
+        currentPassword: 'Current Password',
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm Password',
     },
 
     // App / Brand
@@ -180,6 +186,12 @@ const en = {
         checkingAvailability: 'Checking availability...',
         totalAvailable: 'Total Available',
         totalDefects: 'Total Defects',
+        orderHistory: 'Order History',
+        noOrdersFound: 'No orders found for this product.',
+        soldPrice: 'Sold Price',
+        showingVariantGroups: 'Showing {groups} variant groups from {total} total items',
+        loaded: 'loaded',
+        viewOrder: 'View Order',
     },
 
     // Orders
@@ -557,7 +569,7 @@ const en = {
         scanBarcode: 'Scan Barcode',
     },
 
-// Dialog / Alerts
+    // Dialog / Alerts
     dialog: {
         notification: 'Notification',
         error: 'Error',
@@ -603,6 +615,9 @@ const en = {
         notes: 'Notes',
         notesPlaceholder: 'Add any notes...',
         address: 'Address',
+        currentPasswordLabel: 'Current Password',
+        newPasswordLabel: 'New Password',
+        confirmPasswordLabel: 'Confirm New Password',
     },
 };
 

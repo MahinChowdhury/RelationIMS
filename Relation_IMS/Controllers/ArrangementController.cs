@@ -46,7 +46,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("scan")]
-        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory", "product", "productvariant")]
         public async Task<IActionResult> ScanItemForArrangement([FromBody] ArrangementScanRequestDTO request)
         {
             // Lock the order to prevent concurrent scans
@@ -121,6 +121,13 @@ namespace Relation_IMS.Controllers
             productItem.OrderItemId = matchingOrderItem.Id;
             matchingOrderItem.ArrangedQuantity += 1;
 
+            // Decrease ReservedQuantity as item is now being arranged
+            var variant = await _context.ProductVariants.FindAsync(productItem.ProductVariantId);
+            if (variant != null && variant.ReservedQuantity > 0)
+            {
+                variant.ReservedQuantity = Math.Max(0, variant.ReservedQuantity - 1);
+            }
+
             // Update Status to Arranging if it was Created
             if (order.InternalStatus == OrderInternalStatus.Created)
             {
@@ -140,7 +147,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("confirm/{orderId}")]
-        [InvalidateCache("arrangement", "order", "orderitem")]
+        [InvalidateCache("arrangement", "order", "orderitem", "product", "productvariant")]
         public async Task<IActionResult> ConfirmArrangement(int orderId)
         {
             using (await _lockService.AcquireLockAsync($"order:{orderId}"))
@@ -190,7 +197,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("finalize/{orderId}")]
-        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory", "product")]
         public async Task<IActionResult> FinalizeOrder(int orderId)
         {
             using (await _lockService.AcquireLockAsync($"order:{orderId}"))

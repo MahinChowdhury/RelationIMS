@@ -111,10 +111,19 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                         <option value={t.orders.bkash || "Bkash"}>{t.orders.bkash || "Bkash"}</option>
                                     </select>
                                     <input
-                                        type="number"
+                                        type="text"
                                         onFocus={(e) => e.target.select()}
                                         value={payment.amount}
                                         onChange={(e) => handlePaymentChange(index, 'amount', Number(e.target.value))}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'ArrowUp') {
+                                                e.preventDefault();
+                                                handlePaymentChange(index, 'amount', payment.amount + 1);
+                                            } else if (e.key === 'ArrowDown') {
+                                                e.preventDefault();
+                                                handlePaymentChange(index, 'amount', Math.max(0, payment.amount - 1));
+                                            }
+                                        }}
                                         className="h-10 flex-1 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                         placeholder={t.common.amount || "Amount"}
                                     />

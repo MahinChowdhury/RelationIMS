@@ -43,14 +43,20 @@ namespace Relation_IMS.Datas.Repositories
 
         public async Task<List<Brand>> GetAllBrandsAsync()
         {
-            var brands = await _context.Brands.Include(b => b.Categories).ToListAsync();
+            var brands = await _context.Brands
+                .Include(b => b.Categories)
+                .AsNoTracking()
+                .ToListAsync();
 
             return brands;
         }
 
         public async Task<Brand?> GetBrandByIdAsync(int id)
         {
-            var brand = await _context.Brands.Include(b => b.Categories).FirstOrDefaultAsync(b => b.Id == id);
+            var brand = await _context.Brands
+                .Include(b => b.Categories)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == id);
             if (brand == null) return null;
 
             return brand;
@@ -75,6 +81,7 @@ namespace Relation_IMS.Datas.Repositories
         {
             var brands = await _context.Brands
                 .Include(b => b.Categories)
+                .AsNoTracking()
                 .Where(b => b.Categories != null && b.Categories.Any(c => c.Id == categoryId))
                 .ToListAsync();
 

@@ -33,6 +33,7 @@ export interface ProductVariant {
     CostPrice: number;
     MSRP: number;
     Quantity: number;
+    ReservedQuantity?: number;
     Defects: number;
     ProductItems?: any[];
 }
