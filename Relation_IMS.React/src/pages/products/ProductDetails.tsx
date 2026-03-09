@@ -557,7 +557,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         </div>
                         <div className="text-right hidden sm:block">
                             <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">{t.products.retailPrice}</p>
-                            <p className="text-3xl font-black text-text-main dark:text-white">${productDetail.MSRP.toFixed(2)}</p>
+                            <p className="text-3xl font-black text-text-main dark:text-white">৳{productDetail.MSRP.toFixed(2)}</p>
                         </div>
                     </div>
 
@@ -600,7 +600,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.msrp}</span>
                                             <span className="text-lg font-extrabold text-text-main dark:text-white">
-                                                ${(productDetail.MSRP || 0).toFixed(2)}
+                                                ৳{(productDetail.MSRP || 0).toFixed(2)}
                                             </span>
                                         </div>
                                     </div>
@@ -614,7 +614,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.basePrice}</span>
                                                 <span className="text-lg font-extrabold text-red-500 dark:text-white">
-                                                    ${(productDetail.BasePrice || 0).toFixed(2)}
+                                                    ৳{(productDetail.BasePrice || 0).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -629,7 +629,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
                                                 <span className="text-lg font-extrabold text-blue-500 dark:text-white">
-                                                    ${(productDetail.CostPrice || 0).toFixed(2)}
+                                                    ৳{(productDetail.CostPrice || 0).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -773,7 +773,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                         <span className="font-bold text-lg text-primary mt-1 block">{item.totalQuantity}</span>
                                                     </td>
                                                     <td className="px-6 py-4 font-bold text-right align-top">
-                                                        <span className="mt-1 block">${item.totalSubtotal.toFixed(2)}</span>
+                                                        <span className="mt-1 block">৳{item.totalSubtotal.toFixed(2)}</span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {getPaymentStatusBadge(item.Order?.PaymentStatus)}

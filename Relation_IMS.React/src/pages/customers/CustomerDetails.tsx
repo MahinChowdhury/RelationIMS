@@ -330,7 +330,7 @@ export default function CustomerDetailsPage() {
                         <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Total Purchases</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">${totalSpent.toFixed(2)}</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">৳{totalSpent.toFixed(2)}</p>
                             </div>
                             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary dark:bg-primary/20">
                                 <span className="material-symbols-outlined">shopping_bag</span>
@@ -341,7 +341,7 @@ export default function CustomerDetailsPage() {
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Total Due</p>
                                 <p className={`text-2xl font-black ${totalDue > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                    ${totalDue.toFixed(2)}
+                                    ৳{totalDue.toFixed(2)}
                                 </p>
                             </div>
                             <div className={`size-10 rounded-full flex items-center justify-center ${totalDue > 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
@@ -351,7 +351,7 @@ export default function CustomerDetailsPage() {
                         <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Current Balance</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">${customer.Balance?.toFixed(2) || '0.00'}</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">৳{customer.Balance?.toFixed(2) || '0.00'}</p>
                             </div>
                             <div className="size-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 dark:bg-green-900/20">
                                 <span className="material-symbols-outlined">account_balance_wallet</span>
@@ -440,7 +440,7 @@ export default function CustomerDetailsPage() {
                                                     <td className="px-6 py-4 font-medium text-right text-red-500">
                                                         {(order.Discount || 0) > 0 ? `-${order.Discount.toFixed(2)}` : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 font-bold text-right">${order.NetAmount.toFixed(2)}</td>
+                                                    <td className="px-6 py-4 font-bold text-right">৳{order.NetAmount.toFixed(2)}</td>
                                                     <td className="px-6 py-4 text-center">
                                                         <button
                                                             onClick={() => navigate(`/orders/${order.Id}`)}

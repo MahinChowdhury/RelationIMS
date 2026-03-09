@@ -4,6 +4,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { getUserProfile, getSalaryRecords, addSalaryRecord, updateUserProfile, changePassword, type UserProfileDTO, type SalaryRecordDTO } from '../../services/userService';
 import LogoutConfirmModal from '../../components/LogoutConfirmModal';
+import { QuantityInput } from '../../components/QuantityInput';
 
 interface UserInfo {
     name: string;
@@ -570,12 +571,14 @@ export default function UserProfile() {
                                     <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.salaryAmount || 'Amount'}</label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">৳</span>
-                                        <input
-                                            type="number"
-                                            value={salaryForm.amount}
-                                            onChange={(e) => setSalaryForm({ ...salaryForm, amount: parseInt(e.target.value) || 0 })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl pl-8 pr-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                        />
+                                        <div className="pl-8">
+                                            <QuantityInput
+                                                value={salaryForm.amount || 0}
+                                                onChange={(val) => setSalaryForm({ ...salaryForm, amount: val })}
+                                                min={0}
+                                                step={100}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

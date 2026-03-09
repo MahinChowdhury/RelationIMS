@@ -366,7 +366,7 @@ export default function CustomersPage() {
                             {/* Total Spent */}
                             <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Total Spent</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white">${stats.totalSpent.toFixed(2)}</span>
+                                <span className="text-sm font-bold text-text-main dark:text-white">৳{stats.totalSpent.toFixed(2)}</span>
                             </div>
 
                             {/* Due Amount */}
@@ -375,7 +375,7 @@ export default function CustomersPage() {
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">payments</span>
                                     <span className={`font-bold text-sm lg:text-sm ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                        ${stats.dueAmount.toFixed(2)}
+                                        ৳{stats.dueAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>

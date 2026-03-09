@@ -19,6 +19,7 @@ import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifi
 import { CSS } from '@dnd-kit/utilities';
 import type { StockItem, Product } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { QuantityInput } from '../QuantityInput';
 
 
 interface ProductFormProps {
@@ -242,11 +243,20 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.costPrice} ($)</label>
                         <input
-                            type="number"
+                            type="text"
                             step="0.01"
                             onFocus={(e) => e.target.select()}
                             value={product.CostPrice}
                             onChange={(e) => onChange('CostPrice', parseFloat(e.target.value))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    onChange('CostPrice', (product.CostPrice || 0) + 1);
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    onChange('CostPrice', Math.max(0, (product.CostPrice || 0) - 1));
+                                }
+                            }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             placeholder="0.00"
                         />
@@ -254,11 +264,20 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.basePrice} ($)</label>
                         <input
-                            type="number"
+                            type="text"
                             step="0.01"
                             onFocus={(e) => e.target.select()}
                             value={product.BasePrice}
                             onChange={(e) => onChange('BasePrice', parseFloat(e.target.value))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    onChange('BasePrice', (product.BasePrice || 0) + 1);
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    onChange('BasePrice', Math.max(0, (product.BasePrice || 0) - 1));
+                                }
+                            }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             placeholder="0.00"
                         />
@@ -267,11 +286,20 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.msrp} ($)</label>
                         <input
-                            type="number"
+                            type="text"
                             step="0.01"
                             onFocus={(e) => e.target.select()}
                             value={product.MSRP}
                             onChange={(e) => onChange('MSRP', parseFloat(e.target.value))}
+                            onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    onChange('MSRP', (product.MSRP || 0) + 1);
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    onChange('MSRP', Math.max(0, (product.MSRP || 0) - 1));
+                                }
+                            }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
                             placeholder="0.00"
                         />
@@ -340,13 +368,10 @@ export function ProductForm({
                     {!isLotMode && (
                         <div>
                             <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.quantity}</label>
-                            <input
-                                type="number"
-                                onFocus={(e) => e.target.select()}
+                            <QuantityInput
                                 value={newStock.quantity}
-                                onChange={(e) => setNewStock({ ...newStock, quantity: parseInt(e.target.value) })}
-                                min="0"
-                                className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-700 text-sm rounded-lg p-2 focus:ring-[#4e9767]"
+                                onChange={(val) => setNewStock({ ...newStock, quantity: val })}
+                                min={0}
                             />
                         </div>
                     )}
@@ -397,12 +422,11 @@ export function ProductForm({
                             {(!isLotMode) ? (
                                 editingStockIndex === i ? (
                                     <div className="flex items-center gap-2 mt-1">
-                                        <input
-                                            type="number"
-                                            onFocus={(e) => e.target.select()}
+                                        <QuantityInput
                                             value={editedStock.quantity}
-                                            onChange={(e) => setEditedStock({ ...editedStock, quantity: parseInt(e.target.value) })}
-                                            className="w-full text-center text-xl font-bold p-1 rounded-lg border-gray-200 bg-white"
+                                            onChange={(val) => setEditedStock({ ...editedStock, quantity: val })}
+                                            min={0}
+                                            className="flex-1"
                                         />
                                         <button onClick={() => saveStockEdit(i)} className="text-green-600 font-bold text-xs">{t.common.ok || 'OK'}</button>
                                         <button onClick={cancelStockEdit} className="text-red-500 font-bold text-xs">{t.common.cancel || 'X'}</button>

@@ -782,11 +782,23 @@ export default function CreateOrder() {
                                                             <div className="flex items-center justify-end gap-1">
                                                                 <span className="text-gray-400 text-xs">$</span>
                                                                 <input
-                                                                    type="number"
+                                                                    type="text"
                                                                     onFocus={(e) => e.target.select()}
                                                                     className="w-20 bg-transparent border-b border-gray-200 dark:border-gray-700 text-right focus:border-primary focus:outline-none text-sm"
                                                                     value={item.Price}
-                                                                    onChange={(e) => updatePrice(item.Id, parseFloat(e.target.value) || 0)}
+                                                                    onChange={(e) => {
+                                                                        const val = parseFloat(e.target.value) || 0;
+                                                                        updatePrice(item.Id, val);
+                                                                    }}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'ArrowUp') {
+                                                                            e.preventDefault();
+                                                                            updatePrice(item.Id, item.Price + 1);
+                                                                        } else if (e.key === 'ArrowDown') {
+                                                                            e.preventDefault();
+                                                                            updatePrice(item.Id, Math.max(0, item.Price - 1));
+                                                                        }
+                                                                    }}
                                                                 />
                                                             </div>
                                                         </td>
@@ -839,10 +851,19 @@ export default function CreateOrder() {
                                         <input
                                             className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-right text-sm py-1.5 px-2 pl-5 focus:border-primary focus:ring-primary text-red-500 font-medium placeholder-gray-300"
                                             placeholder="0.00"
-                                            type="number"
+                                            type="text"
                                             onFocus={(e) => e.target.select()}
                                             value={discount}
                                             onChange={(e) => setDiscount(Math.max(0, parseFloat(e.target.value) || 0))}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'ArrowUp') {
+                                                    e.preventDefault();
+                                                    setDiscount(discount + 1);
+                                                } else if (e.key === 'ArrowDown') {
+                                                    e.preventDefault();
+                                                    setDiscount(Math.max(0, discount - 1));
+                                                }
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -953,13 +974,22 @@ export default function CreateOrder() {
                                         <option value="Bkash">{t.config?.bkash || 'Bkash'}</option>
                                     </select>
                                     <input
-                                        type="number"
+                                        type="text"
                                         onFocus={(e) => e.target.select()}
                                         className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm px-3 focus:border-primary focus:ring-primary"
                                         placeholder={t.common.price}
                                         value={currentAmount}
                                         onChange={(e) => setCurrentAmount(e.target.value)}
                                         onKeyDown={(e) => {
+                                            if (e.key === 'ArrowUp') {
+                                                e.preventDefault();
+                                                const amt = parseFloat(currentAmount) || 0;
+                                                setCurrentAmount((amt + 1).toString());
+                                            } else if (e.key === 'ArrowDown') {
+                                                e.preventDefault();
+                                                const amt = parseFloat(currentAmount) || 0;
+                                                setCurrentAmount(Math.max(0, amt - 1).toString());
+                                            }
                                             if (e.key === 'Enter' && currentAmount) {
                                                 const amt = parseFloat(currentAmount);
                                                 if (amt > 0) {

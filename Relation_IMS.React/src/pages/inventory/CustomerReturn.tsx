@@ -438,7 +438,7 @@ export default function CustomerReturn() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className="font-mono font-bold text-green-600 dark:text-green-400">${item.price.toFixed(2)}</span>
+                                            <span className="font-mono font-bold text-green-600 dark:text-green-400">৳{item.price.toFixed(2)}</span>
                                             <button onClick={() => removeScannedItem(item.id)} className="text-gray-400 hover:text-red-500 transition">
                                                 <span className="material-symbols-outlined">delete</span>
                                             </button>
@@ -453,15 +453,27 @@ export default function CustomerReturn() {
                         <div>
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-1">{t.inventory.refundAmount || 'Refund Amount'} ({t.inventory.balanceIncrease || 'Balance Increase'})</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</span>
                                 <input
-                                    type="number"
+                                    type="text"
                                     min="0"
                                     step="0.01"
                                     onFocus={(e) => e.target.select()}
                                     value={refundAmount}
                                     onChange={(e) => setRefundAmount(e.target.value)}
-                                    readOnly={scannedItems.length > 0} // Make read-only if auto-calculated to prevent confusion, or allow override but it will be reset on list change.
+                                    readOnly={scannedItems.length > 0}
+                                    onKeyDown={(e) => {
+                                        if (scannedItems.length > 0) return;
+                                        if (e.key === 'ArrowUp') {
+                                            e.preventDefault();
+                                            const current = parseFloat(refundAmount) || 0;
+                                            setRefundAmount((current + 1).toString());
+                                        } else if (e.key === 'ArrowDown') {
+                                            e.preventDefault();
+                                            const current = parseFloat(refundAmount) || 0;
+                                            setRefundAmount(Math.max(0, current - 1).toString());
+                                        }
+                                    }}
                                     className={`w-full pl-8 p-3 bg-white dark:bg-[#1a2e22] border border-gray-300 dark:border-[#2a4032] rounded-lg font-bold text-lg text-green-600 focus:ring-primary focus:border-primary ${scannedItems.length > 0 ? 'bg-gray-50 cursor-not-allowed opacity-80' : ''}`}
                                 />
                             </div>
@@ -532,7 +544,7 @@ export default function CustomerReturn() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 font-mono font-bold text-green-600 dark:text-green-400">
-                                                +${record.RefundAmount.toFixed(2)}
+                                                +৳{record.RefundAmount.toFixed(2)}
                                             </td>
                                             <td className="px-6 py-4 flex items-center gap-2">
                                                 <div className="size-6 rounded-full bg-gray-200 flex items-center justify-center font-bold text-[10px] text-gray-500">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { type Product, type ProductVariant } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { QuantityInput } from '../../components/QuantityInput';
 
 interface VariantSelectionModalProps {
     isOpen: boolean;
@@ -278,37 +279,30 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         <div className="grid grid-cols-2 gap-4 mb-2">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.quantityPerSize}</label>
-                                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                                    <button
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined text-sm">remove</span>
-                                    </button>
-                                    <input
-                                        type="number"
-                                        onFocus={(e) => e.target.select()}
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                        className="w-full text-center py-2 bg-white dark:bg-gray-900 border-x border-gray-300 dark:border-gray-600 focus:outline-none"
-                                    />
-                                    <button
-                                        onClick={() => setQuantity(quantity + 1)}
-                                        className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined text-sm">add</span>
-                                    </button>
-                                </div>
+                                <QuantityInput
+                                    value={quantity}
+                                    onChange={setQuantity}
+                                    min={1}
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.unitPrice}</label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                                     <input
-                                        type="number"
+                                        type="text"
                                         onFocus={(e) => e.target.select()}
                                         value={price}
                                         onChange={(e) => setPrice(Math.max(0, parseFloat(e.target.value) || 0))}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'ArrowUp') {
+                                                e.preventDefault();
+                                                setPrice(price + 1);
+                                            } else if (e.key === 'ArrowDown') {
+                                                e.preventDefault();
+                                                setPrice(Math.max(0, price - 1));
+                                            }
+                                        }}
                                         className="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:border-primary focus:ring-primary"
                                     />
                                 </div>

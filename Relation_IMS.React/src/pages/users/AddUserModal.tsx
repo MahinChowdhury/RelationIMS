@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { createUser, getAllRoles, type RoleDTO } from '../../services/userService';
+import { QuantityInput } from '../../components/QuantityInput';
 
 interface AddUserModalProps {
     isOpen: boolean;
@@ -152,15 +153,11 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
 
                         <div>
                             <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary (৳)</label>
-                            <input
-                                type="number"
-                                name="currentSalary"
-                                value={formData.currentSalary}
-                                onChange={(e) => setFormData(prev => ({ ...prev, currentSalary: parseInt(e.target.value) || 0 }))}
-                                onFocus={(e) => e.target.select()}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                placeholder="0"
-                                min="0"
+                            <QuantityInput
+                                value={formData.currentSalary || 0}
+                                onChange={(val) => setFormData(prev => ({ ...prev, currentSalary: val }))}
+                                min={0}
+                                step={100}
                             />
                         </div>
                     </form>

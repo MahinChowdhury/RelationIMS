@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { updateUser, getAllRoles, getUserProfile, type UserDTO, type RoleDTO } from '../../services/userService';
+import { QuantityInput } from '../../components/QuantityInput';
 
 interface EditUserModalProps {
     isOpen: boolean;
@@ -142,9 +143,12 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                         {isOwner && (
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary</label>
-                                <input type="number" value={currentSalary} onChange={(e) => setCurrentSalary(e.target.value)}
-                                    placeholder="Enter salary"
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                <QuantityInput
+                                    value={parseInt(currentSalary) || 0}
+                                    onChange={(val) => setCurrentSalary(val.toString())}
+                                    min={0}
+                                    step={100}
+                                />
                             </div>
                         )}
                     </form>
