@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
+using Relation_IMS.Filters;
 using Relation_IMS.Models.ProductModels;
 
 namespace Relation_IMS.Controllers
@@ -17,6 +18,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpGet]
+        [RedisCache("quarter")]
         public async Task<ActionResult<List<Quarter>>> GetAllQuarters()
         {
             var quarters = await _repo.GetAllQuartersAsync();

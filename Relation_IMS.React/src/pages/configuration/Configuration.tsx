@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import ConfirmDeleteInput from '../../components/ConfirmDeleteInput';
@@ -15,14 +15,19 @@ interface Size { id: number; name: string; categoryId?: number; }
 export default function Configuration() {
     const { t } = useLanguage();
 
-    // --- State ---
-    const [brands, setBrands] = useState<Brand[]>([]);
+    // --- State for each section (loaded independently) ---
     const [categories, setCategories] = useState<Category[]>([]);
+    const [brands, setBrands] = useState<Brand[]>([]);
     const [quarters, setQuarters] = useState<Quarter[]>([]);
     const [colors, setColors] = useState<Color[]>([]);
     const [sizes, setSizes] = useState<Size[]>([]);
 
-    const [loading, setLoading] = useState(true);
+    // --- Loading states for each section ---
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [loadingBrands, setLoadingBrands] = useState(true);
+    const [loadingQuarters, setLoadingQuarters] = useState(true);
+    const [loadingColors, setLoadingColors] = useState(true);
+    const [loadingSizes, setLoadingSizes] = useState(true);
 
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
@@ -37,39 +42,59 @@ export default function Configuration() {
     const [formData, setFormData] = useState({ name: '', hex: '', categoryId: 0, categoryIds: [] as number[] });
 
     useEffect(() => {
-        loadAllData(true);
+        loadCategories();
+        loadBrands();
+        loadQuarters();
+        loadColors();
+        loadSizes();
     }, []);
 
-    const loadAllData = async (showLoading = false) => {
-        if (showLoading) setLoading(true);
+    const loadCategories = async () => {
         try {
-            // Helper to safe load so one failure doesn't break the page
-            const safeGet = async (url: string) => {
-                try { return await api.get(url); } catch (e) { console.error(`Failed to load ${url}`, e); return { data: [] }; }
-            };
+            const res = await api.get('/Category');
+            setCategories(res.data);
+        } catch (e) { console.error('Failed to load categories', e); }
+        finally { setLoadingCategories(false); }
+    };
 
-            const [brandRes, catRes, quarterRes, colorRes, sizeRes] = await Promise.all([
-                safeGet('/Brand'),
-                safeGet('/Category'),
-                safeGet('/Quarter'),
-                safeGet('/ProductVariantColors'),
-                safeGet('/ProductVariantSizes')
-            ]);
+    const loadBrands = async () => {
+        try {
+            const res = await api.get('/Brand');
+            setBrands(res.data);
+        } catch (e) { console.error('Failed to load brands', e); }
+        finally { setLoadingBrands(false); }
+    };
 
-            setBrands(brandRes.data);
-            setCategories(catRes.data);
-            setQuarters(quarterRes.data);
+    const loadQuarters = async () => {
+        try {
+            const res = await api.get('/Quarter');
+            setQuarters(res.data);
+        } catch (e) { console.error('Failed to load quarters', e); }
+        finally { setLoadingQuarters(false); }
+    };
 
-            setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
+    const loadColors = async () => {
+        try {
+            const res = await api.get('/ProductVariantColors');
+            setColors(res.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
+        } catch (e) { console.error('Failed to load colors', e); }
+        finally { setLoadingColors(false); }
+    };
 
-            // Backend returns: { Id, Name, CategoryId }
-            setSizes(sizeRes.data.map((s: any) => ({ id: s.Id, name: s.Name, categoryId: s.CategoryId })));
+    const loadSizes = async () => {
+        try {
+            const res = await api.get('/ProductVariantSizes');
+            setSizes(res.data.map((s: any) => ({ id: s.Id, name: s.Name, categoryId: s.CategoryId })));
+        } catch (e) { console.error('Failed to load sizes', e); }
+        finally { setLoadingSizes(false); }
+    };
 
-        } catch (error) {
-            console.error("Failed to load configuration data", error);
-        } finally {
-            setLoading(false);
-        }
+    const refreshAll = () => {
+        loadCategories();
+        loadBrands();
+        loadQuarters();
+        loadColors();
+        loadSizes();
     };
 
     // --- Handlers ---
@@ -113,7 +138,15 @@ export default function Configuration() {
             await api.delete(endpoint);
             setDeleteModalOpen(false);
             setDeleteItem(null);
-            loadAllData(); // Refresh list
+            
+            // Only refresh the specific section instead of all
+            switch (deleteItem.type) {
+                case 'brand': loadBrands(); break;
+                case 'category': loadCategories(); break;
+                case 'quarter': loadQuarters(); break;
+                case 'color': loadColors(); break;
+                case 'size': loadSizes(); break;
+            }
         } catch (error) {
             console.error("Delete failed", error);
             alert(t.config.failedToDelete);
@@ -164,13 +197,30 @@ export default function Configuration() {
             }
 
             setModalOpen(false);
-            loadAllData();
+            
+            // Only refresh the specific section instead of all
+            switch (modalType) {
+                case 'brand': loadBrands(); break;
+                case 'category': loadCategories(); break;
+                case 'quarter': loadQuarters(); break;
+                case 'color': loadColors(); break;
+                case 'size': loadSizes(); break;
+            }
         } catch (error) {
             console.error("Save failed", error);
             alert(t.config.failedToSave);
         }
     };
 
+
+    const sortedSizes = useMemo(() => {
+        return [...sizes].sort((a, b) => {
+            const catA = categories.find(c => c.Id === a.categoryId)?.Name || t.common.generic;
+            const catB = categories.find(c => c.Id === b.categoryId)?.Name || t.common.generic;
+            if (catA !== catB) return catA.localeCompare(catB);
+            return a.name.localeCompare(b.name);
+        });
+    }, [sizes, categories, t.common.generic]);
 
     const renderCard = (title: string, subtitle: string | null, type: 'brand' | 'category' | 'quarter' | 'color' | 'size', item: any, colorHex?: string) => (
         <div className="bg-white dark:bg-[#1a2e22] border border-gray-100 dark:border-[#2a4032] rounded-lg p-2 flex justify-between items-center group hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
@@ -212,11 +262,7 @@ export default function Configuration() {
                     <p className="text-[#4e9767] dark:text-gray-400">{t.config.subtitle}</p>
                 </div>
 
-                {loading ? (
-                    <div className="text-center py-20 text-gray-400 font-bold">{t.config.loadingConfig}</div>
-                ) : (
-                    <>
-                        {/* Categories Section */}
+                {/* Categories Section */}
                         <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                                 <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
@@ -232,13 +278,17 @@ export default function Configuration() {
                                 </button>
                             </div>
                             <div className="p-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                    {categories.length > 0 ? (
-                                        categories.map(c => renderCard(c.Name, null, 'category', c))
-                                    ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noCategories}</p>
-                                    )}
-                                </div>
+                                {loadingCategories ? (
+                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                        {categories.length > 0 ? (
+                                            categories.map(c => renderCard(c.Name, null, 'category', c))
+                                        ) : (
+                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noCategories}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -258,15 +308,20 @@ export default function Configuration() {
                                 </button>
                             </div>
                             <div className="p-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                    {brands.length > 0 ? (
-                                        brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
-                                    ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
-                                    )}
-                                </div>
+                                {loadingBrands ? (
+                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                        {brands.length > 0 ? (
+                                            brands.map(b => renderCard(b.Name, b.Categories?.map(c => c.Name).join(', ') || null, 'brand', b))
+                                        ) : (
+                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noBrands}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
+
                         {/* Quarters Section */}
                         <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
                             <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
@@ -283,13 +338,17 @@ export default function Configuration() {
                                 </button>
                             </div>
                             <div className="p-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                    {quarters.length > 0 ? (
-                                        quarters.map(q => renderCard(q.Name, null, 'quarter', q))
-                                    ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noQuarters}</p>
-                                    )}
-                                </div>
+                                {loadingQuarters ? (
+                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                        {quarters.length > 0 ? (
+                                            quarters.map(q => renderCard(q.Name, null, 'quarter', q))
+                                        ) : (
+                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noQuarters}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -309,13 +368,17 @@ export default function Configuration() {
                                 </button>
                             </div>
                             <div className="p-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                                    {colors.length > 0 ? (
-                                        colors.map(c => renderCard(c.name, c.hex, 'color', c, c.hex))
-                                    ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noColors}</p>
-                                    )}
-                                </div>
+                                {loadingColors ? (
+                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                                        {colors.length > 0 ? (
+                                            colors.map(c => renderCard(c.name, c.hex, 'color', c, c.hex))
+                                        ) : (
+                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noColors}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -335,27 +398,22 @@ export default function Configuration() {
                                 </button>
                             </div>
                             <div className="p-4">
-                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
-                                    {sizes.length > 0 ? (
-                                        [...sizes]
-                                            .sort((a, b) => {
-                                                const catA = categories.find(c => c.Id === a.categoryId)?.Name || t.common.generic;
-                                                const catB = categories.find(c => c.Id === b.categoryId)?.Name || t.common.generic;
-                                                if (catA !== catB) return catA.localeCompare(catB);
-                                                return a.name.localeCompare(b.name);
-                                            })
-                                            .map(s => {
+                                {loadingSizes ? (
+                                    <div className="text-center py-4 text-gray-400">{t.config.loadingConfig}</div>
+                                ) : (
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+                                        {sizes.length > 0 ? (
+                                            sortedSizes.map(s => {
                                                 const categoryName = categories.find(c => c.Id === s.categoryId)?.Name;
                                                 return renderCard(s.name, categoryName || t.common.generic, 'size', s);
                                             })
-                                    ) : (
-                                        <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noSizes}</p>
-                                    )}
-                                </div>
+                                        ) : (
+                                            <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noSizes}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    </>
-                )}
             </div>
 
             {/* Modal */}

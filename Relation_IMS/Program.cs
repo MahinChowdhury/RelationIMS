@@ -80,13 +80,17 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 // Redis Distributed Cache
+var redisConnString = builder.Configuration["Redis:ConnectionString"]!;
+var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(redisConnString, true);
+redisOptions.AbortOnConnectFail = false;
+
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.ConfigurationOptions = redisOptions;
     options.InstanceName = "RelationIMS:";
 });
 builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp =>
-    StackExchange.Redis.ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
+    StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions));
 builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 
 builder.Services.AddSingleton<IClientCacheService, ClientCacheService>();
