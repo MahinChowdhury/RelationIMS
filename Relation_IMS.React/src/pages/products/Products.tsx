@@ -107,7 +107,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d')!;
-                const maxSize = 150;
+                const maxSize = 400;
                 let width = img.width;
                 let height = img.height;
 
@@ -126,7 +126,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 canvas.width = width;
                 canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
+                resolve(canvas.toDataURL('image/jpeg', 0.85));
             };
             img.src = URL.createObjectURL(file);
         });
@@ -476,8 +476,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             if (imageCount > 0 && productId) {
                 updateToast(toastId, { type: 'uploading', message: `Product created! Processing ${imageCount} image${imageCount > 1 ? 's' : ''}...`, current: 0, total: imageCount });
 
-                // Poll every 1.5s for up to 60s
-                const maxAttempts = 40;
+                // Poll every 600ms for up to 60s
+                const maxAttempts = 100;
                 let attempt = 0;
                 let simulatedCount = 0;
 
@@ -488,10 +488,10 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                         const uploadedCount = productRes.data.ImageUrls?.length || 0;
 
                         // Calculate simulated progress
-                        // Increment faster to make the bar feel snappier.
-                        // Cap the simulation at `imageCount - 0.2` (around ~95% of the bar)
+                        // Increment fast to make the bar feel snappy.
+                        // Cap the simulation at ~97% of the bar
                         if (uploadedCount < imageCount) {
-                            simulatedCount = Math.min(simulatedCount + (1.6 / imageCount), imageCount - 0.2);
+                            simulatedCount = Math.min(simulatedCount + (3.5 / imageCount), imageCount - 0.1);
                         } else {
                             simulatedCount = uploadedCount; // Snap to 100%
                         }
@@ -516,7 +516,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                     } catch {
                         // Silently continue polling
                     }
-                }, 1000);
+                }, 600);
             } else {
                 updateToast(toastId, { type: 'success', message: 'Product created successfully!' });
             }

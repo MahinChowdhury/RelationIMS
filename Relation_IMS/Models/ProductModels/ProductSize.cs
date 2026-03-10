@@ -6,7 +6,6 @@ namespace Relation_IMS.Models.ProductModels
     {
         [Required(ErrorMessage = "Size name is required.")]
         public string Name { get; set; } = null!;
-        [Required(ErrorMessage = "The categoryId is required.")]
-        public int CategoryId { get; set; }
+        public List<Category>? Categories { get; set; } = new List<Category>();
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces.ProductVariantsInterfaceRepo;
 using Relation_IMS.Dtos.ProductDtos;
@@ -12,7 +12,7 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public ProductVariantSizeRepository(ApplicationDbContext context,IMapper mapper)
+        public ProductVariantSizeRepository(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -26,13 +26,20 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
             }
 
             var newSize = _mapper.Map<ProductSize>(productSize);
+            newSize.Categories = await _context.Categories
+                .Where(c => productSize.CategoryIds.Contains(c.Id))
+                .ToListAsync();
+
             await _context.ProductSizes.AddAsync(newSize);
             await _context.SaveChangesAsync();
             return newSize;
         }
+
         public async Task<ProductSize?> GetProductSizeByIdAsync(int id)
         {
-            var productSize = await _context.ProductSizes.FirstOrDefaultAsync(x => x.Id == id);
+            var productSize = await _context.ProductSizes
+                .Include(s => s.Categories)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (productSize == null)
             {
                 return null;
@@ -43,7 +50,10 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
         public async Task<List<ProductSize>?> GetAllProductSizeByCategoryIdAsync(int categoryId)
         {
-            var sizes = await _context.ProductSizes.Where(s => s.CategoryId == categoryId).ToListAsync();
+            var sizes = await _context.ProductSizes
+                .Include(s => s.Categories)
+                .Where(s => s.Categories.Any(c => c.Id == categoryId))
+                .ToListAsync();
             return sizes;
         }
 
@@ -60,15 +70,24 @@ namespace Relation_IMS.Datas.Repositories.ProductVariantsRepo
 
         public async Task<List<ProductSize>?> GetAllSizesAsync()
         {
-            return await _context.ProductSizes.ToListAsync();
+            return await _context.ProductSizes
+                .Include(s => s.Categories)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<ProductSize?> UpdateSizeForProductAsync(int id, CreateNewProductSizeDTO productSize)
         {
-            var size = await _context.ProductSizes.FindAsync(id);
+            var size = await _context.ProductSizes
+                .Include(s => s.Categories)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (size == null) return null;
 
-            _mapper.Map(productSize, size);
+            size.Name = productSize.Name;
+            size.Categories = await _context.Categories
+                .Where(c => productSize.CategoryIds.Contains(c.Id))
+                .ToListAsync();
+
             await _context.SaveChangesAsync();
 
             return size;

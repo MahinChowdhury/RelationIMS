@@ -48,8 +48,8 @@ const Login = () => {
                                 temp_preferences_custom
                             </span>
                         </div>
-                        <h1 className="text-3xl font-bold text-text-main font-display">{t.auth.welcomeBack}</h1>
-                        <p className="text-text-secondary mt-2">{t.auth.signInSubtitle}</p>
+                        <h1 className="text-3xl font-bold text-text-main dark:text-white font-display">{t.auth.welcomeBack}</h1>
+                        <p className="text-text-secondary dark:text-gray-300 mt-2">{t.auth.signInSubtitle}</p>
                     </div>
 
                     {error && (
@@ -60,7 +60,7 @@ const Login = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                 {t.auth.phoneNumber}
                             </label>
                             <div className="relative">
@@ -72,14 +72,14 @@ const Login = () => {
                                     required
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
-                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                     placeholder="01XXXXXXXXX"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="password" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                 {t.auth.password}
                             </label>
                             <div className="relative">
@@ -91,7 +91,7 @@ const Login = () => {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -107,7 +107,7 @@ const Login = () => {
                                     onChange={(e) => setShowPassword(e.target.checked)}
                                     className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer transition-transform active:scale-90"
                                 />
-                                <label htmlFor="show-password" className="ml-2 block text-sm text-text-main cursor-pointer select-none">
+                                <label htmlFor="show-password" className="ml-2 block text-sm text-text-main dark:text-gray-200 cursor-pointer select-none">
                                     {t.auth.showPassword}
                                 </label>
                             </div>
@@ -131,7 +131,7 @@ const Login = () => {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-sm text-text-secondary">
+                        <p className="text-sm text-text-secondary dark:text-gray-300">
                             {t.auth.dontHaveAccount}{' '}
                             <Link to="/register" className="font-medium text-primary hover:text-primary-dark transition-colors">
                                 {t.auth.registerNow}
@@ -140,7 +140,7 @@ const Login = () => {
                     </div>
                 </div>
 
-                <p className="mt-8 text-center text-sm text-text-secondary opacity-75">
+                <p className="mt-8 text-center text-sm text-text-secondary dark:text-gray-400 opacity-75">
                     {t.app.fullName}
                 </p>
             </main>

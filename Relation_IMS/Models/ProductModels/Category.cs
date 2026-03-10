@@ -10,4 +10,5 @@ public class Category : BaseAuditableEntity
     public string? Description { get; set; }
     public List<Product>? Products { get; set; } = new List<Product>();
     public List<Brand>? Brands { get; set; }
+    public List<ProductSize>? Sizes { get; set; }
 }

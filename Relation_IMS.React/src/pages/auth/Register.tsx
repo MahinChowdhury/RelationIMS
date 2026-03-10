@@ -64,8 +64,8 @@ const Register = () => {
                                 eco
                             </span>
                         </div>
-                        <h1 className="text-2xl font-bold text-text-main font-display">{t.auth.createAccount}</h1>
-                        <p className="text-text-secondary mt-2">{t.auth.joinSubtitle}</p>
+                        <h1 className="text-2xl font-bold text-text-main dark:text-white font-display">{t.auth.createAccount}</h1>
+                        <p className="text-text-secondary dark:text-gray-300 mt-2">{t.auth.joinSubtitle}</p>
                     </div>
 
                     {error && (
@@ -77,7 +77,7 @@ const Register = () => {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label htmlFor="firstname" className="block text-sm font-medium text-text-main mb-1">
+                                <label htmlFor="firstname" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                     {t.common.name} ({t.auth.fullName})
                                 </label>
                                 <input
@@ -88,12 +88,12 @@ const Register = () => {
                                     required
                                     value={formData.firstname}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                     placeholder="First"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="lastname" className="block text-sm font-medium text-text-main mb-1">
+                                <label htmlFor="lastname" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                     &nbsp;
                                 </label>
                                 <input
@@ -103,14 +103,14 @@ const Register = () => {
                                     autoComplete="family-name"
                                     value={formData.lastname}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                     placeholder="Last"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                 {t.auth.phoneNumber}
                             </label>
                             <input
@@ -121,13 +121,13 @@ const Register = () => {
                                 required
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
-                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                 placeholder="01XXXXXXXXX"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="password" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                 {t.auth.password}
                             </label>
                             <input
@@ -138,13 +138,13 @@ const Register = () => {
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                 placeholder="••••••••"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-main mb-1">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
                                 {t.auth.confirmPassword}
                             </label>
                             <input
@@ -155,7 +155,7 @@ const Register = () => {
                                 required
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -172,7 +172,7 @@ const Register = () => {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-sm text-text-secondary">
+                        <p className="text-sm text-text-secondary dark:text-gray-300">
                             {t.auth.alreadyHaveAccount}{' '}
                             <Link to="/login" className="font-medium text-primary hover:text-primary-dark transition-colors">
                                 {t.auth.signIn}

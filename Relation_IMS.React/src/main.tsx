@@ -13,10 +13,10 @@ import ErrorBoundary from './components/ErrorBoundary.tsx'
 setupGlobalAlerts()
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <p className="text-gray-600">Loading...</p>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-text-main dark:text-gray-300">Loading...</p>
     </div>
   </div>
 )

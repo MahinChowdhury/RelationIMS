@@ -49,12 +49,12 @@ export default function ProductCard({
             onClick={() => onCardClick ? onCardClick(product.Id) : navigate(`/products/${product.Id}`)}
         >
             {/* Image */}
-            <div className="relative aspect-[3/4] w-full overflow-hidden">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50 dark:bg-gray-900">
                 <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                    style={{ backgroundImage: `url(${product.ImageUrls?.[0] || placeholderImage})` }}
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.03]"
+                    style={{ backgroundImage: `url(${product.ThumbnailUrl || product.ImageUrls?.[0] || placeholderImage})` }}
                 ></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
 
                 <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
                     {statusBadge && statusBadge}
@@ -75,7 +75,7 @@ export default function ProductCard({
                     | {getBrandName(product.BrandId)}
                 </span>
                 <span className="shrink-0 text-[10px] sm:text-xs text-gray-400 font-mono truncate">
-                    | SKU: {product.Sku || product.Id}
+                    | {product.Sku || product.Id}
                 </span>
             </div>
         </div>

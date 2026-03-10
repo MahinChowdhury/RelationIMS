@@ -31,21 +31,21 @@ const UserManagement = lazy(() => import('./pages/users/UserManagement'));
 
 const Dashboard = () => (
   <div className="p-4">
-    <h1 className="text-2xl font-bold">Dashboard</h1>
-    <p className="text-gray-600 mt-2">Coming Soon</p>
+    <h1 className="text-2xl dark:text-white font-bold">Dashboard</h1>
+    <p className="text-gray-600 dark:text-white mt-2">Coming Soon</p>
   </div>
 );
 
 const Accounts = () => (
   <div className="p-4">
-    <h1 className="text-2xl font-bold">Accounts</h1>
-    <p className="text-gray-600 mt-2">Coming Soon</p>
+    <h1 className="text-2xl dark:text-white font-bold">Accounts</h1>
+    <p className="text-gray-600 dark:text-white mt-2">Coming Soon</p>
   </div>
 );
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[200px]">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
   </div>
 );
 
@@ -53,12 +53,12 @@ function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/products/share-catalog/:hash" element={<ShareCatalogView />} />
-      <Route path="/products/share-catalog/:hash/:productId" element={<ProductDetails isGuestView={true} />} />
+
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/products/share-catalog/:hash" element={<ShareCatalogView />} />
+        <Route path="/products/share-catalog/:hash/:productId" element={<ProductDetails isGuestView={true} />} />
 
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Welcome />} />
