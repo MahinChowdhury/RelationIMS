@@ -198,8 +198,8 @@ export function ProductForm({
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5 cursor-pointer"
                         >
-                            <option value={0}>{t.common.search} {t.products.category}</option>
-                            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            <option className="dark:bg-gray-800" value={0}>{t.common.search} {t.products.category}</option>
+                            {categories.map(c => <option className="dark:bg-gray-800" key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
 
@@ -211,8 +211,8 @@ export function ProductForm({
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5 cursor-pointer"
                             disabled={!product.CategoryId || product.CategoryId === 0}
                         >
-                            <option value={0}>{!product.CategoryId || product.CategoryId === 0 ? `${t.common.search} ${t.products.category} ${t.common.first || 'First'}` : `${t.common.search} ${t.products.brand}`}</option>
-                            {filteredBrands.map(b => <option key={b.Id} value={b.Id}>{b.Name}</option>)}
+                            <option className="dark:bg-gray-800" value={0}>{!product.CategoryId || product.CategoryId === 0 ? `${t.common.search} ${t.products.category} ${t.common.first || 'First'}` : `${t.common.search} ${t.products.brand}`}</option>
+                            {filteredBrands.map(b => <option className="dark:bg-gray-800" key={b.Id} value={b.Id}>{b.Name}</option>)}
                         </select>
                     </div>
 
@@ -341,8 +341,8 @@ export function ProductForm({
                                 onChange={(e) => setNewStock({ ...newStock, color: e.target.value })}
                                 className="flex-1 bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                             >
-                                <option value="" disabled hidden>{t.common.search}</option>
-                                {colors.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                                <option className="dark:bg-gray-800" value="" disabled hidden>{t.common.search}</option>
+                                {colors.map(c => <option className="dark:bg-gray-800" key={c.id} value={c.name}>{c.name}</option>)}
                             </select>
                             {getColorHex(newStock.color) && (
                                 <span
@@ -360,8 +360,8 @@ export function ProductForm({
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}
                             className="w-full bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                         >
-                            <option value="" disabled hidden>{t.common.search}</option>
-                            {availableSizes.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                            <option className="dark:bg-gray-800" value="" disabled hidden>{t.common.search}</option>
+                            {availableSizes.map(s => <option className="dark:bg-gray-800" key={s.id} value={s.name}>{s.name}</option>)}
                         </select>
                     </div>
 

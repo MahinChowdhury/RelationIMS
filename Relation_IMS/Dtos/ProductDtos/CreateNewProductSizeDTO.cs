@@ -6,7 +6,6 @@ namespace Relation_IMS.Dtos.ProductDtos
     {
         [Required(ErrorMessage = "Size name is required.")]
         public string Name { get; set; } = null!;
-        [Required(ErrorMessage = "The categoryId is required.")]
-        public int CategoryId { get; set; }
+        public List<int> CategoryIds { get; set; } = new List<int>();
     }
 }

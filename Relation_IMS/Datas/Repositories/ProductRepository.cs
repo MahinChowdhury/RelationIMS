@@ -178,6 +178,9 @@ namespace Relation_IMS.Datas.Repositories
             // Handle ImageUrls (replace all)
             product.ImageUrls = updateDto.ImageUrls ?? new List<string>();
 
+            // Handle ThumbnailUrl
+            product.ThumbnailUrl = updateDto.ThumbnailUrl;
+
             // ── ONLY if you want to sync variants via DTO ─────────────────────
             if (updateDto.Variants != null)
             {

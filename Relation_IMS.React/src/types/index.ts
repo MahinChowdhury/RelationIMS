@@ -49,6 +49,7 @@ export interface Product {
     BrandId: number;
     QuarterIds?: number[];
     ImageUrls?: string[];
+    ThumbnailUrl?: string;
     TotalQuantity?: number;
     Category?: {
         Id: number;

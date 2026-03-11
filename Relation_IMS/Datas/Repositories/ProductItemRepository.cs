@@ -91,7 +91,9 @@ namespace Relation_IMS.Datas.Repositories
                 ProductId = item.ProductVariant?.Product?.Id ?? 0,
                 ProductName = item.ProductVariant?.Product?.Name ?? "Unknown",
                 BasePrice = item.ProductVariant?.Product?.BasePrice ?? 0,
-                ImageUrls = item.ProductVariant?.Product?.ImageUrls
+                ImageUrls = item.ProductVariant?.Product?.ImageUrls,
+                ThumbnailUrl = item.ProductVariant?.Product?.ThumbnailUrl,
+                ThumbnailUrlLarge = item.ProductVariant?.Product?.ThumbnailUrlLarge
             };
         }
 

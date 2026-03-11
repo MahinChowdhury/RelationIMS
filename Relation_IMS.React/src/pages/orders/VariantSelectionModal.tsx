@@ -182,7 +182,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                         {/* Product Info */}
                         <div className="flex gap-4 mb-6">
                             <div className="size-16 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0 border border-gray-200 dark:border-gray-600 bg-cover bg-center"
-                                style={{ backgroundImage: `url('${product.ImageUrls?.[0] || 'https://via.placeholder.com/150'}')` }}>
+                                style={{ backgroundImage: `url('${product.ThumbnailUrl || product.ImageUrls?.[0] || 'https://via.placeholder.com/150'}')` }}>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{product.Description}</p>

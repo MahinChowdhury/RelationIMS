@@ -26,6 +26,8 @@ namespace Relation_IMS.Dtos.ProductDtos
         [Required(ErrorMessage = "At least one Quarter is required.")]
         public List<int> QuarterIds { get; set; } = new List<int>();
         public List<string>? ImageUrls { get; set; }
+        public string? ThumbnailUrl { get; set; }
+        public string? ThumbnailUrlLarge { get; set; }
         public List<ProductVariant>? Variants { get; set; }
     }
 }

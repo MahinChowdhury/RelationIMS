@@ -8,7 +8,7 @@ interface Brand { Id: number; Name: string; Categories: Category[]; }
 interface Category { Id: number; Name: string; }
 interface Quarter { Id: number; Name: string; }
 interface Color { id: number; name: string; hex: string; }
-interface Size { id: number; name: string; categoryId?: number; }
+interface Size { id: number; name: string; Categories?: Category[]; }
 
 // --- Types for API Payloads ---
 
@@ -84,7 +84,7 @@ export default function Configuration() {
     const loadSizes = async () => {
         try {
             const res = await api.get('/ProductVariantSizes');
-            setSizes(res.data.map((s: any) => ({ id: s.Id, name: s.Name, categoryId: s.CategoryId })));
+            setSizes(res.data.map((s: any) => ({ id: s.Id, name: s.Name, Categories: s.Categories || [] })));
         } catch (e) { console.error('Failed to load sizes', e); }
         finally { setLoadingSizes(false); }
     };
@@ -109,7 +109,7 @@ export default function Configuration() {
             setFormData({
                 name: item.Name || item.name,
                 hex: item.hex || item.HexCode || '',
-                categoryId: item.CategoryId || 0,
+                categoryId: 0,
                 categoryIds: item.Categories ? item.Categories.map((c: any) => c.Id) : []
             });
         } else {
@@ -186,7 +186,7 @@ export default function Configuration() {
                     break;
                 case 'size':
                     endpoint = isEdit ? `/ProductVariantSizes/${id}` : '/ProductVariantSizes';
-                    payload = { Name: formData.name, CategoryId: formData.categoryId || 1 }; // Default cat ID if needed?
+                    payload = { Name: formData.name, CategoryIds: formData.categoryIds };
                     break;
             }
 
@@ -215,9 +215,9 @@ export default function Configuration() {
 
     const sortedSizes = useMemo(() => {
         return [...sizes].sort((a, b) => {
-            const catA = categories.find(c => c.Id === a.categoryId)?.Name || t.common.generic;
-            const catB = categories.find(c => c.Id === b.categoryId)?.Name || t.common.generic;
-            if (catA !== catB) return catA.localeCompare(catB);
+            const catANames = a.Categories?.map(c => c.Name).join(', ') || t.common.generic;
+            const catBNames = b.Categories?.map(c => c.Name).join(', ') || t.common.generic;
+            if (catANames !== catBNames) return catANames.localeCompare(catBNames);
             return a.name.localeCompare(b.name);
         });
     }, [sizes, categories, t.common.generic]);
@@ -404,8 +404,8 @@ export default function Configuration() {
                             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
                                 {sizes.length > 0 ? (
                                     sortedSizes.map(s => {
-                                        const categoryName = categories.find(c => c.Id === s.categoryId)?.Name;
-                                        return renderCard(s.name, categoryName || t.common.generic, 'size', s);
+                                        const categoryNames = s.Categories?.map(c => c.Name).join(', ') || t.common.generic;
+                                        return renderCard(s.name, categoryNames, 'size', s);
                                     })
                                 ) : (
                                     <p className="text-xs text-gray-400 col-span-full py-4 text-center">{t.config.noSizes}</p>
@@ -427,12 +427,12 @@ export default function Configuration() {
                         <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                             <div className="flex flex-col gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.common.name}</label>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.common.name}</label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54]"
                                         placeholder={t.config.enterName.replace('{type}', modalType)}
                                         autoFocus
                                     />
@@ -440,7 +440,7 @@ export default function Configuration() {
 
                                 {modalType === 'brand' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
                                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
@@ -468,7 +468,7 @@ export default function Configuration() {
 
                                 {modalType === 'color' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.config.colorHex}</label>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.colorHex}</label>
                                         <div className="flex gap-2">
                                             <input
                                                 type="color"
@@ -480,7 +480,7 @@ export default function Configuration() {
                                                 type="text"
                                                 value={formData.hex}
                                                 onChange={e => setFormData({ ...formData, hex: e.target.value })}
-                                                className="flex-1 bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                className="flex-1 bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54]"
                                                 placeholder="#000000"
                                             />
                                         </div>
@@ -490,17 +490,29 @@ export default function Configuration() {
                                 {/* For Size, we might want Category selection */}
                                 {modalType === 'size' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">{t.config.categoryOptional}</label>
-                                        <select
-                                            value={formData.categoryId}
-                                            onChange={e => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
-                                        >
-                                            <option value={0}>{t.config.genericAll}</option>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
+                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
-                                                <option key={c.Id} value={c.Id}>{c.Name}</option>
+                                                <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={c.Id}
+                                                        checked={formData.categoryIds.includes(c.Id)}
+                                                        onChange={(e) => {
+                                                            const id = parseInt(e.target.value);
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                categoryIds: e.target.checked
+                                                                    ? [...prev.categoryIds, id]
+                                                                    : prev.categoryIds.filter(cid => cid !== id)
+                                                            }));
+                                                        }}
+                                                        className="w-4 h-4 text-[#17cf54] rounded focus:ring-[#17cf54] focus:ring-offset-0 dark:bg-black/20 dark:border-gray-600"
+                                                    />
+                                                    <span className="text-sm font-medium text-[#0e1b12] dark:text-gray-200">{c.Name}</span>
+                                                </label>
                                             ))}
-                                        </select>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -509,7 +521,7 @@ export default function Configuration() {
                                 <button
                                     type="button"
                                     onClick={() => setModalOpen(false)}
-                                    className="flex-1 py-3 text-gray-500 hover:text-gray-700 font-bold hover:bg-gray-50 rounded-xl transition-colors"
+                                    className="flex-1 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
                                 >
                                     {t.common.cancel}
                                 </button>

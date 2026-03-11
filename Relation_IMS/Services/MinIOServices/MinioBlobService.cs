@@ -2,6 +2,7 @@ using Minio;
 using Minio.DataModel.Args;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
 using System.Text.RegularExpressions;
 
 namespace Relation_IMS.Services.MinIOServices
@@ -95,7 +96,7 @@ namespace Relation_IMS.Services.MinIOServices
             using var image = await Image.LoadAsync(stream);
             using var outputStream = new MemoryStream();
 
-            var encoder = new WebpEncoder { Quality = 60 };
+            var encoder = new WebpEncoder { Quality = 70 };
             await image.SaveAsync(outputStream, encoder);
 
             outputStream.Position = 0;
@@ -108,6 +109,126 @@ namespace Relation_IMS.Services.MinIOServices
                 .WithContentType("image/webp"));
 
             return $"{_publicBaseUrl}/{_bucketName}/{safeFileName}";
+        }
+
+        public async Task<(string FullUrl, string ThumbnailUrl)> UploadFileWithThumbnailAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is empty");
+
+            await EnsureBucketInitializedAsync();
+
+            var baseName = Path.GetFileNameWithoutExtension(file.FileName);
+            var safeFileName = CleanFileName(baseName) + ".webp";
+            var thumbFileName = CleanFileName(baseName) + "_thumb.webp";
+
+            using var inputStream = file.OpenReadStream();
+            using var image = await Image.LoadAsync(inputStream);
+
+            var fullUrl = await UploadImageToMinioAsync(image, safeFileName, 70);
+            var thumbUrl = await GenerateAndUploadThumbnailAsync(image, thumbFileName);
+
+            return (fullUrl, thumbUrl);
+        }
+
+        public async Task<(string FullUrl, string ThumbnailUrl)> UploadImageStreamWithThumbnailAsync(Stream stream, string fileName)
+        {
+            if (stream == null || stream.Length == 0)
+                throw new ArgumentException("Stream is empty");
+
+            await EnsureBucketInitializedAsync();
+
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var safeFileName = CleanFileName(baseName) + ".webp";
+            var thumbFileName = CleanFileName(baseName) + "_thumb.webp";
+
+            using var image = await Image.LoadAsync(stream);
+
+            var fullUrl = await UploadImageToMinioAsync(image, safeFileName, 60);
+            var thumbUrl = await GenerateAndUploadThumbnailAsync(image, thumbFileName);
+
+            return (fullUrl, thumbUrl);
+        }
+
+        public async Task<(string FullUrl, string ThumbnailUrl, string ThumbnailUrlLarge)> UploadImageStreamWithThumbnailsAsync(Stream stream, string fileName)
+        {
+            if (stream == null || stream.Length == 0)
+                throw new ArgumentException("Stream is empty");
+
+            await EnsureBucketInitializedAsync();
+
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var safeFileName = CleanFileName(baseName) + ".webp";
+            var thumbFileName = CleanFileName(baseName) + "_thumb.webp";
+            var thumbLargeFileName = CleanFileName(baseName) + "_thumb_large.webp";
+
+            using var image = await Image.LoadAsync(stream);
+
+            var fullUrl = await UploadImageToMinioAsync(image, safeFileName, 60);
+            var thumbUrl = await GenerateAndUploadThumbnailAsync(image, thumbFileName);
+            var thumbUrlLarge = await GenerateAndUploadLargeThumbnailAsync(image, thumbLargeFileName);
+
+            return (fullUrl, thumbUrl, thumbUrlLarge);
+        }
+
+        private async Task<string> UploadImageToMinioAsync(Image image, string fileName, int quality)
+        {
+            using var outputStream = new MemoryStream();
+            var encoder = new WebpEncoder { Quality = quality };
+            await image.SaveAsync(outputStream, encoder);
+
+            outputStream.Position = 0;
+
+            await _minioClient.PutObjectAsync(new PutObjectArgs()
+                .WithBucket(_bucketName)
+                .WithObject(fileName)
+                .WithStreamData(outputStream)
+                .WithObjectSize(outputStream.Length)
+                .WithContentType("image/webp"));
+
+            return $"{_publicBaseUrl}/{_bucketName}/{fileName}";
+        }
+
+        private async Task<string> GenerateAndUploadThumbnailAsync(Image image, string thumbFileName)
+        {
+            const int maxWidth = 480;
+            int newWidth = image.Width;
+            int newHeight = image.Height;
+
+            if (image.Width > maxWidth)
+            {
+                newWidth = maxWidth;
+                newHeight = (int)((decimal)image.Height * maxWidth / image.Width);
+            }
+
+            using var thumbnail = image.Clone(ctx => ctx.Resize(new ResizeOptions
+            {
+                Size = new Size(newWidth, newHeight),
+                Mode = ResizeMode.Max
+            }));
+
+            return await UploadImageToMinioAsync(thumbnail, thumbFileName, 75);
+        }
+
+        private async Task<string> GenerateAndUploadLargeThumbnailAsync(Image image, string thumbFileName)
+        {
+            const int maxWidth = 560;
+            int newWidth = image.Width;
+            int newHeight = image.Height;
+
+            if (image.Width > maxWidth)
+            {
+                newWidth = maxWidth;
+                newHeight = (int)((decimal)image.Height * maxWidth / image.Width);
+            }
+
+            using var thumbnail = image.Clone(ctx => ctx.Resize(new ResizeOptions
+            {
+                Size = new Size(newWidth, newHeight),
+                Mode = ResizeMode.Max
+            }));
+
+            return await UploadImageToMinioAsync(thumbnail, thumbFileName, 80);
         }
 
         private static string CleanFileName(string input)
