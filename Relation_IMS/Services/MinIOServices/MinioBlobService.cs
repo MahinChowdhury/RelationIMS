@@ -150,6 +150,27 @@ namespace Relation_IMS.Services.MinIOServices
             return (fullUrl, thumbUrl);
         }
 
+        public async Task<(string FullUrl, string ThumbnailUrl, string ThumbnailUrlLarge)> UploadImageStreamWithThumbnailsAsync(Stream stream, string fileName)
+        {
+            if (stream == null || stream.Length == 0)
+                throw new ArgumentException("Stream is empty");
+
+            await EnsureBucketInitializedAsync();
+
+            var baseName = Path.GetFileNameWithoutExtension(fileName);
+            var safeFileName = CleanFileName(baseName) + ".webp";
+            var thumbFileName = CleanFileName(baseName) + "_thumb.webp";
+            var thumbLargeFileName = CleanFileName(baseName) + "_thumb_large.webp";
+
+            using var image = await Image.LoadAsync(stream);
+
+            var fullUrl = await UploadImageToMinioAsync(image, safeFileName, 60);
+            var thumbUrl = await GenerateAndUploadThumbnailAsync(image, thumbFileName);
+            var thumbUrlLarge = await GenerateAndUploadLargeThumbnailAsync(image, thumbLargeFileName);
+
+            return (fullUrl, thumbUrl, thumbUrlLarge);
+        }
+
         private async Task<string> UploadImageToMinioAsync(Image image, string fileName, int quality)
         {
             using var outputStream = new MemoryStream();
@@ -187,6 +208,27 @@ namespace Relation_IMS.Services.MinIOServices
             }));
 
             return await UploadImageToMinioAsync(thumbnail, thumbFileName, 75);
+        }
+
+        private async Task<string> GenerateAndUploadLargeThumbnailAsync(Image image, string thumbFileName)
+        {
+            const int maxWidth = 560;
+            int newWidth = image.Width;
+            int newHeight = image.Height;
+
+            if (image.Width > maxWidth)
+            {
+                newWidth = maxWidth;
+                newHeight = (int)((decimal)image.Height * maxWidth / image.Width);
+            }
+
+            using var thumbnail = image.Clone(ctx => ctx.Resize(new ResizeOptions
+            {
+                Size = new Size(newWidth, newHeight),
+                Mode = ResizeMode.Max
+            }));
+
+            return await UploadImageToMinioAsync(thumbnail, thumbFileName, 80);
         }
 
         private static string CleanFileName(string input)

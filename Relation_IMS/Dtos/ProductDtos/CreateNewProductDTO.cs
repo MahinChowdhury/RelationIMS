@@ -11,6 +11,7 @@ namespace Relation_IMS.Dtos.ProductDtos
         public string Name { get; set; } = null!;
         public List<string>? ImageUrls { get; set; }
         public string? ThumbnailUrl { get; set; }
+        public string? ThumbnailUrlLarge { get; set; }
         public string? Description { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]

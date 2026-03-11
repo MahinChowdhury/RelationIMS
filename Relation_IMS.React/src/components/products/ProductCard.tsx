@@ -52,7 +52,7 @@ export default function ProductCard({
             <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50 dark:bg-gray-900">
                 <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.03]"
-                    style={{ backgroundImage: `url(${product.ThumbnailUrl || product.ImageUrls?.[0] || placeholderImage})` }}
+                    style={{ backgroundImage: `url(${gridDensity === 4 ? (product.ThumbnailUrlLarge || product.ThumbnailUrl || product.ImageUrls?.[0] || placeholderImage) : (product.ThumbnailUrl || product.ImageUrls?.[0] || placeholderImage)})` }}
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
 

@@ -46,8 +46,8 @@ namespace Relation_IMS.Services
                         await semaphore.WaitAsync(cts.Token);
                         try
                         {
-                            var (url, thumbUrl) = await blobService.UploadImageStreamWithThumbnailAsync(image.Content, image.FileName);
-                            return (url, thumbUrl);
+                            var (url, thumbUrl, thumbUrlLarge) = await blobService.UploadImageStreamWithThumbnailsAsync(image.Content, image.FileName);
+                            return (url, thumbUrl, thumbUrlLarge);
                         }
                         finally
                         {
@@ -75,8 +75,12 @@ namespace Relation_IMS.Services
                             var currentImages = product.ImageUrls ?? new List<string>();
                             currentImages.AddRange(uploadedUrls);
                             
-                            var thumbnailUrl = uploadedUrls.Any() 
-                                ? uploadedUrls[0].Replace(".webp", "_thumb.webp") 
+                            var firstImageUrl = uploadedUrls.FirstOrDefault();
+                            var thumbnailUrl = !string.IsNullOrEmpty(firstImageUrl) 
+                                ? firstImageUrl.Replace(".webp", "_thumb.webp") 
+                                : null;
+                            var thumbnailUrlLarge = !string.IsNullOrEmpty(firstImageUrl) 
+                                ? firstImageUrl.Replace(".webp", "_thumb_large.webp") 
                                 : null;
                             
                             var updateDto = new Relation_IMS.Dtos.ProductDtos.UpdateProductDTO
@@ -89,6 +93,7 @@ namespace Relation_IMS.Services
                                 QuarterIds = product.Quarters?.Select(q => q.Id).ToList() ?? new List<int>(),
                                 ImageUrls = currentImages,
                                 ThumbnailUrl = thumbnailUrl,
+                                ThumbnailUrlLarge = thumbnailUrlLarge,
                                 Variants = null
                             };
                             
