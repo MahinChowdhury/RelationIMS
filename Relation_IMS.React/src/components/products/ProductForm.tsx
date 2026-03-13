@@ -416,7 +416,7 @@ export function ProductForm({
                                     )}
                                     <span className="font-bold text-lg text-[#0e1b12] dark:text-white">{s.size}</span>
                                 </div>
-                                <span className="text-[10px] uppercase tracking-wider text-text-secondary bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">{s.color}</span>
+                                <span className="text-[10px] uppercase tracking-wider text-text-secondary dark:text-gray-300 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">{s.color}</span>
                             </div>
 
                             {(!isLotMode) ? (
@@ -443,7 +443,7 @@ export function ProductForm({
                     ))}
 
                     {stockItems.length === 0 && (
-                        <div className="col-span-full py-8 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-[#2a4032] rounded-xl">
+                        <div className="col-span-full py-8 text-center text-gray-400 dark:text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-[#2a4032] rounded-xl">
                             {t.products.noVariantsFound}
                         </div>
                     )}

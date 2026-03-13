@@ -153,7 +153,7 @@ export default function InventoryDetails() {
     const stockValue = aggregatedProducts.reduce((sum, p) => sum + (p.Quantity * p.Price), 0);
 
     return (
-        <div className="flex bg-background-light dark:bg-background-dark font-display text-text-main antialiased h-full overflow-y-auto">
+        <div className="flex bg-background-light dark:bg-transparent font-display text-text-main antialiased h-full overflow-y-auto">
             <div className="container mx-auto max-w-7xl px-4 py-4 md:px-8 md:py-8 flex flex-col gap-6 md:gap-8">
                 {/* Breadcrumb */}
                 <nav aria-label="Breadcrumb" className="flex">

@@ -253,7 +253,7 @@ export default function Configuration() {
     );
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-[#112116] p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-transparent p-6 md:p-8">
             <div className="max-w-6xl mx-auto flex flex-col gap-12 pb-20">
 
                 {/* Header */}

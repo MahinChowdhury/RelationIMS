@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import GlobalSearch from './GlobalSearch';
 import { useAuth } from '../context/AuthContext';
 import ShareCatalogModal from './ShareCatalogModal';
+import PullToRefresh from './PullToRefresh';
 
 export default function Layout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,6 +13,7 @@ export default function Layout() {
     const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
     const [showShareCatalog, setShowShareCatalog] = useState(false);
     const mobileProfileRef = useRef<HTMLDivElement>(null);
+    const mainRef = useRef<HTMLElement>(null);
     const { user, logout } = useAuth();
 
     useEffect(() => {
@@ -30,7 +32,12 @@ export default function Layout() {
     };
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30">
+        <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30 relative">
+            {/* Background Elements (Dark Mode Only) */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none hidden dark:block">
+                <div className="absolute -top-1/4 -left-1/4 w-[60%] h-[60%] bg-primary/20 rounded-full filter blur-[100px] opacity-50 animate-pulse"></div>
+            </div>
+
             {/* Global Search Bar */}
             <GlobalSearch />
 
@@ -43,6 +50,7 @@ export default function Layout() {
             </div>
 
             <main
+                ref={mainRef}
                 className="flex-1 flex flex-col h-full overflow-y-auto relative pb-24 lg:pb-0"
                 onScroll={handleScroll}
             >
@@ -97,7 +105,9 @@ export default function Layout() {
 
                 {/* Main Content Area */}
                 <div className="flex-1">
-                    <Outlet />
+                    <PullToRefresh scrollRef={mainRef as React.RefObject<HTMLElement>}>
+                        <Outlet />
+                    </PullToRefresh>
                 </div>
             </main>
 
