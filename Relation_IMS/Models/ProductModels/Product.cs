@@ -1,4 +1,4 @@
-﻿using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Models.OrderModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,7 +11,6 @@ namespace Relation_IMS.Models.ProductModels
         public string Name { get; set; } = null!;
         public List<string>? ImageUrls { get; set; }
         public string? ThumbnailUrl { get; set; }
-        public string? ThumbnailUrlLarge { get; set; }
         public string? Description { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         [Required(ErrorMessage = "Product Price is required.")]

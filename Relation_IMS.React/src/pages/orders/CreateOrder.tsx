@@ -524,14 +524,7 @@ export default function CreateOrder() {
 
     return (
         <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 font-display text-text-main dark:text-gray-100">
-            {/* Breadcrumb */}
-            <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
-                <Link to="/" className="text-text-secondary font-medium hover:text-primary transition-colors">{t.common.first || 'Home'}</Link>
-                <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                <Link to="/orders" className="text-text-secondary font-medium hover:text-primary transition-colors">{t.orders.title}</Link>
-                <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                <span className="text-text-main dark:text-gray-200 font-medium">{mode === 'edit' ? t.orders.editOrder : t.orders.createOrder}</span>
-            </div>
+            
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -816,8 +809,8 @@ export default function CreateOrder() {
                 </div>
 
                 {/* Sidebar Summary */}
-                <div className="w-full xl:w-96 flex flex-col gap-6 shrink-0">
-                    <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-6 sticky top-24">
+                <div className="w-full xl:w-96 flex flex-col gap-6 shrink-0 relative pb-10 xl:pb-0">
+                    <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-6 xl:sticky xl:top-24">
                         <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-gray-700 pb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">receipt</span>
                             {t.orders.orderSummary}
@@ -1028,7 +1021,7 @@ export default function CreateOrder() {
                         <button
                             onClick={handleSubmit}
                             disabled={submitLoading}
-                            className={`w-full bg-primary text-white font-bold h-12 rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-green-200 dark:shadow-none flex items-center justify-center gap-2 text-base transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed`}
+                            className={`w-full bg-primary text-white font-bold h-12 rounded-xl md:hover:bg-primary-dark transition-all shadow-lg shadow-green-200 dark:shadow-none flex items-center justify-center gap-2 text-base transform md:hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed`}
                         >
                             {submitLoading ? (
                                 <>
@@ -1063,7 +1056,7 @@ export default function CreateOrder() {
 
             {/* Print Invoice Prompt Modal */}
             {showPrintPrompt && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">

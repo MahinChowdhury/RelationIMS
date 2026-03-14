@@ -253,7 +253,7 @@ export default function Configuration() {
     );
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-[#112116] p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-transparent p-6 md:p-8">
             <div className="max-w-6xl mx-auto flex flex-col gap-12 pb-20">
 
                 {/* Header */}
@@ -418,7 +418,7 @@ export default function Configuration() {
 
             {/* Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                         <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white mb-6">
                             {editingItem ? t.common.edit : t.common.add} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
@@ -538,7 +538,7 @@ export default function Configuration() {
             )}
 
             {deleteModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn">
+                <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[#2a4032]">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">

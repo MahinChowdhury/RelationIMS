@@ -474,34 +474,12 @@ export default function StockIn() {
     const getColorHex = (name: string) => colors.find(c => c.name === name)?.hex || null;
 
     return (
-        <div className="flex-1 flex flex-col h-full overflow-y-auto relative bg-[#f6f8f6] dark:bg-[#112116]">
+        <div className="flex-1 flex flex-col h-full overflow-y-auto relative bg-[#f6f8f6] dark:bg-transparent">
             {/* Background blobs */}
             <div className="absolute blob bg-emerald-200/30 dark:bg-emerald-800/20 w-[500px] h-[500px] bottom-0 right-0 translate-x-1/4 translate-y-1/4 pointer-events-none"></div>
 
             <div className="container mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6 relative z-10">
-                {/* Breadcrumb */}
-                <nav aria-label="Breadcrumb" className="flex">
-                    <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                        <li className="inline-flex items-center">
-                            <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-[#4e9767] hover:text-[#17cf54] dark:text-gray-400 dark:hover:text-white">
-                                <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                                {t.nav.dashboard || 'Dashboard'}
-                            </Link>
-                        </li>
-                        <li>
-                            <div className="flex items-center">
-                                <span className="material-symbols-outlined text-[#4e9767] text-[18px]">chevron_right</span>
-                                <Link to="/inventory" className="ms-1 text-sm font-medium text-[#4e9767] hover:text-[#17cf54] md:ms-2 dark:text-gray-400 dark:hover:text-white">{t.inventory.title || 'Inventory'}</Link>
-                            </div>
-                        </li>
-                        <li aria-current="page">
-                            <div className="flex items-center">
-                                <span className="material-symbols-outlined text-[#4e9767] text-[18px]">chevron_right</span>
-                                <span className="ms-1 text-sm font-bold text-[#0e1b12] md:ms-2 dark:text-white">{t.inventory.stockIn || 'Stock In'}</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+                
 
                 {/* Title */}
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -558,29 +536,31 @@ export default function StockIn() {
                                 {/* Search Section */}
                                 <div className="flex flex-col gap-4 relative">
                                     <div className="flex gap-2 w-full">
-                                        <input
-                                            type="text"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                                            className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-lg rounded-xl focus:ring-[#17cf54] focus:border-[#17cf54] block w-full pl-12 p-4 placeholder-gray-400 shadow-sm transition-all"
-                                            placeholder={t.inventory.scanPlaceholder || "Scan item code (PV-...) or Enter Product ID..."}
-                                            autoFocus
-                                        />
+                                        <div className="relative w-full">
+                                            <input
+                                                type="text"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                                                className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-lg rounded-xl focus:ring-[#17cf54] focus:border-[#17cf54] block w-full pl-12 pr-28 p-4 placeholder-gray-400 shadow-sm transition-all"
+                                                placeholder={t.inventory.scanPlaceholder || "Scan item code (PV-...) or Enter Product ID..."}
+                                                autoFocus
+                                            />
+                                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                <button
+                                                    onClick={() => setShowScanner(true)}
+                                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">barcode_scanner</span>
+                                                    {t.common.scan || 'Scan'}
+                                                </button>
+                                            </div>
+                                        </div>
                                         <button
                                             onClick={() => handleSearch(searchQuery)}
-                                            className="px-6 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-xl font-bold transition-colors"
+                                            className="px-6 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-xl font-bold transition-colors shrink-0"
                                         >
                                             {t.common.search || 'Search'}
-                                        </button>
-                                    </div>
-                                    <div className="absolute right-0 top-0 h-full flex items-center pr-2">
-                                        <button
-                                            onClick={() => setShowScanner(true)}
-                                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-300 mr-28 mt-2"
-                                        >
-                                            <span className="material-symbols-outlined text-[18px]">barcode_scanner</span>
-                                            {t.common.scan || 'Scan'}
                                         </button>
                                     </div>
                                 </div>
@@ -610,7 +590,7 @@ export default function StockIn() {
                                         <div className="flex justify-between items-start mb-6">
                                             <div>
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                                     {foundProduct.Category?.Name} • {foundProduct.Brand?.Name}
                                                 </p>
 
@@ -628,7 +608,7 @@ export default function StockIn() {
                                                                 }}
                                                                 className={`px-2 py-0.5 rounded textxs font-bold transition-colors shadow-sm ${isSelected
                                                                     ? 'bg-[#17cf54] text-white border border-[#17cf54]'
-                                                                    : 'bg-white dark:bg-black/20 text-gray-500 border border-gray-200 dark:border-gray-700 hover:border-[#17cf54] hover:text-[#17cf54]'
+                                                                    : 'bg-white dark:bg-black/20 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-[#17cf54] hover:text-[#17cf54]'
                                                                     }`}
                                                             >
                                                                 {q.Name}
@@ -648,13 +628,13 @@ export default function StockIn() {
                                                 <div className="flex items-center bg-gray-100 dark:bg-black/20 p-1 rounded-lg">
                                                     <button
                                                         onClick={() => setIsExistingLotMode(false)}
-                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isExistingLotMode ? 'bg-white shadow text-[#17cf54]' : 'text-gray-400'}`}
+                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isExistingLotMode ? 'bg-white dark:bg-gray-800 shadow text-[#17cf54]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
                                                     >
                                                         {t.inventory.manual || 'Manual'}
                                                     </button>
                                                     <button
                                                         onClick={() => setIsExistingLotMode(true)}
-                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${isExistingLotMode ? 'bg-white shadow text-[#17cf54]' : 'text-gray-400'}`}
+                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${isExistingLotMode ? 'bg-white dark:bg-gray-800 shadow text-[#17cf54]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
                                                     >
                                                         {t.inventory.byLot || 'By Lot'}
                                                     </button>
@@ -665,7 +645,7 @@ export default function StockIn() {
                                         {isExistingLotMode && (
                                             <div className="mb-6 bg-[#17cf54]/10 dark:bg-[#17cf54]/20 rounded-xl p-4 border border-[#17cf54]/20 flex items-center gap-4">
                                                 <div className="w-32">
-                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
                                                     <QuantityInput
                                                         value={existingLotQuantity}
                                                         onChange={setExistingLotQuantity}
@@ -680,7 +660,7 @@ export default function StockIn() {
 
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-sm text-left">
-                                                <thead className="bg-gray-50 dark:bg-white/5 text-gray-500 font-medium">
+                                                <thead className="bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 font-medium">
                                                     <tr>
                                                         <th className="px-4 py-3 rounded-l-lg">{t.inventory.variant || 'Variant'}</th>
                                                         <th className="px-4 py-3 text-center">{t.inventory.currentStock || 'Current Stock'}</th>
@@ -704,7 +684,7 @@ export default function StockIn() {
                                                                     </span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-4 py-3 text-center font-mono font-bold">{variant.Quantity}</td>
+                                                            <td className="px-4 py-3 text-center font-mono font-bold dark:text-white">{variant.Quantity}</td>
                                                             <td className="px-4 py-3 text-center text-red-400">{variant.Defects}</td>
                                                             <td className="px-4 py-3 text-center rounded-r-lg w-48">
                                                                 <div className="flex items-center gap-2">
@@ -768,11 +748,11 @@ export default function StockIn() {
                                             <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white mb-4">{t.inventory.addNewVariant || 'Add New Variant'}</h3>
                                             <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-100 dark:border-white/10 flex flex-col md:flex-row gap-4 items-end">
                                                 <div className="flex-1 w-full">
-                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.color || 'Color'}</label>
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.common.color || 'Color'}</label>
                                                     <select
                                                         value={newVariant.colorId}
                                                         onChange={(e) => setNewVariant({ ...newVariant, colorId: Number(e.target.value) })}
-                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54] dark:text-white"
                                                     >
                                                         <option value={0}>{t.common.selectColor || 'Select Color'}</option>
                                                         {colors.map(c => (
@@ -781,11 +761,11 @@ export default function StockIn() {
                                                     </select>
                                                 </div>
                                                 <div className="flex-1 w-full">
-                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.size || 'Size'}</label>
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.common.size || 'Size'}</label>
                                                     <select
                                                         value={newVariant.sizeId}
                                                         onChange={(e) => setNewVariant({ ...newVariant, sizeId: Number(e.target.value) })}
-                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54] dark:text-white"
                                                     >
                                                         <option value={0}>{t.common.selectSize || 'Select Size'}</option>
                                                         {availableSizes.map(s => (
@@ -794,7 +774,7 @@ export default function StockIn() {
                                                     </select>
                                                 </div>
                                                 <div className="w-full md:w-32">
-                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.common.quantity || 'Quantity'}</label>
+                                                    <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.common.quantity || 'Quantity'}</label>
                                                     <QuantityInput
                                                         value={newVariant.quantity}
                                                         onChange={(val) => setNewVariant({ ...newVariant, quantity: val })}
@@ -932,7 +912,7 @@ export default function StockIn() {
 
                                         <div className="flex flex-col md:flex-row gap-4 items-end">
                                             <div className="w-full md:w-48">
-                                                <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
+                                                <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
                                                 <QuantityInput
                                                     value={lotQuantity}
                                                     onChange={setLotQuantity}

@@ -250,17 +250,7 @@ export default function OrderDetailsPage() {
 
     return (
         <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 font-display text-text-main dark:text-white bg-background-light dark:bg-background-dark min-h-screen">
-            {/* Breadcrumbs */}
-            <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
-                <Link className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center" to="/">
-                    <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                    {t.nav.dashboard || 'Dashboard'}
-                </Link>
-                <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">{t.nav.orders || 'Orders'}</Link>
-                <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                <span className="text-text-main dark:text-gray-200 font-bold">{t.common.order || 'Order'} #{order.Id}</span>
-            </div>
+            
 
             {/* Header Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

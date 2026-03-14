@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.ProductDtos;
@@ -92,8 +92,7 @@ namespace Relation_IMS.Datas.Repositories
                 ProductName = item.ProductVariant?.Product?.Name ?? "Unknown",
                 BasePrice = item.ProductVariant?.Product?.BasePrice ?? 0,
                 ImageUrls = item.ProductVariant?.Product?.ImageUrls,
-                ThumbnailUrl = item.ProductVariant?.Product?.ThumbnailUrl,
-                ThumbnailUrlLarge = item.ProductVariant?.Product?.ThumbnailUrlLarge
+                ThumbnailUrl = item.ProductVariant?.Product?.ThumbnailUrl
             };
         }
 

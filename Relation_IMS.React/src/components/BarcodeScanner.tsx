@@ -57,7 +57,7 @@ export default function BarcodeScanner({ enabled, onScanned, onError, onClose }:
     }, [enabled, startScanning, stopScanning]);
 
     return createPortal(
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-start md:items-center justify-center p-4 pt-4 md:pt-0">
             <div className="bg-white dark:bg-background-dark rounded-xl shadow-2xl w-full max-w-2xl max-h-[92vh] border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col">
 
                 {/* Header */}

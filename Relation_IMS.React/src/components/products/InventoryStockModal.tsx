@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import type { InventoryStock } from '../../types';
 import { useState } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -18,8 +19,30 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
 
     if (!show) return null;
 
-    const handleCopy = (code: string) => {
-        navigator.clipboard.writeText(code);
+    const handleCopy = async (code: string) => {
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(code);
+            } else {
+                throw new Error("Clipboard API not available");
+            }
+        } catch (err) {
+            // Fallback for mobile browsers or unsecure contexts
+            const textArea = document.createElement("textarea");
+            textArea.value = code;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (e) {
+                console.error("Fallback copy failed", e);
+            }
+            document.body.removeChild(textArea);
+        }
         setCopiedCode(code);
         setTimeout(() => setCopiedCode(null), 2000);
     };
@@ -40,14 +63,14 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
     const emptyMessage = mode === 'available' ? t.common.noData : t.common.noData;
     const totalLabel = mode === 'available' ? t.products.inStock : t.products.defects;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center bg-black/40 backdrop-blur-sm p-4 pt-4 md:pt-0 animate-in fade-in duration-200" onClick={onClose}>
             <div
-                className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-200 dark:border-[#333] transform transition-all animate-in zoom-in-95 duration-200"
+                className="bg-white dark:bg-[#1e1e1e] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-200 dark:border-[#333] transform transition-all animate-in zoom-in-95 duration-200 flex flex-col max-h-[calc(100dvh-2rem)] md:max-h-[85dvh]"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="px-5 py-4 border-b border-gray-100 dark:border-[#333] flex justify-between items-center bg-white dark:bg-[#1e1e1e]">
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-[#333] flex justify-between items-center bg-white dark:bg-[#1e1e1e] shrink-0">
                     <div>
                         <h3 className="text-gray-900 dark:text-white text-base font-bold">{title}</h3>
                         {variantName && <p className="text-gray-500 text-xs mt-0.5">{variantName}</p>}
@@ -61,7 +84,7 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
                 </div>
 
                 {/* Content */}
-                <div className="max-h-[60vh] overflow-y-auto">
+                <div className="flex-1 overflow-y-auto overscroll-contain">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-8 gap-3">
                             <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-800 dark:border-gray-700 dark:border-t-white rounded-full animate-spin"></div>
@@ -154,7 +177,7 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
 
                 {/* Footer */}
                 {stockData.length > 0 && !loading && (
-                    <div className="px-5 py-3 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-[#333] flex justify-between items-center text-xs">
+                    <div className="px-5 py-3 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-[#333] flex justify-between items-center text-xs shrink-0">
                         <span className="text-gray-500">{totalLabel}</span>
                         <span className="font-bold text-gray-900 dark:text-white">
                             {stockData.reduce((acc, item) => acc + getCount(item), 0)} units
@@ -163,5 +186,5 @@ export default function InventoryStockModal({ show, onClose, stockData, loading,
                 )}
             </div>
         </div>
-    );
+    , document.body);
 }

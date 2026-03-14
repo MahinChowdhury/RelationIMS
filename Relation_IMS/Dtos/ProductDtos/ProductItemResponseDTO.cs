@@ -19,6 +19,5 @@ namespace Relation_IMS.Dtos.ProductDtos
         public decimal BasePrice { get; set; }
         public List<string>? ImageUrls { get; set; }
         public string? ThumbnailUrl { get; set; }
-        public string? ThumbnailUrlLarge { get; set; }
     }
 }

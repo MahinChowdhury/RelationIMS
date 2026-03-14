@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { type Product, type ProductVariant } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -159,8 +160,8 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
     const isConfirmReady = stagedItems.length > 0;
     const totalStagedAmount = stagedItems.reduce((acc, item) => acc + item.subtotal, 0);
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-[#1a2e22] w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
@@ -331,23 +332,18 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                     </div>
 
                     {/* Right Panel: Staging List */}
-                    <div className="w-full lg:w-96 bg-gray-50/50 dark:bg-black/20 flex flex-col border-l border-gray-100 dark:border-gray-700">
-                        <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <h4 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">shopping_basket</span>
-                                {t.orders.selectedItems}
-                            </h4>
-                            <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{stagedItems.length}</span>
-                        </div>
+                    {stagedItems.length > 0 && (
+                        <div className="w-full lg:w-96 bg-gray-50/50 dark:bg-black/20 flex flex-col border-l border-gray-100 dark:border-gray-700">
+                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <h4 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">shopping_basket</span>
+                                    {t.orders.selectedItems}
+                                </h4>
+                                <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{stagedItems.length}</span>
+                            </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                            {stagedItems.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-2 opacity-60">
-                                    <span className="material-symbols-outlined text-4xl">playlist_add</span>
-                                    <p className="text-sm font-medium text-center">{t.orders.noItemsAdded}<br />{t.orders.selectAndAdd}</p>
-                                </div>
-                            ) : (
-                                stagedItems.map((item) => (
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                {stagedItems.map((item) => (
                                     <div key={item.tempId} className="bg-white dark:bg-[#1e2e23] border border-gray-100 dark:border-gray-700 rounded-xl p-3 shadow-sm relative group animate-in slide-in-from-bottom-2 duration-300">
                                         <div className="flex justify-between items-start mb-1">
                                             <div className="flex items-center gap-2">
@@ -374,39 +370,39 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                             </div>
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
+                                ))}
+                            </div>
 
-                        <div className="p-4 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-gray-700">
-                            <div className="flex justify-between items-center mb-4">
-                                <span className="text-sm text-gray-500">{t.orders.totalAmount}</span>
-                                <span className="text-xl font-bold text-gray-800 dark:text-white">${totalStagedAmount.toFixed(2)}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={onClose}
-                                    className="px-4 py-2 rounded-lg font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleConfirm}
-                                    disabled={!isConfirmReady}
-                                    className={`px-4 py-2 rounded-lg font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 text-sm
-                                        ${isConfirmReady
-                                            ? 'bg-primary hover:bg-primary-dark hover:shadow-primary/30 hover:-translate-y-0.5'
-                                            : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
-                                        }`}
-                                >
-                                    <span className="material-symbols-outlined">check</span>
-                                    {t.common.confirm}
-                                </button>
+                            <div className="p-4 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-gray-700">
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-sm text-gray-500">{t.orders.totalAmount}</span>
+                                    <span className="text-xl font-bold text-gray-800 dark:text-white">${totalStagedAmount.toFixed(2)}</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={onClose}
+                                        className="px-4 py-2 rounded-lg font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleConfirm}
+                                        disabled={!isConfirmReady}
+                                        className={`px-4 py-2 rounded-lg font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 text-sm
+                                            ${isConfirmReady
+                                                ? 'bg-primary hover:bg-primary-dark hover:shadow-primary/30 hover:-translate-y-0.5'
+                                                : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        <span className="material-symbols-outlined">check</span>
+                                        {t.common.confirm}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }

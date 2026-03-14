@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import ConfirmDeleteInput from './ConfirmDeleteInput';
@@ -128,10 +129,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
 
     if (!show) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 md:p-0 pt-4 md:pt-0">
             <div className="absolute inset-0 bg-black/50" onClick={handleClose}></div>
-            <div className="relative bg-white dark:bg-[#203326] rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="relative bg-white dark:bg-[#203326] rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[calc(100dvh-2rem)] md:max-h-[85dvh] overflow-hidden flex flex-col">
                 <button
                     onClick={handleClose}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -139,15 +140,17 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                     <span className="material-symbols-outlined">close</span>
                 </button>
 
-                <h2 className="text-xl font-bold text-text-main dark:text-white mb-4">
-                    Share Catalog
-                </h2>
+                <div className="shrink-0">
+                    <h2 className="text-xl font-bold text-text-main dark:text-white mb-4">
+                        Share Catalog
+                    </h2>
 
-                {error && (
-                    <p className="text-sm text-red-500 mb-4">{error}</p>
-                )}
+                    {error && (
+                        <p className="text-sm text-red-500 mb-4">{error}</p>
+                    )}
+                </div>
 
-                <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+                <div className="flex-1 overflow-y-auto overscroll-contain space-y-3 mb-4 pr-1">
                     {loading ? (
                         <p className="text-center text-gray-500 py-4">Loading...</p>
                     ) : shareCatalogs.length === 0 ? (
@@ -214,7 +217,7 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                 </div>
 
                 {showCreateForm ? (
-                    <div className="border-t border-gray-100 dark:border-[#3d5a47] pt-4">
+                    <div className="border-t border-gray-100 dark:border-[#3d5a47] pt-4 shrink-0">
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                             Create a password to protect your shared catalog. Guests will need this password to view your products.
                         </p>
@@ -261,17 +264,19 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                         </div>
                     </div>
                 ) : (
-                    <button
-                        onClick={() => setShowCreateForm(true)}
-                        className="w-full px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-                    >
-                        <span className="material-symbols-outlined text-[20px]">add</span>
-                        Create New Share Link
-                    </button>
+                    <div className="shrink-0 pt-2">
+                        <button
+                            onClick={() => setShowCreateForm(true)}
+                            className="w-full px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-[20px]">add</span>
+                            Create New Share Link
+                        </button>
+                    </div>
                 )}
 
                 {deletingHash && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[60] animate-fadeIn">
+                    <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[60] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
                         <div className="bg-white dark:bg-[#203326] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[#3d5a47]">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
@@ -294,5 +299,5 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                 )}
             </div>
         </div>
-    );
+    , document.body);
 }

@@ -5,7 +5,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import ProductCard from '../../components/products/ProductCard';
 import { ProductFormModal, DeleteProductModal } from '../../components/products/ProductModals';
 import BarcodeScanner from '../../components/BarcodeScanner';
-import { BarcodeSheet } from '../../components/products/BarcodeSheet';
+
 import UploadProgressToast, { type UploadToast } from '../../components/products/UploadProgressToast';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
@@ -622,115 +622,13 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         navigate(`/products/${code}`);
     };
 
-    // Print Barcodes
-    const [showPrintModal, setShowPrintModal] = useState(false);
-    const [itemsToPrint, setItemsToPrint] = useState<{ code: string; itemDetails: string }[]>([]);
 
-    const handlePrintBarcodes = async (productId: number) => {
-        try {
-            const product = products.find(p => p.Id === productId);
-            if (!product) return;
-
-            const res = await api.get<Product>(`/Product/${productId}`);
-            const fullProduct = res.data as any; // Cast to any to access nested Variants and ProductItems
-
-            if (fullProduct.Variants) {
-                const barcodes: { code: string; itemDetails: string }[] = [];
-                fullProduct.Variants.forEach((variant: any) => {
-                    const colorName = variant.Color?.Name || variant.ProductColorId.toString(); // Fallback if name not populated
-                    const sizeName = variant.Size?.Name || variant.ProductSizeId.toString();
-
-                    if (variant.ProductItems) {
-                        variant.ProductItems.forEach((item: any) => {
-                            if (!item.IsSold && !item.IsDefected) {
-                                barcodes.push({
-                                    code: item.Code,
-                                    itemDetails: `Color: ${colorName}, Size: ${sizeName}`
-                                });
-                            }
-                        });
-                    }
-                });
-                setItemsToPrint(barcodes);
-                setShowPrintModal(true);
-            } else {
-                alert(t.products.noVariantsFound);
-            }
-
-        } catch (error) {
-            console.error('Failed to prepare barcodes:', error);
-            alert(t.products.failedToLoadForPrinting);
-        }
-    };
-
-    const printSheet = () => {
-        window.print();
-    };
 
     return (
         <div className="container mx-auto max-w-screen-2xl px-4 py-4 md:px-6 md:py-6 flex flex-col gap-4">
 
-            {/* Breadcrumb */}
-            <nav aria-label="Breadcrumb" className="flex">
-                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    {isGuestView && hash ? (
-                        <li aria-current="page">
-                            <div className="flex items-center">
-                                <span className="material-symbols-outlined text-[18px] mr-1">list</span>
-                                <span className="text-sm font-bold text-text-main md:ms-2 dark:text-white">{'Catalog'}</span>
-                            </div>
-                        </li>
-                    ) : (
-                        <>
-                            <li className="inline-flex items-center">
-                                <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
-                                    <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                                    {t.nav.dashboard}
-                                </Link>
-                            </li>
-                            <li>
-                                <div className="flex items-center">
-                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                                    <span className="ms-1 text-sm font-medium text-text-secondary md:ms-2 dark:text-gray-400 cursor-pointer">{t.nav.products}</span>
-                                </div>
-                            </li>
-                            <li aria-current="page">
-                                <div className="flex items-center">
-                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                                    <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.products.allProducts}</span>
-                                </div>
-                            </li>
-                        </>
-                    )}
-                </ol>
-            </nav>
 
-            {/* Print Modal Overlay (Using a simple full screen div for now to support @media print) */}
-            {showPrintModal && (
-                <div className="fixed inset-0 z-[9999] bg-white overflow-auto">
-                    <div className="p-4 flex justify-between items-center bg-gray-100 border-b no-print sticky top-0">
-                        <h2 className="text-xl font-bold">{t.products.printBarcodes}</h2>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={printSheet}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold flex items-center gap-2"
-                            >
-                                <span className="material-symbols-outlined">print</span> {t.common.print}
-                            </button>
-                            <button
-                                onClick={() => setShowPrintModal(false)}
-                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-bold"
-                            >
-                                {t.common.close}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="p-8">
-                        {/* Dynamic Import or direct usage if imported at top */}
-                        <BarcodeSheet items={itemsToPrint} />
-                    </div>
-                </div>
-            )}
+
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -875,7 +773,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                                 }}
                                 className={`p-1 rounded transition-all ${gridDensity === value
                                     ? 'bg-[#4e9767] text-white'
-                                    : 'text-gray-500 hover:text-[#4e9767] hover:bg-gray-100 dark:hover:bg-white/5'
+                                    : 'text-gray-500 md:hover:text-[#4e9767] md:hover:bg-gray-100 dark:md:hover:bg-white/5'
                                     }`}
                                 title={`${value} per row`}
                             >
@@ -905,18 +803,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                             onCardClick={isGuestView && hash ? (id) => navigate(`/products/share-catalog/${hash}/${id}`) : undefined}
                             isGuestView={isGuestView}
                         />
-                        {/* Print Button Overlay on Card */}
-                        {!isGuestView && (
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handlePrintBarcodes(product.Id); }}
-                                    className="p-1.5 bg-white text-gray-700 rounded-full shadow-md hover:bg-gray-100 hover:text-blue-600"
-                                    title="Print Barcodes"
-                                >
-                                    <span className="material-symbols-outlined text-[20px]">print</span>
-                                </button>
-                            </div>
-                        )}
+
                     </div>
                 ))}
             </div>

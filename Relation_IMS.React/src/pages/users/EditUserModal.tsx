@@ -79,7 +79,7 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 pt-4 md:pt-0">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
             <div className="relative w-full max-w-md bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl border border-gray-100 dark:border-[#2a4032] overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}

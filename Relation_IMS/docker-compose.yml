@@ -126,9 +126,9 @@ services:
     volumes:
       - minio_data:/data
       - ./minio/cors.json:/etc/minio/cors.json:ro
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    expose:
+      - "9000"
+      - "9001"
     restart: unless-stopped
     networks:
       - relationims-network

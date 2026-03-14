@@ -23,11 +23,29 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Simple nginx config to serve SPA (fallback handled by main nginx proxy)
+# Simple nginx config to serve SPA with proper MIME types for ES modules
 RUN echo 'server { \
     listen 3000; \
     root /usr/share/nginx/html; \
     index index.html; \
+    \
+    # Serve static assets with proper MIME types \
+    location ~* \\.(js|mjs)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    \
+    location ~* \\.(css)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    \
+    location ~* \\.(woff|woff2|ttf|otf|eot)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    \
+    # SPA fallback - only for HTML requests \
     location / { \
         try_files $uri $uri/ /index.html; \
     } \

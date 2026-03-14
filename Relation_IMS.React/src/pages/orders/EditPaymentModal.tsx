@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import type { Order } from '../../types';
@@ -83,8 +84,8 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
     const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const due = order.NetAmount - totalPaid;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
                     <h2 className="text-xl font-black text-text-main dark:text-white flex items-center gap-2">
@@ -187,5 +188,5 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }

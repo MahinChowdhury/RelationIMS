@@ -46,8 +46,8 @@ namespace Relation_IMS.Services
                         await semaphore.WaitAsync(cts.Token);
                         try
                         {
-                            var (url, thumbUrl, thumbUrlLarge) = await blobService.UploadImageStreamWithThumbnailsAsync(image.Content, image.FileName);
-                            return (url, thumbUrl, thumbUrlLarge);
+                            var (url, thumbUrl) = await blobService.UploadImageStreamWithThumbnailAsync(image.Content, image.FileName);
+                            return (url, thumbUrl);
                         }
                         finally
                         {
@@ -79,9 +79,6 @@ namespace Relation_IMS.Services
                             var thumbnailUrl = !string.IsNullOrEmpty(firstImageUrl) 
                                 ? firstImageUrl.Replace(".webp", "_thumb.webp") 
                                 : null;
-                            var thumbnailUrlLarge = !string.IsNullOrEmpty(firstImageUrl) 
-                                ? firstImageUrl.Replace(".webp", "_thumb_large.webp") 
-                                : null;
                             
                             var updateDto = new Relation_IMS.Dtos.ProductDtos.UpdateProductDTO
                             {
@@ -93,7 +90,6 @@ namespace Relation_IMS.Services
                                 QuarterIds = product.Quarters?.Select(q => q.Id).ToList() ?? new List<int>(),
                                 ImageUrls = currentImages,
                                 ThumbnailUrl = thumbnailUrl,
-                                ThumbnailUrlLarge = thumbnailUrlLarge,
                                 Variants = null
                             };
                             

@@ -234,7 +234,7 @@ export default function UserProfile() {
 
     if (loading) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-[#f6f8f6] dark:bg-[#112116]">
+            <div className="flex-1 flex items-center justify-center bg-[#f6f8f6] dark:bg-transparent">
                 <div className="flex flex-col items-center gap-3">
                     <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                     <p className="text-[#4e9767] dark:text-gray-400 font-medium">{t.common?.loading || 'Loading profile...'}</p>
@@ -245,7 +245,7 @@ export default function UserProfile() {
 
     if (error || !profileData) {
         return (
-            <div className="flex-1 flex items-center justify-center bg-[#f6f8f6] dark:bg-[#112116]">
+            <div className="flex-1 flex items-center justify-center bg-[#f6f8f6] dark:bg-transparent">
                 <div className="text-center p-8 bg-white dark:bg-[#1a2e22] rounded-2xl shadow-sm border border-red-100 dark:border-red-900/20 max-w-sm">
                     <span className="material-symbols-outlined text-red-400 text-5xl mb-4">account_circle_off</span>
                     <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white mb-2">{error || 'User not found'}</h2>
@@ -256,7 +256,7 @@ export default function UserProfile() {
     }
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-[#112116] p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-transparent p-6 md:p-8">
             <div className="max-w-4xl mx-auto flex flex-col gap-6 pb-20">
 
                 {/* Header */}
@@ -522,7 +522,7 @@ export default function UserProfile() {
 
                 {/* Pay Salary Modal */}
                 {paySalaryModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
@@ -626,7 +626,7 @@ export default function UserProfile() {
 
                 {/* Edit Profile Modal */}
                 {editProfileModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
@@ -731,7 +731,7 @@ export default function UserProfile() {
 
                 {/* Change Password Modal */}
                 {changePasswordModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">

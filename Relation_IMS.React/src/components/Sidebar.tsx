@@ -178,13 +178,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                             {/* Profile Menu Popup */}
                             {isProfileMenuOpen && (
                                 <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[#203326] border border-gray-100 dark:border-[#2a4032] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50">
-                                    <button
-                                        onClick={() => { setIsProfileMenuOpen(false); setShowShareCatalog(true); }}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
-                                        Share Catalog
-                                    </button>
+                                    
                                     <Link
                                         to="/userprofile"
                                         onClick={() => { setIsProfileMenuOpen(false); if (onClose) onClose(); }}
@@ -193,6 +187,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                         <span className="material-symbols-outlined text-[20px] text-gray-400">person</span>
                                         View Profile
                                     </Link>
+                                    <button
+                                        onClick={() => { setIsProfileMenuOpen(false); setShowShareCatalog(true); }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
+                                        Share Catalog
+                                    </button>
                                     <button
                                         onClick={() => { setIsProfileMenuOpen(false); setShowLogoutConfirm(true); }}
                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"

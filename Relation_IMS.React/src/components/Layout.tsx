@@ -12,6 +12,7 @@ export default function Layout() {
     const [isMobileProfileMenuOpen, setIsMobileProfileMenuOpen] = useState(false);
     const [showShareCatalog, setShowShareCatalog] = useState(false);
     const mobileProfileRef = useRef<HTMLDivElement>(null);
+    const mainRef = useRef<HTMLElement>(null);
     const { user, logout } = useAuth();
 
     useEffect(() => {
@@ -30,7 +31,12 @@ export default function Layout() {
     };
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30">
+        <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30 relative">
+            {/* Background Elements (Dark Mode Only) */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none hidden dark:block">
+                <div className="absolute -top-1/4 -left-1/4 w-[60%] h-[60%] bg-primary/20 rounded-full filter blur-[100px] opacity-50 animate-pulse"></div>
+            </div>
+
             {/* Global Search Bar */}
             <GlobalSearch />
 
@@ -43,7 +49,8 @@ export default function Layout() {
             </div>
 
             <main
-                className="flex-1 flex flex-col h-full overflow-y-auto relative pb-24 lg:pb-0"
+                ref={mainRef}
+                className="flex-1 flex flex-col h-full overflow-y-auto relative"
                 onScroll={handleScroll}
             >
                 {/* Mobile Profile Circle (Scroll Aware) */}
@@ -69,13 +76,6 @@ export default function Layout() {
                                     {user?.Roles?.join(', ')}
                                 </p>
                             </div>
-                            <button
-                                onClick={() => { setIsMobileProfileMenuOpen(false); setShowShareCatalog(true); }}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
-                                Share Catalog
-                            </button>
                             <Link
                                 to="/userprofile"
                                 onClick={() => setIsMobileProfileMenuOpen(false)}
@@ -84,6 +84,14 @@ export default function Layout() {
                                 <span className="material-symbols-outlined text-[20px] text-gray-400">person</span>
                                 View Profile
                             </Link>
+                            <button
+                                onClick={() => { setIsMobileProfileMenuOpen(false); setShowShareCatalog(true); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
+                                Share Catalog
+                            </button>
+                            
                             <button
                                 onClick={() => { setIsMobileProfileMenuOpen(false); logout(); }}
                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
@@ -96,7 +104,7 @@ export default function Layout() {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1">
+                <div className="flex-1 flex flex-col min-h-max pb-32 lg:pb-0">
                     <Outlet />
                 </div>
             </main>
