@@ -62,29 +62,7 @@ export default function InventoryLocations() {
 
     return (
         <div className="container mx-auto max-w-7xl px-4 py-4 md:px-8 md:py-8 flex flex-col gap-6 md:gap-8">
-            {/* Breadcrumb */}
-            <nav aria-label="Breadcrumb" className="flex">
-                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li className="inline-flex items-center">
-                        <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white">
-                            <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                            {t.nav.dashboard || 'Dashboard'}
-                        </Link>
-                    </li>
-                    <li>
-                        <div className="flex items-center">
-                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <Link to="/inventory" className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white">{t.inventory.title || 'Inventory'}</Link>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div className="flex items-center">
-                            <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                            <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{t.inventory.locations || 'Locations'}</span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
+            
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -181,7 +159,7 @@ export default function InventoryLocations() {
 
             {/* Create Location Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+                <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
                         {/* Header */}
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/50 dark:bg-[#112116]/50">

@@ -207,19 +207,7 @@ export default function ArrangementDetails() {
     return (
         <div className="bg-background-light dark:bg-background-dark text-text-main dark:text-gray-100 font-display min-h-screen flex flex-col relative">
             <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8">
-                {/* Breadcrumbs */}
-                <div className="flex flex-wrap items-center gap-2 mb-6 text-sm">
-                    <Link className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center" to="/">
-                        <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                        {t.nav.dashboard || 'Dashboard'}
-                    </Link>
-                    <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                    <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to="/orders">{t.nav.orders || 'Orders'}</Link>
-                    <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                    <Link className="text-text-secondary font-medium hover:text-primary transition-colors" to={`/orders/${order.Id}`}>#ORD-{order.Id}</Link>
-                    <span className="text-text-secondary material-symbols-outlined text-base">chevron_right</span>
-                    <span className="text-text-main dark:text-gray-200 font-bold">{t.nav.arrangement || 'Arrangement'}</span>
-                </div>
+                
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
@@ -474,14 +462,14 @@ export default function ArrangementDetails() {
                     <div className="mt-4">
                         <button
                             onClick={handleConfirmClick}
-                            className={`w-full font-bold text-lg py-5 rounded-2xl shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3
+                            className={`w-full font-bold text-sm md:text-lg py-2 md:py-5 rounded-lg md:rounded-2xl shadow-md md:shadow-xl transition-all transform md:hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 md:gap-3
                                 ${order.InternalStatus >= OrderInternalStatus.Confirmed
                                     ? 'bg-gray-400 cursor-not-allowed text-gray-200 shadow-none'
-                                    : 'bg-primary hover:bg-primary-dark text-white shadow-green-400/20 dark:shadow-green-900/30'}`
+                                    : 'bg-primary md:hover:bg-primary-dark text-white shadow-green-400/20 dark:shadow-green-900/30'}`
                             }
                             disabled={order.InternalStatus >= OrderInternalStatus.Arranged}
                         >
-                            <span className="material-symbols-outlined text-2xl">check_circle</span>
+                            <span className="material-symbols-outlined text-lg md:text-2xl">check_circle</span>
                             {order.InternalStatus >= OrderInternalStatus.Arranged ? (t.orders.arrangementCompleted || 'Arrangement Completed') : (t.orders.confirmArrangement || 'Confirm Arrangement')}
                         </button>
                     </div>
@@ -490,7 +478,7 @@ export default function ArrangementDetails() {
 
             {/* Confirmation Modal */}
             {showConfirmModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
@@ -520,7 +508,7 @@ export default function ArrangementDetails() {
             )}
             {/* Product Details Modal (80% Screen) */}
             {selectedRequiredItemProductId && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-[#1a2e22] w-[90%] h-[90%] md:w-[80%] md:h-[80%] rounded-2xl shadow-2xl overflow-hidden relative border border-[#e7f3eb] dark:border-[#2a4032] flex flex-col">
                         <div className="absolute top-4 right-4 z-10">
                             <button

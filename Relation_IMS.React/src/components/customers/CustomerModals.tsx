@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState } from 'react';
 import type { Customer } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -31,12 +32,12 @@ export function CustomerFormModal({
     const { t } = useLanguage();
     if (!show) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 dark:border-[#2a4032] animate-fadeIn max-h-[calc(100dvh-2rem)] md:max-h-[90dvh] flex flex-col">
 
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/50 dark:bg-[#112116]/50">
+                <div className="px-6 py-5 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/50 dark:bg-[#112116]/50 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className={`size-10 rounded-xl flex items-center justify-center shadow-sm ${mode === 'create' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
                             <span className="material-symbols-outlined text-[24px]">
@@ -61,7 +62,7 @@ export function CustomerFormModal({
                 </div>
 
                 {/* Body */}
-                <div className="p-6 flex flex-col gap-4">
+                <div className="p-6 flex flex-col gap-4 flex-1 overflow-y-auto overscroll-contain">
                     {/* Name */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-sm font-bold text-text-main dark:text-gray-300">{t.common.name}</label>
@@ -150,7 +151,7 @@ export function CustomerFormModal({
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-gray-50/50 dark:bg-[#112116]/50 border-t border-gray-100 dark:border-[#2a4032] flex items-center justify-end gap-3">
+                <div className="px-6 py-4 bg-gray-50/50 dark:bg-[#112116]/50 border-t border-gray-100 dark:border-[#2a4032] flex items-center justify-end gap-3 shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
@@ -169,7 +170,7 @@ export function CustomerFormModal({
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }
 
 // --- DELETE MODAL ---
@@ -185,8 +186,8 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
         setIsDeleting(false);
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
             <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
                 <div className="p-6 flex flex-col items-center text-center gap-4">
                     <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
@@ -208,5 +209,5 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }

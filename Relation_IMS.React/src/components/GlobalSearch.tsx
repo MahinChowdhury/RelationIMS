@@ -142,7 +142,7 @@ const GlobalSearch = () => {
 
             {/* Scanner Modal */}
             {isScanning && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-black border border-white/10 rounded-2xl overflow-hidden max-w-md w-full relative shadow-2xl">
                         <div className="relative aspect-[4/3] bg-gray-900">
                             <video

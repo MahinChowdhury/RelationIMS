@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState } from 'react';
 import { ProductForm } from './ProductForm';
 import type { Product, StockItem } from '../../types';
@@ -19,8 +20,8 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
         setIsDeleting(false);
     };
 
-    return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn">
+    return createPortal(
+        <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
             <div className="bg-white dark:bg-[#1a2e22] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[#d0e7d7] dark:border-[#2a4032] transform transition-all">
                 <div className="flex items-center gap-4 mb-4">
                     <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center">
@@ -44,7 +45,7 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
                 />
             </div>
         </div>
-    );
+    , document.body);
 }
 
 // ------ PRODUCT FORM (CREATE/EDIT) ------
@@ -101,78 +102,81 @@ export function ProductFormModal({
 
     if (!show) return null;
 
-    return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn overflow-y-auto p-4">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-3xl shadow-2xl p-8 w-[95%] max-w-4xl border-2 border-[#d0e7d7] dark:border-[#2a4032] max-h-[95vh] overflow-y-auto relative my-8">
+    return createPortal(
+        <div className="fixed inset-0 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-2 sm:p-4">
+            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl sm:rounded-3xl shadow-2xl w-full sm:w-[95%] max-w-4xl border-2 border-[#d0e7d7] dark:border-[#2a4032] max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col relative my-1 sm:my-4">
                 {/* Close Button */}
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all text-2xl font-bold"
+                    className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all text-2xl font-bold z-10"
                     aria-label="Close"
                 >
                     ×
                 </button>
 
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-2xl flex items-center justify-center shadow-lg">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 sm:gap-4 px-5 sm:px-8 pt-5 sm:pt-8 pb-4 shrink-0">
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-[#4e9767] to-[#3d7a52] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+                        <svg className="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={mode === 'create' ? "M12 4v16m8-8H4" : "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"} />
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-[#0e1b12] dark:text-white text-2xl font-black">{mode === 'create' ? t.products.addProduct : t.products.editProduct}</h2>
-                        <p className="text-[#4e9767] text-sm font-medium">{mode === 'create' ? t.products.createProduct : t.products.productDetails}</p>
+                        <h2 className="text-[#0e1b12] dark:text-white text-xl sm:text-2xl font-black">{mode === 'create' ? t.products.addProduct : t.products.editProduct}</h2>
+                        <p className="text-[#4e9767] text-xs sm:text-sm font-medium">{mode === 'create' ? t.products.createProduct : t.products.productDetails}</p>
                     </div>
                 </div>
 
-                <ProductForm
-                    product={product}
-                    categories={categories}
-                    brands={brands}
-                    quarters={quarters}
-                    colors={colors}
-                    availableSizes={availableSizes}
-                    stockItems={stockItems}
-                    selectedImages={selectedImages}
-                    thumbnailMap={thumbnailMap}
-                    onChange={onChange}
-                    onCategoryChange={onCategoryChange}
-                    onImagesSelected={onImagesSelected}
-                    removeImage={removeImage}
-                    reorderImages={reorderImages}
-                    newStock={newStock}
-                    setNewStock={setNewStock}
-                    addStock={addStock}
-                    removeStock={removeStock}
-                    editingStockIndex={editingStockIndex}
-                    editedStock={editedStock}
-                    setEditedStock={setEditedStock}
-                    saveStockEdit={saveStockEdit}
-                    cancelStockEdit={cancelStockEdit}
-                    startStockEdit={startStockEdit}
-                    getColorHex={getColorHex}
-                />
+                {/* Scrollable Body */}
+                <div className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-8">
+                    <ProductForm
+                        product={product}
+                        categories={categories}
+                        brands={brands}
+                        quarters={quarters}
+                        colors={colors}
+                        availableSizes={availableSizes}
+                        stockItems={stockItems}
+                        selectedImages={selectedImages}
+                        thumbnailMap={thumbnailMap}
+                        onChange={onChange}
+                        onCategoryChange={onCategoryChange}
+                        onImagesSelected={onImagesSelected}
+                        removeImage={removeImage}
+                        reorderImages={reorderImages}
+                        newStock={newStock}
+                        setNewStock={setNewStock}
+                        addStock={addStock}
+                        removeStock={removeStock}
+                        editingStockIndex={editingStockIndex}
+                        editedStock={editedStock}
+                        setEditedStock={setEditedStock}
+                        saveStockEdit={saveStockEdit}
+                        cancelStockEdit={cancelStockEdit}
+                        startStockEdit={startStockEdit}
+                        getColorHex={getColorHex}
+                    />
+                </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-3 pt-4 border-t-2 border-[#e7f3eb] dark:border-[#2a4032]">
+                {/* Action Buttons - always visible */}
+                <div className="flex justify-end gap-3 px-5 sm:px-8 py-4 border-t-2 border-[#e7f3eb] dark:border-[#2a4032] shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-3 rounded-xl text-[#0e1b12] dark:text-gray-300 bg-[#e7f3eb] dark:bg-[#132219] hover:bg-[#d0e7d7] dark:hover:bg-white/5 font-bold transition-all shadow-md hover:shadow-lg"
+                        className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl text-[#0e1b12] dark:text-gray-300 bg-[#e7f3eb] dark:bg-[#132219] hover:bg-[#d0e7d7] dark:hover:bg-white/5 font-bold transition-all shadow-md hover:shadow-lg"
                     >
                         {t.common.cancel}
                     </button>
                     <button
                         type="button"
                         onClick={onSave}
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white font-bold transition-all shadow-md hover:shadow-lg"
+                        className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white font-bold transition-all shadow-md hover:shadow-lg"
                     >
                         {mode === 'create' ? t.products.createProduct : t.common.saveChanges}
                     </button>
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }

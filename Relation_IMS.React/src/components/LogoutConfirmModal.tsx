@@ -8,7 +8,7 @@ export default function LogoutConfirmModal({ show, onCancel, onConfirm }: Logout
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[110] flex items-start md:items-center justify-center p-4 pt-4 md:pt-0">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
             <div className="relative bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
                 <div className="p-6 flex flex-col items-center text-center gap-4">

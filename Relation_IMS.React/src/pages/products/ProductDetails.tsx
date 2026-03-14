@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import InventoryStockModal from '../../components/products/InventoryStockModal';
 import { DeleteProductModal } from '../../components/products/ProductModals';
+import { BarcodeSheet } from '../../components/products/BarcodeSheet';
 
 // ---------- Interfaces ----------
 // Imported from ../../types
@@ -57,6 +58,50 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    // Print Barcodes State
+    const [showPrintModal, setShowPrintModal] = useState(false);
+    const [itemsToPrint, setItemsToPrint] = useState<{ code: string; itemDetails: string }[]>([]);
+
+    const handlePrintBarcodes = async () => {
+        try {
+            if (!productDetail) return;
+
+            const res = await api.get<Product>(`/Product/${activeId}`);
+            const fullProduct = res.data as any;
+
+            if (fullProduct.Variants) {
+                const barcodes: { code: string; itemDetails: string }[] = [];
+                fullProduct.Variants.forEach((variant: any) => {
+                    const colorName = variant.Color?.Name || variant.ProductColorId.toString();
+                    const sizeName = variant.Size?.Name || variant.ProductSizeId.toString();
+
+                    if (variant.ProductItems) {
+                        variant.ProductItems.forEach((item: any) => {
+                            if (!item.IsSold && !item.IsDefected) {
+                                barcodes.push({
+                                    code: item.Code,
+                                    itemDetails: `Color: ${colorName}, Size: ${sizeName}`
+                                });
+                            }
+                        });
+                    }
+                });
+                setItemsToPrint(barcodes);
+                setShowPrintModal(true);
+            } else {
+                alert(t.products.noVariantsFound);
+            }
+
+        } catch (error) {
+            console.error('Failed to prepare barcodes:', error);
+            alert(t.products.failedToLoadForPrinting);
+        }
+    };
+
+    const printSheet = () => {
+        window.print();
+    };
 
     // Product Orders State
     const [productOrders, setProductOrders] = useState<ProductOrderItem[]>([]);
@@ -315,48 +360,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     return (
         <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6">
 
-            {/* Breadcrumb */}
-            <nav aria-label="Breadcrumb" className="flex justify-between items-center">
-                <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    {isGuest && hash ? (
-                        <>
-                            <li className="inline-flex items-center">
-                                <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to={`/products/share-catalog/${hash}`}>
-                                    <span className="material-symbols-outlined text-[18px] mr-1">list</span>
-                                    {'Catalog'}
-                                </Link>
-                            </li>
-                            <li aria-current="page">
-                                <div className="flex items-center">
-                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                                    <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{productDetail.Name}</span>
-                                </div>
-                            </li>
-                        </>
-                    ) : (
-                        <>
-                            <li className="inline-flex items-center">
-                                <Link className="inline-flex items-center text-sm font-medium text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-white" to="/dashboard">
-                                    <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                                    {t.nav.dashboard}
-                                </Link>
-                            </li>
-                            <li>
-                                <div className="flex items-center">
-                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                                    <Link className="ms-1 text-sm font-medium text-text-secondary hover:text-primary md:ms-2 dark:text-gray-400 dark:hover:text-white" to="/products">{t.nav.products}</Link>
-                                </div>
-                            </li>
-                            <li aria-current="page">
-                                <div className="flex items-center">
-                                    <span className="material-symbols-outlined text-text-secondary text-[18px]">chevron_right</span>
-                                    <span className="ms-1 text-sm font-bold text-text-main md:ms-2 dark:text-white">{productDetail.Name}</span>
-                                </div>
-                            </li>
-                        </>
-                    )}
-                </ol>
-            </nav>
+           
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
@@ -425,8 +429,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 <span className="material-symbols-outlined text-primary">inventory_2</span>
                                 {t.products.stockAndVariants}
                             </h2>
-                            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-[#2a4032]">
-                                <table className="w-full text-sm text-center">
+                            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-[#2a4032]">
+                                <table className="w-full text-sm text-center min-w-[500px]">
                                     <thead>
                                         <tr className="bg-[#4e9767] text-white">
                                             <th className="py-3 px-4 font-bold uppercase text-xs">{t.products.color}</th>
@@ -569,13 +573,23 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 {t.products.productDetails}
                             </h2>
                             {!isGuest && (
-                                <button
-                                    onClick={() => setShowDeleteModal(true)}
-                                    className="px-2 py-1.5 bg-red-400 hover:bg-red-500 text-white font-medium text-xs rounded-md transition-colors flex items-center gap-1.5 shadow-sm"
-                                >
-                                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                                    {t.products.deleteProduct}
-                                </button>
+                                <div className="flex items-center gap-2 flex-1 justify-end">
+                                    <button
+                                        onClick={handlePrintBarcodes}
+                                        className="px-2 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-xs rounded-md transition-colors flex items-center gap-1.5 shadow-sm dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-white/5"
+                                        title={t.products.printBarcodes || "Print Barcodes"}
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">print</span>
+                                        <span className="hidden sm:inline">{t.common.print || "Print"}</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setShowDeleteModal(true)}
+                                        className="px-2 py-1.5 bg-red-400 hover:bg-red-500 text-white font-medium text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 shadow-sm min-w-[32px]"
+                                        title={t.products.deleteProduct}
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                                    </button>
+                                </div>
                             )}
                         </div>
                         <div className="flex flex-col gap-6">
@@ -824,6 +838,32 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                     onCancel={() => setShowDeleteModal(false)}
                     onConfirm={deleteProduct}
                 />
+            )}
+
+            {/* Print Modal Overlay */}
+            {showPrintModal && (
+                <div className="fixed inset-0 z-[9999] bg-white overflow-auto">
+                    <div className="p-4 flex justify-between items-center bg-gray-100 border-b no-print sticky top-0">
+                        <h2 className="text-xl font-bold">{t.products.printBarcodes || "Print Barcodes"}</h2>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={printSheet}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold flex items-center gap-2"
+                            >
+                                <span className="material-symbols-outlined">print</span> {t.common.print}
+                            </button>
+                            <button
+                                onClick={() => setShowPrintModal(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 font-bold"
+                            >
+                                {t.common.close}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="p-8">
+                        <BarcodeSheet items={itemsToPrint} />
+                    </div>
+                </div>
             )}
         </div >
     );

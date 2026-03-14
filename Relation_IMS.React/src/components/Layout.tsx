@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from 'react';
 import GlobalSearch from './GlobalSearch';
 import { useAuth } from '../context/AuthContext';
 import ShareCatalogModal from './ShareCatalogModal';
-import PullToRefresh from './PullToRefresh';
 
 export default function Layout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -51,7 +50,7 @@ export default function Layout() {
 
             <main
                 ref={mainRef}
-                className="flex-1 flex flex-col h-full overflow-y-auto relative pb-24 lg:pb-0"
+                className="flex-1 flex flex-col h-full overflow-y-auto relative"
                 onScroll={handleScroll}
             >
                 {/* Mobile Profile Circle (Scroll Aware) */}
@@ -77,13 +76,6 @@ export default function Layout() {
                                     {user?.Roles?.join(', ')}
                                 </p>
                             </div>
-                            <button
-                                onClick={() => { setIsMobileProfileMenuOpen(false); setShowShareCatalog(true); }}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
-                                Share Catalog
-                            </button>
                             <Link
                                 to="/userprofile"
                                 onClick={() => setIsMobileProfileMenuOpen(false)}
@@ -92,6 +84,14 @@ export default function Layout() {
                                 <span className="material-symbols-outlined text-[20px] text-gray-400">person</span>
                                 View Profile
                             </Link>
+                            <button
+                                onClick={() => { setIsMobileProfileMenuOpen(false); setShowShareCatalog(true); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px] text-gray-400">share</span>
+                                Share Catalog
+                            </button>
+                            
                             <button
                                 onClick={() => { setIsMobileProfileMenuOpen(false); logout(); }}
                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
@@ -104,10 +104,8 @@ export default function Layout() {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1">
-                    <PullToRefresh scrollRef={mainRef as React.RefObject<HTMLElement>}>
-                        <Outlet />
-                    </PullToRefresh>
+                <div className="flex-1 flex flex-col min-h-max pb-32 lg:pb-0">
+                    <Outlet />
                 </div>
             </main>
 

@@ -522,7 +522,7 @@ export default function UserProfile() {
 
                 {/* Pay Salary Modal */}
                 {paySalaryModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
@@ -626,7 +626,7 @@ export default function UserProfile() {
 
                 {/* Edit Profile Modal */}
                 {editProfileModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
@@ -731,7 +731,7 @@ export default function UserProfile() {
 
                 {/* Change Password Modal */}
                 {changePasswordModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">

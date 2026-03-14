@@ -479,29 +479,7 @@ export default function StockIn() {
             <div className="absolute blob bg-emerald-200/30 dark:bg-emerald-800/20 w-[500px] h-[500px] bottom-0 right-0 translate-x-1/4 translate-y-1/4 pointer-events-none"></div>
 
             <div className="container mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6 relative z-10">
-                {/* Breadcrumb */}
-                <nav aria-label="Breadcrumb" className="flex">
-                    <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                        <li className="inline-flex items-center">
-                            <Link to="/dashboard" className="inline-flex items-center text-sm font-medium text-[#4e9767] hover:text-[#17cf54] dark:text-gray-400 dark:hover:text-white">
-                                <span className="material-symbols-outlined text-[18px] mr-1">dashboard</span>
-                                {t.nav.dashboard || 'Dashboard'}
-                            </Link>
-                        </li>
-                        <li>
-                            <div className="flex items-center">
-                                <span className="material-symbols-outlined text-[#4e9767] text-[18px]">chevron_right</span>
-                                <Link to="/inventory" className="ms-1 text-sm font-medium text-[#4e9767] hover:text-[#17cf54] md:ms-2 dark:text-gray-400 dark:hover:text-white">{t.inventory.title || 'Inventory'}</Link>
-                            </div>
-                        </li>
-                        <li aria-current="page">
-                            <div className="flex items-center">
-                                <span className="material-symbols-outlined text-[#4e9767] text-[18px]">chevron_right</span>
-                                <span className="ms-1 text-sm font-bold text-[#0e1b12] md:ms-2 dark:text-white">{t.inventory.stockIn || 'Stock In'}</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+                
 
                 {/* Title */}
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
