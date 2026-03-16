@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -12,8 +14,10 @@ using Relation_IMS.Entities;
 using Relation_IMS.Factory;
 using Relation_IMS.Hubs;
 using Relation_IMS.Services;
-using Relation_IMS.Services.MinIOServices;
+using Relation_IMS.Services.HangfireServices;
 using Relation_IMS.Services.JWTServices;
+using Relation_IMS.Services.MinIOServices;
+using Relation_IMS.Services.OtpServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
@@ -237,6 +241,27 @@ builder.Services.AddHealthChecks()
         tags: new[] { "cache", "redis" });
 
 // ============================================
+// Hangfire (Background Jobs)
+// ============================================
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
+    {
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.ServerName = "RelationIMS-JobServer";
+});
+
+// Register OTP Service
+builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<PaymentReminderJob>();
+
+// ============================================
 // Response Compression
 // ============================================
 builder.Services.AddResponseCompression(options =>
@@ -316,6 +341,25 @@ app.UseRateLimiter();
 app.UseCors("AllowClientApps");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ============================================
+// Hangfire Dashboard (for debugging)
+// ============================================
+app.MapHangfireDashboard("/hangfire", new Hangfire.DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthFilter() }
+});
+
+// ============================================
+// Recurring Jobs
+// ============================================
+var recurringJobOptions = new RecurringJobOptions();
+
+RecurringJob.AddOrUpdate<PaymentReminderJob>(
+    "payment-reminder-job",
+    job => job.ProcessPaymentReminders(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
 
 // Health check endpoint (no auth, no rate limit)
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))

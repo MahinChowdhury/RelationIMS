@@ -5,6 +5,7 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import VariantSelectionModal from './VariantSelectionModal';
 import { CustomerFormModal } from '../../components/customers/CustomerModals';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 // Types matching the API DTOs and Logic
 interface Customer {
@@ -68,6 +69,7 @@ export default function CreateOrder() {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { id } = useParams<{ id: string }>(); // Edit Mode ID
+    const { user } = useAuth();
     const mode = id ? 'edit' : 'create';
 
     // UI State
@@ -426,7 +428,7 @@ export default function CreateOrder() {
         }
 
         if (allowDue) {
-            if (!nidNumber || !referenceName || !referencePhone) {
+            if (!nextPaymentDate) {
                 alert(t.orders.dueFieldsRequired);
                 return;
             }
@@ -452,7 +454,7 @@ export default function CreateOrder() {
                 NetAmount: netAmount,
                 PaidAmount: paidAmount,
                 PaymentStatus: paidAmount >= netAmount ? 2 : (paidAmount > 0 ? 1 : 0),
-                UserId: 1, // Hardcoded as per user request
+                UserId: user?.Id || 0,
                 Remarks: notes,
                 NextPaymentDate: nextPaymentDate ? new Date(nextPaymentDate).toISOString() : null,
                 Payments: payments.map(p => ({
