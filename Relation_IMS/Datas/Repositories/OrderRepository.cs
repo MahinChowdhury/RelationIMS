@@ -113,10 +113,20 @@ namespace Relation_IMS.Datas.Repositories
             return order;
         }
 
-        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20)
+        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null)
         {
 
             var query = _context.Orders.AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Date >= startDate.Value.Date);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Date <= endDate.Value.Date);
+            }
 
             var orders = await query
                 .OrderByDescending(o => o.Id)

@@ -26,8 +26,8 @@ namespace Relation_IMS.Controllers
 
         [HttpGet]
         [RedisCache("order")]
-        public async Task<ActionResult<List<Order>>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20) {
-            var orders = await _repo.GetAllOrdersAsync(search,  sortBy,pageNumber = 1, pageSize = 20);
+        public async Task<ActionResult<List<Order>>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null) {
+            var orders = await _repo.GetAllOrdersAsync(search, sortBy, pageNumber = 1, pageSize = 20, startDate, endDate);
             return Ok(orders);
         }
         [HttpGet("{id:int}")]

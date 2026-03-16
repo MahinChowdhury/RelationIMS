@@ -1,8 +1,8 @@
 const PaymentMethods = () => {
   const methods = [
-    { name: 'Mobile Banking', percentage: 52, dotColor: 'bg-primary' },
-    { name: 'Cash', percentage: 28, dotColor: 'bg-[#4e9767]' },
-    { name: 'Card', percentage: 20, dotColor: 'bg-[#236c31]' },
+    { name: 'Mobile Banking', amount: '৳5,20,000', dotColor: 'bg-primary' },
+    { name: 'Cash', amount: '৳2,80,000', dotColor: 'bg-[#4e9767]' },
+    { name: 'Card', amount: '৳2,00,000', dotColor: 'bg-[#236c31]' },
   ];
 
   return (
@@ -29,7 +29,7 @@ const PaymentMethods = () => {
               <div className={`w-3 h-3 rounded-full ${method.dotColor}`}></div>
               <span className="text-sm font-bold text-text-main dark:text-gray-200">{method.name}</span>
             </div>
-            <span className="text-sm font-extrabold text-text-main dark:text-white">{method.percentage}%</span>
+            <span className="text-sm font-extrabold text-text-main dark:text-white">{method.amount}</span>
           </div>
         ))}
       </div>

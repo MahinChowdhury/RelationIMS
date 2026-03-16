@@ -594,7 +594,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         if (!newStock.color || !newStock.size || newStock.quantity < 0) return;
         const exists = stockItems.find(s => s.color === newStock.color && s.size === newStock.size);
         if (exists) {
-            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: newStock.quantity } : s));
+            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: s.quantity + newStock.quantity } : s));
         } else {
             setStockItems([...stockItems, { ...newStock }]);
         }

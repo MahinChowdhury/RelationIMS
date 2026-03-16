@@ -23,6 +23,8 @@ export default function OrdersPage() {
     const debouncedSearch = useDebounce(searchTerm, 300);
     const [sortBy, setSortBy] = useState<'date' | 'amount' | ''>('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending'>('all');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     // Infinite Scroll
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 1.0 });
@@ -41,7 +43,7 @@ export default function OrdersPage() {
     useEffect(() => {
         // Reset and load
         loadOrders(true);
-    }, [debouncedSearch, filterStatus, sortBy]);
+    }, [debouncedSearch, filterStatus, sortBy, startDate, endDate]);
 
     // Infinite Scroll trigger
     useEffect(() => {
@@ -56,7 +58,11 @@ export default function OrdersPage() {
             const p = reset ? 1 : page;
             if (reset) setPage(1);
 
-            const res = await api.get<{ data: Order[] } | Order[]>(`/Order?pageNumber=${p}&pageSize=${pageSize}`);
+            let url = `/Order?pageNumber=${p}&pageSize=${pageSize}`;
+            if (startDate) url += `&startDate=${startDate}`;
+            if (endDate) url += `&endDate=${endDate}`;
+
+            const res = await api.get<{ data: Order[] } | Order[]>(url);
             // Handle different API response structures if needed (Products used res.data directly or array)
             const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data || [];
 
@@ -171,7 +177,24 @@ export default function OrdersPage() {
                         placeholder="Search by order ID, customer name..."
                     />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3 items-center">
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            placeholder="Start Date"
+                        />
+                        <span className="text-text-secondary text-sm">to</span>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            placeholder="End Date"
+                        />
+                    </div>
                     <div className="relative">
                         <select
                             value={filterStatus}
