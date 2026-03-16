@@ -152,4 +152,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<SalaryRecord> SalaryRecords { get; set; }
     public DbSet<ShareCatalog> ShareCatalogs { get; set; }
     public DbSet<TopSellingProduct> TopSellingProducts { get; set; }
+    public DbSet<RevenueByCategory> RevenueByCategories { get; set; }
 }
