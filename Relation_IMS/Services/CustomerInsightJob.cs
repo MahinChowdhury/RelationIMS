@@ -2,6 +2,7 @@ using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.Analytics;
 using Relation_IMS.Models.PaymentModels;
@@ -30,8 +31,10 @@ namespace Relation_IMS.Services
             {
                 using var scope = _scopeFactory.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var repository = scope.ServiceProvider.GetRequiredService<ICustomerInsightRepository>();
 
                 await UpdateCurrentMonthInsightAsync(context);
+                await UpdateAllTimeInsightAsync(context, repository);
 
                 _logger.LogInformation("Customer Insight Job completed successfully");
             }
@@ -40,6 +43,44 @@ namespace Relation_IMS.Services
                 _logger.LogError(ex, "Error occurred while updating customer insight");
                 throw;
             }
+        }
+
+        private async Task UpdateAllTimeInsightAsync(ApplicationDbContext context, ICustomerInsightRepository repository)
+        {
+            var allOrders = await context.Orders
+                .Where(o => o.PaymentStatus == PaymentStatus.Paid)
+                .Select(o => o.CustomerId)
+                .ToListAsync();
+
+            var customerOrderCounts = allOrders
+                .GroupBy(c => c)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var newCustomerCount = customerOrderCounts.Count(c => c.Value == 1);
+            var returningCustomerCount = customerOrderCounts.Count(c => c.Value > 1);
+            var totalCustomers = customerOrderCounts.Count;
+
+            decimal newCustomerPercentage = totalCustomers > 0 
+                ? Math.Round((decimal)newCustomerCount / totalCustomers * 100, 2) 
+                : 0;
+            decimal returningCustomerPercentage = totalCustomers > 0 
+                ? Math.Round((decimal)returningCustomerCount / totalCustomers * 100, 2) 
+                : 0;
+
+            var insight = new CustomerInsightAllTime
+            {
+                NewCustomerCount = newCustomerCount,
+                ReturningCustomerCount = returningCustomerCount,
+                TotalCustomers = totalCustomers,
+                NewCustomerPercentage = newCustomerPercentage,
+                ReturningCustomerPercentage = returningCustomerPercentage,
+                CalculatedAt = DateTime.UtcNow
+            };
+
+            await repository.UpsertAllTimeInsightAsync(insight);
+
+            _logger.LogInformation("Updated Customer Insight All-Time: New={New}, Returning={Returning}, Total={Total}", 
+                newCustomerCount, returningCustomerCount, totalCustomers);
         }
 
         private async Task UpdateCurrentMonthInsightAsync(ApplicationDbContext context)

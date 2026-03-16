@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface CustomerInsightData {
-  year: number;
-  month: number;
   newCustomerCount: number;
   returningCustomerCount: number;
   totalCustomers: number;
@@ -14,35 +12,15 @@ interface CustomerInsightData {
 const CustomerInsights = () => {
   const [data, setData] = useState<CustomerInsightData | null>(null);
   const [loading, setLoading] = useState(true);
-  const now = new Date();
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
-
-  const months = [
-    { value: 1, label: 'January' },
-    { value: 2, label: 'February' },
-    { value: 3, label: 'March' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'May' },
-    { value: 6, label: 'June' },
-    { value: 7, label: 'July' },
-    { value: 8, label: 'August' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'October' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'December' },
-  ];
 
   useEffect(() => {
     fetchCustomerInsight();
-  }, [selectedYear, selectedMonth]);
+  }, []);
 
   const fetchCustomerInsight = async () => {
     try {
       setLoading(true);
-      const response = await api.get<CustomerInsightData>('/customerinsight/monthly', {
-        params: { year: selectedYear, month: selectedMonth }
-      });
+      const response = await api.get<CustomerInsightData>('/customerinsight/alltime');
       setData(response.data);
     } catch (error) {
       console.error('Failed to fetch customer insight:', error);
@@ -51,7 +29,6 @@ const CustomerInsights = () => {
     }
   };
 
-  const selectedMonthName = months.find(m => m.value === selectedMonth)?.label || '';
   const returningPercentage = data?.returningCustomerPercentage ?? 0;
   const newPercentage = data?.newCustomerPercentage ?? 0;
 
@@ -61,31 +38,7 @@ const CustomerInsights = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-5 sm:mb-6">
           <div>
             <h4 className="text-lg font-extrabold tracking-tight">Customer Insights</h4>
-            <p className="text-xs opacity-80 mt-1">{selectedMonthName} {selectedYear}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="text-xs px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-            >
-              {months.map((month) => (
-                <option key={month.value} value={month.value} className="bg-primary text-white">
-                  {month.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="text-xs px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-            >
-              {[2024, 2025, 2026].map((year) => (
-                <option key={year} value={year} className="bg-primary text-white">
-                  {year}
-                </option>
-              ))}
-            </select>
+            <p className="text-xs opacity-80 mt-1">All Time</p>
           </div>
         </div>
         

@@ -24,6 +24,57 @@ namespace Relation_IMS.Controllers
             _logger = logger;
         }
 
+        [HttpGet("alltime")]
+        public async Task<ActionResult> GetAllTimeInsight()
+        {
+            var cacheKey = "customerinsight:alltime";
+
+            try
+            {
+                var cachedData = await _cacheService.GetCachedResponseAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cachedData))
+                {
+                    var data = JsonSerializer.Deserialize<CustomerInsightAllTimeDto>(cachedData);
+                    if (data != null)
+                    {
+                        _logger.LogInformation("Returning cached customer insight all-time");
+                        return Ok(data);
+                    }
+                }
+
+                var insight = await _repository.GetAllTimeInsightAsync();
+
+                var result = insight != null ? new CustomerInsightAllTimeDto
+                {
+                    NewCustomerCount = insight.NewCustomerCount,
+                    ReturningCustomerCount = insight.ReturningCustomerCount,
+                    TotalCustomers = insight.TotalCustomers,
+                    NewCustomerPercentage = insight.NewCustomerPercentage,
+                    ReturningCustomerPercentage = insight.ReturningCustomerPercentage,
+                    CalculatedAt = insight.CalculatedAt
+                } : new CustomerInsightAllTimeDto
+                {
+                    NewCustomerCount = 0,
+                    ReturningCustomerCount = 0,
+                    TotalCustomers = 0,
+                    NewCustomerPercentage = 0,
+                    ReturningCustomerPercentage = 0,
+                    CalculatedAt = DateTime.UtcNow
+                };
+
+                var jsonData = JsonSerializer.Serialize(result);
+                await _cacheService.SetCacheResponseAsync(cacheKey, jsonData, TimeSpan.FromHours(1));
+
+                _logger.LogInformation("Returning customer insight all-time from database");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting customer insight all-time");
+                return StatusCode(500, new { message = "An error occurred while fetching customer insight" });
+            }
+        }
+
         [HttpGet("monthly")]
         public async Task<ActionResult> GetMonthlyInsight([FromQuery] int? year, [FromQuery] int? month)
         {
@@ -91,5 +142,15 @@ namespace Relation_IMS.Controllers
         public int TotalCustomers { get; set; }
         public decimal NewCustomerPercentage { get; set; }
         public decimal ReturningCustomerPercentage { get; set; }
+    }
+
+    public class CustomerInsightAllTimeDto
+    {
+        public int NewCustomerCount { get; set; }
+        public int ReturningCustomerCount { get; set; }
+        public int TotalCustomers { get; set; }
+        public decimal NewCustomerPercentage { get; set; }
+        public decimal ReturningCustomerPercentage { get; set; }
+        public DateTime CalculatedAt { get; set; }
     }
 }
