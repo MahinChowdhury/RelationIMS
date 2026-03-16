@@ -130,6 +130,9 @@ builder.Services.AddScoped<ITopSellingProductRepository, TopSellingProductReposi
 builder.Services.AddScoped<IRevenueByCategoryRepository, RevenueByCategoryRepository>();
 builder.Services.AddScoped<ITopCustomerRepository, TopCustomerRepository>();
 builder.Services.AddScoped<ISalesOverviewRepository, SalesOverviewRepository>();
+builder.Services.AddScoped<IStaffPerformanceRepository, StaffPerformanceRepository>();
+builder.Services.AddScoped<ICustomerInsightRepository, CustomerInsightRepository>();
+builder.Services.AddScoped<ITodaySaleRepository, TodaySaleRepository>();
 builder.Services.AddScoped<IInventoryValueRepository, InventoryValueRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
@@ -270,6 +273,8 @@ builder.Services.AddScoped<RevenueByCategoryJob>();
 builder.Services.AddScoped<TopCustomersJob>();
 builder.Services.AddScoped<SalesOverviewJob>();
 builder.Services.AddScoped<InventoryValueJob>();
+builder.Services.AddScoped<StaffPerformanceJob>();
+builder.Services.AddScoped<CustomerInsightJob>();
 
 // ============================================
 // Response Compression
@@ -398,6 +403,18 @@ RecurringJob.AddOrUpdate<SalesOverviewJob>(
 RecurringJob.AddOrUpdate<InventoryValueJob>(
     "inventory-value-job",
     job => job.UpdateInventoryValue(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<StaffPerformanceJob>(
+    "staff-performance-job",
+    job => job.UpdateStaffPerformance(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<CustomerInsightJob>(
+    "customer-insight-job",
+    job => job.UpdateCustomerInsight(),
     "0 0 * * *", // Cron expression: every day at midnight UTC
     recurringJobOptions);
 

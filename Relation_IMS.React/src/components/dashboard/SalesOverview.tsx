@@ -8,18 +8,27 @@ interface SalesOverviewData {
   orderCount: number;
 }
 
+interface TodaySaleData {
+  date: string;
+  totalSales: number;
+  orderCount: number;
+  yesterdaySales: number;
+  percentageChange: number;
+}
+
 const SalesOverview = () => {
   const [thisWeek, setThisWeek] = useState<SalesOverviewData | null>(null);
   const [thisMonth, setThisMonth] = useState<SalesOverviewData | null>(null);
+  const [todaySale, setTodaySale] = useState<TodaySaleData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchSalesOverview();
+    fetchTodaySale();
   }, []);
 
   const fetchSalesOverview = async () => {
     try {
-      setLoading(true);
       const response = await api.get<SalesOverviewData[]>('/salesoverview/all');
       const data = response.data;
       
@@ -30,6 +39,15 @@ const SalesOverview = () => {
       setThisMonth(monthData || null);
     } catch (error) {
       console.error('Failed to fetch sales overview:', error);
+    }
+  };
+
+  const fetchTodaySale = async () => {
+    try {
+      const response = await api.get<TodaySaleData>('/todaysale');
+      setTodaySale(response.data);
+    } catch (error) {
+      console.error('Failed to fetch today sale:', error);
     } finally {
       setLoading(false);
     }
@@ -50,6 +68,17 @@ const SalesOverview = () => {
     return Math.min(Math.round((thisMonth.totalRevenue / target) * 100), 100);
   };
 
+  const getPercentageText = (): string => {
+    if (!todaySale) return '+0%';
+    const prefix = todaySale.percentageChange >= 0 ? '+' : '';
+    return `${prefix}${todaySale.percentageChange}%`;
+  };
+
+  const getTrendIcon = (): string => {
+    if (!todaySale) return 'trending_up';
+    return todaySale.percentageChange >= 0 ? 'trending_up' : 'trending_down';
+  };
+
   return (
     <section>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
@@ -64,17 +93,30 @@ const SalesOverview = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        {/* Today Sales Card - Still hardcoded for now */}
+        {/* Today Sales Card */}
         <div className="group relative overflow-hidden bg-primary text-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-primary/20">
-          <div className="relative z-10">
-            <p className="text-sm font-medium opacity-80 mb-2">Today Sales</p>
-            <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter mb-4 sm:mb-6">৳12,500</h4>
-            <div className="flex items-center gap-2 text-xs font-bold py-1 px-3 bg-white/20 backdrop-blur-md rounded-full w-fit">
-              <span className="material-symbols-outlined text-[16px]">trending_up</span>
-              <span>+14.2% from yesterday</span>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
             </div>
-          </div>
-          <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[8rem] opacity-10 rotate-12" style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
+          ) : (
+            <>
+              <div className="relative z-10">
+                <p className="text-sm font-medium opacity-80 mb-2">Today Sales</p>
+                <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter mb-4 sm:mb-6">
+                  {formatCurrency(todaySale?.totalSales || 0)}
+                </h4>
+                <div className="flex items-center gap-2 text-xs font-bold py-1 px-3 bg-white/20 backdrop-blur-md rounded-full w-fit">
+                  <span className="material-symbols-outlined text-[16px]">{getTrendIcon()}</span>
+                  <span>{getPercentageText()} from yesterday</span>
+                </div>
+                {todaySale && todaySale.orderCount > 0 && (
+                  <p className="text-[10px] opacity-60 mt-2">{todaySale.orderCount} order{todaySale.orderCount !== 1 ? 's' : ''} today</p>
+                )}
+              </div>
+              <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[8rem] opacity-10 rotate-12" style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
+            </>
+          )}
         </div>
 
         {/* This Week Card */}

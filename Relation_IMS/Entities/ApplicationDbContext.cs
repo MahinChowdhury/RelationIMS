@@ -156,4 +156,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TopCustomer> TopCustomers { get; set; }
     public DbSet<SalesOverview> SalesOverviews { get; set; }
     public DbSet<InventoryValue> InventoryValues { get; set; }
+    public DbSet<StaffPerformanceMonthly> StaffPerformanceMonthlies { get; set; }
+    public DbSet<CustomerInsight> CustomerInsights { get; set; }
+    public DbSet<TodaySale> TodaySales { get; set; }
 }
