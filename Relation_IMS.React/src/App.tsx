@@ -28,13 +28,7 @@ const Arrangement = lazy(() => import('./pages/arrangement/Arrangement'));
 const ArrangementDetails = lazy(() => import('./pages/arrangement/ArrangementDetails'));
 const UserProfile = lazy(() => import('./pages/userprofile/UserProfile'));
 const UserManagement = lazy(() => import('./pages/users/UserManagement'));
-
-const Dashboard = () => (
-  <div className="p-4">
-    <h1 className="text-2xl dark:text-white font-bold">Dashboard</h1>
-    <p className="text-gray-600 dark:text-white mt-2">Coming Soon</p>
-  </div>
-);
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 
 const Accounts = () => (
   <div className="p-4">
