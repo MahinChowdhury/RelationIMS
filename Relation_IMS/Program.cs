@@ -126,6 +126,7 @@ builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IShareCatalogRepository, ShareCatalogRepository>();
+builder.Services.AddScoped<ITopSellingProductRepository, TopSellingProductRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
 // ============================================
@@ -260,6 +261,7 @@ builder.Services.AddHangfireServer(options =>
 // Register OTP Service
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<PaymentReminderJob>();
+builder.Services.AddScoped<TopSellingProductsJob>();
 
 // ============================================
 // Response Compression
@@ -358,6 +360,12 @@ var recurringJobOptions = new RecurringJobOptions();
 RecurringJob.AddOrUpdate<PaymentReminderJob>(
     "payment-reminder-job",
     job => job.ProcessPaymentReminders(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<TopSellingProductsJob>(
+    "top-selling-products-job",
+    job => job.UpdateTopSellingProducts(),
     "0 0 * * *", // Cron expression: every day at midnight UTC
     recurringJobOptions);
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models;
+using Relation_IMS.Models.Analytics;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.InventoryModels;
 using Relation_IMS.Models.JWTModels;
@@ -150,4 +151,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<SalaryRecord> SalaryRecords { get; set; }
     public DbSet<ShareCatalog> ShareCatalogs { get; set; }
+    public DbSet<TopSellingProduct> TopSellingProducts { get; set; }
 }
