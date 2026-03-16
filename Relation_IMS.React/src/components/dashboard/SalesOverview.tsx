@@ -1,4 +1,55 @@
+import { useState, useEffect } from 'react';
+import api from '../../services/api';
+
+interface SalesOverviewData {
+  id: number;
+  periodType: number;
+  totalRevenue: number;
+  orderCount: number;
+}
+
 const SalesOverview = () => {
+  const [thisWeek, setThisWeek] = useState<SalesOverviewData | null>(null);
+  const [thisMonth, setThisMonth] = useState<SalesOverviewData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSalesOverview();
+  }, []);
+
+  const fetchSalesOverview = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get<SalesOverviewData[]>('/salesoverview/all');
+      const data = response.data;
+      
+      const weekData = data.find(d => d.periodType === 0);
+      const monthData = data.find(d => d.periodType === 1);
+      
+      setThisWeek(weekData || null);
+      setThisMonth(monthData || null);
+    } catch (error) {
+      console.error('Failed to fetch sales overview:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-BD', {
+      style: 'currency',
+      currency: 'BDT',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const getMonthProgress = (): number => {
+    if (!thisMonth) return 80;
+    const target = 400000;
+    return Math.min(Math.round((thisMonth.totalRevenue / target) * 100), 100);
+  };
+
   return (
     <section>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
@@ -13,7 +64,7 @@ const SalesOverview = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        {/* Today Sales Card */}
+        {/* Today Sales Card - Still hardcoded for now */}
         <div className="group relative overflow-hidden bg-primary text-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl shadow-primary/20">
           <div className="relative z-10">
             <p className="text-sm font-medium opacity-80 mb-2">Today Sales</p>
@@ -28,35 +79,55 @@ const SalesOverview = () => {
 
         {/* This Week Card */}
         <div className="bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-200/60 dark:border-[#2a4032] flex flex-col justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Week</p>
-            <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">৳75,000</h4>
-          </div>
-          <div className="mt-6 h-12 flex items-end gap-1">
-            {[40, 60, 30, 90, 50, 70, 45].map((h, i) => (
-              <div
-                key={i}
-                className={`flex-1 rounded-t-sm ${i === 3 ? 'bg-primary' : 'bg-gray-200 dark:bg-[#2a4032]'}`}
-                style={{ height: `${h}%` }}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <>
+              <div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Week</p>
+                <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">
+                  {formatCurrency(thisWeek?.totalRevenue || 0)}
+                </h4>
+              </div>
+              <div className="mt-6 h-12 flex items-end gap-1">
+                {[40, 60, 30, 90, 50, 70, 45].map((h, i) => (
+                  <div
+                    key={i}
+                    className={`flex-1 rounded-t-sm ${i === 3 ? 'bg-primary' : 'bg-gray-200 dark:bg-[#2a4032]'}`}
+                    style={{ height: `${h}%` }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* This Month Card */}
         <div className="bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-200/60 dark:border-[#2a4032] flex flex-col justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-full -mr-16 -mt-16"></div>
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Month</p>
-            <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">৳3,20,000</h4>
-          </div>
-          <div className="mt-6 flex items-center justify-between text-xs">
-            <span className="text-gray-500 dark:text-gray-400">Target: ৳4,00,000</span>
-            <span className="font-bold text-primary">80%</span>
-          </div>
-          <div className="mt-2 w-full h-2 bg-gray-100 dark:bg-[#2a4032] rounded-full overflow-hidden">
-            <div className="h-full bg-primary w-[80%] rounded-full"></div>
-          </div>
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <>
+              <div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Month</p>
+                <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">
+                  {formatCurrency(thisMonth?.totalRevenue || 0)}
+                </h4>
+              </div>
+              <div className="mt-6 flex items-center justify-between text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Target: ৳4,00,000</span>
+                <span className="font-bold text-primary">{getMonthProgress()}%</span>
+              </div>
+              <div className="mt-2 w-full h-2 bg-gray-100 dark:bg-[#2a4032] rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${getMonthProgress()}%` }}></div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

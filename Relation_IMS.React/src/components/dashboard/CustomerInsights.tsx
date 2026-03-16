@@ -1,6 +1,6 @@
 const CustomerInsights = () => {
   return (
-    <div className="col-span-12 lg:col-span-3 bg-primary text-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-primary/20 flex flex-col justify-between">
+    <div className="col-span-12 lg:col-span-6 bg-primary text-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-primary/20 flex flex-col justify-between">
       <div>
         <h4 className="text-lg font-extrabold tracking-tight mb-5 sm:mb-6">Customer Insights</h4>
         <div className="space-y-6 sm:space-y-8">

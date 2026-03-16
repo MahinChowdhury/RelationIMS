@@ -621,6 +621,11 @@ const bn: Translations = {
         newPasswordLabel: 'নতুন পাসওয়ার্ড',
         confirmPasswordLabel: 'নতুন পাসওয়ার্ড নিশ্চিত করুন',
     },
+    dashboard: {
+        last30Days: 'শেষ ৩০ দিন',
+        thisQuarter: 'এই ত্রৈমাসিক',
+        noTopSellingProducts: 'কোনো শীর্ষ বিক্রয় পণ্য পাওয়া যায়নি',
+    },
 };
 
 export default bn;

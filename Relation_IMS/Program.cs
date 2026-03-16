@@ -128,6 +128,9 @@ builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IShareCatalogRepository, ShareCatalogRepository>();
 builder.Services.AddScoped<ITopSellingProductRepository, TopSellingProductRepository>();
 builder.Services.AddScoped<IRevenueByCategoryRepository, RevenueByCategoryRepository>();
+builder.Services.AddScoped<ITopCustomerRepository, TopCustomerRepository>();
+builder.Services.AddScoped<ISalesOverviewRepository, SalesOverviewRepository>();
+builder.Services.AddScoped<IInventoryValueRepository, InventoryValueRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
 // ============================================
@@ -264,6 +267,9 @@ builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<PaymentReminderJob>();
 builder.Services.AddScoped<TopSellingProductsJob>();
 builder.Services.AddScoped<RevenueByCategoryJob>();
+builder.Services.AddScoped<TopCustomersJob>();
+builder.Services.AddScoped<SalesOverviewJob>();
+builder.Services.AddScoped<InventoryValueJob>();
 
 // ============================================
 // Response Compression
@@ -374,6 +380,24 @@ RecurringJob.AddOrUpdate<TopSellingProductsJob>(
 RecurringJob.AddOrUpdate<RevenueByCategoryJob>(
     "revenue-by-category-job",
     job => job.UpdateRevenueByCategory(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<TopCustomersJob>(
+    "top-customers-job",
+    job => job.UpdateTopCustomers(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<SalesOverviewJob>(
+    "sales-overview-job",
+    job => job.UpdateSalesOverview(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<InventoryValueJob>(
+    "inventory-value-job",
+    job => job.UpdateInventoryValue(),
     "0 0 * * *", // Cron expression: every day at midnight UTC
     recurringJobOptions);
 

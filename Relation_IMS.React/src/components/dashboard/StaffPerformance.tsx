@@ -23,7 +23,7 @@ const StaffPerformance = () => {
   ];
 
   return (
-    <div className="col-span-12 lg:col-span-5 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
       <div className="flex justify-between items-center mb-5 sm:mb-6">
         <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">Staff Performance</h4>
         <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Monthly Top</span>

@@ -153,4 +153,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ShareCatalog> ShareCatalogs { get; set; }
     public DbSet<TopSellingProduct> TopSellingProducts { get; set; }
     public DbSet<RevenueByCategory> RevenueByCategories { get; set; }
+    public DbSet<TopCustomer> TopCustomers { get; set; }
+    public DbSet<SalesOverview> SalesOverviews { get; set; }
+    public DbSet<InventoryValue> InventoryValues { get; set; }
 }

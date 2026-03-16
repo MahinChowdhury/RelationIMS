@@ -619,6 +619,11 @@ const en = {
         newPasswordLabel: 'New Password',
         confirmPasswordLabel: 'Confirm New Password',
     },
+    dashboard: {
+        last30Days: 'Last 30 Days',
+        thisQuarter: 'This Quarter',
+        noTopSellingProducts: 'No top selling products found',
+    },
 };
 
 export default en;
