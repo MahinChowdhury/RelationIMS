@@ -1,6 +1,6 @@
 const ProfitAnalysis = () => {
   return (
-    <div className="col-span-12 lg:col-span-6 bg-gray-50 dark:bg-[#0f1f15] text-text-main dark:text-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden flex flex-col justify-center border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-8 bg-gray-50 dark:bg-[#0f1f15] text-text-main dark:text-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden flex flex-col justify-center border border-gray-200/60 dark:border-[#2a4032]">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 relative z-10">
         <div>
           <h4 className="text-sm font-extrabold uppercase tracking-widest text-primary mb-3 sm:mb-4">Profit Analysis</h4>

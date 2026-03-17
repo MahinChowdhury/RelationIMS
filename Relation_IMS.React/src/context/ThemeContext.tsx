@@ -30,8 +30,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const root = document.documentElement;
         if (theme === 'dark') {
             root.classList.add('dark');
+            document.getElementById('theme-color-meta')?.setAttribute('content', '#112116');
         } else {
             root.classList.remove('dark');
+            document.getElementById('theme-color-meta')?.setAttribute('content', '#f8fcf9');
         }
     }, [theme]);
 

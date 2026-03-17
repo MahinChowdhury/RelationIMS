@@ -625,13 +625,10 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
 
     return (
-        <div className="container mx-auto max-w-screen-2xl px-4 py-6 md:px-6 md:py-6 flex flex-col gap-4">
+        <div className="container mx-auto max-w-screen-2xl px-4 py-4 md:px-6 md:py-8 flex flex-col gap-4">
 
-
-
-
-            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* LEFT: Title */}
                 <div className="flex items-center gap-3">
                     <div className="bg-primary text-white p-2 rounded-lg shadow-sm">
                         <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
@@ -640,23 +637,28 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                         {isGuestView ? t.products.title : t.products.title}
                     </h1>
                 </div>
+
+                {/* RIGHT: Buttons with padding */}
                 {!isGuestView && (
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
-                            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm"
-                        >
-                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                            <span className="hidden sm:inline">{t.common.scan}</span>
-                        </button>
-                        <button
-                            onClick={openCreateModal}
-                            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
-                        >
-                            <span className="material-symbols-outlined text-[18px]">add</span>
-                            <span className="hidden sm:inline">{t.products.addProduct}</span>
-                            <span className="sm:hidden">{t.common.add}</span>
-                        </button>
+                    <div className='md:pr-36'>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
+                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                                <span className="hidden sm:inline">{t.common.scan}</span>
+                            </button>
+
+                            <button
+                                onClick={openCreateModal}
+                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">add</span>
+                                <span className="hidden sm:inline">{t.products.addProduct}</span>
+                                <span className="sm:hidden">{t.common.add}</span>
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

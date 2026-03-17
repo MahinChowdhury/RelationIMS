@@ -25,13 +25,16 @@ export default function Layout() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const scrollTop = e.currentTarget.scrollTop;
-        setShowMobileProfile(scrollTop < 50);
-    };
+    useEffect(() => {
+        const handleWindowScroll = () => {
+            setShowMobileProfile(window.scrollY < 50);
+        };
+        window.addEventListener('scroll', handleWindowScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleWindowScroll);
+    }, []);
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30 relative">
+        <div className="flex min-h-[100dvh] w-full bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary/30 relative">
             {/* Background Elements (Dark Mode Only) */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none hidden dark:block">
                 <div className="absolute -top-1/4 -left-1/4 w-[60%] h-[60%] bg-primary/20 rounded-full filter blur-[100px] opacity-50 animate-pulse"></div>
@@ -41,7 +44,7 @@ export default function Layout() {
             <GlobalSearch />
 
             {/* Sidebar (Desktop Only) */}
-            <div className="hidden lg:flex h-full">
+            <div className="hidden lg:flex sticky top-0 h-[100dvh]">
                 <Sidebar
                     isOpen={mobileMenuOpen}
                     onClose={() => setMobileMenuOpen(false)}
@@ -50,13 +53,16 @@ export default function Layout() {
 
             <main
                 ref={mainRef}
-                className="flex-1 flex flex-col h-full overflow-y-auto relative"
-                onScroll={handleScroll}
+                className="flex-1 flex flex-col min-h-[100dvh] relative lg:pt-0 bg-background-light dark:bg-background-dark w-full max-w-full"
             >
+                {/* Spacer for notch so content starts below notch but scrolls under it */}
+                <div className="shrink-0 w-full" style={{ height: 'env(safe-area-inset-top)' }} />
+
                 {/* Mobile Profile Circle (Scroll Aware) */}
                 <div
                     ref={mobileProfileRef}
-                    className={`lg:hidden fixed top-4 right-4 z-50 transition-opacity duration-300 ${showMobileProfile ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    className={`lg:hidden fixed right-4 z-50 transition-opacity duration-300 ${showMobileProfile ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    style={{ top: 'calc(1rem + env(safe-area-inset-top))' }}
                 >
                     <button
                         onClick={() => setIsMobileProfileMenuOpen(!isMobileProfileMenuOpen)}

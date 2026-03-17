@@ -3,11 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="Relation IMS - Inventory Management System for efficient stock tracking, order management, and business operations" />
   <meta name="keywords" content="inventory management, stock tracking, order management, warehouse, IMS" />
   <meta name="author" content="Relation IMS" />
-  <meta name="theme-color" content="#2563eb" />
+  <meta name="theme-color" id="theme-color-meta" content="#f8fcf9" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   
   <meta property="og:title" content="Relation IMS - Inventory Management System" />
   <meta property="og:description" content="Efficient inventory management system for tracking stock, orders, and business operations" />
@@ -26,10 +28,13 @@
     rel="stylesheet" />
 
   <script>
-    if (localStorage.getItem('app-theme') === 'dark') {
+    const isDark = localStorage.getItem('app-theme') === 'dark';
+    if (isDark) {
       document.documentElement.classList.add('dark');
+      document.getElementById('theme-color-meta').setAttribute('content', '#112116');
     } else {
       document.documentElement.classList.remove('dark');
+      document.getElementById('theme-color-meta').setAttribute('content', '#f8fcf9');
     }
   </script>
 

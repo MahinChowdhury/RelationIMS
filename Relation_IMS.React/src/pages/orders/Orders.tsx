@@ -143,7 +143,6 @@ export default function OrdersPage() {
 
     return (
         <div className="container mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8 flex flex-col gap-6 font-display text-text-main">
-            
 
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">

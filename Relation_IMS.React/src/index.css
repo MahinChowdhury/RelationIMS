@@ -2,9 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  min-height: 100dvh;
+  @apply bg-background-light dark:bg-background-dark;
+}
+
 /* Custom Body Gradient from Angular project */
 body {
+  min-height: 100dvh;
   margin: 0;
+  @apply bg-background-light dark:bg-background-dark text-text-main;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;

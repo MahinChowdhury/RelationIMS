@@ -39,19 +39,19 @@ const Dashboard = () => {
       {/* Fifth Row: Staff Performance + Customer Insights */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <StaffPerformance />
-        <CustomerInsights />
+        <TopCustomers />
       </div>
 
       {/* Sixth Row: Sales by Category + Top Customers */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <SalesByCategory />
-        <TopCustomers />
+        <ProfitAnalysis />
       </div>
 
       {/* Seventh Row: Estimated Inventory Value + Profit Analysis */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6 pb-6 sm:pb-8 lg:pb-12">
         <EstimatedInventoryValue />
-        <ProfitAnalysis />
+        <CustomerInsights />
       </div>
     </div>
   );

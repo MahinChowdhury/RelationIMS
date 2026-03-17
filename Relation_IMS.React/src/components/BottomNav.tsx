@@ -30,7 +30,8 @@ export default function BottomNav() {
 
     return (
         <>
-            <nav className="fixed bottom-0 left-0 right-0 glass-nav px-1 pt-3 pb-8 flex items-center justify-between z-50 lg:hidden">
+            <nav className="fixed bottom-0 left-0 right-0 glass-nav px-1 pt-3 pb-8 flex items-center justify-between z-50 lg:hidden"
+                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <NavLink
                 to="/dashboard"
                 className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
