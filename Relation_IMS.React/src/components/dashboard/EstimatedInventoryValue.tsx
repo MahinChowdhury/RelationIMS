@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface InventoryValueData {
-  id: number;
-  totalItems: number;
-  totalValue: number;
-  lastMonthValue: number;
+  Id: number;
+  TotalItems: number;
+  TotalValue: number;
+  LastMonthValue: number;
 }
 
 const EstimatedInventoryValue = () => {
@@ -40,8 +40,8 @@ const EstimatedInventoryValue = () => {
   };
 
   const calculateGrowth = (): number => {
-    if (!data || data.lastMonthValue === 0) return 0;
-    return ((data.totalValue - data.lastMonthValue) / data.lastMonthValue) * 100;
+    if (!data || data.LastMonthValue === 0) return 0;
+    return ((data.TotalValue - data.LastMonthValue) / data.LastMonthValue) * 100;
   };
 
   const growth = calculateGrowth();
@@ -56,7 +56,7 @@ const EstimatedInventoryValue = () => {
         <>
           <div>
             <p className="text-xs font-medium opacity-60 uppercase tracking-widest mb-1">Estimated Value</p>
-            <h4 className="text-2xl sm:text-3xl font-extrabold tracking-tighter">{formatCurrency(data?.totalValue || 0)}</h4>
+            <h4 className="text-2xl sm:text-3xl font-extrabold tracking-tighter">{formatCurrency(data?.TotalValue || 0)}</h4>
             <p className="text-[10px] text-primary mt-1 font-bold">
               {growth >= 0 ? '+' : ''}{growth.toFixed(1)}% Inventory Growth
             </p>

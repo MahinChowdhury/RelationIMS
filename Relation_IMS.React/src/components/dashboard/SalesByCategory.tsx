@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface SalesCategory {
-  id: number;
-  categoryId: number;
-  categoryName: string;
-  totalRevenue: number;
-  totalQuantitySold: number;
-  periodType: number;
+  Id: number;
+  CategoryId: number;
+  CategoryName: string;
+  TotalRevenue: number;
+  TotalQuantitySold: number;
+  PeriodType: number;
 }
 
 const SalesByCategory = () => {
@@ -34,32 +34,58 @@ const SalesByCategory = () => {
 
   const getPercentage = (index: number): number => {
     if (categories.length === 0) return 0;
-    const totalUnits = categories.reduce((sum, c) => sum + c.totalQuantitySold, 0);
+    const totalUnits = categories.reduce((sum, c) => sum + c.TotalQuantitySold, 0);
     if (totalUnits === 0) return 0;
-    return Math.round((categories[index].totalQuantitySold / totalUnits) * 100);
+    return Math.round((categories[index].TotalQuantitySold / totalUnits) * 100);
   };
 
-  const getColorClass = (index: number): string => {
+  const getColorHex = (index: number): string => {
     const colors = [
-      'bg-primary',
-      'bg-[#4e9767]',
-      'bg-[#236c31]',
-      'bg-[#5aad7d]',
-      'bg-[#3d8b55]',
-      'bg-gray-400',
-      'bg-orange-500',
-      'bg-purple-500',
-      'bg-blue-500',
-      'bg-pink-500',
+      '#2563eb', // bg-primary (blue)
+      '#4e9767',
+      '#236c31',
+      '#5aad7d',
+      '#3d8b55',
+      '#9ca3af', // gray-400
+      '#f97316', // orange-500
+      '#a855f7', // purple-500
+      '#3b82f6', // blue-500
+      '#ec4899', // pink-500
     ];
     return colors[index % colors.length];
+  };
+
+  const getConicGradient = (): string => {
+    if (categories.length === 0) return 'transparent';
+    
+    const totalUnits = categories.reduce((sum, c) => sum + c.TotalQuantitySold, 0);
+    if (totalUnits === 0) return 'transparent';
+
+    let gradient = 'conic-gradient(';
+    let currentDegree = 0;
+
+    categories.slice(0, 10).forEach((cat, index) => {
+      const percentage = (cat.TotalQuantitySold / totalUnits) * 100;
+      if (percentage > 0) {
+        const startDegree = currentDegree;
+        const endDegree = currentDegree + (percentage * 3.6); // 3.6 degrees per percentage point
+        const color = getColorHex(index);
+        
+        if (index > 0) gradient += ', ';
+        gradient += `${color} ${startDegree}deg ${endDegree}deg`;
+        currentDegree = endDegree;
+      }
+    });
+
+    gradient += ')';
+    return gradient;
   };
 
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('en-BD').format(num);
   };
 
-  const totalUnits = categories.reduce((sum, c) => sum + c.totalQuantitySold, 0);
+  const totalUnits = categories.reduce((sum, c) => sum + c.TotalQuantitySold, 0);
 
   return (
     <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
@@ -77,11 +103,20 @@ const SalesByCategory = () => {
         <>
           {/* Donut Chart */}
           <div className="relative flex justify-center mb-6 sm:mb-8">
-            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full border-[14px] sm:border-[16px] border-gray-100 dark:border-[#203326] flex items-center justify-center relative bg-white dark:bg-[#1a2e22]">
-              {/* Segments would be complex to implement with pure CSS, showing center instead */}
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-text-main dark:text-white">{formatNumber(totalUnits)}</p>
-                <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Total Units</p>
+            <div 
+              className="w-40 h-40 sm:w-48 sm:h-48 rounded-full flex items-center justify-center relative"
+              style={{ 
+                background: getConicGradient(),
+                padding: '16px'
+              }}
+            >
+              <div 
+                className="w-full h-full rounded-full bg-white dark:bg-[#1a2e22] flex items-center justify-center"
+              >
+                <div className="text-center">
+                  <p className="text-xl sm:text-2xl font-extrabold text-text-main dark:text-white">{formatNumber(totalUnits)}</p>
+                  <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Total Units</p>
+                </div>
               </div>
             </div>
           </div>
@@ -89,10 +124,13 @@ const SalesByCategory = () => {
           {/* Legend - Scrollable */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4 max-h-[200px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
             {categories.slice(0, 10).map((cat, index) => (
-              <div key={cat.id} className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${getColorClass(index)}`}></div>
+              <div key={cat.Id} className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: getColorHex(index) }}
+                ></div>
                 <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                  {cat.categoryName} ({getPercentage(index)}%)
+                  {cat.CategoryName} ({getPercentage(index)}%)
                 </span>
               </div>
             ))}

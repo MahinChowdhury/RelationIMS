@@ -2,18 +2,18 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface SalesOverviewData {
-  id: number;
-  periodType: number;
-  totalRevenue: number;
-  orderCount: number;
+  Id: number;
+  PeriodType: number;
+  TotalRevenue: number;
+  OrderCount: number;
 }
 
 interface TodaySaleData {
-  date: string;
-  totalSales: number;
-  orderCount: number;
-  yesterdaySales: number;
-  percentageChange: number;
+  Date: string;
+  TotalSales: number;
+  OrderCount: number;
+  YesterdaySales: number;
+  PercentageChange: number;
 }
 
 const SalesOverview = () => {
@@ -32,8 +32,8 @@ const SalesOverview = () => {
       const response = await api.get<SalesOverviewData[]>('/salesoverview/all');
       const data = response.data;
       
-      const weekData = data.find(d => d.periodType === 0);
-      const monthData = data.find(d => d.periodType === 1);
+      const weekData = data.find(d => d.PeriodType === 0);
+      const monthData = data.find(d => d.PeriodType === 1);
       
       setThisWeek(weekData || null);
       setThisMonth(monthData || null);
@@ -65,18 +65,18 @@ const SalesOverview = () => {
   const getMonthProgress = (): number => {
     if (!thisMonth) return 80;
     const target = 400000;
-    return Math.min(Math.round((thisMonth.totalRevenue / target) * 100), 100);
+    return Math.min(Math.round((thisMonth.TotalRevenue / target) * 100), 100);
   };
 
   const getPercentageText = (): string => {
     if (!todaySale) return '+0%';
-    const prefix = todaySale.percentageChange >= 0 ? '+' : '';
-    return `${prefix}${todaySale.percentageChange}%`;
+    const prefix = todaySale.PercentageChange >= 0 ? '+' : '';
+    return `${prefix}${todaySale.PercentageChange}%`;
   };
 
   const getTrendIcon = (): string => {
     if (!todaySale) return 'trending_up';
-    return todaySale.percentageChange >= 0 ? 'trending_up' : 'trending_down';
+    return todaySale.PercentageChange >= 0 ? 'trending_up' : 'trending_down';
   };
 
   return (
@@ -104,14 +104,14 @@ const SalesOverview = () => {
               <div className="relative z-10">
                 <p className="text-sm font-medium opacity-80 mb-2">Today Sales</p>
                 <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter mb-4 sm:mb-6">
-                  {formatCurrency(todaySale?.totalSales || 0)}
+                  {formatCurrency(todaySale?.TotalSales || 0)}
                 </h4>
                 <div className="flex items-center gap-2 text-xs font-bold py-1 px-3 bg-white/20 backdrop-blur-md rounded-full w-fit">
                   <span className="material-symbols-outlined text-[16px]">{getTrendIcon()}</span>
                   <span>{getPercentageText()} from yesterday</span>
                 </div>
-                {todaySale && todaySale.orderCount > 0 && (
-                  <p className="text-[10px] opacity-60 mt-2">{todaySale.orderCount} order{todaySale.orderCount !== 1 ? 's' : ''} today</p>
+                {todaySale && todaySale.OrderCount > 0 && (
+                  <p className="text-[10px] opacity-60 mt-2">{todaySale.OrderCount} order{todaySale.OrderCount !== 1 ? 's' : ''} today</p>
                 )}
               </div>
               <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[8rem] opacity-10 rotate-12" style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
@@ -130,7 +130,7 @@ const SalesOverview = () => {
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Week</p>
                 <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">
-                  {formatCurrency(thisWeek?.totalRevenue || 0)}
+                  {formatCurrency(thisWeek?.TotalRevenue || 0)}
                 </h4>
               </div>
               <div className="mt-6 h-12 flex items-end gap-1">
@@ -158,7 +158,7 @@ const SalesOverview = () => {
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Month</p>
                 <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">
-                  {formatCurrency(thisMonth?.totalRevenue || 0)}
+                  {formatCurrency(thisMonth?.TotalRevenue || 0)}
                 </h4>
               </div>
               <div className="mt-6 flex items-center justify-between text-xs">

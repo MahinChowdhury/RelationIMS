@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface TopCustomer {
-  id: number;
-  customerId: number;
-  customerName: string;
-  customerImageUrl: string | null;
-  totalPurchases: number;
-  totalAmount: number;
-  periodType: number;
+  Id: number;
+  CustomerId: number;
+  CustomerName: string;
+  CustomerImageUrl: string | null;
+  TotalPurchases: number;
+  TotalAmount: number;
+  PeriodType: number;
 }
 
 const TopCustomers = () => {
@@ -43,7 +43,7 @@ const TopCustomers = () => {
   };
 
   const getInitials = (name: string): string => {
-    return name
+    return (name || '')
       .split(' ')
       .map(n => n[0])
       .join('')
@@ -82,25 +82,25 @@ const TopCustomers = () => {
       ) : (
         <div className="space-y-5 sm:space-y-6 overflow-y-auto max-h-[420px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
           {customers.map((customer, index) => (
-            <div key={customer.id} className="flex items-center justify-between">
+            <div key={customer.Id} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {customer.customerImageUrl ? (
+                {customer.CustomerImageUrl ? (
                   <img
                     className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover"
-                    alt={customer.customerName}
-                    src={customer.customerImageUrl}
+                    alt={customer.CustomerName}
+                    src={customer.CustomerImageUrl}
                   />
                 ) : (
                   <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${getColorClass(index)}`}>
-                    {getInitials(customer.customerName)}
+                    {getInitials(customer.CustomerName)}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-bold text-text-main dark:text-white">{customer.customerName}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{customer.totalPurchases} Purchases</p>
+                  <p className="text-sm font-bold text-text-main dark:text-white">{customer.CustomerName}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{customer.TotalPurchases} Purchases</p>
                 </div>
               </div>
-              <p className="text-sm font-extrabold text-primary">{formatCurrency(customer.totalAmount)}</p>
+              <p className="text-sm font-extrabold text-primary">{formatCurrency(customer.TotalAmount)}</p>
             </div>
           ))}
         </div>

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface CustomerInsightData {
-  newCustomerCount: number;
-  returningCustomerCount: number;
-  totalCustomers: number;
-  newCustomerPercentage: number;
-  returningCustomerPercentage: number;
+  NewCustomerCount: number;
+  ReturningCustomerCount: number;
+  TotalCustomers: number;
+  NewCustomerPercentage: number;
+  ReturningCustomerPercentage: number;
 }
 
 const CustomerInsights = () => {
@@ -29,8 +29,8 @@ const CustomerInsights = () => {
     }
   };
 
-  const returningPercentage = data?.returningCustomerPercentage ?? 0;
-  const newPercentage = data?.newCustomerPercentage ?? 0;
+  const returningPercentage = data?.ReturningCustomerPercentage ?? 0;
+  const newPercentage = data?.NewCustomerPercentage ?? 0;
 
   return (
     <div className="col-span-12 lg:col-span-6 bg-primary text-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-primary/20 flex flex-col justify-between">
@@ -59,7 +59,7 @@ const CustomerInsights = () => {
                   style={{ width: `${returningPercentage}%` }}
                 ></div>
               </div>
-              <p className="text-[10px] opacity-60 mt-1">{data?.returningCustomerCount || 0} customers</p>
+              <p className="text-[10px] opacity-60 mt-1">{data?.ReturningCustomerCount || 0} customers</p>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -72,7 +72,7 @@ const CustomerInsights = () => {
                   style={{ width: `${newPercentage}%` }}
                 ></div>
               </div>
-              <p className="text-[10px] opacity-60 mt-1">{data?.newCustomerCount || 0} customers</p>
+              <p className="text-[10px] opacity-60 mt-1">{data?.NewCustomerCount || 0} customers</p>
             </div>
           </div>
         )}

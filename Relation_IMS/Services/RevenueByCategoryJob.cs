@@ -91,7 +91,7 @@ namespace Relation_IMS.Services
         private async Task UpdateThisQuarterAsync(ApplicationDbContext context)
         {
             var now = DateTime.UtcNow;
-            var quarterStart = new DateTime(now.Year, ((now.Month - 1) / 3) * 3 + 1, 1);
+            var quarterStart = new DateTime(now.Year, ((now.Month - 1) / 3) * 3 + 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             var revenueByCategory = await context.OrderItems
                 .Include(oi => oi.Product)

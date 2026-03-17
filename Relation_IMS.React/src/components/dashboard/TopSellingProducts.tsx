@@ -3,13 +3,13 @@ import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 interface TopSellingProduct {
-  id: number;
-  productId: number;
-  productName: string;
-  productImageUrl?: string;
-  totalQuantitySold: number;
-  totalRevenue: number;
-  periodType: number;
+  Id: number;
+  ProductId: number;
+  ProductName: string;
+  ProductImageUrl?: string;
+  TotalQuantitySold: number;
+  TotalRevenue: number;
+  PeriodType: number;
 }
 
 const TopSellingProducts = () => {
@@ -41,9 +41,9 @@ const TopSellingProducts = () => {
 
   const getPercentage = (index: number): number => {
     if (products.length === 0) return 0;
-    const maxQuantity = Math.max(...products.map(p => p.totalQuantitySold));
+    const maxQuantity = Math.max(...products.map(p => p.TotalQuantitySold));
     if (maxQuantity === 0) return 0;
-    return Math.round((products[index].totalQuantitySold / maxQuantity) * 100);
+    return Math.round((products[index].TotalQuantitySold / maxQuantity) * 100);
   };
 
   const getColorClass = (index: number): string => {
@@ -93,10 +93,10 @@ const TopSellingProducts = () => {
       ) : (
         <div className="space-y-6 sm:space-y-8 overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
           {products.slice(0, 10).map((product, index) => (
-            <div key={product.id} className="space-y-2">
+            <div key={product.Id} className="space-y-2">
               <div className="flex justify-between text-sm font-bold text-text-main dark:text-gray-200">
-                <span className="truncate flex-1 mr-4">{product.productName}</span>
-                <span className={getTextColorClass(index)}>{product.totalQuantitySold} Units</span>
+                <span className="truncate flex-1 mr-4">{product.ProductName}</span>
+                <span className={getTextColorClass(index)}>{product.TotalQuantitySold} Units</span>
               </div>
               <div className="w-full h-7 sm:h-8 bg-gray-50 dark:bg-[#203326] rounded-xl overflow-hidden">
                 <div 

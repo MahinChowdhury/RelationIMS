@@ -86,7 +86,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // Redis Distributed Cache
 var redisConnString = builder.Configuration["Redis:ConnectionString"]!;
 var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(redisConnString, true);
-redisOptions.AbortOnConnectFail = false;
+redisOptions.AbortOnConnectFail = false;   // Don't crash if Redis is down
+redisOptions.ConnectTimeout = 2000;        // Fail fast: 2s connect timeout (default 5s)
+redisOptions.SyncTimeout = 1000;           // Fail fast: 1s sync timeout (default 5s)
+redisOptions.AsyncTimeout = 1000;          // Fail fast: 1s async timeout (default 5s)
+redisOptions.ConnectRetry = 1;             // Only retry once on initial connect
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -94,7 +98,19 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "RelationIMS:";
 });
 builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp =>
-    StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions));
+{
+    try
+    {
+        return StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions);
+    }
+    catch (Exception ex)
+    {
+        var logger = sp.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning(ex, "Redis connection failed. Caching will be unavailable.");
+        // Return a connection that will gracefully fail on operations
+        return StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions);
+    }
+});
 builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 
 builder.Services.AddSingleton<IClientCacheService, ClientCacheService>();

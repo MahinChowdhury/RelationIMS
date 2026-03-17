@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface StaffPerformanceData {
-  userId: number;
-  fullName: string;
-  year: number;
-  month: number;
-  totalSales: number;
-  orderCount: number;
-  rank: number;
+  UserId: number;
+  FullName: string;
+  Year: number;
+  Month: number;
+  TotalSales: number;
+  OrderCount: number;
+  Rank: number;
 }
 
 const StaffPerformance = () => {
@@ -61,7 +61,7 @@ const StaffPerformance = () => {
   };
 
   const getInitials = (name: string): string => {
-    return name
+    return (name || '')
       .split(' ')
       .map(n => n[0])
       .join('')
@@ -134,25 +134,25 @@ const StaffPerformance = () => {
         <div className="space-y-3 sm:space-y-4 overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
           {staff.map((member) => (
             <div
-              key={member.userId}
+              key={member.UserId}
               className="flex items-center justify-between p-3 sm:p-4 border border-gray-100 dark:border-[#2a4032] rounded-[1.5rem] sm:rounded-[2rem] hover:bg-gray-50 dark:hover:bg-[#203326] transition-colors"
             >
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="relative">
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-sm font-bold ${getRankColor(member.rank)}`}>
-                    {getInitials(member.fullName)}
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white text-sm font-bold ${getRankColor(member.Rank)}`}>
+                    {getInitials(member.FullName)}
                   </div>
-                  <div className={`absolute -top-1 -right-1 w-5 h-5 ${getRankColor(member.rank)} rounded-full border-2 border-white dark:border-[#1a2e22] flex items-center justify-center`}>
-                    <span className="text-[10px] text-white font-bold">{member.rank}</span>
+                  <div className={`absolute -top-1 -right-1 w-5 h-5 ${getRankColor(member.Rank)} rounded-full border-2 border-white dark:border-[#1a2e22] flex items-center justify-center`}>
+                    <span className="text-[10px] text-white font-bold">{member.Rank}</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-text-main dark:text-white">{member.fullName}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{member.orderCount} Sales</p>
+                  <p className="text-sm font-bold text-text-main dark:text-white">{member.FullName}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{member.OrderCount} Sales</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-extrabold ${getSalesColor(member.rank)}`}>{formatCurrency(member.totalSales)}</p>
+                <p className={`text-sm font-extrabold ${getSalesColor(member.Rank)}`}>{formatCurrency(member.TotalSales)}</p>
               </div>
             </div>
           ))}

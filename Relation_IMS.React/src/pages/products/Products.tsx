@@ -625,7 +625,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
 
     return (
-        <div className="container mx-auto max-w-screen-2xl px-4 py-4 md:px-6 md:py-6 flex flex-col gap-4">
+        <div className="container mx-auto max-w-screen-2xl px-4 py-6 md:px-6 md:py-6 flex flex-col gap-4">
 
 
 

@@ -4,7 +4,7 @@ using Relation_IMS.Datas.Interfaces;
 namespace Relation_IMS.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class TodaySaleController : ControllerBase
     {
         private readonly ITodaySaleRepository _repository;

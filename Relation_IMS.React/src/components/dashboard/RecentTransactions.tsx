@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
 interface Order {
-  id: number;
-  customerId: number;
-  customer: {
-    name: string;
-    phone?: string;
+  Id: number;
+  CustomerId: number;
+  Customer: {
+    Name: string;
+    Phone?: string;
   } | null;
-  netAmount: number;
-  paymentStatus: number;
-  createdAt: string;
+  NetAmount: number;
+  PaymentStatus: number;
+  CreatedAt: string;
 }
 
 const RecentTransactions = () => {
@@ -26,7 +26,7 @@ const RecentTransactions = () => {
   const fetchRecentOrders = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/v1/orders', {
+      const response = await api.get('/Order', {
         params: { pageSize: 5 }
       });
       setOrders(response.data);
@@ -60,7 +60,7 @@ const RecentTransactions = () => {
   };
 
   const getInitials = (name: string): string => {
-    return name
+    return (name || '')
       .split(' ')
       .map(n => n[0])
       .join('')
@@ -116,11 +116,11 @@ const RecentTransactions = () => {
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-[#2a4032]">
               {orders.map((order, index) => {
-                const statusInfo = getStatusInfo(order.paymentStatus);
-                const customerName = order.customer?.name || 'Unknown Customer';
+                const statusInfo = getStatusInfo(order.PaymentStatus);
+                const customerName = order.Customer?.Name || 'Unknown Customer';
                 return (
-                  <tr key={order.id}>
-                    <td className="px-6 sm:px-8 py-4 sm:py-6 font-bold text-sm text-text-main dark:text-white">#ORD-{order.id}</td>
+                  <tr key={order.Id}>
+                    <td className="px-6 sm:px-8 py-4 sm:py-6 font-bold text-sm text-text-main dark:text-white">#ORD-{order.Id}</td>
                     <td className="px-6 sm:px-8 py-4 sm:py-6">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full ${getAvatarBg(index)} flex items-center justify-center text-[10px] font-bold`}>
@@ -129,7 +129,7 @@ const RecentTransactions = () => {
                         <span className="text-sm font-medium text-text-main dark:text-gray-200">{customerName}</span>
                       </div>
                     </td>
-                    <td className="px-6 sm:px-8 py-4 sm:py-6 font-bold text-sm text-text-main dark:text-white">{formatCurrency(order.netAmount)}</td>
+                    <td className="px-6 sm:px-8 py-4 sm:py-6 font-bold text-sm text-text-main dark:text-white">{formatCurrency(order.NetAmount)}</td>
                     <td className="px-6 sm:px-8 py-4 sm:py-6">
                       <span className={`px-3 py-1 ${statusInfo.style} text-[10px] font-extrabold uppercase rounded-full`}>
                         {statusInfo.text}

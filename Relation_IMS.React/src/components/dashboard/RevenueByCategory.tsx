@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
 interface RevenueCategory {
-  id: number;
-  categoryId: number;
-  categoryName: string;
-  totalRevenue: number;
-  totalQuantitySold: number;
-  periodType: number;
+  Id: number;
+  CategoryId: number;
+  CategoryName: string;
+  TotalRevenue: number;
+  TotalQuantitySold: number;
+  PeriodType: number;
 }
 
 const RevenueByCategory = () => {
@@ -34,13 +34,13 @@ const RevenueByCategory = () => {
 
   const getPercentage = (index: number): number => {
     if (categories.length === 0) return 0;
-    const maxRevenue = Math.max(...categories.map(c => c.totalRevenue));
+    const maxRevenue = Math.max(...categories.map(c => c.TotalRevenue));
     if (maxRevenue === 0) return 0;
-    return Math.round((categories[index].totalRevenue / maxRevenue) * 100);
+    return Math.round((categories[index].TotalRevenue / maxRevenue) * 100);
   };
 
   const getIcon = (categoryName: string): string => {
-    const name = categoryName.toLowerCase();
+    const name = (categoryName || '').toLowerCase();
     if (name.includes('shirt') || name.includes('top') || name.includes('polo')) return 'checkroom';
     if (name.includes('pant') || name.includes('jean') || name.includes('trouser') || name.includes('pants')) return 'checkroom';
     if (name.includes('shoe') || name.includes('sneaker') || name.includes('boot')) return 'footprint';
@@ -96,14 +96,14 @@ const RevenueByCategory = () => {
           {categories.slice(0, 10).map((cat, index) => {
             const colors = getColorClass(index);
             return (
-              <div key={cat.id} className="flex items-center gap-3 sm:gap-4">
+              <div key={cat.Id} className="flex items-center gap-3 sm:gap-4">
                 <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${colors.bg} flex items-center justify-center shrink-0`}>
-                  <span className={`material-symbols-outlined text-xl sm:text-2xl ${colors.text}`}>{getIcon(cat.categoryName)}</span>
+                  <span className={`material-symbols-outlined text-xl sm:text-2xl ${colors.text}`}>{getIcon(cat.CategoryName)}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between mb-1">
-                    <span className="text-sm font-bold text-text-main dark:text-gray-200 truncate">{cat.categoryName}</span>
-                    <span className="text-sm font-extrabold text-text-main dark:text-white whitespace-nowrap ml-2">{formatCurrency(cat.totalRevenue)}</span>
+                    <span className="text-sm font-bold text-text-main dark:text-gray-200 truncate">{cat.CategoryName}</span>
+                    <span className="text-sm font-extrabold text-text-main dark:text-white whitespace-nowrap ml-2">{formatCurrency(cat.TotalRevenue)}</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 dark:bg-[#203326] rounded-full">
                     <div className={`h-full ${colors.bar} rounded-full transition-all duration-700`} style={{ width: `${getPercentage(index)}%` }}></div>

@@ -7,7 +7,7 @@ using System.Text.Json;
 namespace Relation_IMS.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class TopSellingProductsController : ControllerBase
     {
         private readonly ITopSellingProductRepository _repository;
