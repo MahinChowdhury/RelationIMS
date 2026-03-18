@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface Order {
   Id: number;
@@ -15,6 +16,7 @@ interface Order {
 }
 
 const RecentTransactions = () => {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -40,13 +42,13 @@ const RecentTransactions = () => {
   const getStatusInfo = (status: number): { text: string; style: string } => {
     switch (status) {
       case 2: // Paid
-        return { text: 'Completed', style: 'bg-primary/10 text-primary' };
+        return { text: t.dashboard.completed, style: 'bg-primary/10 text-primary' };
       case 1: // Partial
-        return { text: 'Processing', style: 'bg-gray-200 dark:bg-[#2a4032] text-gray-600 dark:text-gray-300' };
+        return { text: t.dashboard.processing, style: 'bg-gray-200 dark:bg-[#2a4032] text-gray-600 dark:text-gray-300' };
       case 0: // Pending
-        return { text: 'Pending', style: 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' };
+        return { text: t.dashboard.pending, style: 'bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' };
       default:
-        return { text: 'Unknown', style: 'bg-gray-200 text-gray-600' };
+        return { text: t.dashboard.unknown, style: 'bg-gray-200 text-gray-600' };
     }
   };
 
@@ -86,12 +88,12 @@ const RecentTransactions = () => {
   return (
     <div className="col-span-12 xl:col-span-8 bg-white dark:bg-[#1a2e22] rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032] overflow-hidden">
       <div className="p-6 sm:p-8 flex justify-between items-center border-b border-gray-100 dark:border-[#2a4032]">
-        <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">Recent Transactions</h4>
+        <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">{t.dashboard.recentTransactions}</h4>
         <button 
           onClick={handleViewAll}
           className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
         >
-          View All <span className="material-symbols-outlined text-xs">arrow_forward</span>
+          {t.dashboard.viewAll} <span className="material-symbols-outlined text-xs">arrow_forward</span>
         </button>
       </div>
       
@@ -101,17 +103,17 @@ const RecentTransactions = () => {
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <p>No recent transactions found</p>
+          <p>{t.dashboard.noRecentTransactionsFound}</p>
         </div>
       ) : (
         <div className="overflow-y-auto max-h-[420px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
           <table className="w-full text-left min-w-[500px]">
             <thead className="bg-gray-50/50 dark:bg-[#203326]/50 sticky top-0 z-10">
               <tr>
-                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Order ID</th>
-                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Customer</th>
-                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Amount</th>
-                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Status</th>
+                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.dashboard.orderId}</th>
+                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.dashboard.customer}</th>
+                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.dashboard.amount}</th>
+                <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.dashboard.status}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-[#2a4032]">

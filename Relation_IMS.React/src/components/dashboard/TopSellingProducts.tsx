@@ -71,7 +71,7 @@ const TopSellingProducts = () => {
   return (
     <div className="col-span-12 lg:col-span-7 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
       <div className="flex justify-between items-center mb-8 sm:mb-10">
-        <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">Top Selling Products</h4>
+        <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">{t.dashboard.topSellingProducts}</h4>
         <select 
           className="text-xs font-bold border-none bg-gray-50 dark:bg-[#203326] dark:text-gray-300 px-4 py-2 rounded-full focus:ring-0 cursor-pointer"
           value={period}
@@ -96,7 +96,7 @@ const TopSellingProducts = () => {
             <div key={product.Id} className="space-y-2">
               <div className="flex justify-between text-sm font-bold text-text-main dark:text-gray-200">
                 <span className="truncate flex-1 mr-4">{product.ProductName}</span>
-                <span className={getTextColorClass(index)}>{product.TotalQuantitySold} Units</span>
+                  <span className={getTextColorClass(index)}>{product.TotalQuantitySold} {t.dashboard.units}</span>
               </div>
               <div className="w-full h-7 sm:h-8 bg-gray-50 dark:bg-[#203326] rounded-xl overflow-hidden">
                 <div 

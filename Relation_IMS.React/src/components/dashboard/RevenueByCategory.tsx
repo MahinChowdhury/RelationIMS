@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface RevenueCategory {
   Id: number;
@@ -11,6 +12,7 @@ interface RevenueCategory {
 }
 
 const RevenueByCategory = () => {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<RevenueCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +81,7 @@ const RevenueByCategory = () => {
   return (
     <div className="col-span-12 lg:col-span-5 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
       <div className="flex justify-between items-center mb-6 sm:mb-8">
-        <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">Revenue by Category</h4>
+        <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">{t.dashboard.revenueByCategory}</h4>
         <span className="material-symbols-outlined text-gray-300 dark:text-gray-600">bar_chart</span>
       </div>
       
@@ -89,7 +91,7 @@ const RevenueByCategory = () => {
         </div>
       ) : categories.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <p>No revenue data found</p>
+          <p>{t.dashboard.noRevenueDataFound}</p>
         </div>
       ) : (
         <div className="space-y-5 sm:space-y-6 overflow-y-auto max-h-[420px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">

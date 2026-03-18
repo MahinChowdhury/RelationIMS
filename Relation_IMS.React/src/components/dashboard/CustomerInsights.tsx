@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface CustomerInsightData {
   NewCustomerCount: number;
@@ -10,6 +11,7 @@ interface CustomerInsightData {
 }
 
 const CustomerInsights = () => {
+  const { t } = useLanguage();
   const [data, setData] = useState<CustomerInsightData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +39,8 @@ const CustomerInsights = () => {
       <div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-5 sm:mb-6">
           <div>
-            <h4 className="text-lg font-extrabold tracking-tight">Customer Insights</h4>
-            <p className="text-xs opacity-80 mt-1">All Time</p>
+            <h4 className="text-lg font-extrabold tracking-tight">{t.dashboard.customerInsights}</h4>
+            <p className="text-xs opacity-80 mt-1">{t.dashboard.allTime}</p>
           </div>
         </div>
         
@@ -50,7 +52,7 @@ const CustomerInsights = () => {
           <div className="space-y-6 sm:space-y-8">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold opacity-80 uppercase tracking-widest">Returning</span>
+                <span className="text-xs font-bold opacity-80 uppercase tracking-widest">{t.dashboard.returning}</span>
                 <span className="text-sm font-extrabold">{returningPercentage}%</span>
               </div>
               <div className="w-full h-1.5 bg-white/20 rounded-full">
@@ -59,11 +61,11 @@ const CustomerInsights = () => {
                   style={{ width: `${returningPercentage}%` }}
                 ></div>
               </div>
-              <p className="text-[10px] opacity-60 mt-1">{data?.ReturningCustomerCount || 0} customers</p>
+              <p className="text-[10px] opacity-60 mt-1">{data?.ReturningCustomerCount || 0} {t.dashboard.customers}</p>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold opacity-80 uppercase tracking-widest">New</span>
+                <span className="text-xs font-bold opacity-80 uppercase tracking-widest">{t.dashboard.new}</span>
                 <span className="text-sm font-extrabold">{newPercentage}%</span>
               </div>
               <div className="w-full h-1.5 bg-white/20 rounded-full">
@@ -72,7 +74,7 @@ const CustomerInsights = () => {
                   style={{ width: `${newPercentage}%` }}
                 ></div>
               </div>
-              <p className="text-[10px] opacity-60 mt-1">{data?.NewCustomerCount || 0} customers</p>
+              <p className="text-[10px] opacity-60 mt-1">{data?.NewCustomerCount || 0} {t.dashboard.customers}</p>
             </div>
           </div>
         )}

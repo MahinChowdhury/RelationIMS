@@ -1,13 +1,16 @@
+import { useLanguage } from '../../i18n/LanguageContext';
+
 const PaymentMethods = () => {
+  const { t } = useLanguage();
   const methods = [
-    { name: 'Mobile Banking', amount: '৳5,20,000', dotColor: 'bg-primary' },
-    { name: 'Cash', amount: '৳2,80,000', dotColor: 'bg-[#4e9767]' },
-    { name: 'Card', amount: '৳2,00,000', dotColor: 'bg-[#236c31]' },
+    { name: t.dashboard.mobileBanking, amount: '৳5,20,000', dotColor: 'bg-primary' },
+    { name: t.dashboard.cash, amount: '৳2,80,000', dotColor: 'bg-[#4e9767]' },
+    { name: t.dashboard.card, amount: '৳2,00,000', dotColor: 'bg-[#236c31]' },
   ];
 
   return (
     <div className="col-span-12 lg:col-span-4 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
-      <h4 className="text-lg sm:text-xl font-extrabold tracking-tight mb-6 sm:mb-8 text-center text-text-main dark:text-white">Payment Methods</h4>
+      <h4 className="text-lg sm:text-xl font-extrabold tracking-tight mb-6 sm:mb-8 text-center text-text-main dark:text-white">{t.dashboard.paymentMethods}</h4>
 
       {/* Donut Chart */}
       <div className="relative flex justify-center mb-8 sm:mb-10">

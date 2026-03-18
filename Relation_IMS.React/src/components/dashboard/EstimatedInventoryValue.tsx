@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface InventoryValueData {
   Id: number;
@@ -9,6 +10,7 @@ interface InventoryValueData {
 }
 
 const EstimatedInventoryValue = () => {
+  const { t } = useLanguage();
   const [data, setData] = useState<InventoryValueData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,10 +57,10 @@ const EstimatedInventoryValue = () => {
       ) : (
         <>
           <div>
-            <p className="text-xs font-medium opacity-60 uppercase tracking-widest mb-1">Estimated Value</p>
+            <p className="text-xs font-medium opacity-60 uppercase tracking-widest mb-1">{t.dashboard.estimatedValue}</p>
             <h4 className="text-2xl sm:text-3xl font-extrabold tracking-tighter">{formatCurrency(data?.TotalValue || 0)}</h4>
             <p className="text-[10px] text-primary mt-1 font-bold">
-              {growth >= 0 ? '+' : ''}{growth.toFixed(1)}% Inventory Growth
+              {growth >= 0 ? '+' : ''}{growth.toFixed(1)}% {t.dashboard.inventoryGrowth}
             </p>
           </div>
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/10 flex items-center justify-center">

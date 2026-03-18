@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface SalesCategory {
   Id: number;
@@ -11,6 +12,7 @@ interface SalesCategory {
 }
 
 const SalesByCategory = () => {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<SalesCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -89,7 +91,7 @@ const SalesByCategory = () => {
 
   return (
     <div className="col-span-12 lg:col-span-4 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
-      <h4 className="text-lg sm:text-xl font-extrabold tracking-tight mb-6 sm:mb-8 text-text-main dark:text-white">Sales by Category</h4>
+      <h4 className="text-lg sm:text-xl font-extrabold tracking-tight mb-6 sm:mb-8 text-text-main dark:text-white">{t.dashboard.salesByCategory}</h4>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -97,7 +99,7 @@ const SalesByCategory = () => {
         </div>
       ) : categories.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <p>No sales data found</p>
+          <p>{t.dashboard.noSalesDataFound}</p>
         </div>
       ) : (
         <>
@@ -115,7 +117,7 @@ const SalesByCategory = () => {
               >
                 <div className="text-center">
                   <p className="text-xl sm:text-2xl font-extrabold text-text-main dark:text-white">{formatNumber(totalUnits)}</p>
-                  <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">Total Units</p>
+                  <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{t.dashboard.totalUnits}</p>
                 </div>
               </div>
             </div>

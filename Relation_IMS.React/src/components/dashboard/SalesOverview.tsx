@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface SalesOverviewData {
   Id: number;
@@ -17,6 +18,7 @@ interface TodaySaleData {
 }
 
 const SalesOverview = () => {
+  const { t } = useLanguage();
   const [thisWeek, setThisWeek] = useState<SalesOverviewData | null>(null);
   const [thisMonth, setThisMonth] = useState<SalesOverviewData | null>(null);
   const [todaySale, setTodaySale] = useState<TodaySaleData | null>(null);
@@ -83,13 +85,13 @@ const SalesOverview = () => {
     <section>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-widest text-primary mb-1">Performance Hub</p>
-          <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">Sales Overview</h3>
+          <p className="text-xs font-extrabold uppercase tracking-widest text-primary mb-1">{t.dashboard.performanceHub}</p>
+          <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">{t.dashboard.salesOverview}</h3>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-gray-900 dark:bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-gray-800 dark:hover:bg-white/20 transition-colors">
-            Download Report
-          </button>
+                <button className="px-4 py-2 bg-gray-900 dark:bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-gray-800 dark:hover:bg-white/20 transition-colors">
+                  {t.dashboard.downloadReport}
+                </button>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -102,16 +104,16 @@ const SalesOverview = () => {
           ) : (
             <>
               <div className="relative z-10">
-                <p className="text-sm font-medium opacity-80 mb-2">Today Sales</p>
+                <p className="text-sm font-medium opacity-80 mb-2">{t.dashboard.todaySales}</p>
                 <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter mb-4 sm:mb-6">
                   {formatCurrency(todaySale?.TotalSales || 0)}
                 </h4>
                 <div className="flex items-center gap-2 text-xs font-bold py-1 px-3 bg-white/20 backdrop-blur-md rounded-full w-fit">
                   <span className="material-symbols-outlined text-[16px]">{getTrendIcon()}</span>
-                  <span>{getPercentageText()} from yesterday</span>
+                  <span>{getPercentageText()} {t.dashboard.fromYesterday}</span>
                 </div>
                 {todaySale && todaySale.OrderCount > 0 && (
-                  <p className="text-[10px] opacity-60 mt-2">{todaySale.OrderCount} order{todaySale.OrderCount !== 1 ? 's' : ''} today</p>
+                  <p className="text-[10px] opacity-60 mt-2">{todaySale.OrderCount} {todaySale.OrderCount !== 1 ? t.dashboard.orders : t.dashboard.orders} today</p>
                 )}
               </div>
               <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-[8rem] opacity-10 rotate-12" style={{ fontVariationSettings: "'FILL' 1" }}>payments</span>
@@ -128,7 +130,7 @@ const SalesOverview = () => {
           ) : (
             <>
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Week</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t.dashboard.thisWeek}</p>
                 <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">
                   {formatCurrency(thisWeek?.TotalRevenue || 0)}
                 </h4>
@@ -156,13 +158,13 @@ const SalesOverview = () => {
           ) : (
             <>
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">This Month</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t.dashboard.thisMonth}</p>
                 <h4 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">
                   {formatCurrency(thisMonth?.TotalRevenue || 0)}
                 </h4>
               </div>
               <div className="mt-6 flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-gray-400">Target: ৳4,00,000</span>
+                <span className="text-gray-500 dark:text-gray-400">{t.dashboard.target}: ৳4,00,000</span>
                 <span className="font-bold text-primary">{getMonthProgress()}%</span>
               </div>
               <div className="mt-2 w-full h-2 bg-gray-100 dark:bg-[#2a4032] rounded-full overflow-hidden">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface TopCustomer {
   Id: number;
@@ -12,6 +13,7 @@ interface TopCustomer {
 }
 
 const TopCustomers = () => {
+  const { t } = useLanguage();
   const [customers, setCustomers] = useState<TopCustomer[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +71,7 @@ const TopCustomers = () => {
 
   return (
     <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
-      <h4 className="text-lg font-extrabold tracking-tight mb-5 sm:mb-6 text-text-main dark:text-white">Top Customers</h4>
+      <h4 className="text-lg font-extrabold tracking-tight mb-5 sm:mb-6 text-text-main dark:text-white">{t.dashboard.topCustomers}</h4>
       
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -77,7 +79,7 @@ const TopCustomers = () => {
         </div>
       ) : customers.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <p>No customer data found</p>
+          <p>{t.dashboard.noCustomerDataFound}</p>
         </div>
       ) : (
         <div className="space-y-5 sm:space-y-6 overflow-y-auto max-h-[420px] pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
@@ -97,7 +99,7 @@ const TopCustomers = () => {
                 )}
                 <div>
                   <p className="text-sm font-bold text-text-main dark:text-white">{customer.CustomerName}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{customer.TotalPurchases} Purchases</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">{customer.TotalPurchases} {t.dashboard.purchases}</p>
                 </div>
               </div>
               <p className="text-sm font-extrabold text-primary">{formatCurrency(customer.TotalAmount)}</p>
