@@ -72,30 +72,41 @@ export default function Arrangement() {
     };
 
     return (
-        <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 font-display text-text-main dark:text-gray-100">
+        <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-6 font-display text-text-main dark:text-gray-100">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                {/* LEFT: Title + Subtitle */}
                 <div>
                     <h1 className="text-3xl md:text-4xl font-black text-text-main dark:text-white tracking-tight flex items-center gap-3">
                         <span className="material-symbols-outlined text-4xl text-primary">conveyor_belt</span>
                         {t.arrangement.orderArrangement}
                     </h1>
-                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">{t.arrangement.subtitle}</p>
+                    <p className="text-text-secondary dark:text-gray-400 text-sm md:text-base mt-2">
+                        {t.arrangement.subtitle}
+                    </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    {isLive && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 rounded-full text-xs font-medium text-green-700 dark:text-green-400">
-                            <span className="size-2 bg-green-500 rounded-full animate-pulse"></span>
-                            Live
-                        </div>
-                    )}
-                    <button
-                        onClick={fetchOrders}
-                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e2e23] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
-                    >
-                        <span className="material-symbols-outlined text-primary">refresh</span>
-                        {t.common.refresh || 'Refresh'}
-                    </button>
+
+                {/* RIGHT: Wrapper */}
+                <div className="flex flex-col items-end gap-2 md:gap-3 md:pr-36">
+                    
+                    {/* Inner row (Live + Refresh) */}
+                    <div className="flex items-center gap-3">
+                        {isLive && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 rounded-full text-xs font-medium text-green-700 dark:text-green-400">
+                                <span className="size-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Live
+                            </div>
+                        )}
+
+                        <button
+                            onClick={fetchOrders}
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e2e23] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
+                        >
+                            <span className="material-symbols-outlined text-primary">refresh</span>
+                            {t.common.refresh || 'Refresh'}
+                        </button>
+                    </div>
+
                 </div>
             </div>
 

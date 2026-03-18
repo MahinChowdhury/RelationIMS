@@ -271,7 +271,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                         );
                                     })}
                                 </div>
-                                {selectedSizeIds.length === 0 && <p className="text-xs text-red-400 mt-1">Please select at least one size.</p>}
+                                {selectedSizeIds.length === 0 && <p className="text-xs text-red-400 dark:text-red-400 mt-1">{t.orders.selectAtLeastOneSize}</p>}
                             </div>
                         )}
 
@@ -284,33 +284,33 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                     >
-                                        <span className="material-symbols-outlined text-sm">remove</span>
+                                        <span className="material-symbols-outlined text-sm dark:text-gray-400">remove</span>
                                     </button>
                                     <input
                                         type="number"
                                         onFocus={(e) => e.target.select()}
                                         value={quantity}
                                         onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                        className="w-full text-center py-2 bg-white dark:bg-gray-900 border-x border-gray-300 dark:border-gray-600 focus:outline-none"
+                                        className="w-full text-center py-2 bg-white dark:bg-gray-900 border-x border-gray-300 dark:border-gray-600 focus:outline-none text-gray-900 dark:text-white"
                                     />
                                     <button
                                         onClick={() => setQuantity(quantity + 1)}
                                         className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                     >
-                                        <span className="material-symbols-outlined text-sm">add</span>
+                                        <span className="material-symbols-outlined text-sm dark:text-gray-400">add</span>
                                     </button>
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.unitPrice}</label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</span>
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">৳</span>
                                     <input
                                         type="number"
                                         onFocus={(e) => e.target.select()}
                                         value={price}
                                         onChange={(e) => setPrice(Math.max(0, parseFloat(e.target.value) || 0))}
-                                        className="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:border-primary focus:ring-primary"
+                                        className="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:border-primary focus:ring-primary text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Models;
 using System.Security.Claims;
@@ -6,7 +6,7 @@ using System.Security.Claims;
 namespace Relation_IMS.Controllers.JWTControllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [Authorize] // Requires the caller to be authenticated with a valid JWT token for all actions
     public class ProtectedController : ControllerBase
     {

@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -12,8 +14,10 @@ using Relation_IMS.Entities;
 using Relation_IMS.Factory;
 using Relation_IMS.Hubs;
 using Relation_IMS.Services;
-using Relation_IMS.Services.MinIOServices;
+using Relation_IMS.Services.HangfireServices;
 using Relation_IMS.Services.JWTServices;
+using Relation_IMS.Services.MinIOServices;
+using Relation_IMS.Services.OtpServices;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
@@ -82,7 +86,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // Redis Distributed Cache
 var redisConnString = builder.Configuration["Redis:ConnectionString"]!;
 var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(redisConnString, true);
-redisOptions.AbortOnConnectFail = false;
+redisOptions.AbortOnConnectFail = false;   // Don't crash if Redis is down
+redisOptions.ConnectTimeout = 2000;        // Fail fast: 2s connect timeout (default 5s)
+redisOptions.SyncTimeout = 1000;           // Fail fast: 1s sync timeout (default 5s)
+redisOptions.AsyncTimeout = 1000;          // Fail fast: 1s async timeout (default 5s)
+redisOptions.ConnectRetry = 1;             // Only retry once on initial connect
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -90,7 +98,19 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "RelationIMS:";
 });
 builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(sp =>
-    StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions));
+{
+    try
+    {
+        return StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions);
+    }
+    catch (Exception ex)
+    {
+        var logger = sp.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning(ex, "Redis connection failed. Caching will be unavailable.");
+        // Return a connection that will gracefully fail on operations
+        return StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions);
+    }
+});
 builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 
 builder.Services.AddSingleton<IClientCacheService, ClientCacheService>();
@@ -122,6 +142,14 @@ builder.Services.AddScoped<ProductItemsBuilderFactory>();
 builder.Services.AddScoped<IProductItemRepository, ProductItemRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IShareCatalogRepository, ShareCatalogRepository>();
+builder.Services.AddScoped<ITopSellingProductRepository, TopSellingProductRepository>();
+builder.Services.AddScoped<IRevenueByCategoryRepository, RevenueByCategoryRepository>();
+builder.Services.AddScoped<ITopCustomerRepository, TopCustomerRepository>();
+builder.Services.AddScoped<ISalesOverviewRepository, SalesOverviewRepository>();
+builder.Services.AddScoped<IStaffPerformanceRepository, StaffPerformanceRepository>();
+builder.Services.AddScoped<ICustomerInsightRepository, CustomerInsightRepository>();
+builder.Services.AddScoped<ITodaySaleRepository, TodaySaleRepository>();
+builder.Services.AddScoped<IInventoryValueRepository, InventoryValueRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 
 // ============================================
@@ -237,6 +265,34 @@ builder.Services.AddHealthChecks()
         tags: new[] { "cache", "redis" });
 
 // ============================================
+// Hangfire (Background Jobs)
+// ============================================
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
+    {
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }));
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.ServerName = "RelationIMS-JobServer";
+});
+
+// Register OTP Service
+builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<PaymentReminderJob>();
+builder.Services.AddScoped<TopSellingProductsJob>();
+builder.Services.AddScoped<RevenueByCategoryJob>();
+builder.Services.AddScoped<TopCustomersJob>();
+builder.Services.AddScoped<SalesOverviewJob>();
+builder.Services.AddScoped<InventoryValueJob>();
+builder.Services.AddScoped<StaffPerformanceJob>();
+builder.Services.AddScoped<CustomerInsightJob>();
+
+// ============================================
 // Response Compression
 // ============================================
 builder.Services.AddResponseCompression(options =>
@@ -316,6 +372,67 @@ app.UseRateLimiter();
 app.UseCors("AllowClientApps");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ============================================
+// Hangfire Dashboard (for debugging)
+// ============================================
+app.MapHangfireDashboard("/hangfire", new Hangfire.DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthFilter() }
+});
+
+// ============================================
+// Recurring Jobs
+// ============================================
+var recurringJobOptions = new RecurringJobOptions();
+
+RecurringJob.AddOrUpdate<PaymentReminderJob>(
+    "payment-reminder-job",
+    job => job.ProcessPaymentReminders(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<TopSellingProductsJob>(
+    "top-selling-products-job",
+    job => job.UpdateTopSellingProducts(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<RevenueByCategoryJob>(
+    "revenue-by-category-job",
+    job => job.UpdateRevenueByCategory(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<TopCustomersJob>(
+    "top-customers-job",
+    job => job.UpdateTopCustomers(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<SalesOverviewJob>(
+    "sales-overview-job",
+    job => job.UpdateSalesOverview(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<InventoryValueJob>(
+    "inventory-value-job",
+    job => job.UpdateInventoryValue(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<StaffPerformanceJob>(
+    "staff-performance-job",
+    job => job.UpdateStaffPerformance(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
+
+RecurringJob.AddOrUpdate<CustomerInsightJob>(
+    "customer-insight-job",
+    job => job.UpdateCustomerInsight(),
+    "0 0 * * *", // Cron expression: every day at midnight UTC
+    recurringJobOptions);
 
 // Health check endpoint (no auth, no rate limit)
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))

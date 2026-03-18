@@ -42,6 +42,10 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:5000',
           changeOrigin: true,
         },
+        '/product-images': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
       },
     },
     

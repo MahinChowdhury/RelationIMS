@@ -77,12 +77,13 @@ services:
   # PostgreSQL
   # =========================================
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: relationims-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

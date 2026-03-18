@@ -5,11 +5,13 @@ import api from '../../services/api';
 import type { InventoryBasicDTO, TransferProductItemsDTO, ScannedItem } from '../../types';
 import InventoryTransferScanner from '../../components/inventory/InventoryTransferScanner';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 
 
 const InventoryTransfer = () => {
     const { t } = useLanguage();
+    const { user } = useAuth();
     // const navigate = useNavigate();
     const [inventories, setInventories] = useState<InventoryBasicDTO[]>([]);
     const [sourceId, setSourceId] = useState<number | ''>('');
@@ -182,7 +184,7 @@ const InventoryTransfer = () => {
                 ProductItemCode: codesToTransfer, // Send as List<string> to match backend DTO
                 SourceInventoryId: Number(sourceId),
                 DestinationInventoryId: Number(destinationId),
-                UserId: 1 // TODO: getting user id from auth context
+                UserId: user?.Id || 0
             };
 
             const response = await api.post('/Inventory/transfer', payload);

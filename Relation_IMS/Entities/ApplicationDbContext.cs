@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models;
+using Relation_IMS.Models.Analytics;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.InventoryModels;
 using Relation_IMS.Models.JWTModels;
@@ -150,4 +151,13 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<SalaryRecord> SalaryRecords { get; set; }
     public DbSet<ShareCatalog> ShareCatalogs { get; set; }
+    public DbSet<TopSellingProduct> TopSellingProducts { get; set; }
+    public DbSet<RevenueByCategory> RevenueByCategories { get; set; }
+    public DbSet<TopCustomer> TopCustomers { get; set; }
+    public DbSet<SalesOverview> SalesOverviews { get; set; }
+    public DbSet<InventoryValue> InventoryValues { get; set; }
+    public DbSet<StaffPerformanceMonthly> StaffPerformanceMonthlies { get; set; }
+    public DbSet<CustomerInsight> CustomerInsights { get; set; }
+    public DbSet<CustomerInsightAllTime> CustomerInsightsAllTime { get; set; }
+    public DbSet<TodaySale> TodaySales { get; set; }
 }

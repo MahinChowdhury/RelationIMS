@@ -14,12 +14,18 @@ namespace Relation_IMS.Datas.Repositories
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly Relation_IMS.Services.IConcurrencyLockService _lockService;
+        private readonly ITodaySaleRepository _todaySaleRepository;
 
-        public OrderRepository(ApplicationDbContext context, IMapper mapper, Relation_IMS.Services.IConcurrencyLockService lockService)
+        public OrderRepository(
+            ApplicationDbContext context, 
+            IMapper mapper, 
+            Relation_IMS.Services.IConcurrencyLockService lockService,
+            ITodaySaleRepository todaySaleRepository)
         {
             _context = context;
             _mapper = mapper;
             _lockService = lockService;
+            _todaySaleRepository = todaySaleRepository;
         }
 
         public async Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto)
@@ -52,6 +58,12 @@ namespace Relation_IMS.Datas.Repositories
 
             await _context.Orders.AddAsync(newOrder);
             await _context.SaveChangesAsync();
+
+            // Update Today's Sale if payment is completed
+            if (newOrder.PaymentStatus == PaymentStatus.Paid)
+            {
+                await _todaySaleRepository.IncrementTodaySaleAsync(DateTime.UtcNow, newOrder.NetAmount);
+            }
 
             // Reserve inventory for each order item with concurrency locks
             if (newOrder.OrderItems != null && newOrder.OrderItems.Any())
@@ -113,10 +125,20 @@ namespace Relation_IMS.Datas.Repositories
             return order;
         }
 
-        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20)
+        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null)
         {
 
             var query = _context.Orders.AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Date >= startDate.Value.Date);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt.Date <= endDate.Value.Date);
+            }
 
             var orders = await query
                 .OrderByDescending(o => o.Id)
@@ -242,6 +264,9 @@ namespace Relation_IMS.Datas.Repositories
             // Update Payments if Provided
             if (updateDto.Payments != null)
             {
+                // Store old payment status
+                var oldPaymentStatus = order.PaymentStatus;
+
                 // Remove existing payments
                 _context.OrderPayments.RemoveRange(order.Payments!);
 
@@ -267,6 +292,12 @@ namespace Relation_IMS.Datas.Repositories
                 else
                 {
                     order.PaymentStatus = PaymentStatus.Pending;
+                }
+
+                // Update Today's Sale if payment status changed to Paid
+                if (oldPaymentStatus != PaymentStatus.Paid && order.PaymentStatus == PaymentStatus.Paid)
+                {
+                    await _todaySaleRepository.IncrementTodaySaleAsync(DateTime.UtcNow, order.NetAmount);
                 }
             }
 

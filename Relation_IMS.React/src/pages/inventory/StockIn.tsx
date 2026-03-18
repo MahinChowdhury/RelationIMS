@@ -320,7 +320,7 @@ export default function StockIn() {
         if (!newStock.color || !newStock.size || newStock.quantity < 0) return;
         const exists = stockItems.find(s => s.color === newStock.color && s.size === newStock.size);
         if (exists) {
-            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: newStock.quantity } : s));
+            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: s.quantity + newStock.quantity } : s));
         } else {
             setStockItems([...stockItems, { ...newStock }]);
         }
@@ -454,16 +454,24 @@ export default function StockIn() {
         const existsInProduct = foundProduct.Variants?.find((v: any) => v.ProductColorId === newVariant.colorId && v.ProductSizeId === newVariant.sizeId);
         const existsInBuffer = newVariantsToCreate.find(v => v.colorId === newVariant.colorId && v.sizeId === newVariant.sizeId);
 
-        if (existsInProduct || existsInBuffer) {
-            alert(t.inventory.variantAlreadyExists);
-            return;
+        if (existsInBuffer) {
+            setNewVariantsToCreate(prev => prev.map(v => 
+                v.colorId === newVariant.colorId && v.sizeId === newVariant.sizeId 
+                    ? { ...v, quantity: v.quantity + newVariant.quantity } 
+                    : v
+            ));
+        } else if (existsInProduct) {
+            setAddStockQuantities(prev => ({
+                ...prev,
+                [existsInProduct.Id]: (prev[existsInProduct.Id] || 0) + newVariant.quantity
+            }));
+        } else {
+            setNewVariantsToCreate(prev => [...prev, {
+                ...newVariant,
+                colorName: color?.name,
+                sizeName: size?.name
+            }]);
         }
-
-        setNewVariantsToCreate(prev => [...prev, {
-            ...newVariant,
-            colorName: color?.name,
-            sizeName: size?.name
-        }]);
         setNewVariant({ colorId: 0, sizeId: 0, quantity: 1 });
     };
 

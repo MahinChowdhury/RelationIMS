@@ -10,6 +10,7 @@ import RecentTransactions from '../../components/dashboard/RecentTransactions';
 import SalesByCategory from '../../components/dashboard/SalesByCategory';
 import TopCustomers from '../../components/dashboard/TopCustomers';
 import ProfitAnalysis from '../../components/dashboard/ProfitAnalysis';
+import EstimatedInventoryValue from '../../components/dashboard/EstimatedInventoryValue';
 
 const Dashboard = () => {
   return (
@@ -17,35 +18,40 @@ const Dashboard = () => {
       {/* Sales Overview (Hero Section) */}
       <SalesOverview />
 
-      {/* Second Row: Top Selling Products + Low Stock Alerts */}
+      {/* Second Row: Recent Transactions + Payment Methods */}
+      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+        <RecentTransactions />
+        <PaymentMethods />
+      </div>
+
+      {/* Third Row: Top Selling Products + Low Stock Alerts */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <TopSellingProducts />
         <LowStockAlerts />
       </div>
 
-      {/* Third Row: Revenue by Category + Monthly Growth */}
+      {/* Fourth Row: Revenue by Category + Monthly Growth */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <RevenueByCategory />
         <MonthlyGrowthTrend />
       </div>
 
-      {/* Fourth Row: Payment Methods + Staff Performance + Customer Insights */}
+      {/* Fifth Row: Staff Performance + Customer Insights */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
-        <PaymentMethods />
         <StaffPerformance />
-        <CustomerInsights />
-      </div>
-
-      {/* Fifth Row: Recent Transactions + Sales by Category */}
-      <div className="grid grid-cols-12 gap-4 sm:gap-6">
-        <RecentTransactions />
-        <SalesByCategory />
-      </div>
-
-      {/* Sixth Row: Top Customers + Profit Analysis */}
-      <div className="grid grid-cols-12 gap-4 sm:gap-6 pb-6 sm:pb-8 lg:pb-12">
         <TopCustomers />
+      </div>
+
+      {/* Sixth Row: Sales by Category + Top Customers */}
+      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+        <SalesByCategory />
         <ProfitAnalysis />
+      </div>
+
+      {/* Seventh Row: Estimated Inventory Value + Profit Analysis */}
+      <div className="grid grid-cols-12 gap-4 sm:gap-6 pb-6 sm:pb-8 lg:pb-12">
+        <EstimatedInventoryValue />
+        <CustomerInsights />
       </div>
     </div>
   );

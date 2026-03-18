@@ -30,7 +30,8 @@ export default function BottomNav() {
 
     return (
         <>
-            <nav className="fixed bottom-0 left-0 right-0 glass-nav px-1 pt-3 pb-8 flex items-center justify-between z-50 lg:hidden">
+            <nav className="fixed bottom-0 left-0 right-0 glass-nav px-1 pt-3 pb-8 flex items-center justify-between z-50 lg:hidden"
+                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <NavLink
                 to="/dashboard"
                 className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
@@ -77,6 +78,18 @@ export default function BottomNav() {
             </div>
 
             <NavLink
+                to="/arrangement"
+                className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
+            >
+                <span className={`material-symbols-outlined text-[24px] ${isActive('/arrangement') ? 'active-icon text-primary' : 'text-text-secondary'}`}>
+                    conveyor_belt
+                </span>
+                <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/arrangement') ? 'text-primary' : 'text-text-secondary'}`}>
+                    {t.nav.arrangement}
+                </span>
+            </NavLink>
+
+            <NavLink
                 to="/customers"
                 className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
             >
@@ -100,17 +113,6 @@ export default function BottomNav() {
                 </span>
             </NavLink>
 
-            <NavLink
-                to="/accounts"
-                className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
-            >
-                <span className={`material-symbols-outlined text-[24px] ${isActive('/accounts') ? 'active-icon text-primary' : 'text-text-secondary'}`}>
-                    leaderboard
-                </span>
-                <span className={`text-[9px] font-bold tracking-tight truncate w-full text-center ${isActive('/accounts') ? 'text-primary' : 'text-text-secondary'}`}>
-                    {t.nav.accounts}
-                </span>
-            </NavLink>
         </nav>
 
         {isScanning && (

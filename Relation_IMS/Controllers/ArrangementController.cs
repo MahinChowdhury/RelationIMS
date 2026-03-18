@@ -197,7 +197,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost("finalize/{orderId}")]
-        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory", "product")]
+        [InvalidateCache("arrangement", "order", "orderitem", "productitem", "inventory", "product", "customer")]
         public async Task<IActionResult> FinalizeOrder(int orderId)
         {
             using (await _lockService.AcquireLockAsync($"order:{orderId}"))
