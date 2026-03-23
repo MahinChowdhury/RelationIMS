@@ -137,9 +137,10 @@ services:
     volumes:
       - minio_data:/data
       - ./minio/cors.json:/etc/minio/cors.json:ro
+    ports:
+      - "9001:9001"
     expose:
       - "9000"
-      - "9001"
     restart: unless-stopped
     networks:
       - relationims-network
@@ -176,19 +177,13 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'True'
     depends_on:
       postgres:
         condition: service_healthy
-    profiles:
-      - tools
     networks:
       - relationims-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   postgres_data:
