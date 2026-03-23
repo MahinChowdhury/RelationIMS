@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Datas.Repositories;
 using Relation_IMS.Dtos.ProductDtos;
@@ -6,6 +6,7 @@ using Relation_IMS.Filters;
 using Relation_IMS.Models;
 using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Services;
+using Finbuckle.MultiTenant;
 
 namespace Relation_IMS.Controllers
 {
@@ -120,7 +121,9 @@ namespace Relation_IMS.Controllers
 
                     if (imagesToUpload.Count > 0)
                     {
-                        await channel.Writer.WriteAsync(new Relation_IMS.Services.ProductImageUploadTask(created.Id, imagesToUpload));
+                        var tenantInfo = HttpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo;
+                        var tenantId = tenantInfo?.Identifier ?? "RelationIms";
+                        await channel.Writer.WriteAsync(new Relation_IMS.Services.ProductImageUploadTask(created.Id, imagesToUpload, tenantId));
                     }
                 }
 

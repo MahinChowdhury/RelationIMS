@@ -10,14 +10,14 @@ namespace Relation_IMS.Services
     public class InventoryValueJob
     {
         private readonly ILogger<InventoryValueJob> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public InventoryValueJob(
             ILogger<InventoryValueJob> logger,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 600)]
@@ -27,11 +27,11 @@ namespace Relation_IMS.Services
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                await UpdateCurrentValueAsync(context);
-                await UpdateLastMonthValueAsync(context);
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
+                {
+                    await UpdateCurrentValueAsync(context);
+                    await UpdateLastMonthValueAsync(context);
+                });
 
                 _logger.LogInformation("Inventory Value Job completed successfully");
             }

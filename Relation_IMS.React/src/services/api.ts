@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAccessToken, getRefreshToken, setTokens, clearTokens, type AuthResponse } from './authService';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens, getTenant, type AuthResponse } from './authService';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051/api/v1';
 //export const API_BASE_URL = 'http://localhost:5051/api/v1';
@@ -13,13 +13,19 @@ export const api = axios.create({
     withCredentials: true,
 });
 
-// --- Request Interceptor: attach Authorization header ---
+// --- Request Interceptor: attach Authorization and Tenant headers ---
 api.interceptors.request.use(
     (config) => {
         const token = getAccessToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        const tenant = getTenant();
+        if (tenant) {
+            config.headers['__tenant__'] = tenant;
+        }
+        
         return config;
     },
     (error) => Promise.reject(error)

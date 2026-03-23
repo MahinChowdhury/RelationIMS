@@ -196,11 +196,11 @@ export default function CustomerDetailsPage() {
                         </span>
                     </div>
                     <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
-                        Customer ID: #CUST-{customer.Id.toString().padStart(4, '0')} • Member since {formatDate(customer.CreatedDate)}
+                        Customer ID: #CUST-{customer.Id.toString().padStart(4, '0')} Ã¢â‚¬Â¢ Member since {formatDate(customer.CreatedDate)}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-all shadow-sm">
+                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-200 dark:hover:bg-white/5 transition-all shadow-sm">
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                         Edit Profile
                     </button>
@@ -213,7 +213,7 @@ export default function CustomerDetailsPage() {
                 {/* Left Column: Profile & Contact */}
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     {/* Profile Card */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] overflow-hidden">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] overflow-hidden">
                         <div className="relative h-32 w-full bg-gradient-to-r from-green-50 to-emerald-100 dark:from-[#112116] dark:to-[#1a2e22]"></div>
                         <div className="px-6 pb-6">
                             <div className="relative -mt-12 mb-4">
@@ -226,22 +226,22 @@ export default function CustomerDetailsPage() {
                             <p className="text-sm text-text-secondary dark:text-gray-400 mb-6">{getCustomerStatus()}</p>
 
                             <div className="grid grid-cols-2 gap-3 mb-6">
-                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-green-500 text-white text-sm font-bold rounded-lg shadow-md shadow-green-500/20 transition-all w-full">
+                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-green-500 text-white text-sm font-bold rounded-lg shadow-md shadow-primary/20 transition-all w-full">
                                     <span className="material-symbols-outlined text-[18px]">call</span>
                                     Call
                                 </button>
-                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#112116] dark:border-gray-700 dark:text-gray-200 dark:hover:bg-white/5 transition-all w-full">
+                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-gray-200 dark:hover:bg-white/5 transition-all w-full">
                                     <span className="material-symbols-outlined text-[18px]">mail</span>
                                     Message
                                 </button>
                             </div>
 
-                            <hr className="border-gray-100 dark:border-[#2a4032] mb-6" />
+                            <hr className="border-gray-100 dark:border-[var(--color-surface-dark-border)] mb-6" />
 
                             <div className="flex flex-col gap-4">
 
                                 <div className="flex items-start gap-3">
-                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] text-gray-500">
                                         <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
                                     </div>
                                     <div>
@@ -250,7 +250,7 @@ export default function CustomerDetailsPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
-                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] text-gray-500">
                                         <span className="material-symbols-outlined text-[20px]">location_on</span>
                                     </div>
                                     <div>
@@ -261,7 +261,7 @@ export default function CustomerDetailsPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
-                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] text-gray-500">
                                         <span className="material-symbols-outlined text-[20px]">mail</span>
                                     </div>
                                     <div className="overflow-hidden">
@@ -270,7 +270,7 @@ export default function CustomerDetailsPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
-                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[#112116] text-gray-500">
+                                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] text-gray-500">
                                         <span className="material-symbols-outlined text-[20px]">mail</span>
                                     </div>
                                     <div className="overflow-hidden">
@@ -283,7 +283,7 @@ export default function CustomerDetailsPage() {
                     </div>
 
                     {/* Internal Notes (Placeholder) */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-5">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-5">
                         <h3 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-[18px]">sticky_note_2</span>
                             Internal Notes
@@ -305,37 +305,37 @@ export default function CustomerDetailsPage() {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Total Purchases</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">৳{totalSpent.toFixed(2)}</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">Ã Â§Â³{totalSpent.toFixed(2)}</p>
                             </div>
                             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary dark:bg-primary/20">
                                 <span className="material-symbols-outlined">shopping_bag</span>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between relative overflow-hidden">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between relative overflow-hidden">
                             <div className={`absolute right-0 top-0 w-1 h-full ${totalDue > 0 ? 'bg-red-500' : 'bg-green-500'}`}></div>
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Total Due</p>
                                 <p className={`text-2xl font-black ${totalDue > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                    ৳{totalDue.toFixed(2)}
+                                    Ã Â§Â³{totalDue.toFixed(2)}
                                 </p>
                             </div>
                             <div className={`size-10 rounded-full flex items-center justify-center ${totalDue > 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
                                 <span className="material-symbols-outlined">account_balance_wallet</span>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Current Balance</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">৳{customer.Balance?.toFixed(2) || '0.00'}</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">Ã Â§Â³{customer.Balance?.toFixed(2) || '0.00'}</p>
                             </div>
                             <div className="size-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 dark:bg-green-900/20">
                                 <span className="material-symbols-outlined">account_balance_wallet</span>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[#2a4032] flex items-center justify-between">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Last Order</p>
                                 <p className="text-2xl font-black text-text-main dark:text-white">{lastOrderDate}</p>
@@ -347,8 +347,8 @@ export default function CustomerDetailsPage() {
                     </div>
 
                     {/* Recent Orders Table */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] flex-1">
-                        <div className="p-6 border-b border-gray-100 dark:border-[#2a4032] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex-1">
+                        <div className="p-6 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">receipt_long</span>
                                 Recent Orders
@@ -390,7 +390,7 @@ export default function CustomerDetailsPage() {
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                                    <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] dark:text-gray-400">
+                                    <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:text-gray-400">
                                         <tr>
                                             <th className="px-6 py-4 font-bold" scope="col">Order ID</th>
                                             <th className="px-6 py-4 font-bold" scope="col">Date</th>
@@ -401,14 +401,14 @@ export default function CustomerDetailsPage() {
                                             <th className="px-6 py-4 font-bold text-center" scope="col">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#1a2e22]">
+                                    <tbody className="bg-white dark:bg-[var(--color-surface-dark-card)]">
                                         {orders.map((order, index) => {
                                             const isLastElement = orders.length === index + 1;
                                             return (
                                                 <tr
                                                     key={order.Id}
                                                     ref={isLastElement ? lastOrderElementRef : null}
-                                                    className="border-b dark:border-[#2a4032] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                                                    className="border-b dark:border-[var(--color-surface-dark-border)] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                                                 >
                                                     <td className="px-6 py-4 font-medium text-primary">#ORD-{order.Id}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-text-secondary">{formatFullDate(order.CreatedAt)}</td>
@@ -418,7 +418,7 @@ export default function CustomerDetailsPage() {
                                                     <td className="px-6 py-4 font-medium text-right text-red-500">
                                                         {(order.Discount || 0) > 0 ? `-${order.Discount.toFixed(2)}` : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 font-bold text-right">৳{order.NetAmount.toFixed(2)}</td>
+                                                    <td className="px-6 py-4 font-bold text-right">Ã Â§Â³{order.NetAmount.toFixed(2)}</td>
                                                     <td className="px-6 py-4 text-center">
                                                         <button
                                                             onClick={() => navigate(`/orders/${order.Id}`)}
@@ -437,7 +437,7 @@ export default function CustomerDetailsPage() {
                         )}
 
                         {loadingMore && (
-                            <div className="p-4 border-t border-gray-100 dark:border-[#2a4032] flex justify-center">
+                            <div className="p-4 border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] flex justify-center">
                                 <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-gray-200"></div>
                             </div>
                         )}

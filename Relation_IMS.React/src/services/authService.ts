@@ -1,10 +1,12 @@
 import api from './api';
+import { applyTenantTheme } from './tenantTheme';
 
 const CLIENT_ID = 'client-app-one';
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
+const TENANT_KEY = 'tenantIdentifier';
 
 // --- Token Storage Helpers ---
 
@@ -24,6 +26,21 @@ export function setTokens(accessToken: string, refreshToken: string): void {
 export function clearTokens(): void {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    clearTenant();
+}
+
+// --- Tenant Storage Helpers ---
+
+export function getTenant(): string | null {
+    return localStorage.getItem(TENANT_KEY);
+}
+
+export function setTenant(tenantIdentifier: string): void {
+    localStorage.setItem(TENANT_KEY, tenantIdentifier);
+}
+
+export function clearTenant(): void {
+    localStorage.removeItem(TENANT_KEY);
 }
 
 // --- Auth Response Type ---
@@ -46,7 +63,9 @@ export interface UserInfo {
 
 // --- API Calls ---
 
-export async function loginApi(phoneNumber: string, password: string): Promise<AuthResponse> {
+export async function loginApi(phoneNumber: string, password: string, tenantId: string): Promise<AuthResponse> {
+    setTenant(tenantId);
+    applyTenantTheme(tenantId);
     const res = await api.post<AuthResponse>('/auth/login', {
         PhoneNumber: phoneNumber,
         Password: password,
@@ -59,8 +78,11 @@ export async function registerApi(
     firstname: string,
     lastname: string,
     phoneNumber: string,
-    password: string
+    password: string,
+    tenantId: string
 ): Promise<void> {
+    setTenant(tenantId);
+    applyTenantTheme(tenantId);
     await api.post('/auth/register', {
         Firstname: firstname,
         Lastname: lastname,

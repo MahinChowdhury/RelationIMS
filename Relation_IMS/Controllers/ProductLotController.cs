@@ -7,6 +7,7 @@ using Relation_IMS.Models.ProductModels;
 using Relation_IMS.Models.InventoryModels;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Services;
+using Finbuckle.MultiTenant;
 
 namespace Relation_IMS.Controllers
 {
@@ -151,7 +152,9 @@ namespace Relation_IMS.Controllers
 
                     if (imagesToUpload.Count > 0)
                     {
-                        await channel.Writer.WriteAsync(new Relation_IMS.Services.ProductImageUploadTask(product.Id, imagesToUpload));
+                        var tenantInfo = HttpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo;
+                        var tenantId = tenantInfo?.Identifier ?? "RelationIms";
+                        await channel.Writer.WriteAsync(new Relation_IMS.Services.ProductImageUploadTask(product.Id, imagesToUpload, tenantId));
                     }
                 }
 

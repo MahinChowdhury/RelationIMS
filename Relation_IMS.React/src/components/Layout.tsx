@@ -76,8 +76,8 @@ export default function Layout() {
 
                     {/* Mobile Profile Menu Popup */}
                     {isMobileProfileMenuOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#203326] border border-gray-100 dark:border-[#2a4032] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
-                            <div className="px-4 py-2 border-b border-gray-100 dark:border-[#2a4032]">
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
+                            <div className="px-4 py-2 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                 <p className="text-sm font-bold text-text-main dark:text-white truncate">
                                     {user?.Firstname} {user?.Lastname}
                                 </p>
@@ -137,7 +137,7 @@ export default function Layout() {
             {/* Logout Confirmation Modal */}
             {showLogoutModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-[#203326] rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-gray-100 dark:border-[#2a4032]">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                                 <span className="material-symbols-outlined text-red-500 text-[24px]">logout</span>
@@ -153,7 +153,7 @@ export default function Layout() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowLogoutModal(false)}
-                                className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-[#2a4032] rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors font-medium"
+                                className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors font-medium"
                             >
                                 {t.common.cancel || 'Cancel'}
                             </button>

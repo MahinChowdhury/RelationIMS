@@ -32,13 +32,13 @@ const EstimatedInventoryValue = () => {
 
   const formatCurrency = (amount: number): string => {
     if (amount >= 10000000) {
-      return `৳${(amount / 10000000).toFixed(1)}M`;
+      return `à§³${(amount / 10000000).toFixed(1)}M`;
     } else if (amount >= 100000) {
-      return `৳${(amount / 100000).toFixed(1)}L`;
+      return `à§³${(amount / 100000).toFixed(1)}L`;
     } else if (amount >= 1000) {
-      return `৳${(amount / 1000).toFixed(1)}K`;
+      return `à§³${(amount / 1000).toFixed(1)}K`;
     }
-    return `৳${amount}`;
+    return `à§³${amount}`;
   };
 
   const calculateGrowth = (): number => {

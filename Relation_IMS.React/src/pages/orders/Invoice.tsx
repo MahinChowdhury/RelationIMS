@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { getTenantConfig } from '../../services/tenantTheme';
+import { getTenant } from '../../services/authService';
 
-/* ───────── types (local, mirrors the backend anonymous DTO) ───────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ types (local, mirrors the backend anonymous DTO) â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface InvoiceItem {
     Id: number;
     ProductName: string;
@@ -50,16 +52,15 @@ interface InvoiceData {
     Payments?: InvoicePayment[];
 }
 
-/* ───────── helpers ───────── */
-const SHOP_NAME = 'RELATION';
-const SHOP_TAGLINE = 'Shirts • Pants • Fashion';
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const SHOP_TAGLINE = 'Shirts â€¢ Pants â€¢ Fashion';
 const SHOP_ADDRESS = 'Dhaka, Bangladesh';
 const SHOP_PHONE = '+880 1XXX-XXXXXX';
 const RECEIPT_WIDTH = 302; // ~80mm thermal paper
 
-const divider = '─'.repeat(38);
-const doubleDivider = '═'.repeat(38);
-const dotDivider = '┈'.repeat(38);
+const divider = 'â”€'.repeat(38);
+const doubleDivider = 'â•'.repeat(38);
+const dotDivider = 'â”ˆ'.repeat(38);
 
 function formatDate(dateString: string) {
     if (!dateString || dateString.startsWith('0001-01-01')) return 'N/A';
@@ -69,16 +70,18 @@ function formatDate(dateString: string) {
 }
 
 function money(n: number) {
-    return '৳' + n.toFixed(2);
+    return 'à§³' + n.toFixed(2);
 }
 
-/* ───────── component ───────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function InvoicePage() {
     const { id } = useParams<{ id: string }>();
     const [invoice, setInvoice] = useState<InvoiceData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const receiptRef = useRef<HTMLDivElement>(null);
+    const tenantConfig = getTenantConfig(getTenant());
+    const SHOP_NAME = tenantConfig.displayName.toUpperCase();
 
     useEffect(() => {
         if (!id) return;
@@ -94,7 +97,7 @@ export default function InvoicePage() {
 
     const handlePrint = () => window.print();
 
-    /* ───── loading / error states ───── */
+    /* â”€â”€â”€â”€â”€ loading / error states â”€â”€â”€â”€â”€ */
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-background-light dark:bg-background-dark">
@@ -102,7 +105,7 @@ export default function InvoicePage() {
                     <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-primary"></div>
                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-primary text-xl">receipt_long</span>
                 </div>
-                <p className="mt-4 text-text-secondary font-medium">Generating invoice…</p>
+                <p className="mt-4 text-text-secondary font-medium">Generating invoiceâ€¦</p>
             </div>
         );
     }
@@ -115,7 +118,7 @@ export default function InvoicePage() {
                     <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Oops!</h2>
                     <p className="text-red-600 dark:text-red-400">{error || 'Invoice not found'}</p>
                 </div>
-                <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20">
+                <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-primary/20">
                     <span className="material-symbols-outlined">arrow_back</span>
                     Back to Orders
                 </Link>
@@ -125,11 +128,11 @@ export default function InvoicePage() {
 
     const totalQty = invoice.Items?.reduce((s, i) => s + i.Quantity, 0) ?? 0;
 
-    /* ───── receipt render ───── */
+    /* â”€â”€â”€â”€â”€ receipt render â”€â”€â”€â”€â”€ */
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-background-dark py-8 px-4 print:bg-white print:p-0 print:m-0">
 
-            {/* ── action bar (hidden on print) ── */}
+            {/* â”€â”€ action bar (hidden on print) â”€â”€ */}
             <div className="print:hidden max-w-md mx-auto mb-6 flex items-center justify-between gap-3">
                 <Link to={`/orders/${invoice.Id}`} className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors font-semibold text-sm">
                     <span className="material-symbols-outlined text-lg">arrow_back</span>
@@ -144,7 +147,7 @@ export default function InvoicePage() {
                 </button>
             </div>
 
-            {/* ── receipt paper ── */}
+            {/* â”€â”€ receipt paper â”€â”€ */}
             <div
                 ref={receiptRef}
                 className="mx-auto bg-white text-gray-900 shadow-2xl print:shadow-none print:mx-0 print:w-full"
@@ -156,7 +159,7 @@ export default function InvoicePage() {
                     padding: '20px 14px 30px',
                 }}
             >
-                {/* ── shop header ── */}
+                {/* â”€â”€ shop header â”€â”€ */}
                 <div className="text-center mb-1">
                     <div style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '4px', marginBottom: '2px' }}>
                         {SHOP_NAME}
@@ -174,7 +177,7 @@ export default function InvoicePage() {
 
                 <div className="text-center my-2" style={{ fontSize: '9px', color: '#aaa' }}>{doubleDivider}</div>
 
-                {/* ── invoice title ── */}
+                {/* â”€â”€ invoice title â”€â”€ */}
                 <div className="text-center mb-1" style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px' }}>
                     SALES INVOICE
                 </div>
@@ -184,7 +187,7 @@ export default function InvoicePage() {
 
                 <div className="text-center" style={{ fontSize: '9px', color: '#aaa' }}>{divider}</div>
 
-                {/* ── order meta ── */}
+                {/* â”€â”€ order meta â”€â”€ */}
                 <div className="my-2" style={{ fontSize: '10px' }}>
                     <div className="flex justify-between">
                         <span style={{ color: '#888' }}>Date:</span>
@@ -204,7 +207,7 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#aaa' }}>{divider}</div>
 
-                {/* ── customer info ── */}
+                {/* â”€â”€ customer info â”€â”€ */}
                 {invoice.Customer && (
                     <div className="my-2" style={{ fontSize: '10px' }}>
                         <div style={{ fontWeight: 700, marginBottom: '2px', fontSize: '10px', letterSpacing: '1px' }}>
@@ -226,7 +229,7 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#aaa' }}>{doubleDivider}</div>
 
-                {/* ── items header ── */}
+                {/* â”€â”€ items header â”€â”€ */}
                 <div className="flex justify-between my-1" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px' }}>
                     <span style={{ flex: 1 }}>ITEM</span>
                     <span style={{ width: '32px', textAlign: 'right' }}>QTY</span>
@@ -236,7 +239,7 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#ccc' }}>{divider}</div>
 
-                {/* ── line items ── */}
+                {/* â”€â”€ line items â”€â”€ */}
                 {invoice.Items && invoice.Items.length > 0 ? (
                     invoice.Items.map((item, idx) => (
                         <div key={item.Id} className="mb-2">
@@ -250,10 +253,10 @@ export default function InvoicePage() {
                                     {[item.ColorName, item.SizeName, item.BrandName].filter(Boolean).join(' / ')}
                                 </div>
                             )}
-                            {/* qty × price = total row */}
+                            {/* qty Ã— price = total row */}
                             <div className="flex justify-between" style={{ fontSize: '10px', paddingLeft: '12px' }}>
                                 <span style={{ flex: 1, color: '#666' }}>
-                                    {item.Quantity} × {money(item.UnitPrice)}
+                                    {item.Quantity} Ã— {money(item.UnitPrice)}
                                 </span>
                                 <span style={{ fontWeight: 600, width: '55px', textAlign: 'right' }}>
                                     {money(item.Subtotal)}
@@ -273,7 +276,7 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#aaa' }}>{divider}</div>
 
-                {/* ── totals ── */}
+                {/* â”€â”€ totals â”€â”€ */}
                 <div className="my-2" style={{ fontSize: '10px' }}>
                     <div className="flex justify-between mb-0.5">
                         <span style={{ color: '#666' }}>Items: {totalQty}</span>
@@ -292,7 +295,7 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#000', fontWeight: 700 }}>{doubleDivider}</div>
 
-                {/* ── grand total ── */}
+                {/* â”€â”€ grand total â”€â”€ */}
                 <div className="flex justify-between my-1" style={{ fontSize: '14px', fontWeight: 900 }}>
                     <span>TOTAL</span>
                     <span>{money(invoice.NetAmount)}</span>
@@ -300,7 +303,7 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#000', fontWeight: 700 }}>{doubleDivider}</div>
 
-                {/* ── payment breakdown ── */}
+                {/* â”€â”€ payment breakdown â”€â”€ */}
                 <div className="my-2" style={{ fontSize: '10px' }}>
                     <div style={{ fontWeight: 700, marginBottom: '3px', letterSpacing: '0.5px', fontSize: '9px' }}>
                         PAYMENT DETAILS
@@ -309,7 +312,7 @@ export default function InvoicePage() {
                         invoice.Payments.map(p => (
                             <div key={p.Id} className="flex justify-between">
                                 <span style={{ color: '#666' }}>
-                                    {p.Method === 'Cash' ? '💵' : p.Method === 'Bank' ? '🏦' : '📱'} {p.Method}
+                                    {p.Method === 'Cash' ? 'ðŸ’µ' : p.Method === 'Bank' ? 'ðŸ¦' : 'ðŸ“±'} {p.Method}
                                 </span>
                                 <span style={{ fontWeight: 600 }}>{money(p.Amount)}</span>
                             </div>
@@ -340,7 +343,7 @@ export default function InvoicePage() {
                     </div>
                 </div>
 
-                {/* ── remarks ── */}
+                {/* â”€â”€ remarks â”€â”€ */}
                 {invoice.Remarks && (
                     <>
                         <div style={{ fontSize: '9px', color: '#ccc' }}>{dotDivider}</div>
@@ -353,22 +356,22 @@ export default function InvoicePage() {
 
                 <div style={{ fontSize: '9px', color: '#aaa', margin: '8px 0' }}>{doubleDivider}</div>
 
-                {/* ── footer ── */}
+                {/* â”€â”€ footer â”€â”€ */}
                 <div className="text-center" style={{ fontSize: '9px', color: '#999' }}>
                     <div style={{ marginBottom: '3px' }}>Thank you for shopping with us!</div>
                     <div style={{ marginBottom: '3px' }}>Goods once sold are not returnable</div>
                     <div style={{ marginBottom: '3px' }}>without a valid receipt.</div>
                     <div style={{ fontSize: '8px', color: '#bbb', marginTop: '6px' }}>
-                        ★ ★ ★ RELATION IMS ★ ★ ★
+                        â˜… â˜… â˜… {SHOP_NAME} â˜… â˜… â˜…
                     </div>
                     <div style={{ fontSize: '8px', color: '#ccc', marginTop: '2px' }}>
                         Generated: {new Date().toLocaleString('en-GB')}
                     </div>
                 </div>
 
-                {/* ── tear line ── */}
+                {/* â”€â”€ tear line â”€â”€ */}
                 <div className="text-center mt-4" style={{ fontSize: '9px', color: '#ddd', letterSpacing: '2px' }}>
-                    ✂ ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✂
+                    âœ‚ â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„ âœ‚
                 </div>
             </div>
         </div>

@@ -10,14 +10,14 @@ namespace Relation_IMS.Services
     public class RevenueByCategoryJob
     {
         private readonly ILogger<RevenueByCategoryJob> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public RevenueByCategoryJob(
             ILogger<RevenueByCategoryJob> logger,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 600)]
@@ -27,14 +27,16 @@ namespace Relation_IMS.Services
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
+                {
+                    _logger.LogInformation("Updating Revenue By Category for tenant {TenantId}", tenantId);
 
-                // Update Last 30 Days
-                await UpdateLast30DaysAsync(context);
+                    // Update Last 30 Days
+                    await UpdateLast30DaysAsync(context);
 
-                // Update This Quarter
-                await UpdateThisQuarterAsync(context);
+                    // Update This Quarter
+                    await UpdateThisQuarterAsync(context);
+                });
 
                 _logger.LogInformation("Revenue By Category Job completed successfully");
             }

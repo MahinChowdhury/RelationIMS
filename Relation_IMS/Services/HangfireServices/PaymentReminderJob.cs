@@ -9,16 +9,16 @@ namespace Relation_IMS.Services.HangfireServices
     {
         private readonly ILogger<PaymentReminderJob> _logger;
         private readonly IOtpService _otpService;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public PaymentReminderJob(
             ILogger<PaymentReminderJob> logger,
             IOtpService otpService,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
             _otpService = otpService;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 300)]
@@ -28,36 +28,38 @@ namespace Relation_IMS.Services.HangfireServices
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                var today = DateTime.UtcNow.Date;
-
-                // Find orders where NextPaymentDate is today and there's still due amount
-                var ordersWithDuePayment = await context.Orders
-                    .Include(o => o.Customer)
-                    .Where(o => o.NextPaymentDate.HasValue &&
-                                o.NextPaymentDate.Value.Date == today &&
-                                o.NetAmount > o.PaidAmount)
-                    .ToListAsync();
-
-                _logger.LogInformation("Found {Count} orders with payment due today", ordersWithDuePayment.Count);
-
-                foreach (var order in ordersWithDuePayment)
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
                 {
-                    if (order.Customer != null && !string.IsNullOrEmpty(order.Customer.Phone))
+                    var today = DateTime.UtcNow.Date;
+
+                    // Find orders where NextPaymentDate is today and there's still due amount
+                    var ordersWithDuePayment = await context.Orders
+                        .Include(o => o.Customer)
+                        .Where(o => o.NextPaymentDate.HasValue &&
+                                    o.NextPaymentDate.Value.Date == today &&
+                                    o.NetAmount > o.PaidAmount)
+                        .ToListAsync();
+
+                    _logger.LogInformation("[Tenant {TenantId}] Found {Count} orders with payment due today", tenantId, ordersWithDuePayment.Count);
+
+                    foreach (var order in ordersWithDuePayment)
                     {
-                        var dueAmount = order.NetAmount - order.PaidAmount;
+                        if (order.Customer != null && !string.IsNullOrEmpty(order.Customer.Phone))
+                        {
+                            var dueAmount = order.NetAmount - order.PaidAmount;
 
-                        await _otpService.SendPaymentReminderAsync(
-                            order.Id,
-                            order.Customer.Phone,
-                            order.Customer.Name ?? "Unknown",
-                            dueAmount);
+                            await _otpService.SendPaymentReminderAsync(
+                                order.Id,
+                                order.Customer.Phone,
+                                order.Customer.Name ?? "Unknown",
+                                dueAmount);
+                        }
                     }
-                }
 
-                _logger.LogInformation("Payment Reminder Job completed. Processed {Count} orders", ordersWithDuePayment.Count);
+                    _logger.LogInformation("[Tenant {TenantId}] Processed {Count} orders", tenantId, ordersWithDuePayment.Count);
+                });
+
+                _logger.LogInformation("Payment Reminder Job completed.");
             }
             catch (Exception ex)
             {

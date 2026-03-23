@@ -23,7 +23,11 @@ namespace Relation_IMS.Services.MinIOServices
             var secretKey = minioConfig["SecretKey"] ?? "minioadmin";
             var useSSL = bool.TryParse(minioConfig["UseSSL"], out var ssl) && ssl;
             _bucketName = minioConfig["BucketName"] ?? "product-images";
-            _publicBaseUrl = minioConfig["PublicBaseUrl"] ?? $"http://{endpoint}";
+            // When PublicBaseUrl is empty/blank, produce relative paths (e.g. /bucket/file.webp)
+            // so Nginx can proxy them on the same origin, avoiding CORS.
+            // Only fall back to http://endpoint when the key is completely absent (null).
+            var publicBaseUrlRaw = minioConfig["PublicBaseUrl"];
+            _publicBaseUrl = publicBaseUrlRaw == null ? $"http://{endpoint}" : publicBaseUrlRaw.TrimEnd('/');
 
             _minioClient = new MinioClient()
                 .WithEndpoint(endpoint)

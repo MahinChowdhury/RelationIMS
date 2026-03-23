@@ -83,7 +83,7 @@ const StaffPerformance = () => {
   const getSalesColor = (rank: number): string => {
     const colors: { [key: number]: string } = {
       1: 'text-primary',
-      2: 'text-[#4e9767]',
+      2: 'text-secondary',
       3: 'text-[#236c31]',
     };
     return colors[rank] || 'text-gray-600 dark:text-gray-400';
@@ -92,7 +92,7 @@ const StaffPerformance = () => {
   const selectedMonthName = months.find(m => m.value === selectedMonth)?.label || '';
 
   return (
-    <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[var(--color-surface-dark-card)] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)]">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-5 sm:mb-6">
         <div>
           <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">{t.dashboard.staffPerformance}</h4>
@@ -102,7 +102,7 @@ const StaffPerformance = () => {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            className="text-xs sm:text-sm px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#203326] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+            className="text-xs sm:text-sm px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[var(--color-surface-dark-card)] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {months.map((month) => (
               <option key={month.value} value={month.value}>
@@ -113,7 +113,7 @@ const StaffPerformance = () => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="text-xs sm:text-sm px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#203326] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+            className="text-xs sm:text-sm px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-[var(--color-surface-dark-card)] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
           >
             {[2024, 2025, 2026].map((year) => (
               <option key={year} value={year}>
@@ -137,7 +137,7 @@ const StaffPerformance = () => {
           {staff.map((member) => (
             <div
               key={member.UserId}
-              className="flex items-center justify-between p-3 sm:p-4 border border-gray-100 dark:border-[#2a4032] rounded-[1.5rem] sm:rounded-[2rem] hover:bg-gray-50 dark:hover:bg-[#203326] transition-colors"
+              className="flex items-center justify-between p-3 sm:p-4 border border-gray-100 dark:border-[var(--color-surface-dark-border)] rounded-[1.5rem] sm:rounded-[2rem] hover:bg-gray-50 dark:hover:bg-[#203326] transition-colors"
             >
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="relative">

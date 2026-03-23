@@ -3,7 +3,7 @@ const MonthlyGrowthTrend = () => {
   const dataPointOffsets = [20, 40, 60, 55, 80, 90];
 
   return (
-    <div className="col-span-12 lg:col-span-7 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032] relative overflow-hidden">
+    <div className="col-span-12 lg:col-span-7 bg-white dark:bg-[var(--color-surface-dark-card)] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)] relative overflow-hidden">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 sm:mb-8 relative z-10 gap-3">
         <div>
           <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">Monthly Growth Trend</h4>
@@ -55,7 +55,7 @@ const MonthlyGrowthTrend = () => {
           {dataPointOffsets.map((offset, i) => (
             <div key={i} className="group relative">
               <div
-                className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-white dark:bg-[#1a2e22] border-2 border-primary rounded-full"
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-white dark:bg-[var(--color-surface-dark-card)] border-2 border-primary rounded-full"
                 style={{ transform: `translateY(-${offset}px)` }}
               ></div>
             </div>

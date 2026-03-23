@@ -47,6 +47,7 @@ RUN echo 'server { \
     \
     # SPA fallback - only for HTML requests \
     location / { \
+        add_header Cache-Control "no-store, no-cache, must-revalidate"; \
         try_files $uri $uri/ /index.html; \
     } \
 }' > /etc/nginx/conf.d/default.conf

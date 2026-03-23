@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
 import LogoutConfirmModal from './LogoutConfirmModal';
 import ShareCatalogModal from './ShareCatalogModal';
+import { getTenantConfig } from '../services/tenantTheme';
+import { getTenant } from '../services/authService';
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -19,6 +21,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showShareCatalog, setShowShareCatalog] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
+    const tenantConfig = getTenantConfig(getTenant());
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -62,7 +65,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             )}
 
             <aside className={`
-                fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-[#1a2e22] border-r border-gray-200 dark:border-[#2a4032] flex flex-col transition-transform duration-300 ease-in-out
+                fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-[var(--color-surface-dark-card)] border-r border-gray-200 dark:border-[var(--color-surface-dark-border)] flex flex-col transition-transform duration-300 ease-in-out
                 lg:static lg:translate-x-0
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
@@ -74,8 +77,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                 <span className="material-symbols-outlined">eco</span>
                             </div>
                             <div className="flex flex-col">
-                                <h1 className="text-text-main dark:text-white text-base font-bold leading-normal">{t.app.name}</h1>
-                                <p className="text-text-secondary text-xs font-normal">{t.app.subtitle}</p>
+                                <h1 className="text-text-main dark:text-white text-base font-bold leading-normal">{tenantConfig.displayName}</h1>
+                                <p className="text-text-secondary text-xs font-normal">{tenantConfig.subtitle}</p>
                             </div>
                         </div>
 
@@ -107,7 +110,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                     </div>
 
                     {/* Bottom Section */}
-                    <div className="flex flex-col gap-1 border-t border-gray-100 dark:border-[#2a4032] pt-4">
+                    <div className="flex flex-col gap-1 border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-4">
                         <Link
                             to="/users"
                             onClick={onClose}
@@ -177,7 +180,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
                             {/* Profile Menu Popup */}
                             {isProfileMenuOpen && (
-                                <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[#203326] border border-gray-100 dark:border-[#2a4032] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50">
+                                <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50">
                                     
                                     <Link
                                         to="/userprofile"

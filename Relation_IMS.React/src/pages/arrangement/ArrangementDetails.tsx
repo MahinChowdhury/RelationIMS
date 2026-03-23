@@ -228,8 +228,8 @@ export default function ArrangementDetails() {
                 <div className="flex flex-col gap-8">
                     {/* Required Items Section */}
                     <section className="flex flex-col gap-4">
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[var(--color-surface-dark-border)] flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">playlist_add_check</span>
                                     {t.orders.requiredItems || 'Required Items'}
@@ -331,7 +331,7 @@ export default function ArrangementDetails() {
                     </section>
 
                     {/* Scanner Section */}
-                    <section className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
+                    <section className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] p-6">
                         <div className="flex items-center gap-2 mb-6 justify-center">
                             <span className="material-symbols-outlined text-primary text-2xl">qr_code_scanner</span>
                             <h3 className="text-xl font-bold text-text-main dark:text-white">{t.orders.scanToVerify || 'Scan to Verify'}</h3>
@@ -393,7 +393,7 @@ export default function ArrangementDetails() {
                                             autoFocus
                                             value={manualSku}
                                             onChange={(e) => setManualSku(e.target.value)}
-                                            className="block w-full rounded-xl border-[#e7f3eb] dark:border-[#2a4032] bg-[#f8fcf9] dark:bg-white/5 pl-10 pr-20 py-4 text-base text-text-main dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary shadow-sm transition-all"
+                                            className="block w-full rounded-xl border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] bg-[#f8fcf9] dark:bg-white/5 pl-10 pr-20 py-4 text-base text-text-main dark:text-white placeholder-gray-400 focus:border-primary focus:ring-primary shadow-sm transition-all"
                                             placeholder={t.orders.enterSkuManually || "Enter SKU manually..."}
                                             type="text"
                                         />
@@ -413,8 +413,8 @@ export default function ArrangementDetails() {
 
                     {/* Scanned Items History Section */}
                     <section className="flex flex-col gap-4">
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] overflow-hidden">
+                            <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[var(--color-surface-dark-border)] flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">history</span>
                                     {t.orders.scannedItems || 'Scanned Items'}
@@ -479,7 +479,7 @@ export default function ArrangementDetails() {
             {/* Confirmation Modal */}
             {showConfirmModal && (
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-4xl text-primary">fact_check</span>
@@ -509,7 +509,7 @@ export default function ArrangementDetails() {
             {/* Product Details Modal (80% Screen) */}
             {selectedRequiredItemProductId && (
                 <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#1a2e22] w-[90%] h-[90%] md:w-[80%] md:h-[80%] rounded-2xl shadow-2xl overflow-hidden relative border border-[#e7f3eb] dark:border-[#2a4032] flex flex-col">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] w-[90%] h-[90%] md:w-[80%] md:h-[80%] rounded-2xl shadow-2xl overflow-hidden relative border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] flex flex-col">
                         <div className="absolute top-4 right-4 z-10">
                             <button
                                 onClick={() => setSelectedRequiredItemProductId(null)}

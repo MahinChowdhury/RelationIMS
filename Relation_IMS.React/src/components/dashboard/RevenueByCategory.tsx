@@ -56,7 +56,7 @@ const RevenueByCategory = () => {
   const getColorClass = (index: number): { bg: string; text: string; bar: string } => {
     const colors = [
       { bg: 'bg-primary/10', text: 'text-primary', bar: 'bg-primary' },
-      { bg: 'bg-[#4e9767]/10', text: 'text-[#4e9767]', bar: 'bg-[#4e9767]' },
+      { bg: 'bg-[#4e9767]/10', text: 'text-secondary', bar: 'bg-[#4e9767]' },
       { bg: 'bg-[#236c31]/10', text: 'text-[#236c31] dark:text-[#8dd890]', bar: 'bg-[#236c31] dark:bg-[#8dd890]' },
       { bg: 'bg-[#5aad7d]/10', text: 'text-[#5aad7d]', bar: 'bg-[#5aad7d]' },
       { bg: 'bg-[#3d8b55]/10', text: 'text-[#3d8b55]', bar: 'bg-[#3d8b55]' },
@@ -79,7 +79,7 @@ const RevenueByCategory = () => {
   };
 
   return (
-    <div className="col-span-12 lg:col-span-5 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-5 bg-white dark:bg-[var(--color-surface-dark-card)] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)]">
       <div className="flex justify-between items-center mb-6 sm:mb-8">
         <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">{t.dashboard.revenueByCategory}</h4>
         <span className="material-symbols-outlined text-gray-300 dark:text-gray-600">bar_chart</span>
@@ -107,7 +107,7 @@ const RevenueByCategory = () => {
                     <span className="text-sm font-bold text-text-main dark:text-gray-200 truncate">{cat.CategoryName}</span>
                     <span className="text-sm font-extrabold text-text-main dark:text-white whitespace-nowrap ml-2">{formatCurrency(cat.TotalRevenue)}</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-[#203326] rounded-full">
+                  <div className="w-full h-2 bg-gray-100 dark:bg-[var(--color-surface-dark-card)] rounded-full">
                     <div className={`h-full ${colors.bar} rounded-full transition-all duration-700`} style={{ width: `${getPercentage(index)}%` }}></div>
                   </div>
                 </div>

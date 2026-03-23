@@ -73,7 +73,7 @@ const RecentTransactions = () => {
   const getAvatarBg = (index: number): string => {
     const colors = [
       'bg-primary/10 text-primary',
-      'bg-[#4e9767]/10 text-[#4e9767]',
+      'bg-[#4e9767]/10 text-secondary',
       'bg-[#236c31]/10 text-[#236c31] dark:text-[#8dd890]',
       'bg-[#5aad7d]/10 text-[#5aad7d]',
       'bg-[#3d8b55]/10 text-[#3d8b55]',
@@ -86,8 +86,8 @@ const RecentTransactions = () => {
   };
 
   return (
-    <div className="col-span-12 xl:col-span-8 bg-white dark:bg-[#1a2e22] rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032] overflow-hidden">
-      <div className="p-6 sm:p-8 flex justify-between items-center border-b border-gray-100 dark:border-[#2a4032]">
+    <div className="col-span-12 xl:col-span-8 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)] overflow-hidden">
+      <div className="p-6 sm:p-8 flex justify-between items-center border-b border-gray-100 dark:border-[var(--color-surface-dark-border)]">
         <h4 className="text-lg sm:text-xl font-extrabold tracking-tight text-text-main dark:text-white">{t.dashboard.recentTransactions}</h4>
         <button 
           onClick={handleViewAll}
@@ -108,7 +108,7 @@ const RecentTransactions = () => {
       ) : (
         <div className="overflow-y-auto max-h-[420px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
           <table className="w-full text-left min-w-[500px]">
-            <thead className="bg-gray-50/50 dark:bg-[#203326]/50 sticky top-0 z-10">
+            <thead className="bg-gray-50/50 dark:bg-[var(--color-surface-dark-card)] sticky top-0 z-10">
               <tr>
                 <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.dashboard.orderId}</th>
                 <th className="px-6 sm:px-8 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.dashboard.customer}</th>

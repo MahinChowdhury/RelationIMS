@@ -497,7 +497,7 @@ export default function UserProfile() {
                                     <span className="material-symbols-outlined text-gray-500">translate</span>
                                     <div>
                                         <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.language || 'Language'}</p>
-                                        <p className="text-xs text-gray-400">{language === 'en' ? 'English' : 'বাংলা'}</p>
+                                        <p className="text-xs text-gray-400">{language === 'en' ? 'English' : (t.config?.bangla || 'বাংলা')}</p>
                                     </div>
                                 </div>
                                 <button
@@ -512,7 +512,7 @@ export default function UserProfile() {
                                         English
                                     </span>
                                     <span className={`relative z-10 w-1/2 text-center text-[11px] font-bold transition-colors duration-300 ${language === 'bn' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
-                                        বাংলা
+                                        {t.config?.bangla || 'বাংলা'}
                                     </span>
                                 </button>
                             </div>

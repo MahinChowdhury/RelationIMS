@@ -294,7 +294,7 @@ export default function CustomerReturn() {
                 <div className="md:col-span-1 flex flex-col gap-6">
 
                     {/* Order Selection (Optional) */}
-                    <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm">
                         <label className="block text-sm font-bold text-text-main dark:text-white mb-2">
                             {t.orders.orderId || 'Order ID'} <span className="text-secondary font-normal">({t.orders.optional || 'Optional'})</span>
                         </label>
@@ -304,7 +304,7 @@ export default function CustomerReturn() {
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value)}
                                 placeholder={t.orders.orderPlaceholder || "Order #"}
-                                className="flex-1 bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white font-mono"
+                                className="flex-1 bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-300 dark:border-[var(--color-surface-dark-border)] rounded-lg p-2.5 text-sm dark:text-white font-mono"
                                 onKeyDown={(e) => e.key === 'Enter' && handleLoadOrder()}
                             />
                             <button
@@ -323,19 +323,19 @@ export default function CustomerReturn() {
                         )}
                     </div>
                     {/* Inventory Selection */}
-                    <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm">
                         <label className="block text-sm font-bold text-text-main dark:text-white mb-2">{t.inventory.targetInventory || 'Target Inventory'}</label>
                         <select
                             value={selectedInventoryId}
                             onChange={(e) => setSelectedInventoryId(Number(e.target.value))}
-                            className="w-full bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white"
+                            className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-300 dark:border-[var(--color-surface-dark-border)] rounded-lg p-2.5 text-sm dark:text-white"
                         >
                             {inventories.map(i => <option key={i.Id} value={i.Id}>{i.Name}</option>)}
                         </select>
                     </div>
 
                     {/* Customer Selection */}
-                    <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm relative">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm relative">
                         <label className="block text-sm font-bold text-text-main dark:text-white mb-2">{t.common.customer || 'Customer'}</label>
                         {selectedCustomer ? (
                             <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
@@ -354,10 +354,10 @@ export default function CustomerReturn() {
                                     value={customerSearch}
                                     onChange={(e) => setCustomerSearch(e.target.value)}
                                     placeholder={t.inventory.searchCustomer || "Search customer..."}
-                                    className="w-full bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white"
+                                    className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-300 dark:border-[var(--color-surface-dark-border)] rounded-lg p-2.5 text-sm dark:text-white"
                                 />
                                 {showCustomerDropdown && customers.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
                                         {customers.map(c => (
                                             <button
                                                 key={c.Id}
@@ -379,7 +379,7 @@ export default function CustomerReturn() {
                     </div>
 
                     {/* Scan Item Input */}
-                    <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm">
                         <label className="block text-sm font-bold text-text-main dark:text-white mb-2">{t.inventory.scanItem || 'Scan Item'}</label>
                         <div className="flex gap-2">
                             <input
@@ -389,7 +389,7 @@ export default function CustomerReturn() {
                                 onChange={(e) => setProductCodeInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddProduct()}
                                 placeholder={t.inventory.enterProductCode || "Enter Product Code"}
-                                className="flex-1 bg-gray-50 dark:bg-[#112116] border border-gray-300 dark:border-[#2a4032] rounded-lg p-2.5 text-sm dark:text-white"
+                                className="flex-1 bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-300 dark:border-[var(--color-surface-dark-border)] rounded-lg p-2.5 text-sm dark:text-white"
                             />
                             <button
                                 onClick={() => setIsScannerOpen(true)}
@@ -409,8 +409,8 @@ export default function CustomerReturn() {
                 </div>
 
                 {/* Right Column: List & Action */}
-                <div className="md:col-span-2 flex flex-col h-full bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 dark:border-[#2a4032] flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                <div className="md:col-span-2 flex flex-col h-full bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)] flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                         <h3 className="font-bold text-lg text-text-main dark:text-white">{t.inventory.itemsToReturn || 'Items to Return'} ({scannedItems.length})</h3>
                         {scannedItems.length > 0 && (
                             <button onClick={() => setScannedItems([])} className="text-xs text-red-500 hover:text-red-700 font-medium">{t.common.clearAll || 'Clear All'}</button>
@@ -426,7 +426,7 @@ export default function CustomerReturn() {
                         ) : (
                             <div className="flex flex-col gap-2">
                                 {scannedItems.map((item, idx) => (
-                                    <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border animate-in slide-in-from-left-2 fade-in duration-300 ${item.isValidOrderReturn ? 'bg-gray-50 dark:bg-[#112116] border-gray-100 dark:border-[#2a4032]' : 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-700/30'}`}>
+                                    <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border animate-in slide-in-from-left-2 fade-in duration-300 ${item.isValidOrderReturn ? 'bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border-gray-100 dark:border-[var(--color-surface-dark-border)]' : 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-700/30'}`}>
                                         <div className="flex items-center gap-3">
                                             <span className="flex items-center justify-center size-6 bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300">{idx + 1}</span>
                                             <div>
@@ -438,7 +438,7 @@ export default function CustomerReturn() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className="font-mono font-bold text-green-600 dark:text-green-400">৳{item.price.toFixed(2)}</span>
+                                            <span className="font-mono font-bold text-green-600 dark:text-green-400">Ã Â§Â³{item.price.toFixed(2)}</span>
                                             <button onClick={() => removeScannedItem(item.id)} className="text-gray-400 hover:text-red-500 transition">
                                                 <span className="material-symbols-outlined">delete</span>
                                             </button>
@@ -449,11 +449,11 @@ export default function CustomerReturn() {
                         )}
                     </div>
 
-                    <div className="p-4 border-t border-gray-100 dark:border-[#2a4032] bg-gray-50/50 dark:bg-white/5 space-y-4">
+                    <div className="p-4 border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] bg-gray-50/50 dark:bg-white/5 space-y-4">
                         <div>
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-1">{t.inventory.refundAmount || 'Refund Amount'} ({t.inventory.balanceIncrease || 'Balance Increase'})</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">৳</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">Ã Â§Â³</span>
                                 <input
                                     type="text"
                                     min="0"
@@ -474,7 +474,7 @@ export default function CustomerReturn() {
                                             setRefundAmount(Math.max(0, current - 1).toString());
                                         }
                                     }}
-                                    className={`w-full pl-8 p-3 bg-white dark:bg-[#1a2e22] border border-gray-300 dark:border-[#2a4032] rounded-lg font-bold text-lg text-green-600 focus:ring-primary focus:border-primary ${scannedItems.length > 0 ? 'bg-gray-50 cursor-not-allowed opacity-80' : ''}`}
+                                    className={`w-full pl-8 p-3 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-300 dark:border-[var(--color-surface-dark-border)] rounded-lg font-bold text-lg text-green-600 focus:ring-primary focus:border-primary ${scannedItems.length > 0 ? 'bg-gray-50 cursor-not-allowed opacity-80' : ''}`}
                                 />
                             </div>
                         </div>
@@ -496,7 +496,7 @@ export default function CustomerReturn() {
                         <button
                             onClick={handleProcessReturn}
                             disabled={processing || scannedItems.length === 0 || !selectedCustomer || !selectedInventoryId}
-                            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg hover:shadow-green-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {processing ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">keyboard_return</span>}
                             <span>{t.inventory.confirmReturn || 'Confirm Return & Refund'}</span>
@@ -510,10 +510,10 @@ export default function CustomerReturn() {
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-text-main dark:text-white">{t.inventory.pastReturns || 'Past Returns'}</h3>
                 </div>
-                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[#2a4032] shadow-sm bg-white dark:bg-[#1a2e22]">
+                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[var(--color-surface-dark-border)] shadow-sm bg-white dark:bg-[var(--color-surface-dark-card)]">
                     <div className="max-h-[500px] overflow-y-auto">
                         <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                            <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] dark:text-gray-400 sticky top-0 z-10 transition-colors">
+                            <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:text-gray-400 sticky top-0 z-10 transition-colors">
                                 <tr>
                                     <th className="px-6 py-4 font-bold" scope="col">{t.common.date || 'Date'}</th>
                                     <th className="px-6 py-4 font-bold" scope="col">{t.common.customer || 'Customer'}</th>
@@ -544,7 +544,7 @@ export default function CustomerReturn() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 font-mono font-bold text-green-600 dark:text-green-400">
-                                                +৳{record.RefundAmount.toFixed(2)}
+                                                +Ã Â§Â³{record.RefundAmount.toFixed(2)}
                                             </td>
                                             <td className="px-6 py-4 flex items-center gap-2">
                                                 <div className="size-6 rounded-full bg-gray-200 flex items-center justify-center font-bold text-[10px] text-gray-500">

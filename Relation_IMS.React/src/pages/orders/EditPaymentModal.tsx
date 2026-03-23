@@ -86,7 +86,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
                     <h2 className="text-xl font-black text-text-main dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">payments</span>
@@ -105,7 +105,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                     <select
                                         value={payment.method}
                                         onChange={(e) => handlePaymentChange(index, 'method', e.target.value)}
-                                        className="h-10 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                        className="h-10 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[var(--color-surface-dark-card)] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     >
                                         <option value={t.orders.cash || "Cash"}>{t.orders.cash || "Cash"}</option>
                                         <option value={t.orders.bank || "Bank"}>{t.orders.bank || "Bank"}</option>
@@ -125,7 +125,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                                 handlePaymentChange(index, 'amount', Math.max(0, payment.amount - 1));
                                             }
                                         }}
-                                        className="h-10 flex-1 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                        className="h-10 flex-1 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[var(--color-surface-dark-card)] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                         placeholder={t.common.amount || "Amount"}
                                     />
                                     <button
@@ -139,7 +139,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                                     type="text"
                                     value={payment.note}
                                     onChange={(e) => handlePaymentChange(index, 'note', e.target.value)}
-                                    className="h-10 w-full px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                    className="h-10 w-full px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[var(--color-surface-dark-card)] text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     placeholder={t.orders.paymentNote || "Payment Note (Optional)"}
                                 />
                             </div>
@@ -157,15 +157,15 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                     <div className="mt-6 p-4 bg-gray-50 dark:bg-black/20 rounded-xl space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">{t.orders.orderNetAmount || 'Order Net Amount'}:</span>
-                            <span className="font-bold text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
+                            <span className="font-bold text-text-main dark:text-white">Ã Â§Â³{order.NetAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">{t.orders.totalPaid || 'Total Paid'}:</span>
-                            <span className="font-bold text-green-600">৳{totalPaid.toFixed(2)}</span>
+                            <span className="font-bold text-green-600">Ã Â§Â³{totalPaid.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-base pt-2 border-t border-gray-200 dark:border-gray-700">
                             <span className="font-bold text-text-main dark:text-white">{t.orders.remainingDue || 'Remaining Due'}:</span>
-                            <span className={`font-black ${due > 0 ? 'text-red-500' : 'text-green-500'}`}>৳{due.toFixed(2)}</span>
+                            <span className={`font-black ${due > 0 ? 'text-red-500' : 'text-green-500'}`}>Ã Â§Â³{due.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
@@ -180,7 +180,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 disabled:opacity-50 flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center gap-2"
                     >
                         {loading ? <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span> : <span className="material-symbols-outlined text-sm">save</span>}
                         {t.common.saveChanges || 'Save Changes'}

@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Finbuckle.MultiTenant;
+using Finbuckle.MultiTenant.Abstractions;
+using Finbuckle.MultiTenant.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models;
 using Relation_IMS.Models.Analytics;
 using Relation_IMS.Models.CustomerModels;
@@ -11,11 +14,15 @@ using Relation_IMS.Models.UserProfileModels;
 using Relation_IMS.Services;
 
 namespace Relation_IMS.Entities;
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : MultiTenantDbContext
 {
     private readonly ICurrentUserService? _currentUserService;
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUserService? currentUserService = null) : base(options)
+    public ApplicationDbContext(
+        IMultiTenantContextAccessor<AppTenantInfo> multiTenantContextAccessor,
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentUserService? currentUserService = null)
+        : base(multiTenantContextAccessor, options)
     {
         _currentUserService = currentUserService;
     }

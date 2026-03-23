@@ -493,25 +493,25 @@ export default function StockIn() {
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl md:text-3xl font-extrabold text-[#0e1b12] dark:text-white tracking-tight flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54] text-3xl">input</span>
+                            <span className="material-symbols-outlined text-primary text-3xl">input</span>
                             {t.inventory.stockManagement || 'Stock Management'}
                         </h1>
-                        <p className="text-[#4e9767] dark:text-gray-400 text-sm max-w-xl">
+                        <p className="text-secondary dark:text-gray-400 text-sm max-w-xl">
                             {t.inventory.stockInSubtitle || 'Register new incoming shipments. You can add stock to existing items or create entirely new product listings.'}
                         </p>
                     </div>
                 </div>
 
                 {/* Main Panel */}
-                <div className="bg-white/70 dark:bg-[#1a2e22]/60 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col">
+                <div className="bg-white/70 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col">
                     {/* Tabs */}
                     <div className="flex border-b border-gray-200/50 dark:border-white/10">
                         <button
                             onClick={() => setActiveTab('existing')}
                             className={`flex-1 py-4 text-sm font-medium transition-all flex justify-center items-center gap-2
                                 ${activeTab === 'existing'
-                                    ? 'text-[#17cf54] border-b-2 border-[#17cf54] bg-[#17cf54]/5 dark:bg-[#17cf54]/10 font-bold'
-                                    : 'text-gray-500 hover:text-[#17cf54] hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
+                                    ? 'text-primary border-b-2 border-primary bg-primary/5 dark:bg-primary/10 font-bold'
+                                    : 'text-gray-500 hover:text-primary hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
                         >
                             <span className="material-symbols-outlined text-[20px]">search</span>
                             {t.inventory.existingProduct || 'Existing Product'}
@@ -520,8 +520,8 @@ export default function StockIn() {
                             onClick={() => setActiveTab('new')}
                             className={`flex-1 py-4 text-sm font-medium transition-all flex justify-center items-center gap-2
                                 ${activeTab === 'new'
-                                    ? 'text-[#17cf54] border-b-2 border-[#17cf54] bg-[#17cf54]/5 dark:bg-[#17cf54]/10 font-bold'
-                                    : 'text-gray-500 hover:text-[#17cf54] hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
+                                    ? 'text-primary border-b-2 border-primary bg-primary/5 dark:bg-primary/10 font-bold'
+                                    : 'text-gray-500 hover:text-primary hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
                         >
                             <span className="material-symbols-outlined text-[20px]">add_circle</span>
                             {t.inventory.newProduct || 'New Product'}
@@ -530,8 +530,8 @@ export default function StockIn() {
                             onClick={() => setActiveTab('lot')}
                             className={`flex-1 py-4 text-sm font-medium transition-all flex justify-center items-center gap-2
                                 ${activeTab === 'lot'
-                                    ? 'text-[#17cf54] border-b-2 border-[#17cf54] bg-[#17cf54]/5 dark:bg-[#17cf54]/10 font-bold'
-                                    : 'text-gray-500 hover:text-[#17cf54] hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
+                                    ? 'text-primary border-b-2 border-primary bg-primary/5 dark:bg-primary/10 font-bold'
+                                    : 'text-gray-500 hover:text-primary hover:bg-gray-50/50 dark:text-gray-400 dark:hover:text-white'}`}
                         >
                             <span className="material-symbols-outlined text-[20px]">dataset</span>
                             {t.inventory.customLot || 'Custom Lot'}
@@ -550,7 +550,7 @@ export default function StockIn() {
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                                                className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-lg rounded-xl focus:ring-[#17cf54] focus:border-[#17cf54] block w-full pl-12 pr-28 p-4 placeholder-gray-400 shadow-sm transition-all"
+                                                className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-lg rounded-xl focus:ring-primary focus:border-primary block w-full pl-12 pr-28 p-4 placeholder-gray-400 shadow-sm transition-all"
                                                 placeholder={t.inventory.scanPlaceholder || "Scan item code (PV-...) or Enter Product ID..."}
                                                 autoFocus
                                             />
@@ -566,7 +566,7 @@ export default function StockIn() {
                                         </div>
                                         <button
                                             onClick={() => handleSearch(searchQuery)}
-                                            className="px-6 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-xl font-bold transition-colors shrink-0"
+                                            className="px-6 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-colors shrink-0"
                                         >
                                             {t.common.search || 'Search'}
                                         </button>
@@ -577,7 +577,7 @@ export default function StockIn() {
                                 {loadingProduct && <div className="text-center py-10 font-bold text-gray-400">{t.inventory.loadingProduct || 'Loading Product...'}</div>}
 
                                 {foundProduct && (
-                                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 animate-fadeIn relative overflow-hidden">
+                                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 animate-fadeIn relative overflow-hidden">
                                         {/* Progress Bar Overlay */}
                                         {isSaving && (
                                             <>
@@ -589,7 +589,7 @@ export default function StockIn() {
                                                 `}</style>
                                                 <div className="absolute top-0 left-0 w-full h-1 bg-gray-100 dark:bg-gray-700 z-20">
                                                     <div
-                                                        className="h-full bg-[#17cf54] w-1/3"
+                                                        className="h-full bg-primary w-1/3"
                                                         style={{ animation: 'progress-slide 1s infinite linear' }}
                                                     ></div>
                                                 </div>
@@ -599,7 +599,7 @@ export default function StockIn() {
                                             <div>
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {foundProduct.Category?.Name} • {foundProduct.Brand?.Name}
+                                                    {foundProduct.Category?.Name} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {foundProduct.Brand?.Name}
                                                 </p>
 
                                                 {/* Quarters Editing */}
@@ -615,8 +615,8 @@ export default function StockIn() {
                                                                     else setEditingQuarterIds(prev => [...prev, q.Id]);
                                                                 }}
                                                                 className={`px-2 py-0.5 rounded textxs font-bold transition-colors shadow-sm ${isSelected
-                                                                    ? 'bg-[#17cf54] text-white border border-[#17cf54]'
-                                                                    : 'bg-white dark:bg-black/20 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-[#17cf54] hover:text-[#17cf54]'
+                                                                    ? 'bg-primary text-white border border-primary'
+                                                                    : 'bg-white dark:bg-black/20 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary'
                                                                     }`}
                                                             >
                                                                 {q.Name}
@@ -629,20 +629,20 @@ export default function StockIn() {
                                             <div className="flex flex-col items-end gap-2">
                                                 <div className="text-right">
                                                     <p className="text-xs uppercase font-bold text-gray-400">{t.inventory.totalStock || 'Total Stock'}</p>
-                                                    <p className="text-2xl font-black text-[#17cf54]">{foundProduct.TotalQuantity}</p>
+                                                    <p className="text-2xl font-black text-primary">{foundProduct.TotalQuantity}</p>
                                                 </div>
 
                                                 {/* Toggle Mode */}
                                                 <div className="flex items-center bg-gray-100 dark:bg-black/20 p-1 rounded-lg">
                                                     <button
                                                         onClick={() => setIsExistingLotMode(false)}
-                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isExistingLotMode ? 'bg-white dark:bg-gray-800 shadow text-[#17cf54]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
+                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isExistingLotMode ? 'bg-white dark:bg-gray-800 shadow text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
                                                     >
                                                         {t.inventory.manual || 'Manual'}
                                                     </button>
                                                     <button
                                                         onClick={() => setIsExistingLotMode(true)}
-                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${isExistingLotMode ? 'bg-white dark:bg-gray-800 shadow text-[#17cf54]' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
+                                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${isExistingLotMode ? 'bg-white dark:bg-gray-800 shadow text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
                                                     >
                                                         {t.inventory.byLot || 'By Lot'}
                                                     </button>
@@ -651,7 +651,7 @@ export default function StockIn() {
                                         </div>
 
                                         {isExistingLotMode && (
-                                            <div className="mb-6 bg-[#17cf54]/10 dark:bg-[#17cf54]/20 rounded-xl p-4 border border-[#17cf54]/20 flex items-center gap-4">
+                                            <div className="mb-6 bg-primary/10 dark:bg-primary/20 rounded-xl p-4 border border-primary/20 flex items-center gap-4">
                                                 <div className="w-32">
                                                     <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
                                                     <QuantityInput
@@ -697,7 +697,7 @@ export default function StockIn() {
                                                             <td className="px-4 py-3 text-center rounded-r-lg w-48">
                                                                 <div className="flex items-center gap-2">
                                                                     {isExistingLotMode ? (
-                                                                        <div className="w-full bg-[#17cf54]/10 border border-[#17cf54]/20 rounded-lg px-3 py-1.5 text-center font-bold text-[#17cf54]">
+                                                                        <div className="w-full bg-primary/10 border border-primary/20 rounded-lg px-3 py-1.5 text-center font-bold text-primary">
                                                                             +{existingLotQuantity}
                                                                         </div>
                                                                     ) : (
@@ -723,10 +723,10 @@ export default function StockIn() {
                                                                     <span className="ml-2 text-[10px] bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded font-black uppercase">{t.inventory.pending || 'Pending'}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-4 py-3 text-center font-mono text-gray-400">—</td>
-                                                            <td className="px-4 py-3 text-center text-gray-400">—</td>
+                                                            <td className="px-4 py-3 text-center font-mono text-gray-400">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</td>
+                                                            <td className="px-4 py-3 text-center text-gray-400">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</td>
                                                             <td className="px-4 py-3 flex items-center gap-2">
-                                                                <div className="flex-1 text-center font-black text-[#17cf54] text-lg">
+                                                                <div className="flex-1 text-center font-black text-primary text-lg">
                                                                     +{isExistingLotMode ? existingLotQuantity : v.quantity}
                                                                 </div>
                                                                 <button
@@ -745,7 +745,7 @@ export default function StockIn() {
                                         <div className="mt-6 flex justify-end">
                                             <button
                                                 onClick={submitAddStock}
-                                                className="px-6 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-xl font-bold shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
+                                                className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
                                             >
                                                 <span className="material-symbols-outlined">add_box</span>
                                                 {t.inventory.updateStock || 'Update Stock'}
@@ -760,7 +760,7 @@ export default function StockIn() {
                                                     <select
                                                         value={newVariant.colorId}
                                                         onChange={(e) => setNewVariant({ ...newVariant, colorId: Number(e.target.value) })}
-                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54] dark:text-white"
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary dark:text-white"
                                                     >
                                                         <option value={0}>{t.common.selectColor || 'Select Color'}</option>
                                                         {colors.map(c => (
@@ -773,7 +773,7 @@ export default function StockIn() {
                                                     <select
                                                         value={newVariant.sizeId}
                                                         onChange={(e) => setNewVariant({ ...newVariant, sizeId: Number(e.target.value) })}
-                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-[#17cf54] focus:border-[#17cf54] dark:text-white"
+                                                        className="w-full bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary dark:text-white"
                                                     >
                                                         <option value={0}>{t.common.selectSize || 'Select Size'}</option>
                                                         {availableSizes.map(s => (
@@ -809,7 +809,7 @@ export default function StockIn() {
                                         </div>
                                         <div className="max-w-xs">
                                             <h3 className="text-base font-bold text-[#0e1b12] dark:text-white">{t.inventory.readyToScan || 'Ready to Scan'}</h3>
-                                            <p className="text-sm text-[#4e9767] dark:text-gray-400 mt-1">
+                                            <p className="text-sm text-secondary dark:text-gray-400 mt-1">
                                                 {t.inventory.scanSKUDescription || 'Scan a product barcode or enter a SKU to register new stock.'}
                                             </p>
                                         </div>
@@ -865,7 +865,7 @@ export default function StockIn() {
                                     <button
                                         type="button"
                                         onClick={createProduct}
-                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#17cf54] hover:bg-[#12a542] rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                         disabled={stockItems.length === 0}
                                     >
                                         <span className="material-symbols-outlined text-[20px]">save</span>
@@ -907,9 +907,9 @@ export default function StockIn() {
                                 />
 
                                 <div className="border-t border-gray-200/50 dark:border-white/10 pt-6">
-                                    <div className="bg-[#17cf54]/10 dark:bg-[#17cf54]/20 rounded-xl p-6 border border-[#17cf54]/20">
+                                    <div className="bg-primary/10 dark:bg-primary/20 rounded-xl p-6 border border-primary/20">
                                         <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white mb-2 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-[#17cf54]">layers</span>
+                                            <span className="material-symbols-outlined text-primary">layers</span>
                                             {t.inventory.lotConfiguration || 'Lot Configuration'}
                                         </h3>
                                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
@@ -928,7 +928,7 @@ export default function StockIn() {
                                                     className="text-lg"
                                                 />
                                             </div>
-                                            <div className="flex-1 text-sm text-[#4e9767] font-bold pb-3">
+                                            <div className="flex-1 text-sm text-secondary font-bold pb-3">
                                                 {t.inventory.totalItemsToGenerate || 'Total Items to Generate'}: <span className="text-xl ml-1 text-[#0e1b12] dark:text-white">{lotQuantity * stockItems.length}</span>
                                             </div>
                                         </div>
@@ -946,7 +946,7 @@ export default function StockIn() {
                                     <button
                                         type="button"
                                         onClick={createLot}
-                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#17cf54] hover:bg-[#12a542] rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                         disabled={stockItems.length === 0 || lotQuantity <= 0}
                                     >
                                         <span className="material-symbols-outlined text-[20px]">save</span>

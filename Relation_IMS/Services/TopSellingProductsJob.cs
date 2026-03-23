@@ -10,14 +10,14 @@ namespace Relation_IMS.Services
     public class TopSellingProductsJob
     {
         private readonly ILogger<TopSellingProductsJob> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public TopSellingProductsJob(
             ILogger<TopSellingProductsJob> logger,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 600)]
@@ -27,14 +27,14 @@ namespace Relation_IMS.Services
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
+                {
+                    // Update Last 30 Days
+                    await UpdateLast30DaysAsync(context);
 
-                // Update Last 30 Days
-                await UpdateLast30DaysAsync(context);
-
-                // Update This Quarter
-                await UpdateThisQuarterAsync(context);
+                    // Update This Quarter
+                    await UpdateThisQuarterAsync(context);
+                });
 
                 _logger.LogInformation("Top Selling Products Job completed successfully");
             }

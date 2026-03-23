@@ -161,7 +161,7 @@ export default function InventoryDetails() {
                     {/* Hero Section */}
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                         <div className="flex items-start gap-4 flex-1">
-                            <div className="p-4 rounded-xl bg-white dark:bg-[#1a2e22] shadow-sm border border-gray-100 dark:border-[#2a4032]">
+                            <div className="p-4 rounded-xl bg-white dark:bg-[var(--color-surface-dark-card)] shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                 <span className="material-symbols-outlined text-4xl text-primary">warehouse</span>
                             </div>
                             <div className="flex flex-col gap-3 w-full max-w-xl">
@@ -172,7 +172,7 @@ export default function InventoryDetails() {
                                     </h1>
                                     <p className="text-text-secondary dark:text-gray-400 text-sm flex items-center gap-2 mt-1">
                                         <span className="material-symbols-outlined text-[16px]">pin_drop</span>
-                                        Location ID: #{inventoryId} • Main Storage
+                                        Location ID: #{inventoryId} â€¢ Main Storage
                                     </p>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@ export default function InventoryDetails() {
                         <div className="flex flex-wrap items-center gap-3 self-start md:self-start mt-2">
                             <button
                                 onClick={() => navigate('/inventory/transfer')}
-                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-white dark:hover:bg-white/5 transition-all shadow-sm">
+                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-white dark:hover:bg-white/5 transition-all shadow-sm">
                                 <span className="material-symbols-outlined text-[20px]">swap_horiz</span>
                                 <span>Transfer Stock</span>
                             </button>
@@ -195,7 +195,7 @@ export default function InventoryDetails() {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm flex items-center gap-4">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center gap-4">
                             <div className="size-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
                                 <span className="material-symbols-outlined">inventory_2</span>
                             </div>
@@ -204,7 +204,7 @@ export default function InventoryDetails() {
                                 <p className="text-xl font-bold text-text-main dark:text-white">{totalSkus.toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm flex items-center gap-4">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center gap-4">
                             <div className="size-12 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
                                 <span className="material-symbols-outlined">layers</span>
                             </div>
@@ -215,7 +215,7 @@ export default function InventoryDetails() {
                         </div>
                         <div
                             onClick={() => setStockStatusFilter(prev => prev === 'low-stock' ? 'all' : 'low-stock')}
-                            className={`bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm flex items-center gap-4 relative overflow-hidden group cursor-pointer transition-all ${stockStatusFilter === 'low-stock' ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-900/10' : ''}`}>
+                            className={`bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center gap-4 relative overflow-hidden group cursor-pointer transition-all ${stockStatusFilter === 'low-stock' ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-900/10' : ''}`}>
                             <div className="absolute right-0 top-0 w-16 h-full bg-gradient-to-l from-orange-50 to-transparent dark:from-orange-900/10 opacity-50"></div>
                             <div className="size-12 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
                                 <span className="material-symbols-outlined">warning</span>
@@ -225,38 +225,38 @@ export default function InventoryDetails() {
                                 <p className="text-xl font-bold text-text-main dark:text-white">{lowStockCount} Items</p>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm flex items-center gap-4">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center gap-4">
                             <div className="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                                 <span className="material-symbols-outlined">attach_money</span>
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-text-secondary uppercase">Stock Value</p>
-                                <p className="text-xl font-bold text-text-main dark:text-white">৳{stockValue.toLocaleString()}</p>
+                                <p className="text-xl font-bold text-text-main dark:text-white">à§³{stockValue.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Table Section */}
-                <div className="bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-200 dark:border-[#2a4032] shadow-sm flex flex-col">
-                    <div className="p-5 border-b border-gray-100 dark:border-[#2a4032] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-200 dark:border-[var(--color-surface-dark-border)] shadow-sm flex flex-col">
+                    <div className="p-5 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)] flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h2 className="text-lg font-bold text-text-main dark:text-white">Products in This Inventory</h2>
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                             <div className="relative flex-1 sm:w-64">
                                 <span className="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">search</span>
                                 <input
-                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[#2a4032] rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text-main dark:text-white placeholder-gray-400"
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text-main dark:text-white placeholder-gray-400"
                                     placeholder="Search by name or SKU..."
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-transparent dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-all">
+                            <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-transparent dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-all">
                                 <span className="material-symbols-outlined text-[18px]">filter_list</span>
                                 <span>Filter</span>
                             </button>
-                            <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-transparent dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-all">
+                            <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-secondary bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-transparent dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-all">
                                 <span className="material-symbols-outlined text-[18px]">download</span>
                                 <span>Export</span>
                             </button>
@@ -266,7 +266,7 @@ export default function InventoryDetails() {
                     {/* Table */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] border-b border-gray-100 dark:border-[#2a4032]">
+                            <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border-b border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                 <tr>
                                     <th className="px-6 py-4 font-bold">Product Details</th>
                                     <th className="px-6 py-4 font-bold">Category</th>
@@ -282,7 +282,7 @@ export default function InventoryDetails() {
                                     <tr key={`${p.ProductId}-${idx}`} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="size-12 rounded-lg bg-gray-100 bg-center bg-cover border border-gray-200 dark:border-[#2a4032] shrink-0"
+                                                <div className="size-12 rounded-lg bg-gray-100 bg-center bg-cover border border-gray-200 dark:border-[var(--color-surface-dark-border)] shrink-0"
                                                     style={{ backgroundImage: `url("${p.ImageUrl}")` }}></div>
                                                 <div>
                                                     <p className="font-bold text-text-main dark:text-white text-base truncate max-w-[200px]" title={p.Name}>{p.Name}</p>
@@ -297,8 +297,8 @@ export default function InventoryDetails() {
                                                 <span className={`text-[10px] ${p.Quantity < 10 ? 'text-red-500' : 'text-text-secondary'}`}>units</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right font-medium text-text-main dark:text-gray-300">৳{p.Price.toFixed(2)}</td>
-                                        <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">৳{(p.Quantity * p.Price).toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-medium text-text-main dark:text-gray-300">à§³{p.Price.toFixed(2)}</td>
+                                        <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">à§³{(p.Quantity * p.Price).toLocaleString()}</td>
                                         <td className="px-6 py-4 text-center">
                                             {p.Quantity === 0 ? (
                                                 <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700/30 dark:text-gray-400 text-xs font-bold border border-gray-200 dark:border-gray-600">Out of Stock</span>

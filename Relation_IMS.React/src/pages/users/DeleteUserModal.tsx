@@ -24,7 +24,7 @@ export default function DeleteUserModal({ show, userName, onCancel, onConfirm }:
     return (
         <div className="fixed inset-0 z-[110] flex items-start md:items-center justify-center p-4 pt-4 md:pt-0">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-            <div className="relative bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
+            <div className="relative bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-fadeIn">
                 <div className="p-6 flex flex-col items-center text-center gap-4">
                     <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
                         <span className="material-symbols-outlined text-red-500 text-[32px]">warning</span>

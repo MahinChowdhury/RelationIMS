@@ -8,14 +8,14 @@ export default {
     theme: {
         extend: {
             colors: {
-                "primary": "#17cf54",
-                "primary-dark": "#12a543",
-                "secondary": "#4e9767",
-                "tertiary": "#236c31",
-                "background-light": "#f8fcf9",
-                "background-dark": "#112116",
+                "primary": "var(--color-primary)",
+                "primary-dark": "var(--color-primary-dark)",
+                "secondary": "var(--color-secondary)",
+                "tertiary": "var(--color-tertiary)",
+                "background-light": "var(--color-bg-light)",
+                "background-dark": "var(--color-bg-dark)",
                 "surface-light": "rgba(255, 255, 255, 0.6)",
-                "surface-dark": "rgba(17, 33, 22, 0.6)",
+                "surface-dark": "var(--color-surface-dark)",
                 "surface-container": "#eaf0ea",
                 "surface-container-low": "#f0f3f0",
                 "surface-container-highest": "#dee5de",
@@ -26,7 +26,7 @@ export default {
                 "error-container": "#ffdad6",
                 "on-error-container": "#410002",
                 "text-main": "#0e1b12",
-                "text-secondary": "#4e9767",
+                "text-secondary": "var(--color-text-secondary)",
             },
             fontFamily: {
                 "display": ["Manrope", "Noto Sans", "sans-serif"]
