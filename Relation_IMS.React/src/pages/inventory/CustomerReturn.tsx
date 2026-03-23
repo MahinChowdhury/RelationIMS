@@ -36,6 +36,7 @@ interface ReturnRecord {
 
 export default function CustomerReturn() {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     // State
     const [inventories, setInventories] = useState<Inventory[]>([]);
     const [selectedInventoryId, setSelectedInventoryId] = useState<number | ''>('');
@@ -438,7 +439,7 @@ export default function CustomerReturn() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className="font-mono font-bold text-green-600 dark:text-green-400">Ã Â§Â³{item.price.toFixed(2)}</span>
+<span className="font-mono font-bold text-green-600 dark:text-green-400">{taka}{item.price.toFixed(2)}</span>
                                             <button onClick={() => removeScannedItem(item.id)} className="text-gray-400 hover:text-red-500 transition">
                                                 <span className="material-symbols-outlined">delete</span>
                                             </button>
@@ -453,7 +454,7 @@ export default function CustomerReturn() {
                         <div>
                             <label className="block text-sm font-bold text-text-main dark:text-white mb-1">{t.inventory.refundAmount || 'Refund Amount'} ({t.inventory.balanceIncrease || 'Balance Increase'})</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">Ã Â§Â³</span>
+<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">{taka}</span>
                                 <input
                                     type="text"
                                     min="0"
@@ -496,7 +497,7 @@ export default function CustomerReturn() {
                         <button
                             onClick={handleProcessReturn}
                             disabled={processing || scannedItems.length === 0 || !selectedCustomer || !selectedInventoryId}
-                            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-3 bg-green-600 hover:bg-primary-dark text-white font-bold rounded-lg shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {processing ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">keyboard_return</span>}
                             <span>{t.inventory.confirmReturn || 'Confirm Return & Refund'}</span>
@@ -544,7 +545,7 @@ export default function CustomerReturn() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 font-mono font-bold text-green-600 dark:text-green-400">
-                                                +Ã Â§Â³{record.RefundAmount.toFixed(2)}
++{taka}{record.RefundAmount.toFixed(2)}
                                             </td>
                                             <td className="px-6 py-4 flex items-center gap-2">
                                                 <div className="size-6 rounded-full bg-gray-200 flex items-center justify-center font-bold text-[10px] text-gray-500">

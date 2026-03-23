@@ -12,15 +12,18 @@ namespace Relation_IMS.Controllers
     {
         private readonly ISalesOverviewRepository _repository;
         private readonly IRedisCacheService _cacheService;
+        private readonly IPdfReportService _pdfReportService;
         private readonly ILogger<SalesOverviewController> _logger;
 
         public SalesOverviewController(
             ISalesOverviewRepository repository,
             IRedisCacheService cacheService,
+            IPdfReportService pdfReportService,
             ILogger<SalesOverviewController> logger)
         {
             _repository = repository;
             _cacheService = cacheService;
+            _pdfReportService = pdfReportService;
             _logger = logger;
         }
 
@@ -97,6 +100,21 @@ namespace Relation_IMS.Controllers
             {
                 _logger.LogError(ex, "Error getting all sales overview");
                 return StatusCode(500, new { message = "An error occurred while fetching sales overview" });
+            }
+        }
+
+        [HttpGet("download")]
+        public async Task<IActionResult> DownloadDashboardReport()
+        {
+            try
+            {
+                var pdfBytes = await _pdfReportService.GenerateDashboardReportAsync(DateTime.UtcNow);
+                return File(pdfBytes, "application/pdf", $"DashboardReport_{DateTime.UtcNow:yyyyMMdd_HHmm}.pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating dashboard PDF report");
+                return StatusCode(500, new { message = "An error occurred while generating the report" });
             }
         }
     }

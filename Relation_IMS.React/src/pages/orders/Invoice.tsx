@@ -70,7 +70,8 @@ function formatDate(dateString: string) {
 }
 
 function money(n: number) {
-    return 'à§³' + n.toFixed(2);
+    const taka = '\u09F3';
+    return taka + n.toFixed(2);
 }
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -118,7 +119,7 @@ export default function InvoicePage() {
                     <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Oops!</h2>
                     <p className="text-red-600 dark:text-red-400">{error || 'Invoice not found'}</p>
                 </div>
-                <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-primary/20">
+                <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20">
                     <span className="material-symbols-outlined">arrow_back</span>
                     Back to Orders
                 </Link>
@@ -140,7 +141,7 @@ export default function InvoicePage() {
                 </Link>
                 <button
                     onClick={handlePrint}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-green-600 transition-all shadow-lg shadow-green-500/30 active:scale-95"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition-all shadow-lg shadow-primary/30 active:scale-95"
                 >
                     <span className="material-symbols-outlined text-lg">print</span>
                     Print Receipt

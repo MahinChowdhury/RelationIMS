@@ -162,7 +162,7 @@ export function CustomerFormModal({
                     <button
                         type="button"
                         onClick={onSave}
-                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-md shadow-primary/20 transition-all flex items-center gap-2"
+                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-md shadow-primary/20 transition-all flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[18px]">check</span>
                         {mode === 'create' ? t.customers.addCustomer : t.common.saveChanges}

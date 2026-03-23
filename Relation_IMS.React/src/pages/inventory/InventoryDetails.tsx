@@ -22,6 +22,7 @@ export default function InventoryDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const inventoryId = Number(id);
+    const taka = '\u09F3';
 
     // State
     const [inventory, setInventory] = useState<Inventory | null>(null);
@@ -186,7 +187,7 @@ export default function InventoryDetails() {
                             </button>
                             <button
                                 onClick={() => navigate('/inventory/stock-in')}
-                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-green-600 transition-all shadow-sm">
+                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm">
                                 <span className="material-symbols-outlined text-[20px]">add</span>
                                 <span>Add Product</span>
                             </button>
@@ -231,7 +232,7 @@ export default function InventoryDetails() {
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-text-secondary uppercase">Stock Value</p>
-                                <p className="text-xl font-bold text-text-main dark:text-white">à§³{stockValue.toLocaleString()}</p>
+                                <p className="text-xl font-bold text-text-main dark:text-white">{taka}{stockValue.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
@@ -297,8 +298,8 @@ export default function InventoryDetails() {
                                                 <span className={`text-[10px] ${p.Quantity < 10 ? 'text-red-500' : 'text-text-secondary'}`}>units</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right font-medium text-text-main dark:text-gray-300">à§³{p.Price.toFixed(2)}</td>
-                                        <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">à§³{(p.Quantity * p.Price).toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-medium text-text-main dark:text-gray-300">{taka}{p.Price.toFixed(2)}</td>
+                                        <td className="px-6 py-4 text-right font-bold text-text-main dark:text-white">{taka}{(p.Quantity * p.Price).toLocaleString()}</td>
                                         <td className="px-6 py-4 text-center">
                                             {p.Quantity === 0 ? (
                                                 <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700/30 dark:text-gray-400 text-xs font-bold border border-gray-200 dark:border-gray-600">Out of Stock</span>

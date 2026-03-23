@@ -11,6 +11,7 @@ interface AddUserModalProps {
 
 export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalProps) {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [roles, setRoles] = useState<RoleDTO[]>([]);
@@ -136,12 +137,12 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Password</label>
                                 <input type="password" name="password" required value={formData.password} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Confirm Password</label>
                                 <input type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="••••••••" />
                             </div>
                         </div>
 
@@ -152,7 +153,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary (Ã Â§Â³)</label>
+                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary ({taka})</label>
                             <QuantityInput
                                 value={formData.currentSalary || 0}
                                 onChange={(val) => setFormData(prev => ({ ...prev, currentSalary: val }))}

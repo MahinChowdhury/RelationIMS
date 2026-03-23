@@ -10,6 +10,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 export default function CustomersPage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const taka = '\u09F3';
 
     // State
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -208,7 +209,7 @@ export default function CustomersPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={openCreate}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-lg shadow-primary/20 transition-all"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all"
                     >
                         <span className="material-symbols-outlined text-[20px]">person_add</span>
                         {t.customers.addCustomer}
@@ -344,7 +345,7 @@ export default function CustomersPage() {
                             {/* Total Spent */}
                             <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Total Spent</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white">Ã Â§Â³{stats.totalSpent.toFixed(2)}</span>
+                                <span className="text-sm font-bold text-text-main dark:text-white">{taka}{stats.totalSpent.toFixed(2)}</span>
                             </div>
 
                             {/* Due Amount */}
@@ -353,7 +354,7 @@ export default function CustomersPage() {
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">payments</span>
                                     <span className={`font-bold text-sm lg:text-sm ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                        Ã Â§Â³{stats.dueAmount.toFixed(2)}
+                                        {taka}{stats.dueAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>

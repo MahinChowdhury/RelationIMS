@@ -1,6 +1,8 @@
 const MonthlyGrowthTrend = () => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   const dataPointOffsets = [20, 40, 60, 55, 80, 90];
+  const primaryColor = 'var(--color-primary, #17cf54)';
+  const linePath = "M 0 80 Q 20 70, 20 60 T 40 40 T 60 45 T 80 20 T 100 10";
 
   return (
     <div className="col-span-12 lg:col-span-7 bg-white dark:bg-[var(--color-surface-dark-card)] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)] relative overflow-hidden">
@@ -26,14 +28,14 @@ const MonthlyGrowthTrend = () => {
         <svg className="absolute inset-0 w-full h-full p-4" preserveAspectRatio="none" viewBox="0 0 100 100">
           <defs>
             <linearGradient id="dashGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#17cf54" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#17cf54" stopOpacity="0" />
+              <stop offset="0%" stopColor={primaryColor} stopOpacity="0.3" />
+              <stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
             </linearGradient>
           </defs>
           <path
-            d="M 0 80 Q 20 70, 20 60 T 40 40 T 60 45 T 80 20 T 100 10"
+            d={linePath}
             fill="none"
-            stroke="#17cf54"
+            stroke={primaryColor}
             strokeLinecap="round"
             strokeWidth="3"
           />

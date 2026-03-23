@@ -31,14 +31,15 @@ const EstimatedInventoryValue = () => {
   };
 
   const formatCurrency = (amount: number): string => {
+    const taka = '\u09F3';
     if (amount >= 10000000) {
-      return `à§³${(amount / 10000000).toFixed(1)}M`;
+      return `${taka}${(amount / 10000000).toFixed(1)}M`;
     } else if (amount >= 100000) {
-      return `à§³${(amount / 100000).toFixed(1)}L`;
+      return `${taka}${(amount / 100000).toFixed(1)}L`;
     } else if (amount >= 1000) {
-      return `à§³${(amount / 1000).toFixed(1)}K`;
+      return `${taka}${(amount / 1000).toFixed(1)}K`;
     }
-    return `à§³${amount}`;
+    return `${taka}${amount}`;
   };
 
   const calculateGrowth = (): number => {

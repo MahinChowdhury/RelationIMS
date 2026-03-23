@@ -40,6 +40,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const { id, hash, productId: urlProductId } = useParams<{ id: string, hash: string, productId: string }>();
     const activeId = productId || urlProductId || id;
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const navigate = useNavigate();
 
     const isGuest = propGuestView || false;
@@ -214,7 +215,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 setCurrentImageIndex(0);
             }
         } catch (err) {
-            console.error(`Ã¢ÂÅ’ Failed to load product details of id ${productId}:`, err);
+            console.error(`¢Å’ Failed to load product details of id ${productId}:`, err);
         }
     };
 
@@ -561,7 +562,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         </div>
                         <div className="text-right hidden sm:block">
                             <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">{t.products.retailPrice}</p>
-                            <p className="text-3xl font-black text-text-main dark:text-white">Ã Â§Â³{productDetail.MSRP.toFixed(2)}</p>
+                            <p className="text-3xl font-black text-text-main dark:text-white">{taka}{productDetail.MSRP.toFixed(2)}</p>
                         </div>
                     </div>
 
@@ -603,7 +604,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                {/* LEFT SIDE Ã¢â‚¬â€œ MSRP, Base Price, Cost Price */}
+                                {/* LEFT SIDE ¢â‚¬â€œ MSRP, Base Price, Cost Price */}
                                 <div className="flex flex-col gap-4">
 
                                     {/* MSRP */}
@@ -614,7 +615,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.msrp}</span>
                                             <span className="text-lg font-extrabold text-text-main dark:text-white">
-                                                Ã Â§Â³{(productDetail.MSRP || 0).toFixed(2)}
+                                                {taka}{(productDetail.MSRP || 0).toFixed(2)}
                                             </span>
                                         </div>
                                     </div>
@@ -628,7 +629,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.basePrice}</span>
                                                 <span className="text-lg font-extrabold text-red-500 dark:text-white">
-                                                    Ã Â§Â³{(productDetail.BasePrice || 0).toFixed(2)}
+                                                    {taka}{(productDetail.BasePrice || 0).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -643,7 +644,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
                                                 <span className="text-lg font-extrabold text-blue-500 dark:text-white">
-                                                    Ã Â§Â³{(productDetail.CostPrice || 0).toFixed(2)}
+                                                    {taka}{(productDetail.CostPrice || 0).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -651,7 +652,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                                 </div>
 
-                                {/* RIGHT SIDE Ã¢â‚¬â€œ Category, Brand, Quarter */}
+                                {/* RIGHT SIDE ¢â‚¬â€œ Category, Brand, Quarter */}
                                 <div className="flex flex-col gap-4">
 
                                     {/* Category */}
@@ -747,7 +748,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             const isLast = groupedProductOrders.length === index + 1;
 
                                             // Format the variant string to show Color / [Size1, Size2, ...]
-                                            const colorName = item.ProductVariant?.Color?.Name || 'Ã¢â‚¬â€';
+                                            const colorName = item.ProductVariant?.Color?.Name || '¢â‚¬â€';
 
                                             return (
                                                 <tr
@@ -787,7 +788,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                         <span className="font-bold text-lg text-primary mt-1 block">{item.totalQuantity}</span>
                                                     </td>
                                                     <td className="px-6 py-4 font-bold text-right align-top text-text-main dark:text-white">
-                                                        <span className="mt-1 block">Ã Â§Â³{item.totalSubtotal.toFixed(2)}</span>
+                                                        <span className="mt-1 block">{taka}{item.totalSubtotal.toFixed(2)}</span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {getPaymentStatusBadge(item.Order?.PaymentStatus)}

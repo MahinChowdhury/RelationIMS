@@ -13,6 +13,7 @@ interface VariantSelectionModalProps {
 
 export default function VariantSelectionModal({ isOpen, onClose, product, variants, onConfirm }: VariantSelectionModalProps) {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
     const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([]);
     const [quantity, setQuantity] = useState<number>(1);
@@ -304,7 +305,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.unitPrice}</label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">à§³</span>
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">{taka}</span>
                                     <input
                                         type="number"
                                         onFocus={(e) => e.target.select()}

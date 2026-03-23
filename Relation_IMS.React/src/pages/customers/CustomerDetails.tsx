@@ -13,6 +13,7 @@ export default function CustomerDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const customerId = Number(id);
+    const taka = '\u09F3';
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [stats, setStats] = useState<CustomerStats | null>(null);
     const [orders, setOrders] = useState<Order[]>([]);
@@ -196,7 +197,7 @@ export default function CustomerDetailsPage() {
                         </span>
                     </div>
                     <p className="text-text-secondary dark:text-gray-400 text-base max-w-2xl">
-                        Customer ID: #CUST-{customer.Id.toString().padStart(4, '0')} Ã¢â‚¬Â¢ Member since {formatDate(customer.CreatedDate)}
+                        Customer ID: #CUST-{customer.Id.toString().padStart(4, '0')} ¢â‚¬¢ Member since {formatDate(customer.CreatedDate)}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -226,7 +227,7 @@ export default function CustomerDetailsPage() {
                             <p className="text-sm text-text-secondary dark:text-gray-400 mb-6">{getCustomerStatus()}</p>
 
                             <div className="grid grid-cols-2 gap-3 mb-6">
-                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-green-500 text-white text-sm font-bold rounded-lg shadow-md shadow-primary/20 transition-all w-full">
+                                <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-lg shadow-md shadow-primary/20 transition-all w-full">
                                     <span className="material-symbols-outlined text-[18px]">call</span>
                                     Call
                                 </button>
@@ -308,7 +309,7 @@ export default function CustomerDetailsPage() {
                         <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Total Purchases</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">Ã Â§Â³{totalSpent.toFixed(2)}</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">{taka}{totalSpent.toFixed(2)}</p>
                             </div>
                             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary dark:bg-primary/20">
                                 <span className="material-symbols-outlined">shopping_bag</span>
@@ -319,7 +320,7 @@ export default function CustomerDetailsPage() {
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Total Due</p>
                                 <p className={`text-2xl font-black ${totalDue > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                    Ã Â§Â³{totalDue.toFixed(2)}
+                                    {taka}{totalDue.toFixed(2)}
                                 </p>
                             </div>
                             <div className={`size-10 rounded-full flex items-center justify-center ${totalDue > 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
@@ -329,7 +330,7 @@ export default function CustomerDetailsPage() {
                         <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Current Balance</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">Ã Â§Â³{customer.Balance?.toFixed(2) || '0.00'}</p>
+                                <p className="text-2xl font-black text-text-main dark:text-white">{taka}{customer.Balance?.toFixed(2) || '0.00'}</p>
                             </div>
                             <div className="size-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 dark:bg-green-900/20">
                                 <span className="material-symbols-outlined">account_balance_wallet</span>
@@ -418,7 +419,7 @@ export default function CustomerDetailsPage() {
                                                     <td className="px-6 py-4 font-medium text-right text-red-500">
                                                         {(order.Discount || 0) > 0 ? `-${order.Discount.toFixed(2)}` : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 font-bold text-right">Ã Â§Â³{order.NetAmount.toFixed(2)}</td>
+                                                    <td className="px-6 py-4 font-bold text-right">{taka}{order.NetAmount.toFixed(2)}</td>
                                                     <td className="px-6 py-4 text-center">
                                                         <button
                                                             onClick={() => navigate(`/orders/${order.Id}`)}

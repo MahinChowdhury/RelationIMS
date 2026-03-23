@@ -8,6 +8,7 @@ import { type Order, PaymentStatus } from '../../types';
 
 export default function OrdersPage() {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const navigate = useNavigate();
 
     // State
@@ -155,7 +156,7 @@ export default function OrdersPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => navigate('/orders/create')}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 shadow-lg shadow-primary/20 transition-all">
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all">
                         <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
                         {t.orders.createOrder}
                     </button>
@@ -275,21 +276,21 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[90px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Discount</span>
                             <span className={`text-sm ${order.Discount > 0 ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                                {order.Discount > 0 ? '-' : ''}Ã Â§Â³{order.Discount.toFixed(2)}
+                                {order.Discount > 0 ? '-' : ''}{taka}{order.Discount.toFixed(2)}
                             </span>
                         </div>
 
                         {/* Net Amount */}
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Net Amount</span>
-                            <span className="text-sm font-bold text-text-main dark:text-white">Ã Â§Â³{order.NetAmount.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-text-main dark:text-white">{taka}{order.NetAmount.toFixed(2)}</span>
                         </div>
 
                         {/* Paid Amount */}
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Paid Amt</span>
                             <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                Ã Â§Â³{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(2)}
+                                {taka}{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(2)}
                             </span>
                         </div>
 
@@ -297,7 +298,7 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Due Amt</span>
                             <span className="text-sm font-medium text-red-500 dark:text-red-400">
-                                Ã Â§Â³{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
+                                {taka}{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
                             </span>
                             {/* Next Payment Date */}
                             {order.NextPaymentDate && (order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))) > 0 && (

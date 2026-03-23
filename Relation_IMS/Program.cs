@@ -169,6 +169,7 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 
 // ============================================
 // Repositories

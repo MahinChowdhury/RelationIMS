@@ -26,24 +26,20 @@
   --color-glass-dark-bg: rgba(17, 33, 22, 0.7);
 }
 
-/* YoloIms — Yellow/Amber Theme */
-[data-tenant="YoloIms"] {
-  --color-primary: #f59e0b;
-  --color-primary-dark: #d97706;
-  --color-secondary: #b45309;
-  --color-tertiary: #92400e;
-  --color-bg-light: #fffbeb;
-  --color-bg-dark: #1c1a11;
-  --color-surface-dark: rgba(28, 26, 17, 0.6);
-  --color-surface-dark-solid: #1a1810;
-  --color-surface-dark-card: #2e2a1a;
-  --color-surface-dark-border: #403a22;
-  --color-text-secondary: #b45309;
-  --color-scrollbar: #e7d7b0;
-  --color-pattern-dot: #f59e0b;
-  --color-pattern-bg-light: #fffbeb;
-  --color-pattern-bg-dark: #1c1a11;
-  --color-glass-dark-bg: rgba(28, 26, 17, 0.7);
+/* Primary color shadow utility */
+.shadow-primary {
+  --tw-shadow-color: var(--color-primary);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-primary\/20 {
+  --tw-shadow-color: rgb(var(--color-primary) / 0.2);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.shadow-primary\/30 {
+  --tw-shadow-color: rgb(var(--color-primary) / 0.3);
+  --tw-shadow: var(--tw-shadow-colored);
 }
 
 html {

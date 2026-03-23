@@ -189,7 +189,7 @@ export default function DefectItems() {
                     <button
                         onClick={() => handleRegisterDefect()}
                         disabled={registering || !productCode.trim()}
-                        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 transition-colors shadow-sm focus:ring-4 focus:ring-primary/20 disabled:opacity-50"
+                        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm focus:ring-4 focus:ring-primary/20 disabled:opacity-50"
                         title={t.inventory.markAsDefected || "Mark as Defected"}
                     >
                         {registering ? (

@@ -296,7 +296,7 @@ const InventoryTransfer = () => {
                             />
                             <button
                                 type="submit"
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary text-white rounded-md hover:bg-green-600 transition-colors shadow-sm"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors shadow-sm"
                             >
                                 <span className="material-symbols-outlined text-[20px] block">arrow_forward</span>
                             </button>
@@ -406,7 +406,7 @@ const InventoryTransfer = () => {
                                         {t.common.cancel || 'Cancel'}
                                     </button>
                                     <button
-                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-green-600 rounded-lg shadow-lg shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         onClick={handleConfirmTransfer}
                                         disabled={transferring || totalUnits === 0 || !sourceId || !destinationId}
                                     >

@@ -2,10 +2,11 @@ import { useLanguage } from '../../i18n/LanguageContext';
 
 const PaymentMethods = () => {
   const { t } = useLanguage();
+  const taka = '\u09F3';
   const methods = [
-    { name: t.dashboard.mobileBanking, amount: 'à§³5,20,000', dotColor: 'bg-primary' },
-    { name: t.dashboard.cash, amount: 'à§³2,80,000', dotColor: 'bg-[#4e9767]' },
-    { name: t.dashboard.card, amount: 'à§³2,00,000', dotColor: 'bg-[#236c31]' },
+    { name: t.dashboard.mobileBanking, amount: `${taka}5,20,000`, dotColor: 'bg-primary' },
+    { name: t.dashboard.cash, amount: `${taka}2,80,000`, dotColor: 'bg-[#4e9767]' },
+    { name: t.dashboard.card, amount: `${taka}2,00,000`, dotColor: 'bg-[#236c31]' },
   ];
 
   return (

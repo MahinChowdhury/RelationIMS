@@ -398,7 +398,7 @@ export default function ArrangementDetails() {
                                             type="text"
                                         />
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                                            <button type="submit" className="bg-primary text-white p-2 rounded-lg hover:bg-primary-dark transition-colors shadow-lg shadow-green-200 dark:shadow-none">
+                                            <button type="submit" className="bg-primary text-white p-2 rounded-lg hover:bg-primary-dark transition-colors shadow-lg shadow-primary dark:shadow-none">
                                                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
                                             </button>
                                         </div>
@@ -498,7 +498,7 @@ export default function ArrangementDetails() {
                             </button>
                             <button
                                 onClick={handleFinalConfirm}
-                                className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-green-200/50 dark:shadow-none"
+                                className="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/50 dark:shadow-none"
                             >
                                 Yes, Complete
                             </button>

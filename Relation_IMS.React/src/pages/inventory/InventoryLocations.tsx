@@ -75,7 +75,7 @@ export default function InventoryLocations() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleOpenModal}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-green-600 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm"
                     >
                         <span className="material-symbols-outlined text-[20px]">add_location</span>
                         <span>{t.inventory.addLocation || 'Add Location'}</span>
@@ -95,7 +95,7 @@ export default function InventoryLocations() {
                     <p className="text-text-secondary dark:text-gray-400 mb-6">{t.inventory.getStartedLocations || 'Get started by creating your first inventory location.'}</p>
                     <button
                         onClick={handleOpenModal}
-                        className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-green-600 transition-colors shadow-lg shadow-primary/20"
+                        className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
                     >
                         {t.inventory.createLocation || 'Create Location'}
                     </button>
@@ -236,7 +236,7 @@ export default function InventoryLocations() {
                                 type="button"
                                 onClick={handleCreateInventory}
                                 disabled={saving}
-                                className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-md shadow-primary/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-md shadow-primary/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {saving ? (
                                     <>

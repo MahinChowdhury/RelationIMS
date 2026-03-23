@@ -865,7 +865,7 @@ export default function StockIn() {
                                     <button
                                         type="button"
                                         onClick={createProduct}
-                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                         disabled={stockItems.length === 0}
                                     >
                                         <span className="material-symbols-outlined text-[20px]">save</span>
@@ -946,7 +946,7 @@ export default function StockIn() {
                                     <button
                                         type="button"
                                         onClick={createLot}
-                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-green-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                         disabled={stockItems.length === 0 || lotQuantity <= 0}
                                     >
                                         <span className="material-symbols-outlined text-[20px]">save</span>

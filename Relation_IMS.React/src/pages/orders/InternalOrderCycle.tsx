@@ -204,7 +204,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                         <button
                             onClick={() => setShowConfirmModal(true)}
                             disabled={loading}
-                            className="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg shadow-green-500/30 flex items-center gap-2 text-sm animate-in fade-in"
+                            className="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/30 flex items-center gap-2 text-sm animate-in fade-in"
                         >
                             {loading ? (
                                 <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>

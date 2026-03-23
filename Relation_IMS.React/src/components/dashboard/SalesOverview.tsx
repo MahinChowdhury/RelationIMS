@@ -23,6 +23,7 @@ const SalesOverview = () => {
   const [thisMonth, setThisMonth] = useState<SalesOverviewData | null>(null);
   const [todaySale, setTodaySale] = useState<TodaySaleData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     fetchSalesOverview();
@@ -81,6 +82,29 @@ const SalesOverview = () => {
     return todaySale.PercentageChange >= 0 ? 'trending_up' : 'trending_down';
   };
 
+  const handleDownloadReport = async () => {
+    try {
+      setDownloading(true);
+      const response = await api.get('/salesoverview/download', {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `DashboardReport_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download report:', error);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <section>
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
@@ -89,7 +113,12 @@ const SalesOverview = () => {
           <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-text-main dark:text-white">{t.dashboard.salesOverview}</h3>
         </div>
         <div className="flex gap-2">
-                <button className="px-4 py-2 bg-gray-900 dark:bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-gray-800 dark:hover:bg-white/20 transition-colors">
+                <button 
+                  onClick={handleDownloadReport}
+                  disabled={downloading}
+                  className="px-4 py-2 bg-gray-900 dark:bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-gray-800 dark:hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {downloading && <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>}
                   {t.dashboard.downloadReport}
                 </button>
         </div>
@@ -164,7 +193,7 @@ const SalesOverview = () => {
                 </h4>
               </div>
               <div className="mt-6 flex items-center justify-between text-xs">
-                <span className="text-gray-500 dark:text-gray-400">{t.dashboard.target}: à§³4,00,000</span>
+                <span className="text-gray-500 dark:text-gray-400">{t.dashboard.target}: {formatCurrency(400000)}</span>
                 <span className="font-bold text-primary">{getMonthProgress()}%</span>
               </div>
               <div className="mt-2 w-full h-2 bg-gray-100 dark:bg-[#2a4032] rounded-full overflow-hidden">

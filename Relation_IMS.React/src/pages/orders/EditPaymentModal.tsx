@@ -13,6 +13,7 @@ interface EditPaymentModalProps {
 
 export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpdated }: EditPaymentModalProps) {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const [payments, setPayments] = useState<{ method: string, amount: number, note: string }[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -157,15 +158,15 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                     <div className="mt-6 p-4 bg-gray-50 dark:bg-black/20 rounded-xl space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">{t.orders.orderNetAmount || 'Order Net Amount'}:</span>
-                            <span className="font-bold text-text-main dark:text-white">Ã Â§Â³{order.NetAmount.toFixed(2)}</span>
+                            <span className="font-bold text-text-main dark:text-white">{taka}{order.NetAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">{t.orders.totalPaid || 'Total Paid'}:</span>
-                            <span className="font-bold text-green-600">Ã Â§Â³{totalPaid.toFixed(2)}</span>
+                            <span className="font-bold text-green-600">{taka}{totalPaid.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-base pt-2 border-t border-gray-200 dark:border-gray-700">
                             <span className="font-bold text-text-main dark:text-white">{t.orders.remainingDue || 'Remaining Due'}:</span>
-                            <span className={`font-black ${due > 0 ? 'text-red-500' : 'text-green-500'}`}>Ã Â§Â³{due.toFixed(2)}</span>
+                            <span className={`font-black ${due > 0 ? 'text-red-500' : 'text-green-500'}`}>{taka}{due.toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
@@ -180,7 +181,7 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center gap-2"
                     >
                         {loading ? <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span> : <span className="material-symbols-outlined text-sm">save</span>}
                         {t.common.saveChanges || 'Save Changes'}
