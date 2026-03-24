@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ShareCatalogView from './pages/products/ShareCatalogView';
@@ -35,12 +35,13 @@ const UserProfile = lazy(() => import('./pages/userprofile/UserProfile'));
 const UserManagement = lazy(() => import('./pages/users/UserManagement'));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 
-const Accounts = () => (
-  <div className="p-4">
-    <h1 className="text-2xl dark:text-white font-bold">Accounts</h1>
-    <p className="text-gray-600 dark:text-white mt-2">Coming Soon</p>
-  </div>
-);
+// Accounts section (separate layout with its own sidebar/bottom-nav)
+const AccountsLayout = lazy(() => import('./pages/accounts/AccountsLayout'));
+const SalesSummary = lazy(() => import('./pages/accounts/SalesSummary'));
+const CashBook = lazy(() => import('./pages/accounts/CashBook'));
+const GeneralLedger = lazy(() => import('./pages/accounts/GeneralLedger'));
+const BalanceSheet = lazy(() => import('./pages/accounts/BalanceSheet'));
+const ProfitLoss = lazy(() => import('./pages/accounts/ProfitLoss'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-[200px]">
@@ -59,6 +60,7 @@ function App() {
         <Route path="/products/share-catalog/:hash" element={<ShareCatalogView />} />
         <Route path="/products/share-catalog/:hash/:productId" element={<ProductDetails isGuestView={true} />} />
 
+        {/* Main IMS Layout */}
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Welcome />} />
           <Route path="welcome" element={<Welcome />} />
@@ -71,7 +73,6 @@ function App() {
           <Route path="orders/:id/invoice" element={<Invoice />} />
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:id" element={<CustomerDetails />} />
-          <Route path="accounts" element={<Accounts />} />
           <Route path="inventory" element={<InventoryOptions />} />
           <Route path="inventory/transfer" element={<InventoryTransfer />} />
           <Route path="inventory/defects" element={<DefectItems />} />
@@ -86,6 +87,16 @@ function App() {
           <Route path="arrangement/:id" element={<ArrangementDetails />} />
           <Route path="userprofile/:id?" element={<UserProfile />} />
           <Route path="products/:id" element={<ProductDetails />} />
+        </Route>
+
+        {/* Accounts Section (separate layout with its own sidebar/bottom-nav) */}
+        <Route path="/accounts" element={<ProtectedRoute><AccountsLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="/accounts/sales" replace />} />
+          <Route path="sales" element={<SalesSummary />} />
+          <Route path="cashbook" element={<CashBook />} />
+          <Route path="ledger" element={<GeneralLedger />} />
+          <Route path="balance-sheet" element={<BalanceSheet />} />
+          <Route path="profit-loss" element={<ProfitLoss />} />
         </Route>
       </Routes>
     </Suspense>
