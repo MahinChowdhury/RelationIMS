@@ -99,7 +99,7 @@ export default function ShareCatalogView() {
     if (requiresPassword) {
         return (
             <div className="flex items-center justify-center min-h-[400px] p-4">
-                <div className="bg-white dark:bg-[#203326] rounded-2xl shadow-lg p-8 w-full max-w-md">
+                <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-lg p-8 w-full max-w-md">
                     <div className="text-center mb-6">
                         <span className="material-symbols-outlined text-5xl text-primary mb-2">lock</span>
                         <h2 className="text-xl font-bold text-text-main dark:text-white">

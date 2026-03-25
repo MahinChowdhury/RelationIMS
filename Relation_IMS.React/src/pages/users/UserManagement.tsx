@@ -133,7 +133,7 @@ export default function UserManagement() {
 
             {/* Stats Cards */}
             < div className="grid grid-cols-1 md:grid-cols-3 gap-6" >
-                <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[#2a4032] shadow-sm flex items-center justify-between">
+                <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold text-text-secondary uppercase mb-1">Total Users</p>
                         <h3 className="text-2xl font-extrabold text-text-main dark:text-white">{users.length}</h3>
@@ -142,7 +142,7 @@ export default function UserManagement() {
                         <span className="material-symbols-outlined">group</span>
                     </div>
                 </div>
-                <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[#2a4032] shadow-sm flex items-center justify-between">
+                <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold text-text-secondary uppercase mb-1">Active</p>
                         <h3 className="text-2xl font-extrabold text-text-main dark:text-white">{totalActive}</h3>
@@ -151,7 +151,7 @@ export default function UserManagement() {
                         <span className="material-symbols-outlined">toggle_on</span>
                     </div>
                 </div>
-                <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[#2a4032] shadow-sm flex items-center justify-between">
+                <div className="glass-panel p-5 rounded-xl border border-white/60 dark:border-[var(--color-surface-dark-border)] shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold text-text-secondary uppercase mb-1">Inactive</p>
                         <h3 className="text-2xl font-extrabold text-text-main dark:text-white">{totalInactive}</h3>
@@ -169,29 +169,29 @@ export default function UserManagement() {
                         <span className="material-symbols-outlined text-[18px]">search</span>
                     </span>
                     <input type="text" placeholder={t.common.search || "Search users..."} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 pr-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary w-full sm:w-52 transition-shadow backdrop-blur-sm shadow-sm" />
+                        className="pl-9 pr-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-primary focus:border-primary w-full sm:w-52 transition-shadow backdrop-blur-sm shadow-sm" />
                 </div>
                 <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
-                    className="px-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
+                    className="px-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
                     <option value="">All Roles</option>
                     {roles.map((role) => (
                         <option key={role.Id} value={role.Name}>{role.Name}</option>
                     ))}
                 </select>
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[#2a4032] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
+                    className="px-3 py-2 text-xs text-text-main dark:text-white bg-white/50 dark:bg-white/5 border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-primary focus:border-primary transition-shadow backdrop-blur-sm shadow-sm">
                     <option value="">All Status</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                 </select>
-                <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-green-500/20">
+                <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-primary/20">
                     <span className="material-symbols-outlined text-[20px]">add</span>
                     {t.common.add || 'Add New User'}
                 </button>
             </div>
 
             {/* Users Table */}
-            < div className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[#2a4032] flex-1 overflow-hidden flex flex-col min-h-[400px]" >
+            < div className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[var(--color-surface-dark-border)] flex-1 overflow-hidden flex flex-col min-h-[400px]" >
                 {
                     loading ? (
                         <div className="flex-1 flex items-center justify-center" >
@@ -212,7 +212,7 @@ export default function UserManagement() {
                         <>
                             <div className="overflow-x-auto flex-1">
                                 <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[#2a4032]">
+                                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[var(--color-surface-dark-border)]">
                                         <tr>
                                             <th scope="col" className="px-6 py-4 font-semibold">User Profile</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">Phone</th>
@@ -235,7 +235,7 @@ export default function UserManagement() {
                                                     <tr key={user.Id} className="hover:bg-white/50 dark:hover:bg-white/5 transition-colors group">
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white dark:border-[#2a4032] shadow-sm text-primary font-bold text-sm shrink-0">
+                                                                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white dark:border-[var(--color-surface-dark-border)] shadow-sm text-primary font-bold text-sm shrink-0">
                                                                     {initials}
                                                                 </div>
                                                                 <div className="flex flex-col">
@@ -279,7 +279,7 @@ export default function UserManagement() {
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
+                            <div className="p-4 border-t border-gray-100/50 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
                                 <span className="text-xs text-text-secondary">Showing {filteredUsers.length} of {users.length} users</span>
                             </div>
                         </>

@@ -10,6 +10,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 export default function CustomersPage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const taka = '\u09F3';
 
     // State
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -208,7 +209,7 @@ export default function CustomersPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={openCreate}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-lg shadow-green-500/20 transition-all"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all"
                     >
                         <span className="material-symbols-outlined text-[20px]">person_add</span>
                         {t.customers.addCustomer}
@@ -217,7 +218,7 @@ export default function CustomersPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm">
                 <div className="relative group w-full md:w-96">
                     <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                         <span className="material-symbols-outlined text-text-secondary">search</span>
@@ -226,7 +227,7 @@ export default function CustomersPage() {
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full p-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-all"
+                        className="block w-full p-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-all"
                         placeholder="Search by name, email, or phone..."
                     />
                 </div>
@@ -235,7 +236,7 @@ export default function CustomersPage() {
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-white"
                         >
                             <option value="All">Status: All</option>
                             <option value="Active">Active</option>
@@ -249,7 +250,7 @@ export default function CustomersPage() {
                     </div>
                     <div className="relative">
                         <select
-                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-white"
                             onChange={(e) => {
                                 if (e.target.value.includes('Newest')) setSortBy('lastOrderDate');
                                 else if (e.target.value.includes('Freq')) setSortBy('orderFrequency');
@@ -264,7 +265,7 @@ export default function CustomersPage() {
                             <span className="material-symbols-outlined text-[18px]">expand_more</span>
                         </div>
                     </div>
-                    <label className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-gray-50 dark:bg-[#112116] border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
+                    <label className="flex items-center gap-2 px-3 py-2 cursor-pointer bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
                         <input
                             type="checkbox"
                             checked={showOutstandingOnly}
@@ -296,7 +297,7 @@ export default function CustomersPage() {
                     const status = getStatus(c);
 
                     return (
-                        <div key={c.Id} className="bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] p-3 md:p-4 grid grid-cols-2 lg:flex lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
+                        <div key={c.Id} className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-3 md:p-4 grid grid-cols-2 lg:flex lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
 
                             {/* Customer Info */}
                             <div className="col-span-2 flex items-center gap-3 lg:w-[180px] xl:w-[220px]">
@@ -344,7 +345,7 @@ export default function CustomersPage() {
                             {/* Total Spent */}
                             <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Total Spent</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white">৳{stats.totalSpent.toFixed(2)}</span>
+                                <span className="text-sm font-bold text-text-main dark:text-white">{taka}{stats.totalSpent.toFixed(2)}</span>
                             </div>
 
                             {/* Due Amount */}
@@ -353,7 +354,7 @@ export default function CustomersPage() {
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">payments</span>
                                     <span className={`font-bold text-sm lg:text-sm ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                        ৳{stats.dueAmount.toFixed(2)}
+                                        {taka}{stats.dueAmount.toFixed(2)}
                                     </span>
                                 </div>
                             </div>
@@ -368,7 +369,7 @@ export default function CustomersPage() {
                             </div>
 
                             {/* Actions */}
-                            <div className="col-span-2 flex items-center gap-2 mt-2 lg:mt-0 justify-end w-full lg:w-[120px] border-t lg:border-t-0 border-gray-100 dark:border-[#2a4032] pt-2 lg:pt-0">
+                            <div className="col-span-2 flex items-center gap-2 mt-2 lg:mt-0 justify-end w-full lg:w-[120px] border-t lg:border-t-0 border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-2 lg:pt-0">
                                 <button
                                     onClick={() => navigateToDetail(c.Id)}
                                     className="flex items-center justify-center size-8 rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-primary hover:text-white hover:border-primary transition-all dark:bg-green-900/20 dark:border-green-800/50 dark:text-green-400 dark:hover:bg-primary group/btn"
@@ -378,7 +379,7 @@ export default function CustomersPage() {
                                 </button>
                                 <button
                                     onClick={() => openEdit(c)}
-                                    className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-gray-50 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+                                    className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
                                     title="Edit"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">edit</span>

@@ -43,7 +43,7 @@ export default function ConfirmDeleteInput({
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={confirmText}
-                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-[#2a4032] rounded-lg bg-white dark:bg-[#132219] text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg bg-white dark:bg-[#132219] text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                     autoFocus
                 />
             </div>
@@ -51,7 +51,7 @@ export default function ConfirmDeleteInput({
                 <button
                     onClick={onCancel}
                     disabled={isDeleting}
-                    className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+                    className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-200 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                 >
                     {t.common.cancel}
                 </button>

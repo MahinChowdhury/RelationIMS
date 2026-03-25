@@ -652,7 +652,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                             <button
                                 onClick={openCreateModal}
-                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-green-500/20"
+                                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm shadow-primary/20"
                             >
                                 <span className="material-symbols-outlined text-[18px]">add</span>
                                 <span className="hidden sm:inline">{t.products.addProduct}</span>
@@ -673,14 +673,14 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full py-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-white shadow-sm focus:ring-primary focus:border-primary dark:bg-[#1a2e22] dark:border-[#2a4032] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary transition-all"
+                        className="block w-full py-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-white shadow-sm focus:ring-primary focus:border-primary dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary transition-all"
                         placeholder={t.products.searchProducts}
                     />
                 </div>
                 <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
                     {/* Sort */}
                     <div className="relative">
-                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[16px]">sort</span>
                             {sortBy || t.products.sort}
                             <span className="material-symbols-outlined text-[14px] text-gray-400">expand_more</span>
@@ -700,7 +700,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                     {/* Brand */}
                     <div className="relative">
-                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {selectedBrand === '' ? t.products.brand : getBrandName(Number(selectedBrand))}
                         </button>
                         <select
@@ -715,7 +715,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                     {/* Category */}
                     <div className="relative">
-                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {selectedCategory === '' ? t.products.category : getCategoryNameById(Number(selectedCategory))}
                         </button>
                         <select
@@ -730,7 +730,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                     {/* Quarter */}
                     <div className="relative">
-                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {selectedQuarter === '' ? t.products.quarter : getQuarterName(Number(selectedQuarter))}
                         </button>
                         <select
@@ -745,7 +745,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                     {/* Stock */}
                     <div className="relative">
-                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                        <button className="shrink-0 px-3 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-md text-xs font-medium text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                             {stockOrder || t.products.stockStatus}
                         </button>
                         <select
@@ -761,7 +761,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                     </div>
 
                     {/* Grid Density Toggle */}
-                    <div className="flex items-center bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-[#2a4032] rounded-md">
+                    <div className="flex items-center bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-md">
                         {[
                             { value: 4, icon: 'grid_view' },
                             { value: 6, icon: 'view_module' },
@@ -775,7 +775,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                                 }}
                                 className={`p-1 rounded transition-all ${gridDensity === value
                                     ? 'bg-[#4e9767] text-white'
-                                    : 'text-gray-500 md:hover:text-[#4e9767] md:hover:bg-gray-100 dark:md:hover:bg-white/5'
+                                    : 'text-gray-500 md:hover:text-secondary md:hover:bg-gray-100 dark:md:hover:bg-white/5'
                                     }`}
                                 title={`${value} per row`}
                             >

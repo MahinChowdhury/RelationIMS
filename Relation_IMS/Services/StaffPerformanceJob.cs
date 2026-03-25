@@ -11,14 +11,14 @@ namespace Relation_IMS.Services
     public class StaffPerformanceJob
     {
         private readonly ILogger<StaffPerformanceJob> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public StaffPerformanceJob(
             ILogger<StaffPerformanceJob> logger,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 600)]
@@ -28,10 +28,10 @@ namespace Relation_IMS.Services
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                await UpdateCurrentMonthPerformanceAsync(context);
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
+                {
+                    await UpdateCurrentMonthPerformanceAsync(context);
+                });
 
                 _logger.LogInformation("Staff Performance Job completed successfully");
             }

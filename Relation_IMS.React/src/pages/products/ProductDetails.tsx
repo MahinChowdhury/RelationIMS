@@ -40,6 +40,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const { id, hash, productId: urlProductId } = useParams<{ id: string, hash: string, productId: string }>();
     const activeId = productId || urlProductId || id;
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const navigate = useNavigate();
 
     const isGuest = propGuestView || false;
@@ -214,7 +215,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 setCurrentImageIndex(0);
             }
         } catch (err) {
-            console.error(`❌ Failed to load product details of id ${productId}:`, err);
+            console.error(`¢Å’ Failed to load product details of id ${productId}:`, err);
         }
     };
 
@@ -366,7 +367,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                 {/* Left Column: Images */}
                 <div className="lg:col-span-6 flex flex-col gap-6">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-4 flex flex-col items-center">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-4 flex flex-col items-center">
                         <div
                             className="relative w-full min-h-[400px] flex items-center justify-center bg-gray-50 dark:bg-black/20 rounded-lg overflow-hidden mb-4 group"
                             ref={imageContainerRef}
@@ -424,12 +425,12 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                     {/* Stock Table or Guest Colors list */}
                     {!isGuest ? (
-                        <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6">
                             <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">inventory_2</span>
                                 {t.products.stockAndVariants}
                             </h2>
-                            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-[#2a4032]">
+                            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-[var(--color-surface-dark-border)]">
                                 <table className="w-full text-sm text-center min-w-[500px]">
                                     <thead>
                                         <tr className="bg-[#4e9767] text-white">
@@ -440,7 +441,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             <th className="py-3 px-4 font-bold uppercase text-xs border-l border-white/20">{t.products.defects}</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#112116] divide-y divide-gray-100 dark:divide-[#2a4032]">
+                                    <tbody className="bg-white dark:bg-[var(--color-surface-dark-solid)] divide-y divide-gray-100 dark:divide-[#2a4032]">
                                         {Array.from(groupedVariants).map(([_, variants]) => (
                                             variants.map((variant, idx) => {
                                                 const isFirst = idx === 0;
@@ -491,14 +492,14 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         </div>
                     ) : (
                         <div className="flex flex-col gap-6">
-                            <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6">
                                 <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">palette</span>
                                     {t.products.color}
                                 </h2>
                                 <div className="flex flex-wrap gap-4">
                                     {Array.from(groupedVariants).map(([_, variants]) => (
-                                        <div key={variants[0].Id} className="flex items-center gap-2 bg-gray-50 dark:bg-[#112116] border border-gray-100 dark:border-[#2a4032] px-3 py-2 rounded-lg">
+                                        <div key={variants[0].Id} className="flex items-center gap-2 bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] px-3 py-2 rounded-lg">
                                             {variants[0].Color?.HexCode && (
                                                 <span
                                                     className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm"
@@ -513,7 +514,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 </div>
                             </div>
 
-                            <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6">
                                 <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">straighten</span>
                                     {t.products.size}
@@ -531,7 +532,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                         }
 
                                         return availableSizes.map((sizeName, idx) => (
-                                            <div key={idx} className="flex items-center justify-center bg-gray-50 dark:bg-[#112116] border border-gray-100 dark:border-[#2a4032] min-w-[3rem] px-3 py-2 rounded-lg">
+                                            <div key={idx} className="flex items-center justify-center bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] min-w-[3rem] px-3 py-2 rounded-lg">
                                                 <span className="text-sm font-semibold text-text-main dark:text-gray-300">
                                                     {sizeName}
                                                 </span>
@@ -544,7 +545,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                     )}
 
                     {/* Product Header Card */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-extrabold text-text-main dark:text-white tracking-tight">{productDetail.Name}</h1>
                             <div className="flex items-center gap-3 mt-2">
@@ -561,12 +562,12 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         </div>
                         <div className="text-right hidden sm:block">
                             <p className="text-sm text-text-secondary dark:text-gray-400 font-medium">{t.products.retailPrice}</p>
-                            <p className="text-3xl font-black text-text-main dark:text-white">৳{productDetail.MSRP.toFixed(2)}</p>
+                            <p className="text-3xl font-black text-text-main dark:text-white">{taka}{productDetail.MSRP.toFixed(2)}</p>
                         </div>
                     </div>
 
                     {/* Product Details Cards */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-gray-100 dark:border-[#2a4032] p-6">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">info</span>
@@ -595,7 +596,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         <div className="flex flex-col gap-6">
                             <div>
                                 <label className="block text-xs font-bold uppercase text-text-secondary mb-2 tracking-wide">{t.common.description}</label>
-                                <div className="bg-gray-50 dark:bg-[#112116] p-4 rounded-lg border border-gray-100 dark:border-[#2a4032]">
+                                <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-4 rounded-lg border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                     <p className="text-sm text-text-main dark:text-gray-300 leading-relaxed">
                                         {productDetail.Description}
                                     </p>
@@ -603,32 +604,32 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                {/* LEFT SIDE – MSRP, Base Price, Cost Price */}
+                                {/* LEFT SIDE ¢â‚¬â€œ MSRP, Base Price, Cost Price */}
                                 <div className="flex flex-col gap-4">
 
                                     {/* MSRP */}
-                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                    <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                         <div className="bg-blue-500 text-white p-1 rounded-md shadow-sm shadow-blue-500/20 shrink-0">
                                             <span className="material-symbols-outlined text-[20px]">price_check</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.msrp}</span>
                                             <span className="text-lg font-extrabold text-text-main dark:text-white">
-                                                ৳{(productDetail.MSRP || 0).toFixed(2)}
+                                                {taka}{(productDetail.MSRP || 0).toFixed(2)}
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Base Price - Hide for guests */}
                                     {!isGuest && (
-                                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
+                                        <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                             <div className="bg-red-500 text-white p-1 rounded-md shadow-sm shadow-red-500/20 shrink-0">
                                                 <span className="material-symbols-outlined text-[20px]">attach_money</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.basePrice}</span>
                                                 <span className="text-lg font-extrabold text-red-500 dark:text-white">
-                                                    ৳{(productDetail.BasePrice || 0).toFixed(2)}
+                                                    {taka}{(productDetail.BasePrice || 0).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -636,14 +637,14 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                                     {/* Cost Price - Hide for guests */}
                                     {!isGuest && (
-                                        <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                            <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-green-500/20 shrink-0">
+                                        <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
+                                            <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-primary/20 shrink-0">
                                                 <span className="material-symbols-outlined text-[20px]">inventory</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
                                                 <span className="text-lg font-extrabold text-blue-500 dark:text-white">
-                                                    ৳{(productDetail.CostPrice || 0).toFixed(2)}
+                                                    {taka}{(productDetail.CostPrice || 0).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -651,12 +652,12 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                                 </div>
 
-                                {/* RIGHT SIDE – Category, Brand, Quarter */}
+                                {/* RIGHT SIDE ¢â‚¬â€œ Category, Brand, Quarter */}
                                 <div className="flex flex-col gap-4">
 
                                     {/* Category */}
-                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                        <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
+                                    <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
+                                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-2 rounded-md shadow-sm text-primary shrink-0">
                                             <span className="material-symbols-outlined text-[20px]">category</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
@@ -668,8 +669,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                     </div>
 
                                     {/* Brand */}
-                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                        <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
+                                    <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
+                                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-2 rounded-md shadow-sm text-primary shrink-0">
                                             <span className="material-symbols-outlined text-[20px]">verified</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
@@ -681,8 +682,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                     </div>
 
                                     {/* Quarter */}
-                                    <div className="bg-gray-50 dark:bg-[#112116] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[#2a4032]">
-                                        <div className="bg-white dark:bg-[#1a2e22] p-2 rounded-md shadow-sm text-primary shrink-0">
+                                    <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
+                                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] p-2 rounded-md shadow-sm text-primary shrink-0">
                                             <span className="material-symbols-outlined text-[20px]">calendar_today</span>
                                         </div>
                                         <div className="flex flex-col min-w-0">
@@ -705,8 +706,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
             {/* Product Orders Section */}
             {!isGuest && (
-                <div ref={ordersSectionRef} className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[#2a4032] overflow-hidden flex flex-col">
-                    <div className="p-5 border-b border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between">
+                <div ref={ordersSectionRef} className="glass-panel rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white/60 dark:border-[var(--color-surface-dark-border)] overflow-hidden flex flex-col">
+                    <div className="p-5 border-b border-gray-100/50 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
                         <h2 className="text-base font-extrabold text-text-main dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
                             {t.products.orderHistory}
@@ -730,7 +731,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                         <>
                             <div className="overflow-x-auto flex-1">
                                 <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[#2a4032]">
+                                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 dark:bg-[#132219]/50 dark:text-gray-400 border-b border-gray-100/50 dark:border-[var(--color-surface-dark-border)]">
                                         <tr>
                                             <th scope="col" className="px-6 py-4 font-semibold">{t.orders.orderId}</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">{t.common.customer}</th>
@@ -747,7 +748,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                             const isLast = groupedProductOrders.length === index + 1;
 
                                             // Format the variant string to show Color / [Size1, Size2, ...]
-                                            const colorName = item.ProductVariant?.Color?.Name || '—';
+                                            const colorName = item.ProductVariant?.Color?.Name || '¢â‚¬â€';
 
                                             return (
                                                 <tr
@@ -760,7 +761,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                     </td>
                                                     <td className="px-6 py-4 align-top">
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white dark:border-[#2a4032] shadow-sm">
+                                                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-white dark:border-[var(--color-surface-dark-border)] shadow-sm">
                                                                 {item.Order?.Customer?.Name?.substring(0, 2).toUpperCase() || '?'}
                                                             </div>
                                                             <span className="font-medium text-text-main dark:text-gray-200 truncate max-w-[140px]">{item.Order?.Customer?.Name || t.common.notAvailable}</span>
@@ -769,7 +770,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                     <td className="px-6 py-4 align-top">
                                                         <div className="flex flex-col gap-2">
                                                             <div>
-                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-[#112116] dark:text-gray-300 border border-gray-200 dark:border-[#2a4032] shadow-sm">
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-[var(--color-surface-dark-solid)] dark:text-gray-300 border border-gray-200 dark:border-[var(--color-surface-dark-border)] shadow-sm">
                                                                     {colorName}
                                                                 </span>
                                                             </div>
@@ -787,7 +788,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                         <span className="font-bold text-lg text-primary mt-1 block">{item.totalQuantity}</span>
                                                     </td>
                                                     <td className="px-6 py-4 font-bold text-right align-top text-text-main dark:text-white">
-                                                        <span className="mt-1 block">৳{item.totalSubtotal.toFixed(2)}</span>
+                                                        <span className="mt-1 block">{taka}{item.totalSubtotal.toFixed(2)}</span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {getPaymentStatusBadge(item.Order?.PaymentStatus)}
@@ -809,11 +810,11 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 </table>
                             </div>
                             {ordersLoading && (
-                                <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex justify-center">
+                                <div className="p-4 border-t border-gray-100/50 dark:border-[var(--color-surface-dark-border)] flex justify-center">
                                     <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-primary border-gray-200"></div>
                                 </div>
                             )}
-                            <div className="p-4 border-t border-gray-100/50 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
+                            <div className="p-4 border-t border-gray-100/50 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between bg-gray-50/20 backdrop-blur-sm">
                                 <span className="text-xs text-text-secondary">{t.products.showingVariantGroups.replace('{groups}', groupedProductOrders.length.toString()).replace('{total}', productOrders.length.toString())}</span>
                             </div>
                         </>

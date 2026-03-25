@@ -34,10 +34,10 @@ export function CustomerFormModal({
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 dark:border-[#2a4032] animate-fadeIn max-h-[calc(100dvh-2rem)] md:max-h-[90dvh] flex flex-col">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-fadeIn max-h-[calc(100dvh-2rem)] md:max-h-[90dvh] flex flex-col">
 
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/50 dark:bg-[#112116]/50 shrink-0">
+                <div className="px-6 py-5 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between bg-gray-50/50 dark:bg-[var(--color-surface-dark-solid)] shrink-0">
                     <div className="flex items-center gap-3">
                         <div className={`size-10 rounded-xl flex items-center justify-center shadow-sm ${mode === 'create' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
                             <span className="material-symbols-outlined text-[24px]">
@@ -74,7 +74,7 @@ export function CustomerFormModal({
                                 type="text"
                                 value={customer.Name}
                                 onChange={(e) => onChange('Name', e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
                                 placeholder="e.g. Michael Ross"
                                 required
                             />
@@ -93,7 +93,7 @@ export function CustomerFormModal({
                                     type="tel"
                                     value={customer.Phone}
                                     onChange={(e) => onChange('Phone', e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
                                     placeholder="0177......."
                                     required
                                 />
@@ -112,7 +112,7 @@ export function CustomerFormModal({
                                 value={customer.ShopName}
                                 onChange={(e) => onChange('ShopName', e.target.value)}
                                 rows={3}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
                                 placeholder="Enter Shop name"
                             ></textarea>
                         </div>
@@ -127,7 +127,7 @@ export function CustomerFormModal({
                                 value={customer.ShopAddress}
                                 onChange={(e) => onChange('ShopAddress', e.target.value)}
                                 rows={3}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
                                 placeholder="Enter shop address"
                             ></textarea>
                         </div>
@@ -143,7 +143,7 @@ export function CustomerFormModal({
                                 value={customer.Address}
                                 onChange={(e) => onChange('Address', e.target.value)}
                                 rows={3}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
                                 placeholder="Enter customer address"
                             ></textarea>
                         </div>
@@ -151,18 +151,18 @@ export function CustomerFormModal({
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-gray-50/50 dark:bg-[#112116]/50 border-t border-gray-100 dark:border-[#2a4032] flex items-center justify-end gap-3 shrink-0">
+                <div className="px-6 py-4 bg-gray-50/50 dark:bg-[var(--color-surface-dark-solid)] border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-end gap-3 shrink-0">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
+                        className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
                     >
                         {t.common.cancel}
                     </button>
                     <button
                         type="button"
                         onClick={onSave}
-                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-md shadow-green-500/20 transition-all flex items-center gap-2"
+                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-md shadow-primary/20 transition-all flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[18px]">check</span>
                         {mode === 'create' ? t.customers.addCustomer : t.common.saveChanges}
@@ -188,7 +188,7 @@ export function DeleteCustomerModal({ show, onCancel, onConfirm }: DeleteCustome
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-fadeIn">
                 <div className="p-6 flex flex-col items-center text-center gap-4">
                     <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
                         <span className="material-symbols-outlined text-red-500 text-[32px]">warning</span>

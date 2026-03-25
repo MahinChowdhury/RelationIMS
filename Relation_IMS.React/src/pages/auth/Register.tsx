@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { applyTenantTheme } from '../../services/tenantTheme';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ const Register = () => {
         password: '',
         confirmPassword: ''
     });
+    const [tenantId, setTenantId] = useState('RelationIms');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -35,7 +37,7 @@ const Register = () => {
         setError('');
 
         try {
-            await register(formData.firstname, formData.lastname, formData.phoneNumber, formData.password);
+            await register(formData.firstname, formData.lastname, formData.phoneNumber, formData.password, tenantId);
             navigate('/login');
         } catch (err: any) {
             const msg = err?.response?.data?.message || 'Registration failed. Please try again.';
@@ -75,6 +77,25 @@ const Register = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        <div>
+                            <label htmlFor="tenantId" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">
+                                Organization
+                            </label>
+                            <div className="relative">
+                                <select
+                                    id="tenantId"
+                                    name="tenantId"
+                                    required
+                                    value={tenantId}
+                                    onChange={(e) => { setTenantId(e.target.value); applyTenantTheme(e.target.value); }}
+                                    className="block w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                >
+                                    <option value="RelationIms">Relation IMS</option>
+                                    <option value="YoloIms">Yolo IMS</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label htmlFor="firstname" className="block text-sm font-medium text-text-main dark:text-gray-200 mb-1">

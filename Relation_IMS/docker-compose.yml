@@ -43,6 +43,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__HangfireConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__0__Id=tenant-relationims
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__0__Identifier=RelationIms
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__0__Name=Relation IMS
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__0__ConnectionString=Host=postgres;Port=5432;Database=RelationIMS;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__1__Id=tenant-yoloims
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__1__Identifier=YoloIms
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__1__Name=Yolo IMS
+      - Finbuckle__MultiTenant__Stores__ConfigurationStore__Tenants__1__ConnectionString=Host=postgres;Port=5432;Database=YoloIMS;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - Redis__ConnectionString=redis:6379
       - MinIO__Endpoint=${MINIO_ENDPOINT}
       - MinIO__PublicBaseUrl=${MINIO_PUBLIC_URL}
@@ -86,6 +95,7 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -127,9 +137,10 @@ services:
     volumes:
       - minio_data:/data
       - ./minio/cors.json:/etc/minio/cors.json:ro
+    ports:
+      - "9001:9001"
     expose:
       - "9000"
-      - "9001"
     restart: unless-stopped
     networks:
       - relationims-network
@@ -166,19 +177,13 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'True'
     depends_on:
       postgres:
         condition: service_healthy
-    profiles:
-      - tools
     networks:
       - relationims-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   postgres_data:

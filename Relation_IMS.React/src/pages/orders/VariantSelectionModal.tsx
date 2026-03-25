@@ -13,6 +13,7 @@ interface VariantSelectionModalProps {
 
 export default function VariantSelectionModal({ isOpen, onClose, product, variants, onConfirm }: VariantSelectionModalProps) {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const [selectedColorId, setSelectedColorId] = useState<number | null>(null);
     const [selectedSizeIds, setSelectedSizeIds] = useState<number[]>([]);
     const [quantity, setQuantity] = useState<number>(1);
@@ -162,7 +163,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#1a2e22] w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
@@ -304,7 +305,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.orders.unitPrice}</label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">৳</span>
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">{taka}</span>
                                     <input
                                         type="number"
                                         onFocus={(e) => e.target.select()}
@@ -344,7 +345,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
 
                             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
                                 {stagedItems.map((item) => (
-                                    <div key={item.tempId} className="bg-white dark:bg-[#1e2e23] border border-gray-100 dark:border-gray-700 rounded-xl p-3 shadow-sm relative group animate-in slide-in-from-bottom-2 duration-300">
+                                    <div key={item.tempId} className="bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-100 dark:border-gray-700 rounded-xl p-3 shadow-sm relative group animate-in slide-in-from-bottom-2 duration-300">
                                         <div className="flex justify-between items-start mb-1">
                                             <div className="flex items-center gap-2">
                                                 {item.variant.Color && (
@@ -373,7 +374,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                 ))}
                             </div>
 
-                            <div className="p-4 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-gray-700">
+                            <div className="p-4 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-gray-700">
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-sm text-gray-500">{t.orders.totalAmount}</span>
                                     <span className="text-xl font-bold text-gray-800 dark:text-white">${totalStagedAmount.toFixed(2)}</span>

@@ -22,7 +22,7 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
 
     return createPortal(
         <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[#d0e7d7] dark:border-[#2a4032] transform transition-all">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[var(--color-scrollbar)] dark:border-[var(--color-surface-dark-border)] transform transition-all">
                 <div className="flex items-center gap-4 mb-4">
                     <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center">
                         <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@ export function DeleteProductModal({ show, onCancel, onConfirm }: { show: boolea
                     </div>
                     <div>
                         <h2 className="text-[#0e1b12] dark:text-white text-xl font-black">{t.products.confirmDeletion}</h2>
-                        <p className="text-[#4e9767] text-sm">{t.products.cannotBeUndone}</p>
+                        <p className="text-secondary text-sm">{t.products.cannotBeUndone}</p>
                     </div>
                 </div>
                 <p className="text-[#0e1b12] dark:text-gray-300 text-base mb-6 leading-relaxed">
@@ -104,7 +104,7 @@ export function ProductFormModal({
 
     return createPortal(
         <div className="fixed inset-0 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-2 sm:p-4">
-            <div className="bg-white dark:bg-[#1a2e22] rounded-2xl sm:rounded-3xl shadow-2xl w-full sm:w-[95%] max-w-4xl border-2 border-[#d0e7d7] dark:border-[#2a4032] max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col relative my-1 sm:my-4">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl sm:rounded-3xl shadow-2xl w-full sm:w-[95%] max-w-4xl border-2 border-[var(--color-scrollbar)] dark:border-[var(--color-surface-dark-border)] max-h-[calc(100dvh-1rem)] sm:max-h-[90dvh] flex flex-col relative my-1 sm:my-4">
                 {/* Close Button */}
                 <button
                     type="button"
@@ -112,7 +112,7 @@ export function ProductFormModal({
                     className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all text-2xl font-bold z-10"
                     aria-label="Close"
                 >
-                    ×
+                    Ãƒâ€”
                 </button>
 
                 {/* Header */}
@@ -124,7 +124,7 @@ export function ProductFormModal({
                     </div>
                     <div>
                         <h2 className="text-[#0e1b12] dark:text-white text-xl sm:text-2xl font-black">{mode === 'create' ? t.products.addProduct : t.products.editProduct}</h2>
-                        <p className="text-[#4e9767] text-xs sm:text-sm font-medium">{mode === 'create' ? t.products.createProduct : t.products.productDetails}</p>
+                        <p className="text-secondary text-xs sm:text-sm font-medium">{mode === 'create' ? t.products.createProduct : t.products.productDetails}</p>
                     </div>
                 </div>
 
@@ -160,7 +160,7 @@ export function ProductFormModal({
                 </div>
 
                 {/* Action Buttons - always visible */}
-                <div className="flex justify-end gap-3 px-5 sm:px-8 py-4 border-t-2 border-[#e7f3eb] dark:border-[#2a4032] shrink-0">
+                <div className="flex justify-end gap-3 px-5 sm:px-8 py-4 border-t-2 border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] shrink-0">
                     <button
                         type="button"
                         onClick={onClose}

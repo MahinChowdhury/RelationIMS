@@ -223,22 +223,22 @@ export default function Configuration() {
     }, [sizes, categories, t.common.generic]);
 
     const renderCard = (title: string, subtitle: string | null, type: 'brand' | 'category' | 'quarter' | 'color' | 'size', item: any, colorHex?: string) => (
-        <div className="bg-white dark:bg-[#1a2e22] border border-gray-100 dark:border-[#2a4032] rounded-lg p-2 flex justify-between items-center group hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] rounded-lg p-2 flex justify-between items-center group hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
             <div className="flex items-center gap-2 overflow-hidden">
                 {colorHex ? (
                     <div className="w-4 h-4 rounded-full border border-gray-200 shrink-0" style={{ backgroundColor: colorHex }}></div>
                 ) : (
-                    <div className="w-0.5 h-5 rounded-full bg-[#17cf54]/30 shrink-0"></div>
+                    <div className="w-0.5 h-5 rounded-full bg-primary/30 shrink-0"></div>
                 )}
                 <div className="min-w-0">
-                    <h3 className="font-semibold text-sm text-[#0e1b12] dark:text-white truncate">{title}</h3>
+                    <h3 className="font-semibold text-sm text-text-main dark:text-white truncate">{title}</h3>
                     {subtitle && <p className="text-[10px] text-gray-400">{subtitle}</p>}
                 </div>
             </div>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                 <button
                     onClick={() => openModal(type, item)}
-                    className="p-1 text-gray-400 hover:text-[#17cf54] transition-colors"
+                    className="p-1 text-gray-400 hover:text-primary transition-colors"
                 >
                     <span className="material-symbols-outlined text-[16px]">edit</span>
                 </button>
@@ -253,25 +253,25 @@ export default function Configuration() {
     );
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#f6f8f6] dark:bg-transparent p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto bg-background-light dark:bg-transparent p-6 md:p-8">
             <div className="max-w-6xl mx-auto flex flex-col gap-12 pb-20">
 
                 {/* Header */}
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-extrabold text-[#0e1b12] dark:text-white">{t.config.title}</h1>
-                    <p className="text-[#4e9767] dark:text-gray-400">{t.config.subtitle}</p>
+                    <h1 className="text-3xl font-extrabold text-text-main dark:text-white">{t.config.title}</h1>
+                    <p className="text-secondary dark:text-gray-400">{t.config.subtitle}</p>
                 </div>
 
                 {/* Categories Section */}
-                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white/80 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">category</span>
+                        <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">category</span>
                             {t.config.categories}
                         </h2>
                         <button
                             onClick={() => openModal('category')}
-                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                         >
                             <span className="material-symbols-outlined text-[16px]">add</span>
                             {t.config.addCategory}
@@ -293,15 +293,15 @@ export default function Configuration() {
                 </div>
 
                 {/* Brands Section */}
-                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white/80 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">verified</span>
+                        <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">verified</span>
                             {t.config.brands}
                         </h2>
                         <button
                             onClick={() => openModal('brand')}
-                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                         >
                             <span className="material-symbols-outlined text-[16px]">add</span>
                             {t.config.addBrand}
@@ -323,15 +323,15 @@ export default function Configuration() {
                 </div>
 
                 {/* Quarters Section */}
-                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
+                <div className="bg-white/80 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden mt-6">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">calendar_month</span>
+                        <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">calendar_month</span>
                             {t.config.quarters}
                         </h2>
                         <button
                             onClick={() => openModal('quarter')}
-                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                         >
                             <span className="material-symbols-outlined text-[16px]">add</span>
                             {t.config.addQuarter}
@@ -353,15 +353,15 @@ export default function Configuration() {
                 </div>
 
                 {/* Colors Section */}
-                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white/80 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">palette</span>
+                        <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">palette</span>
                             {t.config.colors}
                         </h2>
                         <button
                             onClick={() => openModal('color')}
-                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                         >
                             <span className="material-symbols-outlined text-[16px]">add</span>
                             {t.config.addColor}
@@ -383,15 +383,15 @@ export default function Configuration() {
                 </div>
 
                 {/* Sizes Section */}
-                <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white/80 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
-                        <h2 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">straighten</span>
+                        <h2 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">straighten</span>
                             {t.config.sizes}
                         </h2>
                         <button
                             onClick={() => openModal('size')}
-                            className="px-3 py-1.5 bg-[#17cf54] hover:bg-[#12a542] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95"
                         >
                             <span className="material-symbols-outlined text-[16px]">add</span>
                             {t.config.addSize}
@@ -419,8 +419,8 @@ export default function Configuration() {
             {/* Modal */}
             {modalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
-                        <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white mb-6">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
+                        <h2 className="text-xl font-bold text-text-main dark:text-white mb-6">
                             {editingItem ? t.common.edit : t.common.add} {modalType.charAt(0).toUpperCase() + modalType.slice(1)}
                         </h2>
 
@@ -432,7 +432,7 @@ export default function Configuration() {
                                         type="text"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                        className="w-full bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-text-main dark:text-white focus:ring-primary focus:border-primary"
                                         placeholder={t.config.enterName.replace('{type}', modalType)}
                                         autoFocus
                                     />
@@ -441,7 +441,7 @@ export default function Configuration() {
                                 {modalType === 'brand' && (
                                     <div>
                                         <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
-                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
+                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
                                                     <input
@@ -457,9 +457,9 @@ export default function Configuration() {
                                                                     : prev.categoryIds.filter(cid => cid !== id)
                                                             }));
                                                         }}
-                                                        className="w-4 h-4 text-[#17cf54] rounded focus:ring-[#17cf54] focus:ring-offset-0 dark:bg-black/20 dark:border-gray-600"
+                                                        className="w-4 h-4 text-primary rounded focus:ring-primary focus:ring-offset-0 dark:bg-black/20 dark:border-gray-600"
                                                     />
-                                                    <span className="text-sm font-medium text-[#0e1b12] dark:text-gray-200">{c.Name}</span>
+                                                    <span className="text-sm font-medium text-text-main dark:text-gray-200">{c.Name}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -480,7 +480,7 @@ export default function Configuration() {
                                                 type="text"
                                                 value={formData.hex}
                                                 onChange={e => setFormData({ ...formData, hex: e.target.value })}
-                                                className="flex-1 bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                                className="flex-1 bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-text-main dark:text-white focus:ring-primary focus:border-primary"
                                                 placeholder="#000000"
                                             />
                                         </div>
@@ -491,7 +491,7 @@ export default function Configuration() {
                                 {modalType === 'size' && (
                                     <div>
                                         <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
-                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
+                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
                                                     <input
@@ -507,9 +507,9 @@ export default function Configuration() {
                                                                     : prev.categoryIds.filter(cid => cid !== id)
                                                             }));
                                                         }}
-                                                        className="w-4 h-4 text-[#17cf54] rounded focus:ring-[#17cf54] focus:ring-offset-0 dark:bg-black/20 dark:border-gray-600"
+                                                        className="w-4 h-4 text-primary rounded focus:ring-primary focus:ring-offset-0 dark:bg-black/20 dark:border-gray-600"
                                                     />
-                                                    <span className="text-sm font-medium text-[#0e1b12] dark:text-gray-200">{c.Name}</span>
+                                                    <span className="text-sm font-medium text-text-main dark:text-gray-200">{c.Name}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -527,7 +527,7 @@ export default function Configuration() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all"
+                                    className="flex-1 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all"
                                 >
                                     {t.common.saveChanges}
                                 </button>
@@ -539,7 +539,7 @@ export default function Configuration() {
 
             {deleteModalOpen && (
                 <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[#2a4032]">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                                 <span className="material-symbols-outlined text-red-500 text-[24px]">warning</span>

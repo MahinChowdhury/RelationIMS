@@ -14,8 +14,8 @@ interface AuthContextType {
     user: UserInfo | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (phoneNumber: string, password: string) => Promise<void>;
-    register: (firstname: string, lastname: string, phoneNumber: string, password: string) => Promise<void>;
+    login: (phoneNumber: string, password: string, tenantId: string) => Promise<void>;
+    register: (firstname: string, lastname: string, phoneNumber: string, password: string, tenantId: string) => Promise<void>;
     logout: () => void;
 }
 
@@ -45,8 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         initAuth();
     }, []);
 
-    const login = useCallback(async (phoneNumber: string, password: string) => {
-        const authResponse = await loginApi(phoneNumber, password);
+    const login = useCallback(async (phoneNumber: string, password: string, tenantId: string) => {
+        const authResponse = await loginApi(phoneNumber, password, tenantId);
         setTokens(authResponse.AccessToken, authResponse.RefreshToken);
 
         const userInfo = await getUserInfoApi();
@@ -57,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firstname: string,
         lastname: string,
         phoneNumber: string,
-        password: string
+        password: string,
+        tenantId: string
     ) => {
-        await registerApi(firstname, lastname, phoneNumber, password);
+        await registerApi(firstname, lastname, phoneNumber, password, tenantId);
     }, []);
 
     const logout = useCallback(() => {

@@ -3,6 +3,11 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ShareCatalogView from './pages/products/ShareCatalogView';
+import { applyTenantTheme } from './services/tenantTheme';
+import { getTenant } from './services/authService';
+
+// Apply tenant theme immediately on load
+applyTenantTheme(getTenant());
 
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));

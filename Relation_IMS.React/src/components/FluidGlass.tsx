@@ -14,6 +14,8 @@ import {
 } from '@react-three/drei';
 import { easing } from 'maath';
 import { useNavigate } from 'react-router-dom';
+import { getTenantConfig } from '../services/tenantTheme';
+import { getTenant } from '../services/authService';
 
 type Mode = 'lens' | 'bar' | 'cube';
 
@@ -223,13 +225,15 @@ function NavItems({ items }: { items: NavItem[] }) {
         navigate(link);
     };
 
+    const colorPrimary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#17cf54';
+
     return (
         <group ref={group} renderOrder={10}>
             {items.map(({ label, link }) => (
                 <Text
                     key={label}
                     fontSize={fontSize}
-                    color="#17cf54" // Primary green
+                    color={colorPrimary}
                     anchorX="center"
                     anchorY="middle"
                     outlineWidth={0}
@@ -272,6 +276,10 @@ function Typography() {
 
     const { fontSize } = DEVICE[device];
 
+    const tenantConfig = getTenantConfig(getTenant());
+    const colorPrimary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#17cf54';
+    const colorSecondary = getComputedStyle(document.documentElement).getPropertyValue('--color-secondary').trim() || '#4e9767';
+
     return (
         <>
             <Text
@@ -282,16 +290,16 @@ function Typography() {
                 outlineBlur="20%"
                 outlineColor="#000"
                 outlineOpacity={0.5}
-                color="#0e1b12" // Dark text
+                color="#0e1b12"
                 anchorX="center"
                 anchorY="middle"
             >
-                Relation IMS
+                {tenantConfig.displayName}
             </Text>
             <Text
                 position={[0, -0.3, 12]}
                 fontSize={fontSize * 0.3}
-                color="#4e9767" // Secondary text
+                color={colorSecondary}
                 anchorX="center"
                 anchorY="middle"
             >
@@ -303,11 +311,12 @@ function Typography() {
 
 function CallToAction() {
     const { height } = useThree(s => s.viewport);
+    const colorPrimary = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#17cf54';
     return (
         <group position={[0, -height, 10]}>
             <Text
                 fontSize={0.2}
-                color="#17cf54"
+                color={colorPrimary}
                 anchorX="center"
                 anchorY="middle"
             >

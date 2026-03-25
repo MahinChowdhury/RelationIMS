@@ -100,7 +100,7 @@ export default function Arrangement() {
 
                         <button
                             onClick={fetchOrders}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e2e23] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-shadow"
                         >
                             <span className="material-symbols-outlined text-primary">refresh</span>
                             {t.common.refresh || 'Refresh'}
@@ -111,7 +111,7 @@ export default function Arrangement() {
             </div>
 
             {/* Content */}
-            <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 overflow-hidden">
+            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 overflow-hidden">
                 {loading ? (
                     <div className="p-12 text-center text-gray-400 animate-pulse">
                         {t.orders.loadingOrders || 'Loading orders...'}

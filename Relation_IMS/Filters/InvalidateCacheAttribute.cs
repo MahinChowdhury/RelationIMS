@@ -1,5 +1,7 @@
+using Finbuckle.MultiTenant;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Relation_IMS.Models;
 using Relation_IMS.Services;
 
 namespace Relation_IMS.Filters
@@ -7,7 +9,7 @@ namespace Relation_IMS.Filters
     /// <summary>
     /// Action filter that invalidates Redis cache entries by prefix after a successful mutation.
     /// Usage: [InvalidateCache("category", "product")] on POST/PUT/DELETE endpoints.
-    /// Deletes all Redis keys matching each prefix pattern (e.g., "category:*").
+    /// Deletes all Redis keys matching each prefix pattern (e.g., "{tenantId}:{prefix}:*").
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class InvalidateCacheAttribute : Attribute, IAsyncActionFilter
@@ -39,9 +41,14 @@ namespace Relation_IMS.Filters
             {
                 var cacheService = context.HttpContext.RequestServices.GetRequiredService<IRedisCacheService>();
 
+                // Get tenant identifier for cache key isolation
+                var tenantInfo = context.HttpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo;
+                var tenantId = tenantInfo?.Identifier ?? "default";
+
                 foreach (var prefix in _prefixes)
                 {
-                    await cacheService.InvalidateCacheByPrefixAsync(prefix);
+                    // Invalidate with tenant-scoped prefix
+                    await cacheService.InvalidateCacheByPrefixAsync($"{tenantId}:{prefix}");
                 }
             }
             catch (Exception ex)

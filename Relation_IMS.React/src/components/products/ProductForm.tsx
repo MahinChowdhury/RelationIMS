@@ -114,18 +114,18 @@ export function ProductForm({
                     <div className="flex items-center justify-between">
                         <label className="block text-sm font-bold text-[#0e1b12] dark:text-gray-200">Product Images</label>
                         {selectedImages.length > 0 && (
-                            <span className="text-[10px] bg-[#4e9767]/10 text-[#4e9767] px-2 py-0.5 rounded-full font-medium">
+                            <span className="text-[10px] bg-[#4e9767]/10 text-secondary px-2 py-0.5 rounded-full font-medium">
                                 {selectedImages.length} image{selectedImages.length > 1 ? 's' : ''}
                             </span>
                         )}
                     </div>
                     <div
-                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[#d0e7d7] dark:border-[#2a4032] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-green-50/50 dark:hover:bg-green-900/20 transition-all group bg-white/40 dark:bg-black/20"
+                        className="flex-1 w-full min-h-[120px] border-2 border-dashed border-[var(--color-scrollbar)] dark:border-[var(--color-surface-dark-border)] rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-[#4e9767] hover:bg-green-50/50 dark:hover:bg-green-900/20 transition-all group bg-white/40 dark:bg-black/20"
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        <span className="material-symbols-outlined text-3xl text-gray-400 group-hover:text-[#4e9767] mb-2 transition-colors">cloud_upload</span>
+                        <span className="material-symbols-outlined text-3xl text-gray-400 group-hover:text-secondary mb-2 transition-colors">cloud_upload</span>
                         <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-                            <span className="font-bold text-[#4e9767]">{t.products.uploadClick}</span> {t.products.dragAndDrop}
+                            <span className="font-bold text-secondary">{t.products.uploadClick}</span> {t.products.dragAndDrop}
                         </p>
                         <p className="text-[10px] text-gray-400 mt-1">SVG, PNG, JPG (max 2MB)</p>
                     </div>
@@ -232,7 +232,7 @@ export function ProductForm({
                                                 : currentIds.filter((cid: number) => cid !== id);
                                             onChange('QuarterIds', newIds);
                                         }}
-                                        className="w-4 h-4 text-[#17cf54] rounded focus:ring-[#17cf54] dark:bg-black/20 dark:border-gray-600"
+                                        className="w-4 h-4 text-primary rounded focus:ring-primary dark:bg-black/20 dark:border-gray-600"
                                     />
                                     <span className="text-sm text-[#0e1b12] dark:text-white">{q.Name}</span>
                                 </label>
@@ -326,20 +326,20 @@ export function ProductForm({
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#4e9767]">inventory</span>
+                        <span className="material-symbols-outlined text-secondary">inventory</span>
                         {isLotMode ? t.products.defineLotVariants : t.products.initialStockLevels}
                     </h3>
                 </div>
 
                 {/* Stock Input Row */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-[#132219]/20 p-4 rounded-xl border border-gray-200 dark:border-[#2a4032]">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-[#132219]/20 p-4 rounded-xl border border-gray-200 dark:border-[var(--color-surface-dark-border)]">
                     <div>
                         <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.color}</label>
                         <div className="flex items-center gap-2">
                             <select
                                 value={newStock.color}
                                 onChange={(e) => setNewStock({ ...newStock, color: e.target.value })}
-                                className="flex-1 bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
+                                className="flex-1 bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                             >
                                 <option className="dark:bg-gray-800" value="" disabled hidden>{t.common.search}</option>
                                 {colors.map(c => <option className="dark:bg-gray-800" key={c.id} value={c.name}>{c.name}</option>)}
@@ -358,7 +358,7 @@ export function ProductForm({
                         <select
                             value={newStock.size}
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}
-                            className="w-full bg-white dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
+                            className="w-full bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] text-[#0e1b12] dark:text-white text-sm rounded-lg p-2 focus:ring-[#4e9767] cursor-pointer"
                         >
                             <option className="dark:bg-gray-800" value="" disabled hidden>{t.common.search}</option>
                             {availableSizes.map(s => <option className="dark:bg-gray-800" key={s.id} value={s.name}>{s.name}</option>)}
@@ -390,13 +390,13 @@ export function ProductForm({
                 {/* Stock List Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {stockItems.map((s, i) => (
-                        <div key={i} className="bg-white/40 dark:bg-[#132219] rounded-xl border border-gray-200/60 dark:border-[#2a4032] p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 dark:hover:border-[#4e9767] transition-colors group relative">
+                        <div key={i} className="bg-white/40 dark:bg-[#132219] rounded-xl border border-gray-200/60 dark:border-[var(--color-surface-dark-border)] p-4 flex flex-col gap-2 hover:border-[#4e9767]/50 dark:hover:border-[#4e9767] transition-colors group relative">
                             {/* Actions Overlay */}
                             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                 {!isLotMode && (
                                     <button
                                         onClick={() => startStockEdit(i, s)}
-                                        className="p-1 bg-white dark:bg-[#2a4032] rounded shadow text-gray-500 dark:text-gray-300 hover:text-[#4e9767] dark:hover:text-[#4e9767]"
+                                        className="p-1 bg-white dark:bg-[#2a4032] rounded shadow text-gray-500 dark:text-gray-300 hover:text-secondary dark:hover:text-secondary"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">edit</span>
                                     </button>
@@ -443,7 +443,7 @@ export function ProductForm({
                     ))}
 
                     {stockItems.length === 0 && (
-                        <div className="col-span-full py-8 text-center text-gray-400 dark:text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-[#2a4032] rounded-xl">
+                        <div className="col-span-full py-8 text-center text-gray-400 dark:text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-xl">
                             {t.products.noVariantsFound}
                         </div>
                     )}
@@ -482,7 +482,7 @@ function SortableImageItem({ id, src, index, onRemove }: SortableImageItemProps)
         <div
             ref={setNodeRef}
             style={style}
-            className={`relative flex items-center gap-3 p-3 border rounded-lg bg-white dark:bg-[#132219] group transition-colors ${isDragging ? 'border-[#4e9767] shadow-lg ring-2 ring-[#4e9767]/20' : 'border-gray-200 dark:border-[#2a4032] hover:border-[#4e9767]/50'
+            className={`relative flex items-center gap-3 p-3 border rounded-lg bg-white dark:bg-[#132219] group transition-colors ${isDragging ? 'border-[#4e9767] shadow-lg ring-2 ring-[#4e9767]/20' : 'border-gray-200 dark:border-[var(--color-surface-dark-border)] hover:border-[#4e9767]/50'
                 }`}
         >
             {/* Drag Handle */}

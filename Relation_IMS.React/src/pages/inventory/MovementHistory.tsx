@@ -105,9 +105,9 @@ const MovementHistory = () => {
                         <span>{t.inventory.movementHistory || 'History'}</span>
                     </div>
                     <h1 className="text-3xl md:text-4xl font-black text-[#0e1b12] dark:text-white tracking-tight">{t.inventory.movementHistory || 'Movement History'}</h1>
-                    <p className="text-[#4e9767] text-base font-medium max-w-2xl">{t.inventory.movementHistorySubtitle || 'Track the flow of inventory between warehouses and storefronts with real-time logs.'}</p>
+                    <p className="text-secondary text-base font-medium max-w-2xl">{t.inventory.movementHistorySubtitle || 'Track the flow of inventory between warehouses and storefronts with real-time logs.'}</p>
                 </div>
-                <button className="flex items-center justify-center gap-2 bg-white dark:bg-[#1e2e23] hover:bg-[#e7f3eb] dark:hover:bg-[#2a3f31] border border-[#d0e7d7] dark:border-white/10 text-[#0e1b12] dark:text-white h-10 px-4 rounded-lg shadow-sm transition-all text-sm font-bold">
+                <button className="flex items-center justify-center gap-2 bg-white dark:bg-[var(--color-surface-dark-card)] hover:bg-primary/10 dark:hover:bg-[#2a3f31] border border-[var(--color-scrollbar)] dark:border-white/10 text-[#0e1b12] dark:text-white h-10 px-4 rounded-lg shadow-sm transition-all text-sm font-bold">
                     <span className="material-symbols-outlined text-[20px]">download</span>
                     <span>{t.common.exportCSV || 'Export CSV'}</span>
                 </button>
@@ -121,12 +121,12 @@ const MovementHistory = () => {
                         {/* Top Row: Search */}
                         <div className="w-full">
                             <label className="flex flex-col w-full">
-                                <div className="flex w-full items-center rounded-lg h-12 bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 focus-within:ring-2 focus-within:ring-primary/50 transition-all overflow-hidden">
-                                    <div className="text-[#4e9767] pl-4 flex items-center justify-center">
+                                <div className="flex w-full items-center rounded-lg h-12 bg-white/50 dark:bg-black/20 border border-[var(--color-scrollbar)] dark:border-white/10 focus-within:ring-2 focus-within:ring-primary/50 transition-all overflow-hidden">
+                                    <div className="text-secondary pl-4 flex items-center justify-center">
                                         <span className="material-symbols-outlined">search</span>
                                     </div>
                                     <input
-                                        className="flex w-full flex-1 bg-transparent border-none h-full placeholder:text-[#4e9767]/70 px-4 text-base font-normal focus:ring-0 text-[#0e1b12] dark:text-white"
+                                        className="flex w-full flex-1 bg-transparent border-none h-full placeholder:text-secondary/70 px-4 text-base font-normal focus:ring-0 text-[#0e1b12] dark:text-white"
                                         placeholder={t.inventory.searchHistoryPlaceholder || "Search SKU, Product Name, or User..."}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -137,10 +137,10 @@ const MovementHistory = () => {
                         {/* Bottom Row: Filters */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.inventory.dateRange || 'Date Range'}</span>
+                                <span className="text-xs font-bold text-secondary uppercase tracking-wider">{t.inventory.dateRange || 'Date Range'}</span>
                                 <div className="flex items-center gap-2">
                                     <input
-                                        className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary"
+                                        className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[var(--color-scrollbar)] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary"
                                         type="date"
                                         value={dateFilter}
                                         onChange={(e) => setDateFilter(e.target.value)}
@@ -150,9 +150,9 @@ const MovementHistory = () => {
                             {/* Detailed filters (Source/Dest/User) would require fetching available options. Keeping simple for now or accepting IDs if known. */}
                             {/* Placeholder selects for visual completeness, logic simplified for MVP */}
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.common.source || 'Source'}</span>
+                                <span className="text-xs font-bold text-secondary uppercase tracking-wider">{t.common.source || 'Source'}</span>
                                 <select
-                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
+                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[var(--color-scrollbar)] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
                                     value={sourceFilter}
                                     onChange={(e) => setSourceFilter(e.target.value)}
                                 >
@@ -161,9 +161,9 @@ const MovementHistory = () => {
                                 </select>
                             </label>
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.common.destination || 'Destination'}</span>
+                                <span className="text-xs font-bold text-secondary uppercase tracking-wider">{t.common.destination || 'Destination'}</span>
                                 <select
-                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
+                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[var(--color-scrollbar)] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
                                     value={destinationFilter}
                                     onChange={(e) => setDestinationFilter(e.target.value)}
                                 >
@@ -171,9 +171,9 @@ const MovementHistory = () => {
                                 </select>
                             </label>
                             <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-bold text-[#4e9767] uppercase tracking-wider">{t.common.user || 'User'}</span>
+                                <span className="text-xs font-bold text-secondary uppercase tracking-wider">{t.common.user || 'User'}</span>
                                 <select
-                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[#d0e7d7] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
+                                    className="w-full h-11 rounded-lg bg-white/50 dark:bg-black/20 border border-[var(--color-scrollbar)] dark:border-white/10 text-sm px-3 text-[#0e1b12] dark:text-white focus:ring-1 focus:ring-primary focus:border-primary appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2317cf54%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_1rem_center] bg-no-repeat pr-8"
                                     value={userFilter}
                                     onChange={(e) => setUserFilter(e.target.value)}
                                 >
@@ -189,7 +189,7 @@ const MovementHistory = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-primary/5 border-b border-[#d0e7d7] dark:border-white/5 text-xs uppercase text-[#4e9767] font-bold tracking-wider">
+                                <tr className="bg-primary/5 border-b border-[var(--color-scrollbar)] dark:border-white/5 text-xs uppercase text-secondary font-bold tracking-wider">
                                     <th className="px-6 py-4">{t.inventory.dateTime || 'Date & Time'}</th>
                                     <th className="px-6 py-4">{t.common.product || 'Product'}</th>
                                     <th className="px-6 py-4">{t.inventory.movementRoute || 'Movement Route'}</th>
@@ -228,7 +228,7 @@ const MovementHistory = () => {
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-bold text-[#0e1b12] dark:text-white">{item.ProductName}</span>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] text-[#4e9767] font-medium bg-primary/10 px-1.5 py-0.5 rounded w-fit">{item.ProductSku}</span>
+                                                                    <span className="text-[10px] text-secondary font-medium bg-primary/10 px-1.5 py-0.5 rounded w-fit">{item.ProductSku}</span>
                                                                     {item.SizeName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">{t.common.size || 'Size'}: {item.SizeName}</span>}
                                                                     {item.ColorName && <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">{t.common.color || 'Color'}: {item.ColorName}</span>}
                                                                 </div>
@@ -281,7 +281,7 @@ const MovementHistory = () => {
                         </table>
                     </div>
                     {/* Pagination Sentinel */}
-                    <div ref={containerRef} className="p-8 border-t border-[#d0e7d7]/50 dark:border-white/5 flex flex-col items-center justify-center bg-primary/5 min-h-[100px]">
+                    <div ref={containerRef} className="p-8 border-t border-[var(--color-scrollbar)] dark:border-white/5 flex flex-col items-center justify-center bg-primary/5 min-h-[100px]">
                         {loading && (
                             <div className="flex items-center gap-3 text-primary animate-pulse">
                                 <span className="material-symbols-outlined animate-spin shadow-primary/20 drop-shadow-sm">progress_activity</span>
@@ -299,7 +299,7 @@ const MovementHistory = () => {
                                 <div className="size-16 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400">
                                     <span className="material-symbols-outlined text-4xl">search_off</span>
                                 </div>
-                                <p className="text-[#4e9767] font-medium tracking-tight">{t.inventory.noMovementRecords || 'No movement records found.'}</p>
+                                <p className="text-secondary font-medium tracking-tight">{t.inventory.noMovementRecords || 'No movement records found.'}</p>
                             </div>
                         )}
                     </div>

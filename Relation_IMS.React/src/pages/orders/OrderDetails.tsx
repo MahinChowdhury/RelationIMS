@@ -54,7 +54,7 @@ const MiniOrderCycle = ({ status, t }: { status: OrderInternalStatus; t: any }) 
     const isConfirmed = status === OrderInternalStatus.Confirmed;
 
     return (
-        <div className="flex items-center gap-1 bg-white dark:bg-[#1a2e22] px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm" title={t.orders.internalOrderCycle || 'Internal Order Cycle'}>
+        <div className="flex items-center gap-1 bg-white dark:bg-[var(--color-surface-dark-card)] px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm" title={t.orders.internalOrderCycle || 'Internal Order Cycle'}>
             <div className="size-5 rounded-full bg-green-500 text-white flex items-center justify-center shadow-sm">
                 <span className="material-symbols-outlined text-[12px]">add_shopping_cart</span>
             </div>
@@ -75,6 +75,7 @@ const MiniOrderCycle = ({ status, t }: { status: OrderInternalStatus; t: any }) 
 
 export default function OrderDetailsPage() {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const { id } = useParams<{ id: string }>();
     const [searchParams] = useSearchParams();
     const viewMode = searchParams.get('view');
@@ -235,7 +236,7 @@ export default function OrderDetailsPage() {
                         <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">{t.common.somethingWentWrong || 'Oops! Something went wrong'}</h2>
                         <p className="text-red-600 dark:text-red-400">{error || t.orders.orderNotFound || 'Order not found'}</p>
                     </div>
-                    <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20">
+                    <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20">
                         <span className="material-symbols-outlined">arrow_back</span>
                         {t.common.backToOrders || 'Back to Orders'}
                     </Link>
@@ -278,11 +279,11 @@ export default function OrderDetailsPage() {
                 <div className="flex flex-col items-end gap-3">
                     <MiniOrderCycle status={order.InternalStatus} t={t} />
                     <div className="flex flex-wrap justify-end gap-3">
-                        <Link to={`/orders/${order.Id}/invoice`} className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[#1a2e22] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
+                        <Link to={`/orders/${order.Id}/invoice`} className="flex items-center gap-2 px-4 h-10 rounded-lg border border-[#e7f3eb] dark:border-gray-700 bg-white dark:bg-[var(--color-surface-dark-card)] text-text-main dark:text-white hover:bg-[#f8fcf9] dark:hover:bg-white/5 font-bold text-sm transition-colors shadow-sm">
                             <span className="material-symbols-outlined text-lg">print</span>
                             {t.orders.printInvoice || 'Print Invoice'}
                         </Link>
-                        <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-green-600 font-bold text-sm transition-colors shadow-sm shadow-green-500/20">
+                        <button onClick={handleEditOrder} className="flex items-center gap-2 px-4 h-10 rounded-lg bg-primary text-white hover:bg-primary-dark font-bold text-sm transition-colors shadow-sm shadow-primary/20">
                             <span className="material-symbols-outlined text-lg">edit</span>
                             {order.InternalStatus === OrderInternalStatus.Confirmed ? (t.orders.editOrderPayment || 'Edit Payment') : (t.orders.editOrder || 'Edit Order')}
                         </button>
@@ -293,8 +294,8 @@ export default function OrderDetailsPage() {
             {/* Info Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Customer Info */}
-                <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6 flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">
+                <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] p-6 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[var(--color-surface-dark-border)] pb-3">
                         <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">person</span>
                             {t.orders.customerDetails || 'Customer Details'}
@@ -303,7 +304,7 @@ export default function OrderDetailsPage() {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-6">
                         <div className="flex flex-col items-center sm:items-start gap-3 min-w-[120px]">
-                            <div className="size-20 rounded-full bg-cover bg-center border-2 border-[#e7f3eb] dark:border-[#2a4032] bg-gray-100 flex items-center justify-center text-3xl font-bold text-text-secondary">
+                            <div className="size-20 rounded-full bg-cover bg-center border-2 border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] bg-gray-100 flex items-center justify-center text-3xl font-bold text-text-secondary">
                                 {order.Customer?.Name?.charAt(0) || '#'}
                             </div>
                             <div className="text-center sm:text-left">
@@ -348,8 +349,8 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {/* Payment Info */}
-                <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6 flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">
+                <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] p-6 flex flex-col h-full">
+                    <div className="flex items-center justify-between mb-4 border-b border-[#f0f7f2] dark:border-[var(--color-surface-dark-border)] pb-3">
                         <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">payments</span>
                             {t.orders.paymentDetails || 'Payment Details'}
@@ -363,7 +364,7 @@ export default function OrderDetailsPage() {
                     </div>
                     <div className="flex-1 flex flex-col justify-between">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
+                            <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)]">
                                 <p className="text-xs text-text-secondary mb-1">{t.orders.paymentMethods || 'Payment Method(s)'}</p>
                                 {order.Payments && order.Payments.length > 0 ? (
                                     <div className="space-y-1">
@@ -377,7 +378,7 @@ export default function OrderDetailsPage() {
                                                         {p.PaymentMethod === 0 ? (t.orders.cash || 'Cash') : p.PaymentMethod === 1 ? (t.orders.bank || 'Bank') : (t.orders.bkash || 'Bkash')}
                                                     </span>
                                                 </div>
-                                                <span className="font-bold text-text-main dark:text-white">৳{p.Amount.toFixed(2)}</span>
+                                                <span className="font-bold text-text-main dark:text-white">{taka}{p.Amount.toFixed(2)}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -388,7 +389,7 @@ export default function OrderDetailsPage() {
                                     </div>
                                 )}
                             </div>
-                            <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[#2a4032]">
+                            <div className="bg-[#f8fcf9] dark:bg-white/5 p-3 rounded-lg border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)]">
                                 <p className="text-xs text-text-secondary mb-1">{t.orders.orderType || 'Order Type'}</p>
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-text-main dark:text-white">shopping_bag</span>
@@ -400,11 +401,11 @@ export default function OrderDetailsPage() {
                             <div className="flex justify-between items-end">
                                 <div>
                                     <p className="text-sm font-medium text-text-secondary">{t.orders.paidByCustomer || 'Total Amount Paid'}</p>
-                                    <p className="text-xl font-bold text-primary">৳{paidAmount.toFixed(2)}</p>
+                                    <p className="text-xl font-bold text-primary">{taka}{paidAmount.toFixed(2)}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm font-medium text-text-secondary">{t.orders.remainingDue || 'Remaining Due'}</p>
-                                    <p className={`text-xl font-bold ${dueAmount > 0 ? 'text-red-500' : 'text-text-main dark:text-white'}`}>৳{dueAmount.toFixed(2)}</p>
+                                    <p className={`text-xl font-bold ${dueAmount > 0 ? 'text-red-500' : 'text-text-main dark:text-white'}`}>{taka}{dueAmount.toFixed(2)}</p>
                                 </div>
                             </div>
                             {/* Progress Bar */}
@@ -420,8 +421,8 @@ export default function OrderDetailsPage() {
             {/* Order Items & Summary Section */}
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Order Items Table */}
-                <div className="flex-1 bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] overflow-hidden">
-                    <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[#2a4032] flex justify-between items-center">
+                <div className="flex-1 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] overflow-hidden">
+                    <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-[var(--color-surface-dark-border)] flex justify-between items-center">
                         <h3 className="text-lg font-bold text-text-main dark:text-white">{t.orders.orderItems || 'Order Items'}</h3>
                         <span className="text-sm text-text-secondary">{order.OrderItems?.length || 0} {t.common.items || 'Items'}</span>
                     </div>
@@ -518,12 +519,12 @@ export default function OrderDetailsPage() {
                                                             </td>
                                                             <td className="px-6 py-3 text-right text-text-main dark:text-gray-200">
                                                                 <div className="flex flex-col items-end">
-                                                                    <span className="font-medium">৳{item.UnitPrice.toFixed(2)}</span>
-                                                                    {(item.Discount || 0) > 0 && <span className="text-xs text-red-500">{t.orders.discount || 'Disc'}: -৳{item.Discount?.toFixed(2)}</span>}
+                                                                    <span className="font-medium">{taka}{item.UnitPrice.toFixed(2)}</span>
+                                                                    {(item.Discount || 0) > 0 && <span className="text-xs text-red-500">{t.orders.discount || 'Disc'}: -{taka}{item.Discount?.toFixed(2)}</span>}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-3 text-center text-text-main dark:text-gray-200 font-bold">{item.Quantity}</td>
-                                                            <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white">৳{item.Subtotal.toFixed(2)}</td>
+                                                            <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white">{taka}{item.Subtotal.toFixed(2)}</td>
                                                         </tr>
                                                         {/* Expanded Barcodes Row */}
                                                         {isExpanded && hasCodes && (
@@ -553,36 +554,36 @@ export default function OrderDetailsPage() {
 
                 {/* Order Summary */}
                 <div className="w-full lg:w-96 shrink-0 flex flex-col gap-6">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
-                        <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-[#2a4032] pb-3">{t.orders.orderSummary || 'Order Summary'}</h3>
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] p-6">
+                        <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-[var(--color-surface-dark-border)] pb-3">{t.orders.orderSummary || 'Order Summary'}</h3>
                         <div className="space-y-3 mb-6">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-text-secondary font-medium">{t.common.subtotal || 'Subtotal'}</span>
-                                <span className="text-text-main dark:text-white font-bold">৳{order.TotalAmount.toFixed(2)}</span>
+                                <span className="text-text-main dark:text-white font-bold">{taka}{order.TotalAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-text-secondary font-medium">{t.orders.discount || 'Discount'}</span>
-                                <span className="text-green-600 dark:text-green-400 font-bold">-৳{order.Discount.toFixed(2)}</span>
+                                <span className="text-green-600 dark:text-green-400 font-bold">-{taka}{order.Discount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-text-secondary font-medium">{t.common.tax || 'Tax'} (0%)</span>
-                                <span className="text-text-main dark:text-white font-bold">৳0.00</span>
+                                <span className="text-text-main dark:text-white font-bold">{taka}0.00</span>
                             </div>
                         </div>
                         <div className="border-t border-dashed border-gray-300 dark:border-gray-600 pt-4 mb-4">
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-base font-bold text-text-main dark:text-white">{t.orders.netAmount || 'Net Amount'}</span>
-                                <span className="text-xl font-black text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
+                                <span className="text-xl font-black text-text-main dark:text-white">{taka}{order.NetAmount.toFixed(2)}</span>
                             </div>
                         </div>
                         <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 border border-green-100 dark:border-green-900/20 space-y-2">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-green-800 dark:text-green-300 font-medium">{t.orders.paidByCustomer || 'Paid by Customer'}</span>
-                                <span className="text-green-800 dark:text-green-300 font-bold">৳{paidAmount.toFixed(2)}</span>
+                                <span className="text-green-800 dark:text-green-300 font-bold">{taka}{paidAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center text-base pt-2 border-t border-green-200 dark:border-green-800/30">
                                 <span className="text-red-600 dark:text-red-400 font-bold">{t.orders.totalDue || 'Total Due'}</span>
-                                <span className="text-red-600 dark:text-red-400 font-black text-lg">৳{dueAmount.toFixed(2)}</span>
+                                <span className="text-red-600 dark:text-red-400 font-black text-lg">{taka}{dueAmount.toFixed(2)}</span>
                             </div>
                         </div>
 
@@ -597,14 +598,14 @@ export default function OrderDetailsPage() {
                             </div>
                         )}
 
-                        <button className="w-full mt-6 bg-primary text-white font-bold h-12 rounded-lg hover:bg-green-600 transition-all shadow-md flex items-center justify-center gap-2">
+                        <button className="w-full mt-6 bg-primary text-white font-bold h-12 rounded-lg hover:bg-primary-dark transition-all shadow-md flex items-center justify-center gap-2">
                             <span className="material-symbols-outlined">mark_email_read</span>
                             {t.orders.sendInvoiceEmail || 'Send Invoice Email'}
                         </button>
                     </div>
 
                     {/* Notes Card */}
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[#2a4032] p-6">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] p-6">
                         <h3 className="text-sm font-bold text-text-main dark:text-white mb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-gray-400 text-lg">sticky_note_2</span>
                             {t.orders.internalRemarks || 'Internal Remarks'}

@@ -75,7 +75,7 @@ export default function InventoryLocations() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleOpenModal}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-green-600 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-sm"
                     >
                         <span className="material-symbols-outlined text-[20px]">add_location</span>
                         <span>{t.inventory.addLocation || 'Add Location'}</span>
@@ -89,13 +89,13 @@ export default function InventoryLocations() {
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-primary border-gray-200"></div>
                 </div>
             ) : inventories.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1a2e22] rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
+                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
                     <span className="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">warehouse</span>
                     <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.inventory.noLocationsFound || 'No Locations Found'}</h3>
                     <p className="text-text-secondary dark:text-gray-400 mb-6">{t.inventory.getStartedLocations || 'Get started by creating your first inventory location.'}</p>
                     <button
                         onClick={handleOpenModal}
-                        className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-green-600 transition-colors shadow-lg shadow-green-500/20"
+                        className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
                     >
                         {t.inventory.createLocation || 'Create Location'}
                     </button>
@@ -103,7 +103,7 @@ export default function InventoryLocations() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {inventories.map((inv) => (
-                        <div key={inv.Id} className="group bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/50 transition-all duration-300 overflow-hidden relative cursor-pointer"
+                        <div key={inv.Id} className="group bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-primary/50 transition-all duration-300 overflow-hidden relative cursor-pointer"
                             onClick={() => navigate(`/inventory/locations/${inv.Id}`)}>
                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                             <div className="p-6 flex flex-col gap-5 relative z-10">
@@ -123,7 +123,7 @@ export default function InventoryLocations() {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="py-4 border-y border-dashed border-gray-100 dark:border-[#2a4032]">
+                                <div className="py-4 border-y border-dashed border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                     <p className="text-sm text-text-secondary dark:text-gray-300 line-clamp-2 min-h-[40px]">
                                         {inv.Description || t.common.noData || 'No description provided.'}
                                     </p>
@@ -144,9 +144,9 @@ export default function InventoryLocations() {
                     {/* Add New Location Card */}
                     <button
                         onClick={handleOpenModal}
-                        className="group flex flex-col items-center justify-center gap-4 p-6 rounded-xl border-2 border-dashed border-gray-200 dark:border-[#2a4032] hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 h-full min-h-[240px] w-full text-left"
+                        className="group flex flex-col items-center justify-center gap-4 p-6 rounded-xl border-2 border-dashed border-gray-200 dark:border-[var(--color-surface-dark-border)] hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 h-full min-h-[240px] w-full text-left"
                     >
-                        <div className="p-4 rounded-full bg-white dark:bg-[#1a2e22] text-gray-400 group-hover:text-primary shadow-sm group-hover:shadow-md transition-all">
+                        <div className="p-4 rounded-full bg-white dark:bg-[var(--color-surface-dark-card)] text-gray-400 group-hover:text-primary shadow-sm group-hover:shadow-md transition-all">
                             <span className="material-symbols-outlined text-4xl">add</span>
                         </div>
                         <div className="text-center">
@@ -160,9 +160,9 @@ export default function InventoryLocations() {
             {/* Create Location Modal */}
             {showModal && (
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-[#2a4032] animate-fadeIn">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-fadeIn">
                         {/* Header */}
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[#2a4032] flex items-center justify-between bg-gray-50/50 dark:bg-[#112116]/50">
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between bg-gray-50/50 dark:bg-[var(--color-surface-dark-solid)]">
                             <div className="flex items-center gap-3">
                                 <div className="size-10 rounded-xl flex items-center justify-center shadow-sm bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                                     <span className="material-symbols-outlined text-[24px]">add_location</span>
@@ -197,7 +197,7 @@ export default function InventoryLocations() {
                                         type="text"
                                         value={formData.Name}
                                         onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors"
                                         placeholder="e.g. Main Warehouse, Shop A"
                                         required
                                     />
@@ -215,7 +215,7 @@ export default function InventoryLocations() {
                                         value={formData.Description}
                                         onChange={(e) => setFormData({ ...formData, Description: e.target.value })}
                                         rows={3}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-colors resize-none"
                                         placeholder={t.inventory.enterLocationDescription || "Enter location description (optional)"}
                                     ></textarea>
                                 </div>
@@ -223,12 +223,12 @@ export default function InventoryLocations() {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-6 py-4 bg-gray-50/50 dark:bg-[#112116]/50 border-t border-gray-100 dark:border-[#2a4032] flex items-center justify-end gap-3">
+                        <div className="px-6 py-4 bg-gray-50/50 dark:bg-[var(--color-surface-dark-solid)] border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
                                 disabled={saving}
-                                className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-200 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {t.common.cancel || 'Cancel'}
                             </button>
@@ -236,7 +236,7 @@ export default function InventoryLocations() {
                                 type="button"
                                 onClick={handleCreateInventory}
                                 disabled={saving}
-                                className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-500 shadow-md shadow-green-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-md shadow-primary/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {saving ? (
                                     <>

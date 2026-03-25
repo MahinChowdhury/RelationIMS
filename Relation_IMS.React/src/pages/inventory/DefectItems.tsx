@@ -131,7 +131,7 @@ export default function DefectItems() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[#1a2e22] dark:border-[#2a4032] dark:text-gray-200 dark:hover:bg-white/5 transition-all shadow-sm">
+                    <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-200 dark:hover:bg-white/5 transition-all shadow-sm">
                         <span className="material-symbols-outlined text-[20px]">print</span>
                         <span className="hidden sm:inline">{t.inventory.printLog || 'Print Log'}</span>
                         <span className="sm:hidden">{t.common.print || 'Print'}</span>
@@ -140,7 +140,7 @@ export default function DefectItems() {
             </div>
 
             {/* Register Form */}
-            <div className="w-full bg-white dark:bg-[#1a2e22] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[#2a4032] p-6 flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <div className="w-full bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 flex flex-col md:flex-row gap-6 items-start md:items-center">
                 <div className="flex-1 w-full md:w-auto">
                     <label className="block text-sm font-bold text-text-main dark:text-white mb-2" htmlFor="product-code">
                         {t.inventory.registerDefectedItem || 'Register Defected Item'}
@@ -161,7 +161,7 @@ export default function DefectItems() {
                             value={productCode}
                             onChange={(e) => setProductCode(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleRegisterDefect()}
-                            className="block w-full p-4 pl-10 text-sm text-text-main border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[#112116] dark:border-[#2a4032] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary transition-colors"
+                            className="block w-full p-4 pl-10 text-sm text-text-main border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary transition-colors"
                             placeholder={t.inventory.scanQRPlaceholder || "Scan QR code or enter SKU (e.g. JEANS-001)"}
                         />
                     </div>
@@ -176,7 +176,7 @@ export default function DefectItems() {
                         id="defect-reason"
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[#112116] dark:border-[#2a4032] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
+                        className="bg-gray-50 border border-gray-300 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
                     >
                         <option value="Damaged on arrival">{t.inventory.damagedOnArrival || 'Damaged on arrival'}</option>
                         <option value="Manufacturing defect">{t.inventory.manufacturingDefect || 'Manufacturing defect'}</option>
@@ -189,7 +189,7 @@ export default function DefectItems() {
                     <button
                         onClick={() => handleRegisterDefect()}
                         disabled={registering || !productCode.trim()}
-                        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 transition-colors shadow-sm focus:ring-4 focus:ring-primary/20 disabled:opacity-50"
+                        className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors shadow-sm focus:ring-4 focus:ring-primary/20 disabled:opacity-50"
                         title={t.inventory.markAsDefected || "Mark as Defected"}
                     >
                         {registering ? (
@@ -216,16 +216,16 @@ export default function DefectItems() {
                                 id="table-search"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-64 bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[#112116] dark:border-[#2a4032] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
+                                className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-64 bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
                                 placeholder={t.inventory.searchLogs || "Search logs..."}
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[#2a4032] shadow-sm bg-white dark:bg-[#1a2e22]">
+                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[var(--color-surface-dark-border)] shadow-sm bg-white dark:bg-[var(--color-surface-dark-card)]">
                     <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                        <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[#112116] dark:text-gray-400">
+                        <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:text-gray-400">
                             <tr>
                                 <th className="px-6 py-4 font-bold" scope="col">{t.inventory.defectDate || 'Defect Date'}</th>
                                 <th className="px-6 py-4 font-bold" scope="col">{t.common.product || 'Product Name'}</th>

@@ -2,24 +2,25 @@ import { useLanguage } from '../../i18n/LanguageContext';
 
 const ProfitAnalysis = () => {
   const { t } = useLanguage();
+  const taka = '\u09F3';
   return (
-    <div className="col-span-12 lg:col-span-8 bg-gray-50 dark:bg-[#0f1f15] text-text-main dark:text-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden flex flex-col justify-center border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-8 bg-gray-50 dark:bg-[#0f1f15] text-text-main dark:text-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden flex flex-col justify-center border border-gray-200/60 dark:border-[var(--color-surface-dark-border)]">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 relative z-10">
         <div>
           <h4 className="text-sm font-extrabold uppercase tracking-widest text-primary mb-3 sm:mb-4">{t.dashboard.profitAnalysis}</h4>
           <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tighter mb-3 sm:mb-4">
-            ৳84,200{' '}
+            {taka}84,200{' '}
             <span className="text-base sm:text-lg font-medium text-gray-500 dark:text-gray-400 opacity-80">{t.dashboard.netProfit}</span>
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mb-5 sm:mb-6">
             Your profit margin increased by <span className="font-bold text-primary">8%</span> compared to last month due to lower logistics costs.
           </p>
           <div className="flex flex-wrap gap-3 sm:gap-4">
-            <div className="px-3 sm:px-4 py-2 bg-white dark:bg-[#1a2e22] rounded-full text-xs font-bold border border-gray-200 dark:border-[#2a4032] flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary shrink-0"></span> {t.dashboard.revenue}: ৳320k
+            <div className="px-3 sm:px-4 py-2 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-full text-xs font-bold border border-gray-200 dark:border-[var(--color-surface-dark-border)] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary shrink-0"></span> {t.dashboard.revenue}: {taka}320k
             </div>
-            <div className="px-3 sm:px-4 py-2 bg-white dark:bg-[#1a2e22] rounded-full text-xs font-bold border border-gray-200 dark:border-[#2a4032] flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 shrink-0"></span> {t.dashboard.expense}: ৳235.8k
+            <div className="px-3 sm:px-4 py-2 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-full text-xs font-bold border border-gray-200 dark:border-[var(--color-surface-dark-border)] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 shrink-0"></span> {t.dashboard.expense}: {taka}235.8k
             </div>
           </div>
         </div>

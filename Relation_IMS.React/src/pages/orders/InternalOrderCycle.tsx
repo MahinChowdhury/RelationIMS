@@ -204,7 +204,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                         <button
                             onClick={() => setShowConfirmModal(true)}
                             disabled={loading}
-                            className="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg shadow-green-500/30 flex items-center gap-2 text-sm animate-in fade-in"
+                            className="px-6 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/30 flex items-center gap-2 text-sm animate-in fade-in"
                         >
                             {loading ? (
                                 <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
@@ -220,7 +220,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
             {/* Final Confirmation Modal */}
             {showConfirmModal && (
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-4xl text-primary">verified</span>
@@ -256,9 +256,9 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
             {/* Print Invoice Modal */}
             {showPrintModal && (
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
-                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.orderCreated || 'Order Confirmed! 🎉'}</h3>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.orderCreated || 'Order Confirmed! Ã°Å¸Å½â€°'}</h3>
                             <p className="text-text-secondary dark:text-gray-400 text-sm">
                                 {t.orders.doYouWantToPrintInvoice || 'Do you want to print the invoice now?'}
                             </p>

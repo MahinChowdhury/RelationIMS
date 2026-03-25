@@ -177,7 +177,7 @@ export default function InventoryTransferScanner({
                     <div className="p-4 sm:p-6 bg-gray-900 border-t border-gray-800">
                         <button
                             onClick={onClose}
-                            className="w-full py-3.5 sm:py-4 bg-primary hover:bg-green-600 active:scale-95 transition-all text-white font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                            className="w-full py-3.5 sm:py-4 bg-primary hover:bg-primary-dark active:scale-95 transition-all text-white font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                         >
                             <span className="material-symbols-outlined">check</span>
                             Done & Review

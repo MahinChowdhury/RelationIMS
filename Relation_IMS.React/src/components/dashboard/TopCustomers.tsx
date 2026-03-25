@@ -70,7 +70,7 @@ const TopCustomers = () => {
   };
 
   return (
-    <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-6 bg-white dark:bg-[var(--color-surface-dark-card)] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)]">
       <h4 className="text-lg font-extrabold tracking-tight mb-5 sm:mb-6 text-text-main dark:text-white">{t.dashboard.topCustomers}</h4>
       
       {loading ? (

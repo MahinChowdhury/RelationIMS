@@ -1,5 +1,7 @@
+using Finbuckle.MultiTenant;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Relation_IMS.Models;
 using Relation_IMS.Services;
 using System.Text;
 using System.Text.Json;
@@ -7,9 +9,9 @@ using System.Text.Json;
 namespace Relation_IMS.Filters
 {
     /// <summary>
-    /// Action filter that caches GET responses in Redis.
+    /// Action filter that caches GET responses in Redis with tenant isolation.
     /// Usage: [RedisCache("category")] on GET endpoints.
-    /// Cache key format: {prefix}:{path}:{sorted_query_params}
+    /// Cache key format: {tenantId}:{prefix}:{path}:{sorted_query_params}
     /// Default TTL: 15 minutes.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
@@ -32,7 +34,7 @@ namespace Relation_IMS.Filters
             try
             {
                 cacheService = context.HttpContext.RequestServices.GetRequiredService<IRedisCacheService>();
-                cacheKey = GenerateCacheKey(context.HttpContext.Request);
+                cacheKey = GenerateCacheKey(context.HttpContext);
                 Console.WriteLine($"[RedisCache] Checking cache for key: {cacheKey}");
 
                 // Try to get from cache
@@ -82,17 +84,24 @@ namespace Relation_IMS.Filters
             }
         }
 
-        private string GenerateCacheKey(HttpRequest request)
+        private string GenerateCacheKey(HttpContext httpContext)
         {
             var sb = new StringBuilder();
+
+            // Prepend tenant identifier for data isolation
+            var tenantInfo = httpContext.GetMultiTenantContext<AppTenantInfo>()?.TenantInfo;
+            var tenantId = tenantInfo?.Identifier ?? "default";
+            sb.Append(tenantId);
+            sb.Append(':');
+
             sb.Append(_prefix);
             sb.Append(':');
-            sb.Append(request.Path.ToString().ToLowerInvariant());
+            sb.Append(httpContext.Request.Path.ToString().ToLowerInvariant());
 
-            if (request.QueryString.HasValue)
+            if (httpContext.Request.QueryString.HasValue)
             {
                 // Sort query params for consistent keys
-                var sortedParams = request.Query
+                var sortedParams = httpContext.Request.Query
                     .OrderBy(q => q.Key)
                     .Select(q => $"{q.Key}={q.Value}")
                     .ToList();

@@ -42,7 +42,7 @@ export const showFriendlyAlert = (message: any, title?: string, duration: number
 
             return (
                 <div className="fixed top-4 left-4 right-4 sm:left-auto sm:top-6 sm:right-6 z-[9999] pointer-events-none flex flex-col items-end">
-                    <div className="bg-white dark:bg-[#1a2e22] w-full sm:w-[400px] rounded-lg shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden pointer-events-auto transform transition-all animate-in slide-in-from-top-8 sm:slide-in-from-right-8 fade-in duration-300">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] w-full sm:w-[400px] rounded-lg shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden pointer-events-auto transform transition-all animate-in slide-in-from-top-8 sm:slide-in-from-right-8 fade-in duration-300">
                         <div className="flex items-start gap-3 p-3 min-h-[60px]">
                             <span className={`material-symbols-outlined shrink-0 text-2xl ${iconColor}`}>
                                 {iconName}

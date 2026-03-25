@@ -68,6 +68,7 @@ interface PaymentEntry {
 export default function CreateOrder() {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const { id } = useParams<{ id: string }>(); // Edit Mode ID
     const { user } = useAuth();
     const mode = id ? 'edit' : 'create';
@@ -548,7 +549,7 @@ export default function CreateOrder() {
                 <div className="flex-1 flex flex-col gap-5">
 
                     {/* Customer Selection */}
-                    <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 p-5 z-20 relative">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 p-5 z-20 relative">
                         <div className="flex justify-between items-center mb-2">
                             <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">{t.orders.customerSelection || 'Customer Selection'}</label>
                             <button
@@ -593,7 +594,7 @@ export default function CreateOrder() {
 
                             {/* Dropdown */}
                             {showCustomerDropdown && customers.length > 0 && !selectedCustomer && (
-                                <div className="absolute top-full left-0 right-0 bg-white dark:bg-[#1a2e22] border border-gray-200 dark:border-gray-700 mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto z-30">
+                                <div className="absolute top-full left-0 right-0 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-200 dark:border-gray-700 mt-1 rounded-lg shadow-xl max-h-60 overflow-y-auto z-30">
                                     {customers.map(c => (
                                         <div
                                             key={c.Id}
@@ -631,7 +632,7 @@ export default function CreateOrder() {
 
 
                     {/* Scan Section */}
-                    <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-3 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-3 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-primary/20 dark:bg-primary/40"></div>
 
                         {/* Camera/Live Scan Preview */}
@@ -694,7 +695,7 @@ export default function CreateOrder() {
                     </div>
 
                     {/* Order Items Table */}
-                    <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 flex flex-col overflow-hidden flex-1 min-h-[400px]">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 flex flex-col overflow-hidden flex-1 min-h-[400px]">
                         <div className="px-6 py-4 border-b border-[#f0f7f2] dark:border-gray-700 flex justify-between items-center bg-[#f8fcf9] dark:bg-gray-800/30">
                             <h3 className="text-lg font-bold text-text-main dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">shopping_cart</span>
@@ -775,7 +776,7 @@ export default function CreateOrder() {
                                                         </td>
                                                         <td className="px-6 py-3 text-right text-text-main dark:text-gray-200 font-medium">
                                                             <div className="flex items-center justify-end gap-1">
-                                                                <span className="text-gray-400 text-xs">৳</span>
+                                                                <span className="text-gray-400 text-xs">{taka}</span>
                                                                 <input
                                                                     type="number"
                                                                     onFocus={(e) => e.target.select()}
@@ -790,7 +791,7 @@ export default function CreateOrder() {
                                                                 <span className="font-bold w-6 text-center text-text-main dark:text-white text-sm">{item.Quantity}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white text-sm">৳{item.Subtotal.toFixed(2)}</td>
+                                                        <td className="px-6 py-3 text-right font-bold text-text-main dark:text-white text-sm">{taka}{item.Subtotal.toFixed(2)}</td>
                                                         <td className="px-6 py-3 text-center">
                                                             <button
                                                                 onClick={() => removeFromCart(item.Id)}
@@ -812,7 +813,7 @@ export default function CreateOrder() {
 
                 {/* Sidebar Summary */}
                 <div className="w-full xl:w-96 flex flex-col gap-6 shrink-0 relative pb-10 xl:pb-0">
-                    <div className="bg-white dark:bg-[#1e2e23] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-6 xl:sticky xl:top-24">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-6 xl:sticky xl:top-24">
                         <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-gray-700 pb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">receipt</span>
                             {t.orders.orderSummary}
@@ -821,7 +822,7 @@ export default function CreateOrder() {
                         <div className="space-y-4 mb-6">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-600 dark:text-gray-400 font-medium">{t.orders.orderSummary || 'Subtotal'} ({cart.length} {t.orders.items})</span>
-                                <span className="text-text-main dark:text-white font-bold text-base">৳{subtotal.toFixed(2)}</span>
+                                <span className="text-text-main dark:text-white font-bold text-base">{taka}{subtotal.toFixed(2)}</span>
                             </div>
 
                             <div className="flex justify-between items-center text-sm">
@@ -830,7 +831,7 @@ export default function CreateOrder() {
                                 </span>
                                 <div className="flex items-center w-32">
                                     <div className="relative w-full">
-                                        <span className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-gray-500 text-xs">৳</span>
+                                        <span className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-gray-500 text-xs">{taka}</span>
                                         <input
                                             className="block w-full rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-right text-sm py-1.5 px-2 pl-5 focus:border-primary focus:ring-primary text-red-500 font-medium placeholder-gray-300"
                                             placeholder="0.00"
@@ -845,14 +846,14 @@ export default function CreateOrder() {
 
                             <div className="flex justify-between items-center text-sm border-t border-dashed border-gray-300 dark:border-gray-600 pt-3">
                                 <span className="font-bold text-text-main dark:text-white">{t.orders.netAmount}</span>
-                                <span className="font-bold text-text-main dark:text-white text-lg">৳{netAmount.toFixed(2)}</span>
+                                <span className="font-bold text-text-main dark:text-white text-lg">{taka}{netAmount.toFixed(2)}</span>
                             </div>
 
                             <div className="bg-[#f8fcf9] dark:bg-gray-800/50 p-4 rounded-lg border border-[#e7f3eb] dark:border-gray-700 space-y-3">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-600 dark:text-gray-400 font-medium">{t.orders.paidAmount}</span>
                                     <div className="flex items-center w-28 relative">
-                                        <span className="absolute left-2 text-sm text-green-600 font-bold">৳</span>
+                                        <span className="absolute left-2 text-sm text-green-600 font-bold">{taka}</span>
                                         <input
                                             className="block w-full rounded border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-right text-sm py-1 px-2 pl-4 font-bold text-green-600 cursor-not-allowed"
                                             type="number"
@@ -863,7 +864,7 @@ export default function CreateOrder() {
                                 </div>
                                 <div className="flex justify-between items-center text-base pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <span className="font-bold text-red-600 dark:text-red-400">{t.orders.dueAmount}</span>
-                                    <span className="font-black text-red-600 dark:text-red-400 text-xl">৳{dueAmount.toFixed(2)}</span>
+                                    <span className="font-black text-red-600 dark:text-red-400 text-xl">{taka}{dueAmount.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
@@ -978,7 +979,7 @@ export default function CreateOrder() {
                                         {t.common.add}
                                     </button>
                                 </div>
-                                {dueAmount > 0 && <p className="text-xs text-red-500 font-medium text-right">{t.orders.remainingDue}: ৳{dueAmount.toFixed(2)}</p>}
+                                {dueAmount > 0 && <p className="text-xs text-red-500 font-medium text-right">{t.orders.remainingDue}: {taka}{dueAmount.toFixed(2)}</p>}
                             </div>
 
                             {/* Payment List */}
@@ -993,7 +994,7 @@ export default function CreateOrder() {
                                                 <span className="font-bold text-gray-700 dark:text-gray-300">{p.method === 'Cash' ? (t.config?.cash || 'Cash') : p.method === 'Bank' ? (t.config?.bank || 'Bank') : (t.config?.bkash || 'Bkash')}</span>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <span className="font-bold text-text-main dark:text-white">৳{p.amount.toFixed(2)}</span>
+                                                <span className="font-bold text-text-main dark:text-white">{taka}{p.amount.toFixed(2)}</span>
                                                 <button
                                                     onClick={() => setPayments(payments.filter((_, i) => i !== idx))}
                                                     className="text-gray-400 hover:text-red-500"
@@ -1023,7 +1024,7 @@ export default function CreateOrder() {
                         <button
                             onClick={handleSubmit}
                             disabled={submitLoading}
-                            className={`w-full bg-primary text-white font-bold h-12 rounded-xl md:hover:bg-primary-dark transition-all shadow-lg shadow-green-200 dark:shadow-none flex items-center justify-center gap-2 text-base transform md:hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed`}
+                            className={`w-full bg-primary text-white font-bold h-12 rounded-xl md:hover:bg-primary-dark transition-all shadow-lg shadow-primary dark:shadow-none flex items-center justify-center gap-2 text-base transform md:hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed`}
                         >
                             {submitLoading ? (
                                 <>
@@ -1059,7 +1060,7 @@ export default function CreateOrder() {
             {/* Print Invoice Prompt Modal */}
             {showPrintPrompt && (
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#1a2e22] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[#2a4032] transform scale-100 animate-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-4xl text-primary">receipt_long</span>

@@ -46,14 +46,14 @@ function ToastItem({ toast, onDismiss }: { toast: UploadToast; onDismiss: (id: s
 
     return (
         <div
-            className={`pointer-events-auto bg-white dark:bg-[#1a2e22] rounded-xl shadow-2xl border border-gray-200 dark:border-[#2a4032] p-4 transition-all duration-300 ${isExiting ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0 animate-slideInRight'
+            className={`pointer-events-auto bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-2xl border border-gray-200 dark:border-[var(--color-surface-dark-border)] p-4 transition-all duration-300 ${isExiting ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0 animate-slideInRight'
                 }`}
         >
             <div className="flex items-start gap-3">
                 {/* Icon */}
                 {toast.type === 'uploading' && (
                     <div className="shrink-0 w-9 h-9 rounded-lg bg-[#4e9767]/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[20px] text-[#4e9767] animate-pulse">cloud_upload</span>
+                        <span className="material-symbols-outlined text-[20px] text-secondary animate-pulse">cloud_upload</span>
                     </div>
                 )}
                 {toast.type === 'success' && (
@@ -79,7 +79,7 @@ function ToastItem({ toast, onDismiss }: { toast: UploadToast; onDismiss: (id: s
                                 <span className="text-[11px] text-gray-500 dark:text-gray-400">
                                     {typeof toast.current === 'number' ? toast.current.toFixed(2).replace(/\.00$/, '') : toast.current} / {toast.total} images
                                 </span>
-                                <span className="text-[11px] font-bold text-[#4e9767]">{percent}%</span>
+                                <span className="text-[11px] font-bold text-secondary">{percent}%</span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
                                 <div

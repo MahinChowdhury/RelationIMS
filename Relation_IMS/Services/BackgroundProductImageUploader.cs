@@ -1,10 +1,13 @@
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Services.MinIOServices;
 using System.Threading.Channels;
+using Finbuckle.MultiTenant;
+using Finbuckle.MultiTenant.Abstractions;
+using Relation_IMS.Models;
 
 namespace Relation_IMS.Services
 {
-    public record ProductImageUploadTask(int ProductId, List<(string FileName, Stream Content)> Images);
+    public record ProductImageUploadTask(int ProductId, List<(string FileName, Stream Content)> Images, string TenantId);
 
     public class BackgroundProductImageUploader : BackgroundService
     {
@@ -36,6 +39,21 @@ namespace Relation_IMS.Services
                     _logger.LogInformation("Starting background image upload for Product ID {ProductId} with {Count} images.", task.ProductId, task.Images.Count);
 
                     using var scope = _scopeFactory.CreateScope();
+
+                    var tenantStore = scope.ServiceProvider.GetRequiredService<IMultiTenantStore<AppTenantInfo>>();
+                    var tInfo = await tenantStore.TryGetByIdentifierAsync(task.TenantId);
+                    if (tInfo != null)
+                    {
+                        var tenantContextAccessor = scope.ServiceProvider.GetRequiredService<IMultiTenantContextAccessor<AppTenantInfo>>();
+                        var multiTenantContext = new MultiTenantContext<AppTenantInfo> { TenantInfo = tInfo };
+                        ((IMultiTenantContextSetter)tenantContextAccessor).MultiTenantContext = multiTenantContext;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Tenant {TenantId} not found. Skipping image upload for product {ProductId}.", task.TenantId, task.ProductId);
+                        continue;
+                    }
+
                     var blobService = scope.ServiceProvider.GetRequiredService<IMinioBlobService>();
                     var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
 
@@ -99,8 +117,8 @@ namespace Relation_IMS.Services
                             var redisCacheService = scope.ServiceProvider.GetService<IRedisCacheService>();
                             if (redisCacheService != null)
                             {
-                                await redisCacheService.InvalidateCacheByPrefixAsync("product");
-                                _logger.LogInformation("Invalidated 'product' cache prefix for Product ID {ProductId}.", task.ProductId);
+                                await redisCacheService.InvalidateCacheByPrefixAsync($"{task.TenantId}:product");
+                                _logger.LogInformation("Invalidated '{TenantId}:product' cache prefix for Product ID {ProductId}.", task.TenantId, task.ProductId);
                             }
                         }
                     }

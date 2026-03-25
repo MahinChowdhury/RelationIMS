@@ -12,14 +12,14 @@ namespace Relation_IMS.Services
     public class CustomerInsightJob
     {
         private readonly ILogger<CustomerInsightJob> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public CustomerInsightJob(
             ILogger<CustomerInsightJob> logger,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 600)]
@@ -29,12 +29,18 @@ namespace Relation_IMS.Services
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var repository = scope.ServiceProvider.GetRequiredService<ICustomerInsightRepository>();
-
-                await UpdateCurrentMonthInsightAsync(context);
-                await UpdateAllTimeInsightAsync(context, repository);
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
+                {
+                    // Note: ICustomerInsightRepository also normally depends on DbContext.
+                    // We're passing context manually to UpdateAllTimeInsightAsync to ensure
+                    // it executes within the tenant's exact transactional scope.
+                    await UpdateCurrentMonthInsightAsync(context);
+                    // To handle repository correctly without changing its injection logic, we use the injected one
+                    // actually wait, let's keep it simple as it was, but we don't have scope here.
+                    // Instead, I'll instantiate the repository manually, or change the method signature
+                    var repository = new Relation_IMS.Datas.Repositories.CustomerInsightRepository(context);
+                    await UpdateAllTimeInsightAsync(context, repository);
+                });
 
                 _logger.LogInformation("Customer Insight Job completed successfully");
             }

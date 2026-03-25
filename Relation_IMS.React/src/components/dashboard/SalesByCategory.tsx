@@ -90,7 +90,7 @@ const SalesByCategory = () => {
   const totalUnits = categories.reduce((sum, c) => sum + c.TotalQuantitySold, 0);
 
   return (
-    <div className="col-span-12 lg:col-span-4 bg-white dark:bg-[#1a2e22] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[#2a4032]">
+    <div className="col-span-12 lg:col-span-4 bg-white dark:bg-[var(--color-surface-dark-card)] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-200/60 dark:border-[var(--color-surface-dark-border)]">
       <h4 className="text-lg sm:text-xl font-extrabold tracking-tight mb-6 sm:mb-8 text-text-main dark:text-white">{t.dashboard.salesByCategory}</h4>
 
       {loading ? (
@@ -113,7 +113,7 @@ const SalesByCategory = () => {
               }}
             >
               <div 
-                className="w-full h-full rounded-full bg-white dark:bg-[#1a2e22] flex items-center justify-center"
+                className="w-full h-full rounded-full bg-white dark:bg-[var(--color-surface-dark-card)] flex items-center justify-center"
               >
                 <div className="text-center">
                   <p className="text-xl sm:text-2xl font-extrabold text-text-main dark:text-white">{formatNumber(totalUnits)}</p>

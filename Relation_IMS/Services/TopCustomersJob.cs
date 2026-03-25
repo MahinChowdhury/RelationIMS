@@ -10,14 +10,14 @@ namespace Relation_IMS.Services
     public class TopCustomersJob
     {
         private readonly ILogger<TopCustomersJob> _logger;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantJobRunner _tenantJobRunner;
 
         public TopCustomersJob(
             ILogger<TopCustomersJob> logger,
-            IServiceScopeFactory scopeFactory)
+            TenantJobRunner tenantJobRunner)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _tenantJobRunner = tenantJobRunner;
         }
 
         [DisableConcurrentExecution(timeoutInSeconds: 600)]
@@ -27,10 +27,10 @@ namespace Relation_IMS.Services
 
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                await UpdateAllTimeAsync(context);
+                await _tenantJobRunner.RunForAllTenantsAsync(async (context, tenantId) =>
+                {
+                    await UpdateAllTimeAsync(context);
+                });
 
                 _logger.LogInformation("Top Customers Job completed successfully");
             }

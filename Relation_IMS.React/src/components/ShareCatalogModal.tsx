@@ -132,7 +132,7 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 md:p-0 pt-4 md:pt-0">
             <div className="absolute inset-0 bg-black/50" onClick={handleClose}></div>
-            <div className="relative bg-white dark:bg-[#203326] rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[calc(100dvh-2rem)] md:max-h-[85dvh] overflow-hidden flex flex-col">
+            <div className="relative bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[calc(100dvh-2rem)] md:max-h-[85dvh] overflow-hidden flex flex-col">
                 <button
                     onClick={handleClose}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -277,7 +277,7 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
 
                 {deletingHash && (
                     <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[60] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
-                        <div className="bg-white dark:bg-[#203326] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[#3d5a47]">
+                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl p-6 w-[90%] max-w-md border border-gray-100 dark:border-[#3d5a47]">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                                     <span className="material-symbols-outlined text-red-500 text-[24px]">warning</span>

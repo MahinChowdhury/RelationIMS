@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Relation_IMS.Migrations
 {
     /// <inheritdoc />
-    public partial class Mig1 : Migration
+    public partial class MultiTenantInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,11 @@ namespace Relation_IMS.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -36,7 +40,11 @@ namespace Relation_IMS.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true)
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -61,6 +69,51 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CustomerInsights",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    Month = table.Column<int>(type: "integer", nullable: false),
+                    NewCustomerCount = table.Column<int>(type: "integer", nullable: false),
+                    ReturningCustomerCount = table.Column<int>(type: "integer", nullable: false),
+                    TotalCustomers = table.Column<int>(type: "integer", nullable: false),
+                    NewCustomerPercentage = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    ReturningCustomerPercentage = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerInsights", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomerInsightsAllTime",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    NewCustomerCount = table.Column<int>(type: "integer", nullable: false),
+                    ReturningCustomerCount = table.Column<int>(type: "integer", nullable: false),
+                    TotalCustomers = table.Column<int>(type: "integer", nullable: false),
+                    NewCustomerPercentage = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    ReturningCustomerPercentage = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    CalculatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerInsightsAllTime", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
                 {
@@ -71,12 +124,15 @@ namespace Relation_IMS.Migrations
                     Address = table.Column<string>(type: "text", nullable: false),
                     ShopName = table.Column<string>(type: "text", nullable: false),
                     ShopAddress = table.Column<string>(type: "text", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDueAllowed = table.Column<bool>(type: "boolean", nullable: false),
                     NidNumber = table.Column<string>(type: "text", nullable: false),
                     ReferenceName = table.Column<string>(type: "text", nullable: false),
                     ReferencePhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Balance = table.Column<decimal>(type: "numeric", nullable: false)
+                    Balance = table.Column<decimal>(type: "numeric", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -90,11 +146,34 @@ namespace Relation_IMS.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true)
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Inventories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryValues",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TotalItems = table.Column<int>(type: "integer", nullable: false),
+                    TotalValue = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    LastMonthValue = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryValues", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -104,7 +183,11 @@ namespace Relation_IMS.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    HexCode = table.Column<string>(type: "text", nullable: false)
+                    HexCode = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -118,7 +201,10 @@ namespace Relation_IMS.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -131,11 +217,36 @@ namespace Relation_IMS.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Quarters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RevenueByCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    CategoryName = table.Column<string>(type: "text", nullable: false),
+                    TotalRevenue = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    TotalQuantitySold = table.Column<int>(type: "integer", nullable: false),
+                    PeriodType = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RevenueByCategories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -153,6 +264,88 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SalesOverviews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PeriodType = table.Column<int>(type: "integer", nullable: false),
+                    TotalRevenue = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    OrderCount = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalesOverviews", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TodaySales",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TotalSales = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    OrderCount = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TodaySales", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TopCustomers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerName = table.Column<string>(type: "text", nullable: false),
+                    CustomerImageUrl = table.Column<string>(type: "text", nullable: true),
+                    TotalPurchases = table.Column<int>(type: "integer", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    PeriodType = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TopCustomers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TopSellingProducts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    ProductName = table.Column<string>(type: "text", nullable: false),
+                    ProductImageUrl = table.Column<string>(type: "text", nullable: true),
+                    TotalQuantitySold = table.Column<int>(type: "integer", nullable: false),
+                    TotalRevenue = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    PeriodType = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TopSellingProducts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -161,9 +354,11 @@ namespace Relation_IMS.Migrations
                     Firstname = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Lastname = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     Email = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PreferredLanguage = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false)
+                    PreferredLanguage = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
+                    PreferredTheme = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -203,13 +398,18 @@ namespace Relation_IMS.Migrations
                     Code = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
                     ImageUrls = table.Column<List<string>>(type: "text[]", nullable: true),
+                    ThumbnailUrl = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     BasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     MSRP = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     TotalQuantity = table.Column<int>(type: "integer", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    BrandId = table.Column<int>(type: "integer", nullable: false)
+                    BrandId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -229,6 +429,30 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CategoryProductSize",
+                columns: table => new
+                {
+                    CategoriesId = table.Column<int>(type: "integer", nullable: false),
+                    SizesId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryProductSize", x => new { x.CategoriesId, x.SizesId });
+                    table.ForeignKey(
+                        name: "FK_CategoryProductSize_Categories_CategoriesId",
+                        column: x => x.CategoriesId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryProductSize_ProductSizes_SizesId",
+                        column: x => x.SizesId,
+                        principalTable: "ProductSizes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InventoryTransferRecords",
                 columns: table => new
                 {
@@ -237,7 +461,11 @@ namespace Relation_IMS.Migrations
                     SourceInventoryId = table.Column<int>(type: "integer", nullable: false),
                     DestinationInventoryId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -278,7 +506,10 @@ namespace Relation_IMS.Migrations
                     Remarks = table.Column<string>(type: "text", nullable: true),
                     NextPaymentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     InternalStatus = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -331,6 +562,115 @@ namespace Relation_IMS.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SalaryRecords",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Month = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    PaidDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalaryRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalaryRecords_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShareCatalogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ShareHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    OwnerId = table.Column<int>(type: "integer", nullable: false),
+                    Password = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShareCatalogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ShareCatalogs_Users_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StaffPerformanceMonthlies",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    Month = table.Column<int>(type: "integer", nullable: false),
+                    TotalSales = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    OrderCount = table.Column<int>(type: "integer", nullable: false),
+                    Rank = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StaffPerformanceMonthlies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StaffPerformanceMonthlies_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CurrentSalary = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    JoinDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserProfiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserProfiles_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserRoles",
                 columns: table => new
                 {
@@ -365,7 +705,10 @@ namespace Relation_IMS.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
                     LotQuantity = table.Column<int>(type: "integer", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -411,7 +754,12 @@ namespace Relation_IMS.Migrations
                     ProductId = table.Column<int>(type: "integer", nullable: false),
                     ProductColorId = table.Column<int>(type: "integer", nullable: false),
                     ProductSizeId = table.Column<int>(type: "integer", nullable: false),
-                    VariantPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
+                    ReservedQuantity = table.Column<int>(type: "integer", nullable: false),
+                    VariantPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -446,7 +794,11 @@ namespace Relation_IMS.Migrations
                     RefundAmount = table.Column<decimal>(type: "numeric", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: true),
-                    OrderId = table.Column<int>(type: "integer", nullable: true)
+                    OrderId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -473,7 +825,11 @@ namespace Relation_IMS.Migrations
                     OrderId = table.Column<int>(type: "integer", nullable: false),
                     PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    Note = table.Column<string>(type: "text", nullable: true)
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -500,7 +856,11 @@ namespace Relation_IMS.Migrations
                     CostPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Discount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Subtotal = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    ArrangedQuantity = table.Column<int>(type: "integer", nullable: false)
+                    ArrangedQuantity = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -536,7 +896,11 @@ namespace Relation_IMS.Migrations
                     IsDefected = table.Column<bool>(type: "boolean", nullable: false),
                     IsSold = table.Column<bool>(type: "boolean", nullable: false),
                     InventoryId = table.Column<int>(type: "integer", nullable: false),
-                    OrderItemId = table.Column<int>(type: "integer", nullable: true)
+                    OrderItemId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -572,7 +936,11 @@ namespace Relation_IMS.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CustomerReturnRecordId = table.Column<int>(type: "integer", nullable: false),
-                    ProductItemId = table.Column<int>(type: "integer", nullable: false)
+                    ProductItemId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -598,7 +966,11 @@ namespace Relation_IMS.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     InventoryTransferRecordId = table.Column<int>(type: "integer", nullable: false),
-                    ProductItemId = table.Column<int>(type: "integer", nullable: false)
+                    ProductItemId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -629,7 +1001,11 @@ namespace Relation_IMS.Migrations
                     ReportedByUserId = table.Column<int>(type: "integer", nullable: true),
                     DefectDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ResolutionAction = table.Column<string>(type: "text", nullable: true),
-                    ResolutionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    ResolutionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -661,15 +1037,21 @@ namespace Relation_IMS.Migrations
                 columns: new[] { "Id", "Description", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Regular user role", "User" },
-                    { 2, "Administrator role", "Admin" },
-                    { 3, "Editor Role", "Editor" }
+                    { 1, "Salesman role", "Salesman" },
+                    { 2, "Shop Manager role", "Shop Manager" },
+                    { 3, "Head Manager role", "Head Manager" },
+                    { 4, "Owner role", "Owner" }
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BrandCategory_CategoriesId",
                 table: "BrandCategory",
                 column: "CategoriesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryProductSize_SizesId",
+                table: "CategoryProductSize",
+                column: "SizesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Unique_ClientId",
@@ -835,6 +1217,28 @@ namespace Relation_IMS.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_SalaryRecords_UserId_Month_Year",
+                table: "SalaryRecords",
+                columns: new[] { "UserId", "Month", "Year" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShareCatalogs_OwnerId",
+                table: "ShareCatalogs",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StaffPerformanceMonthlies_UserId",
+                table: "StaffPerformanceMonthlies",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserProfiles_UserId",
+                table: "UserProfiles",
+                column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_RoleId",
                 table: "UserRoles",
                 column: "RoleId");
@@ -843,6 +1247,12 @@ namespace Relation_IMS.Migrations
                 name: "IX_Unique_Email",
                 table: "Users",
                 column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Unique_PhoneNumber",
+                table: "Users",
+                column: "PhoneNumber",
                 unique: true);
         }
 
@@ -853,10 +1263,22 @@ namespace Relation_IMS.Migrations
                 name: "BrandCategory");
 
             migrationBuilder.DropTable(
+                name: "CategoryProductSize");
+
+            migrationBuilder.DropTable(
+                name: "CustomerInsights");
+
+            migrationBuilder.DropTable(
+                name: "CustomerInsightsAllTime");
+
+            migrationBuilder.DropTable(
                 name: "CustomerReturnItems");
 
             migrationBuilder.DropTable(
                 name: "InventoryTransferRecordItems");
+
+            migrationBuilder.DropTable(
+                name: "InventoryValues");
 
             migrationBuilder.DropTable(
                 name: "OrderPayments");
@@ -869,6 +1291,33 @@ namespace Relation_IMS.Migrations
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "RevenueByCategories");
+
+            migrationBuilder.DropTable(
+                name: "SalaryRecords");
+
+            migrationBuilder.DropTable(
+                name: "SalesOverviews");
+
+            migrationBuilder.DropTable(
+                name: "ShareCatalogs");
+
+            migrationBuilder.DropTable(
+                name: "StaffPerformanceMonthlies");
+
+            migrationBuilder.DropTable(
+                name: "TodaySales");
+
+            migrationBuilder.DropTable(
+                name: "TopCustomers");
+
+            migrationBuilder.DropTable(
+                name: "TopSellingProducts");
+
+            migrationBuilder.DropTable(
+                name: "UserProfiles");
 
             migrationBuilder.DropTable(
                 name: "UserRoles");

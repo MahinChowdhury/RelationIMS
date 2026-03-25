@@ -36,7 +36,7 @@ export default function ProductCard({
 
     return (
         <div
-            className="group relative w-full rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm md:hover:shadow-lg md:hover:shadow-green-900/10 transition-all duration-300 border border-gray-100 dark:border-[#2a4032] cursor-pointer flex flex-col"
+            className="group relative w-full rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 shadow-sm md:hover:shadow-lg md:hover:shadow-green-900/10 transition-all duration-300 border border-gray-100 dark:border-[var(--color-surface-dark-border)] cursor-pointer flex flex-col"
             onClick={(e) => {
                 e.stopPropagation();
                 if (onCardClick) {
@@ -57,30 +57,30 @@ export default function ProductCard({
 
             {/* Info Section */}
             {(gridDensity ?? 4) === 4 ? (
-                /* ── Grid-4: always single-line ── */
-                <div className="flex items-center gap-1 px-2 py-1.5 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-[#2a4032] min-w-0">
+                /* Ã¢â€â‚¬Ã¢â€â‚¬ Grid-4: always single-line Ã¢â€â‚¬Ã¢â€â‚¬ */
+                <div className="flex items-center gap-1 px-2 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] min-w-0">
                     {stockDot}
                     <span className="text-[9px] sm:text-[11px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">
                         {product.Name}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
                     <span className="shrink-0 text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[30%]">
                         {getCategoryNameById(product.CategoryId)}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
                     <span className="shrink-0 text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[20%]">
                         {getBrandName(product.BrandId)}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
                     <span className="shrink-0 text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                         {product.Sku || product.Id}
                     </span>
                 </div>
             ) : gridDensity === 6 ? (
-                /* ── Grid-6: single-line on sm+, two-line on mobile ── */
+                /* Ã¢â€â‚¬Ã¢â€â‚¬ Grid-6: single-line on sm+, two-line on mobile Ã¢â€â‚¬Ã¢â€â‚¬ */
                 <>
                     {/* Mobile: two-line */}
-                    <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-[#2a4032] sm:hidden">
+                    <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] sm:hidden">
                         <div className="flex items-center gap-1 min-w-0">
                             {stockDot}
                             <span className="text-[9px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">
@@ -91,39 +91,39 @@ export default function ProductCard({
                             <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate">
                                 {getCategoryNameById(product.CategoryId)}
                             </span>
-                            <span className="text-[7px] text-gray-300 dark:text-gray-600">·</span>
+                            <span className="text-[7px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
                             <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate">
                                 {getBrandName(product.BrandId)}
                             </span>
-                            <span className="text-[7px] text-gray-300 dark:text-gray-600">·</span>
+                            <span className="text-[7px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
                             <span className="shrink-0 text-[8px] text-gray-400 dark:text-gray-500 font-mono">
                                 {product.Sku || product.Id}
                             </span>
                         </div>
                     </div>
                     {/* Desktop: single-line */}
-                    <div className="hidden sm:flex items-center gap-1 px-2 py-1.5 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-[#2a4032] min-w-0">
+                    <div className="hidden sm:flex items-center gap-1 px-2 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] min-w-0">
                         {stockDot}
                         <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">
                             {product.Name}
                         </span>
-                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
                         <span className="shrink-0 text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[30%]">
                             {getCategoryNameById(product.CategoryId)}
                         </span>
-                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
                         <span className="shrink-0 text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[20%]">
                             {getBrandName(product.BrandId)}
                         </span>
-                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
                         <span className="shrink-0 text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                             {product.Sku || product.Id}
                         </span>
                     </div>
                 </>
             ) : (
-                /* ── Grid-8: always two-line ── */
-                <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-[#2a4032]">
+                /* Ã¢â€â‚¬Ã¢â€â‚¬ Grid-8: always two-line Ã¢â€â‚¬Ã¢â€â‚¬ */
+                <div className="flex flex-col gap-0.5 px-2 py-1.5 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                     <div className="flex items-center gap-1 min-w-0">
                         {stockDot}
                         <span className="text-[10px] sm:text-[11px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">
@@ -134,11 +134,11 @@ export default function ProductCard({
                         <span className="text-[8px] sm:text-[9px] text-gray-500 dark:text-gray-400 truncate">
                             {getCategoryNameById(product.CategoryId)}
                         </span>
-                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">·</span>
+                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
                         <span className="text-[8px] sm:text-[9px] text-gray-500 dark:text-gray-400 truncate">
                             {getBrandName(product.BrandId)}
                         </span>
-                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">·</span>
+                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
                         <span className="shrink-0 text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 font-mono">
                             {product.Sku || product.Id}
                         </span>

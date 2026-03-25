@@ -8,6 +8,7 @@ import { type Order, PaymentStatus } from '../../types';
 
 export default function OrdersPage() {
     const { t } = useLanguage();
+    const taka = '\u09F3';
     const navigate = useNavigate();
 
     // State
@@ -155,7 +156,7 @@ export default function OrdersPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => navigate('/orders/create')}
-                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all">
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all">
                         <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
                         {t.orders.createOrder}
                     </button>
@@ -163,7 +164,7 @@ export default function OrdersPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-[#1a2e22] p-4 rounded-xl border border-gray-100 dark:border-[#2a4032] shadow-sm">
+            <div className="flex flex-col md:flex-row gap-4 justify-between bg-white dark:bg-[var(--color-surface-dark-card)] p-4 rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] shadow-sm">
                 <div className="relative group w-full md:w-96">
                     <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                         <span className="material-symbols-outlined text-text-secondary">search</span>
@@ -172,7 +173,7 @@ export default function OrdersPage() {
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full p-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[#112116] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-all"
+                        className="block w-full p-2.5 ps-10 text-sm text-text-main border border-gray-200 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:placeholder-gray-400 dark:text-white transition-all"
                         placeholder="Search by order ID, customer name..."
                     />
                 </div>
@@ -182,7 +183,7 @@ export default function OrdersPage() {
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            className="bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-white"
                             placeholder="Start Date"
                         />
                         <span className="text-text-secondary text-sm">to</span>
@@ -190,7 +191,7 @@ export default function OrdersPage() {
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            className="bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-white"
                             placeholder="End Date"
                         />
                     </div>
@@ -198,7 +199,7 @@ export default function OrdersPage() {
                         <select
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value as any)}
-                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-white"
                         >
                             <option value="all">Payment: All</option>
                             <option value="paid">Paid</option>
@@ -212,7 +213,7 @@ export default function OrdersPage() {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as any)}
-                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[#112116] dark:border-gray-700 dark:text-white"
+                            className="appearance-none bg-gray-50 border border-gray-200 text-text-main text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-700 dark:text-white"
                         >
                             <option value="">Sort by: Default</option>
                             <option value="date">Sort by: Date</option>
@@ -241,7 +242,7 @@ export default function OrdersPage() {
             {/* List Items */}
             <div className="flex flex-col gap-3">
                 {filtered.map((order) => (
-                    <div key={order.Id} className="bg-white dark:bg-[#1a2e22] rounded-xl border border-gray-100 dark:border-[#2a4032] p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
+                    <div key={order.Id} className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
                         {/* Order ID */}
                         <div className="flex items-center justify-between lg:w-[100px]">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Order ID</span>
@@ -275,21 +276,21 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[90px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Discount</span>
                             <span className={`text-sm ${order.Discount > 0 ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                                {order.Discount > 0 ? '-' : ''}৳{order.Discount.toFixed(2)}
+                                {order.Discount > 0 ? '-' : ''}{taka}{order.Discount.toFixed(2)}
                             </span>
                         </div>
 
                         {/* Net Amount */}
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Net Amount</span>
-                            <span className="text-sm font-bold text-text-main dark:text-white">৳{order.NetAmount.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-text-main dark:text-white">{taka}{order.NetAmount.toFixed(2)}</span>
                         </div>
 
                         {/* Paid Amount */}
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Paid Amt</span>
                             <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                ৳{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(2)}
+                                {taka}{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(2)}
                             </span>
                         </div>
 
@@ -297,7 +298,7 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Due Amt</span>
                             <span className="text-sm font-medium text-red-500 dark:text-red-400">
-                                ৳{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
+                                {taka}{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
                             </span>
                             {/* Next Payment Date */}
                             {order.NextPaymentDate && (order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))) > 0 && (
@@ -324,16 +325,16 @@ export default function OrdersPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-1.5 mt-2 lg:mt-0 justify-end w-full lg:w-[150px] border-t lg:border-t-0 border-gray-100 dark:border-[#2a4032] pt-2 lg:pt-0">
+                        <div className="flex items-center gap-1.5 mt-2 lg:mt-0 justify-end w-full lg:w-[150px] border-t lg:border-t-0 border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-2 lg:pt-0">
                             <button
                                 onClick={() => navigate(`/orders/${order.Id}`)}
-                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
                                 title="View Details">
                                 <span className="material-symbols-outlined text-[16px]">visibility</span>
                             </button>
                             <button
                                 onClick={() => navigate(`/orders/${order.Id}/invoice`)}
-                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[#112116] dark:border-[#2a4032] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
+                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
                                 <span className="material-symbols-outlined text-[16px]">print</span>
                             </button>
                         </div>

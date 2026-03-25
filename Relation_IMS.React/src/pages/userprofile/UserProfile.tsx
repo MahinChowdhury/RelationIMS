@@ -26,6 +26,8 @@ interface StatCard {
     icon: string;
 }
 
+const taka = '\u09F3';
+
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export default function UserProfile() {
@@ -119,9 +121,11 @@ export default function UserProfile() {
         address: profileData?.Address || 'N/A'
     };
 
-    const stats: StatCard[] = [
+    const taka = '\u09F3';
+
+const stats: StatCard[] = [
         { label: t.profile?.ordersHandled || 'Orders Handled', value: '1,234', icon: 'receipt_long' },
-        { label: t.profile?.totalSales || 'Total Sales', value: '৳ 4.5M', icon: 'payments' },
+        { label: t.profile?.totalSales || 'Total Sales', value: `${taka} 4.5M`, icon: 'payments' },
         { label: t.profile?.thisMonth || 'This Month', value: '89', icon: 'calendar_month' },
         { label: t.profile?.lastLogin || 'Last Login', value: '2 hours ago', icon: 'schedule' },
     ];
@@ -274,10 +278,10 @@ export default function UserProfile() {
                     <div className="flex flex-col md:flex-row items-center gap-6">
                         {/* Avatar */}
                         <div className="relative">
-                            <div className="w-28 h-28 rounded-2xl bg-center bg-cover border-4 border-[#17cf54]/20 shadow-lg"
+                            <div className="w-28 h-28 rounded-2xl bg-center bg-cover border-4 border-[var(--color-primary)]/20 shadow-lg"
                                 style={{ backgroundImage: `url("${userInfo.avatar}")` }}
                             ></div>
-                            <button className="absolute -bottom-2 -right-2 w-9 h-9 bg-[#17cf54] hover:bg-[#12a542] rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 transition-all">
+                            <button className="absolute -bottom-2 -right-2 w-9 h-9 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] rounded-full flex items-center justify-center shadow-lg shadow-primary/30 transition-all">
                                 <span className="material-symbols-outlined text-white text-[18px]">camera_alt</span>
                             </button>
                         </div>
@@ -286,7 +290,7 @@ export default function UserProfile() {
                         <div className="flex-1 text-center md:text-left">
                             <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
                                 <h2 className="text-2xl font-bold text-[#0e1b12] dark:text-white">{userInfo.name}</h2>
-                                <span className="px-3 py-1 bg-[#17cf54]/10 text-[#17cf54] text-xs font-bold rounded-full self-center md:self-auto">
+                                <span className="px-3 py-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-bold rounded-full self-center md:self-auto">
                                     {userInfo.role}
                                 </span>
                             </div>
@@ -314,8 +318,8 @@ export default function UserProfile() {
                     {stats.map((stat, index) => (
                         <div key={index} className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-[#17cf54]/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-[#17cf54]">{stat.icon}</span>
+                                <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-[var(--color-primary)]">{stat.icon}</span>
                                 </div>
                             </div>
                             <p className="text-2xl font-bold text-[#0e1b12] dark:text-white mb-1">{stat.value}</p>
@@ -325,11 +329,11 @@ export default function UserProfile() {
                 </div>
 
                 {/* Current Salary Card */}
-                <div className="bg-gradient-to-r from-[#17cf54] to-[#12a542] rounded-2xl p-6 shadow-lg shadow-green-500/20">
+                <div className="bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)] rounded-2xl p-6 shadow-lg shadow-primary/20">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="text-center md:text-left">
                             <p className="text-white/80 text-sm font-medium mb-1">{t.profile?.currentSalary || 'Current Salary'}</p>
-                            <p className="text-4xl font-bold text-white">৳ {userInfo.currentSalary.toLocaleString()}</p>
+                            <p className="text-4xl font-bold text-white">{taka} {userInfo.currentSalary.toLocaleString()}</p>
                             <p className="text-white/70 text-xs mt-1">{t.profile?.perMonth || 'per month'}</p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -341,7 +345,7 @@ export default function UserProfile() {
                                     setSalaryForm(prev => ({ ...prev, amount: userInfo.currentSalary }));
                                     setPaySalaryModalOpen(true);
                                 }}
-                                className="px-5 py-3 bg-white text-[#17cf54] hover:bg-gray-100 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg transition-all"
+                                className="px-5 py-3 bg-white text-[var(--color-primary)] hover:bg-gray-100 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg transition-all"
                             >
                                 <span className="material-symbols-outlined text-[18px]">payments</span>
                                 {t.profile?.paySalaryNow || 'Pay Salary Now'}
@@ -354,7 +358,7 @@ export default function UserProfile() {
                 <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                         <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">calendar_month</span>
+                            <span className="material-symbols-outlined text-[var(--color-primary)]">calendar_month</span>
                             {t.profile?.salaryHistory || 'Salary History'}
                         </h3>
                         <span className="text-xs text-gray-400">{salaryHistory.length} {t.profile?.records || 'records'}</span>
@@ -364,11 +368,11 @@ export default function UserProfile() {
                             <div key={record.Id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${record.Status === 'paid'
-                                        ? 'bg-[#17cf54]/10'
+                                        ? 'bg-[var(--color-primary)]/10'
                                         : 'bg-yellow-500/10'
                                         }`}>
                                         <span className={`material-symbols-outlined ${record.Status === 'paid'
-                                            ? 'text-[#17cf54]'
+                                            ? 'text-[var(--color-primary)]'
                                             : 'text-yellow-500'
                                             }`}>
                                             {record.Status === 'paid' ? 'check_circle' : 'schedule'}
@@ -386,9 +390,9 @@ export default function UserProfile() {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-bold text-[#0e1b12] dark:text-white">৳ {record.Amount.toLocaleString()}</p>
+                                    <p className="font-bold text-[#0e1b12] dark:text-white">{taka} {record.Amount.toLocaleString()}</p>
                                     <span className={`text-xs px-2 py-0.5 rounded-full ${record.Status === 'paid'
-                                        ? 'bg-[#17cf54]/10 text-[#17cf54]'
+                                        ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
                                         : 'bg-yellow-500/10 text-yellow-500'
                                         }`}>
                                         {record.Status === 'paid' ? (t.profile?.paid || 'Paid') : (t.profile?.pending || 'Pending')}
@@ -403,7 +407,7 @@ export default function UserProfile() {
                 <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                         <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#17cf54]">person</span>
+                            <span className="material-symbols-outlined text-[var(--color-primary)]">person</span>
                             {t.profile?.personalInfo || 'Personal Information'}
                         </h3>
                     </div>
@@ -448,7 +452,7 @@ export default function UserProfile() {
                     <div className="bg-white/80 dark:bg-[#1a2e22]/80 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
                         <div className="p-5 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
                             <h3 className="text-lg font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[#17cf54]">settings</span>
+                                <span className="material-symbols-outlined text-[var(--color-primary)]">settings</span>
                                 {t.profile?.accountSettings || 'Account Settings'}
                             </h3>
                         </div>
@@ -463,7 +467,7 @@ export default function UserProfile() {
                                 </div>
                                 <button
                                     onClick={openChangePasswordModal}
-                                    className="p-2 text-[#17cf54] hover:bg-[#17cf54]/10 rounded-lg transition-colors"
+                                    className="p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 rounded-lg transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                                 </button>
@@ -497,7 +501,7 @@ export default function UserProfile() {
                                     <span className="material-symbols-outlined text-gray-500">translate</span>
                                     <div>
                                         <p className="font-medium text-[#0e1b12] dark:text-white text-sm">{t.profile?.language || 'Language'}</p>
-                                        <p className="text-xs text-gray-400">{language === 'en' ? 'English' : 'বাংলা'}</p>
+                                        <p className="text-xs text-gray-400">{language === 'en' ? 'English' : (t.config?.bangla || 'বাংলা')}</p>
                                     </div>
                                 </div>
                                 <button
@@ -512,7 +516,7 @@ export default function UserProfile() {
                                         English
                                     </span>
                                     <span className={`relative z-10 w-1/2 text-center text-[11px] font-bold transition-colors duration-300 ${language === 'bn' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`}>
-                                        বাংলা
+                                        {t.config?.bangla || 'বাংলা'}
                                     </span>
                                 </button>
                             </div>
@@ -526,7 +530,7 @@ export default function UserProfile() {
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">payments</span>
+                                    <span className="material-symbols-outlined text-[var(--color-primary)]">payments</span>
                                     {t.profile?.paySalary || 'Pay Salary'}
                                 </h2>
                                 <button
@@ -538,8 +542,8 @@ export default function UserProfile() {
                             </div>
 
                             <div className="flex items-center gap-4 p-4 bg-[#f6f8f6] dark:bg-black/20 rounded-xl mb-6">
-                                <div className="w-12 h-12 rounded-xl bg-[#17cf54]/10 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-[#17cf54]">person</span>
+                                <div className="w-12 h-12 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-[var(--color-primary)]">person</span>
                                 </div>
                                 <div>
                                     <p className="font-bold text-[#0e1b12] dark:text-white">{userInfo.name}</p>
@@ -554,7 +558,7 @@ export default function UserProfile() {
                                         <select
                                             value={salaryForm.month}
                                             onChange={(e) => setSalaryForm({ ...salaryForm, month: e.target.value })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                            className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
                                         >
                                             {months.map((month) => (
                                                 <option key={month} value={month}>{month}</option>
@@ -566,7 +570,7 @@ export default function UserProfile() {
                                         <select
                                             value={salaryForm.year}
                                             onChange={(e) => setSalaryForm({ ...salaryForm, year: parseInt(e.target.value) })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54]"
+                                            className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
                                         >
                                             {[2026, 2025, 2024, 2023].map((year) => (
                                                 <option key={year} value={year}>{year}</option>
@@ -578,7 +582,7 @@ export default function UserProfile() {
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.salaryAmount || 'Amount'}</label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">৳</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">{taka}</span>
                                         <div className="pl-8">
                                             <QuantityInput
                                                 value={salaryForm.amount || 0}
@@ -598,7 +602,7 @@ export default function UserProfile() {
                                         value={salaryForm.notes}
                                         onChange={(e) => setSalaryForm({ ...salaryForm, notes: e.target.value })}
                                         placeholder={t.profile?.notesPlaceholder || 'Add any notes...'}
-                                        className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[#17cf54] focus:border-[#17cf54] resize-none"
+                                        className="w-full bg-[#f6f8f6] dark:bg-[#132219] border border-gray-200 dark:border-[#2a4032] text-[#0e1b12] dark:text-white rounded-xl px-4 py-3 font-medium focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] resize-none"
                                         rows={2}
                                     />
                                 </div>
@@ -614,7 +618,7 @@ export default function UserProfile() {
                                 </button>
                                 <button
                                     onClick={handlePaySalary}
-                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">check</span>
                                     {t.profile?.paySalary || 'Pay Salary'}
@@ -630,7 +634,7 @@ export default function UserProfile() {
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">edit</span>
+                                    <span className="material-symbols-outlined text-[var(--color-primary)]">edit</span>
                                     {t.profile?.editProfile || 'Edit Profile'}
                                 </h2>
                                 <button
@@ -656,7 +660,7 @@ export default function UserProfile() {
                                             type="text"
                                             value={editForm.firstname}
                                             onChange={(e) => setEditForm({ ...editForm, firstname: e.target.value })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -665,7 +669,7 @@ export default function UserProfile() {
                                             type="text"
                                             value={editForm.lastname}
                                             onChange={(e) => setEditForm({ ...editForm, lastname: e.target.value })}
-                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                            className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                         />
                                     </div>
                                 </div>
@@ -676,7 +680,7 @@ export default function UserProfile() {
                                         type="email"
                                         value={editForm.email}
                                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                     />
                                 </div>
 
@@ -686,7 +690,7 @@ export default function UserProfile() {
                                         type="text"
                                         value={editForm.phone}
                                         onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                     />
                                 </div>
 
@@ -695,7 +699,7 @@ export default function UserProfile() {
                                     <textarea
                                         value={editForm.address}
                                         onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors resize-none"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors resize-none"
                                         rows={2}
                                     />
                                 </div>
@@ -713,7 +717,7 @@ export default function UserProfile() {
                                 <button
                                     onClick={handleSaveProfile}
                                     disabled={editSaving}
-                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-1 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {editSaving ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -735,7 +739,7 @@ export default function UserProfile() {
                         <div className="bg-white dark:bg-[#1a2e22] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-[#0e1b12] dark:text-white flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#17cf54]">lock</span>
+                                    <span className="material-symbols-outlined text-[var(--color-primary)]">lock</span>
                                     {t.profile?.changePassword || 'Change Password'}
                                 </h2>
                                 <button
@@ -768,7 +772,7 @@ export default function UserProfile() {
                                         value={passwordForm.currentPassword}
                                         onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                                         placeholder="••••••••"
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                     />
                                 </div>
 
@@ -779,7 +783,7 @@ export default function UserProfile() {
                                         value={passwordForm.newPassword}
                                         onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                                         placeholder="••••••••"
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                     />
                                 </div>
 
@@ -790,7 +794,7 @@ export default function UserProfile() {
                                         value={passwordForm.confirmPassword}
                                         onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                         placeholder="••••••••"
-                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[#17cf54] focus:border-[#17cf54] outline-none transition-colors"
+                                        className="w-full bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-[#0e1b12] dark:text-white focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-colors"
                                     />
                                     {passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
                                         <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
@@ -813,7 +817,7 @@ export default function UserProfile() {
                                 <button
                                     onClick={handleChangePassword}
                                     disabled={passwordSaving || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword}
-                                    className="flex-1 py-3 bg-[#17cf54] hover:bg-[#12a542] text-white font-bold rounded-xl shadow-lg shadow-green-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {passwordSaving ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
