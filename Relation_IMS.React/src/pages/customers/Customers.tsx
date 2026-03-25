@@ -278,16 +278,15 @@ export default function CustomersPage() {
             </div>
 
             {/* List Header (Desktop) */}
-            <div className="hidden lg:flex px-4 text-xs font-bold text-text-secondary uppercase tracking-wider gap-3">
-                <div className="w-[180px] xl:w-[220px]">Customer</div>
-                <div className="flex-1 min-w-[140px]">Shop Name</div>
-                <div className="flex-1 min-w-[140px]">Shop Address</div>
-                <div className="w-[115px] xl:w-[130px]">Mobile</div>
-                {/* Skipped Last Order Column */}
-                <div className="w-[80px] xl:w-[100px] text-right">Total Spent</div>
-                <div className="w-[80px] xl:w-[100px] text-right">Outstanding</div>
-                <div className="w-[60px] xl:w-[80px] text-center">Orders</div>
-                <div className="w-[120px] text-right">Actions</div>
+            <div className="hidden lg:flex px-2 text-xs font-bold text-text-secondary uppercase tracking-wider gap-2">
+                <div className="w-[140px] xl:w-[160px]">Customer</div>
+                <div className="flex-1 min-w-[100px]">Shop Name</div>
+                <div className="flex-1 min-w-[100px]">Shop Address</div>
+                <div className="w-[90px] xl:w-[100px]">Mobile</div>
+                <div className="w-[65px] xl:w-[80px] text-right">Total</div>
+                <div className="w-[65px] xl:w-[80px] text-right">Due</div>
+                <div className="w-[45px] xl:w-[60px] text-center">#</div>
+                <div className="w-[90px] text-right">Actions</div>
             </div>
 
             {/* Customer List */}
@@ -300,96 +299,96 @@ export default function CustomersPage() {
                         <div key={c.Id} className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-3 md:p-4 grid grid-cols-2 lg:flex lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
 
                             {/* Customer Info */}
-                            <div className="col-span-2 flex items-center gap-3 lg:w-[180px] xl:w-[220px]">
-                                <div className="size-10 rounded-full bg-gray-200 bg-center bg-cover border border-gray-100 dark:border-gray-700 shrink-0 flex items-center justify-center font-bold text-gray-500 text-sm">
+                            <div className="col-span-2 flex items-center gap-2 lg:w-[140px] xl:w-[160px]">
+                                <div className="size-8 rounded-full bg-gray-200 bg-center bg-cover border border-gray-100 dark:border-gray-700 shrink-0 flex items-center justify-center font-bold text-gray-500 text-xs">
                                     {c.Name.substring(0, 2).toUpperCase()}
                                 </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-text-main dark:text-white text-base leading-tight truncate max-w-[120px]">{c.Name}</h3>
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide font-bold ${getStatusColor(status)}`}>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                        <h3 className="font-bold text-text-main dark:text-white text-sm leading-tight truncate max-w-[80px]">{c.Name}</h3>
+                                        <span className={`px-1 py-0.5 rounded text-[9px] uppercase tracking-wide font-bold ${getStatusColor(status)}`}>
                                             {status}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-text-secondary font-medium mt-0.5">ID: #CUS-{c.Id.toString().padStart(3, '0')}</p>
+                                    <p className="text-[10px] text-text-secondary font-medium mt-0.5">#{c.Id.toString().padStart(3, '0')}</p>
                                 </div>
                             </div>
 
                             {/* ShopName */}
-                            <div className="col-span-2 flex flex-col lg:flex-1 min-w-[140px]">
+                            <div className="col-span-2 flex flex-col lg:flex-1 min-w-[100px]">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Shop Name</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">Mobile</span>
-                                    <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.ShopName}>{c.ShopName || '-'}</span>
+                                    <span className="material-symbols-outlined text-[16px] text-gray-400 lg:hidden">store</span>
+                                    <span className="text-xs font-medium text-text-main dark:text-white truncate" title={c.ShopName}>{c.ShopName || '-'}</span>
                                 </div>
                             </div>
                             {/* Shop Address */}
-                            <div className="col-span-2 flex flex-col lg:flex-1 min-w-[140px]">
+                            <div className="col-span-2 flex flex-col lg:flex-1 min-w-[100px]">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">shopaddress</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">location_on</span>
-                                    <span className="text-sm font-medium text-text-main dark:text-white truncate" title={c.ShopAddress}>{c.ShopAddress || '-'}</span>
+                                    <span className="material-symbols-outlined text-[16px] text-gray-400 lg:hidden">location_on</span>
+                                    <span className="text-xs font-medium text-text-main dark:text-white truncate" title={c.ShopAddress}>{c.ShopAddress || '-'}</span>
                                 </div>
                             </div>
 
                             {/* Mobile */}
-                            <div className="col-span-1 flex flex-col lg:w-[115px] xl:w-[130px]">
+                            <div className="col-span-1 flex flex-col lg:w-[90px] xl:w-[100px]">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Mobile</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">smartphone</span>
-                                    <span className="text-sm font-bold text-text-main dark:text-white lg:font-medium tracking-tight">{c.Phone}</span>
+                                    <span className="material-symbols-outlined text-[16px] text-gray-400 lg:hidden">smartphone</span>
+                                    <span className="text-xs font-medium text-text-main dark:text-white">{c.Phone}</span>
                                 </div>
                             </div>
 
 
                             {/* Total Spent */}
-                            <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
+                            <div className="col-span-1 flex flex-col lg:w-[65px] xl:w-[80px] lg:items-end">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Total Spent</span>
-                                <span className="text-sm font-bold text-text-main dark:text-white">{taka}{stats.totalSpent.toFixed(2)}</span>
+                                <span className="text-xs font-bold text-text-main dark:text-white">{taka}{stats.totalSpent.toFixed(0)}</span>
                             </div>
 
                             {/* Due Amount */}
-                            <div className="col-span-1 flex flex-col lg:w-[80px] xl:w-[100px] lg:items-end">
+                            <div className="col-span-1 flex flex-col lg:w-[65px] xl:w-[80px] lg:items-end">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-1">Due Amount</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-gray-400 lg:hidden">payments</span>
-                                    <span className={`font-bold text-sm lg:text-sm ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                        {taka}{stats.dueAmount.toFixed(2)}
+                                <div className="flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[14px] text-gray-400 lg:hidden">payments</span>
+                                    <span className={`font-bold text-xs ${stats.dueAmount > 0 ? 'text-red-500' : 'text-green-600'}`}>
+                                        {taka}{stats.dueAmount.toFixed(0)}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Orders Count */}
-                            <div className="col-span-1 flex flex-col lg:w-[60px] xl:w-[80px] lg:items-center">
+                            <div className="col-span-1 flex flex-col lg:w-[45px] xl:w-[60px] lg:items-center">
                                 <span className="text-xs text-text-secondary uppercase font-bold lg:hidden mb-2">Orders</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px] text-primary lg:hidden">shopping_bag</span>
-                                    <span className="text-sm font-bold text-text-main dark:text-white">{stats.orderCount}</span>
+                                <div className="flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[14px] text-primary lg:hidden">shopping_bag</span>
+                                    <span className="text-xs font-bold text-text-main dark:text-white">{stats.orderCount}</span>
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="col-span-2 flex items-center gap-2 mt-2 lg:mt-0 justify-end w-full lg:w-[120px] border-t lg:border-t-0 border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-2 lg:pt-0">
+                            <div className="col-span-2 flex items-center gap-1 mt-2 lg:mt-0 justify-end w-full lg:w-[90px] border-t lg:border-t-0 border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-2 lg:pt-0">
                                 <button
                                     onClick={() => navigateToDetail(c.Id)}
-                                    className="flex items-center justify-center size-8 rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-primary hover:text-white hover:border-primary transition-all dark:bg-green-900/20 dark:border-green-800/50 dark:text-green-400 dark:hover:bg-primary group/btn"
+                                    className="flex items-center justify-center size-7 rounded-lg bg-green-50 text-green-600 border border-green-100 hover:bg-primary hover:text-white hover:border-primary transition-all dark:bg-green-900/20 dark:border-green-800/50 dark:text-green-400 dark:hover:bg-primary group/btn"
                                     title="View Details"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                    <span className="material-symbols-outlined text-[14px]">visibility</span>
                                 </button>
                                 <button
                                     onClick={() => openEdit(c)}
-                                    className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+                                    className="flex items-center justify-center size-7 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
                                     title="Edit"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                    <span className="material-symbols-outlined text-[14px]">edit</span>
                                 </button>
                                 <button
                                     onClick={() => { setCustomerToDelete(c.Id); setShowDeleteModal(true); }}
-                                    className="flex items-center justify-center size-8 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
+                                    className="flex items-center justify-center size-7 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
                                     title="Delete"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                                    <span className="material-symbols-outlined text-[14px]">delete</span>
                                 </button>
                             </div>
 

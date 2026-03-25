@@ -62,45 +62,45 @@ const CashBookTable = ({ entries, totals }: CashBookTableProps) => {
 
             {/* Responsive Table View */}
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left min-w-[700px]">
+                <table className="w-full border-collapse text-left min-w-[450px]">
                     <thead>
                         <tr className="bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-[var(--color-surface-dark-border)]">
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Date</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Ref No.</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Description</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Category</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Cash In</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Cash Out</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Balance</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Status</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Date</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Ref No.</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Description</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400">Category</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Cash In</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Cash Out</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Balance</th>
+                            <th className="px-2 sm:px-4 py-3 sm:py-4 text-[10px] font-extrabold uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50 dark:divide-[var(--color-surface-dark-border)]">
                         {entries.map((entry, index) => (
                             <tr key={index} className={`transition-colors group ${entry.status === 'pending' ? 'hover:bg-red-50/50 dark:hover:bg-red-500/10' : 'hover:bg-primary/[0.03] dark:hover:bg-primary/5'}`}>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 text-[10px] sm:text-sm font-bold text-gray-600 dark:text-gray-400 whitespace-nowrap">{entry.date}</td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 text-[10px] sm:text-xs font-mono text-gray-400 dark:text-gray-500 whitespace-nowrap">{entry.refNo}</td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 min-w-[200px]">
+                                <td className="px-2 sm:px-4 py-4 sm:py-5 text-[10px] sm:text-sm font-bold text-gray-600 dark:text-gray-400 whitespace-nowrap">{entry.date}</td>
+                                <td className="px-2 sm:px-4 py-4 sm:py-5 text-[10px] sm:text-xs font-mono text-gray-400 dark:text-gray-500 whitespace-nowrap">{entry.refNo}</td>
+                                <td className="px-3 sm:px-4 py-4 sm:py-5 min-w-[150px]">
                                     <div className="flex flex-col">
                                         <span className="text-xs sm:text-sm font-bold text-text-main dark:text-white">{entry.description}</span>
                                         <span className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{entry.reference}</span>
                                     </div>
                                 </td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5">
+                                <td className="px-2 sm:px-4 py-4 sm:py-5">
                                     <span className={`px-2 py-1 text-[9px] font-extrabold uppercase tracking-tighter rounded-full whitespace-nowrap ${getCategoryStyle(entry.categoryColor)}`}>
                                         {entry.category}
                                     </span>
                                 </td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 text-xs sm:text-sm font-extrabold text-primary text-right whitespace-nowrap">
+                                <td className="px-2 sm:px-4 py-4 sm:py-5 text-xs sm:text-sm font-extrabold text-primary text-right whitespace-nowrap">
                                     {entry.cashIn ? formatCurrency(entry.cashIn, true) : '—'}
                                 </td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 text-xs sm:text-sm font-extrabold text-text-main dark:text-white text-right whitespace-nowrap">
+                                <td className="px-2 sm:px-4 py-4 sm:py-5 text-xs sm:text-sm font-extrabold text-text-main dark:text-white text-right whitespace-nowrap">
                                     {entry.cashOut ? formatCurrency(-Math.abs(entry.cashOut), true) : <span className="text-gray-300 dark:text-gray-600 font-medium">—</span>}
                                 </td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 text-xs sm:text-sm font-extrabold text-text-main dark:text-white text-right whitespace-nowrap">
+                                <td className="px-2 sm:px-4 py-4 sm:py-5 text-xs sm:text-sm font-extrabold text-text-main dark:text-white text-right whitespace-nowrap">
                                     {formatCurrency(entry.balance)}
                                 </td>
-                                <td className="px-4 sm:px-6 py-4 sm:py-5 text-center">
+                                <td className="px-2 sm:px-4 py-4 sm:py-5 text-center">
                                     <span 
                                         className={`material-symbols-outlined text-sm ${entry.status === 'verified' ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`}
                                         style={entry.status === 'verified' ? { fontVariationSettings: "'FILL' 1" } : {}}
@@ -114,10 +114,10 @@ const CashBookTable = ({ entries, totals }: CashBookTableProps) => {
                     </tbody>
                     <tfoot className="bg-gray-900 dark:bg-white/10 text-white">
                         <tr>
-                            <td className="px-4 sm:px-6 py-5 sm:py-6 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap" colSpan={4}>Period Totals</td>
-                            <td className="px-4 sm:px-6 py-5 sm:py-6 text-xs sm:text-sm font-extrabold text-primary text-right whitespace-nowrap">{formatCurrency(totals.cashIn, true)}</td>
-                            <td className="px-4 sm:px-6 py-5 sm:py-6 text-xs sm:text-sm font-extrabold text-gray-300 text-right whitespace-nowrap">{formatCurrency(-Math.abs(totals.cashOut), true)}</td>
-                            <td className="px-4 sm:px-6 py-5 sm:py-6 text-base sm:text-lg font-extrabold text-white text-right whitespace-nowrap">{formatCurrency(totals.closingBalance)}</td>
+                            <td className="px-2 sm:px-4 py-5 sm:py-6 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap" colSpan={4}>Period Totals</td>
+                            <td className="px-2 sm:px-4 py-5 sm:py-6 text-xs sm:text-sm font-extrabold text-primary text-right whitespace-nowrap">{formatCurrency(totals.cashIn, true)}</td>
+                            <td className="px-2 sm:px-4 py-5 sm:py-6 text-xs sm:text-sm font-extrabold text-gray-300 text-right whitespace-nowrap">{formatCurrency(-Math.abs(totals.cashOut), true)}</td>
+                            <td className="px-2 sm:px-4 py-5 sm:py-6 text-base sm:text-lg font-extrabold text-white text-right whitespace-nowrap">{formatCurrency(totals.closingBalance)}</td>
                             <td></td>
                         </tr>
                     </tfoot>

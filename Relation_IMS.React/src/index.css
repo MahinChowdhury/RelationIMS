@@ -26,6 +26,25 @@
   --color-glass-dark-bg: rgba(17, 33, 22, 0.7);
 }
 
+/* YoloIms — Amber Theme */
+[data-tenant="YoloIms"] {
+  --color-primary: #f59e0b; /* amber-500 */
+  --color-primary-dark: #d97706; /* amber-600 */
+  --color-secondary: #d97706; /* amber-600 */
+  --color-tertiary: #b45309; /* amber-700 */
+  --color-bg-light: #fffcf0;
+  --color-bg-dark: #211c15;
+  --color-surface-dark: rgba(33, 28, 21, 0.6);
+  --color-surface-dark-solid: #211c15;
+  --color-surface-dark-card: #2e261d;
+  --color-surface-dark-border: #4a3e2f;
+  --color-text-secondary: #d97706;
+  --color-scrollbar: #fde68a; /* amber-200 */
+  --color-pattern-dot: #f59e0b;
+  --color-pattern-bg-light: #fffcf0;
+  --color-pattern-bg-dark: #211c15;
+  --color-glass-dark-bg: rgba(33, 28, 21, 0.7);
+}
 /* Primary color shadow utility */
 .shadow-primary {
   --tw-shadow-color: var(--color-primary);
