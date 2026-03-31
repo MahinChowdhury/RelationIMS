@@ -227,16 +227,16 @@ export default function OrdersPage() {
             </div>
 
             {/* List Header (Desktop) */}
-            <div className="hidden lg:flex px-4 text-xs font-bold text-text-secondary uppercase tracking-wider gap-3">
-                <div className="w-[100px]">Order ID</div>
-                <div className="flex-1 min-w-[180px]">Customer</div>
-                <div className="w-[100px]">Date</div>
-                <div className="w-[90px] text-right">Discount</div>
-                <div className="w-[100px] text-right">Net Amt</div>
-                <div className="w-[100px] text-right">Paid Amt</div>
-                <div className="w-[100px] text-right">Due Amt</div>
-                <div className="w-[100px] text-right">Status</div>
-                <div className="w-[150px] text-right">Actions</div>
+            <div className="hidden lg:flex px-2 text-xs font-bold text-text-secondary uppercase tracking-wider gap-2">
+                <div className="w-[60px]">ID</div>
+                <div className="flex-1 min-w-[120px]">Customer</div>
+                <div className="w-[70px]">Date</div>
+                <div className="w-[65px] text-right">Disc.</div>
+                <div className="w-[75px] text-right">Net</div>
+                <div className="w-[70px] text-right">Paid</div>
+                <div className="w-[70px] text-right">Due</div>
+                <div className="w-[60px] text-right">Status</div>
+                <div className="w-[80px] text-right">Actions</div>
             </div>
 
             {/* List Items */}
@@ -244,7 +244,7 @@ export default function OrdersPage() {
                 {filtered.map((order) => (
                     <div key={order.Id} className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-3 md:p-4 flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-3 group hover:shadow-md transition-all hover:border-primary/30">
                         {/* Order ID */}
-                        <div className="flex items-center justify-between lg:w-[100px]">
+                        <div className="flex items-center justify-between lg:w-[60px]">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Order ID</span>
                             <Link to={`/orders/${order.Id}`} className="font-bold text-primary hover:underline text-sm truncate">
                                 #{order.Id}
@@ -252,53 +252,53 @@ export default function OrdersPage() {
                         </div>
 
                         {/* Customer */}
-                        <div className="flex items-center gap-3 lg:flex-1 min-w-[180px]">
-                            <div className="size-8 rounded-full bg-gray-200 bg-center bg-cover border border-gray-100 dark:border-gray-700 shrink-0 flex items-center justify-center text-xs font-bold text-gray-500">
+                        <div className="flex items-center gap-2 lg:flex-1 min-w-[120px]">
+                            <div className="size-7 rounded-full bg-gray-200 bg-center bg-cover border border-gray-100 dark:border-gray-700 shrink-0 flex items-center justify-center text-xs font-bold text-gray-500">
                                 {order.Customer?.Name?.charAt(0) || '#'}
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <Link to={`/customers/${order.CustomerId}`} className="font-bold text-text-main dark:text-white text-sm leading-tight truncate max-w-[140px] hover:text-primary">
+                                    <Link to={`/customers/${order.CustomerId}`} className="font-bold text-text-main dark:text-white text-sm leading-tight truncate max-w-[100px] hover:text-primary">
                                         {order.Customer?.Name || `Customer #${order.CustomerId}`}
                                     </Link>
                                 </div>
-                                <p className="text-[11px] text-text-secondary font-medium mt-0.5">{order.Customer?.ShopName || 'No email'}</p>
+                                <p className="text-[10px] text-text-secondary font-medium mt-0.5 truncate">{order.Customer?.ShopName || 'No email'}</p>
                             </div>
                         </div>
 
                         {/* Date */}
-                        <div className="flex items-center justify-between lg:block lg:w-[100px]">
+                        <div className="flex items-center justify-between lg:block lg:w-[70px]">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Date</span>
                             <span className="text-sm text-text-main dark:text-white">{formatDate(order.CreatedAt)}</span>
                         </div>
 
                         {/* Discount */}
-                        <div className="flex items-center justify-between lg:block lg:w-[90px] lg:text-right">
+                        <div className="flex items-center justify-between lg:block lg:w-[65px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Discount</span>
-                            <span className={`text-sm ${order.Discount > 0 ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                                {order.Discount > 0 ? '-' : ''}{taka}{order.Discount.toFixed(2)}
+                            <span className={`text-xs ${order.Discount > 0 ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                                {order.Discount > 0 ? '-' : ''}{taka}{order.Discount.toFixed(0)}
                             </span>
                         </div>
 
                         {/* Net Amount */}
-                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                        <div className="flex items-center justify-between lg:block lg:w-[75px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Net Amount</span>
-                            <span className="text-sm font-bold text-text-main dark:text-white">{taka}{order.NetAmount.toFixed(2)}</span>
+                            <span className="text-xs font-bold text-text-main dark:text-white">{taka}{order.NetAmount.toFixed(0)}</span>
                         </div>
 
                         {/* Paid Amount */}
-                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                        <div className="flex items-center justify-between lg:block lg:w-[70px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Paid Amt</span>
-                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                {taka}{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(2)}
+                            <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                                {taka}{(order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0)).toFixed(0)}
                             </span>
                         </div>
 
                         {/* Due Amount */}
-                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                        <div className="flex items-center justify-between lg:block lg:w-[70px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Due Amt</span>
-                            <span className="text-sm font-medium text-red-500 dark:text-red-400">
-                                {taka}{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(2)}
+                            <span className="text-xs font-medium text-red-500 dark:text-red-400">
+                                {taka}{(order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))).toFixed(0)}
                             </span>
                             {/* Next Payment Date */}
                             {order.NextPaymentDate && (order.NetAmount - (order.PaidAmount ?? (order.PaymentStatus === PaymentStatus.Paid ? order.NetAmount : 0))) > 0 && (
@@ -309,10 +309,10 @@ export default function OrdersPage() {
                         </div>
 
                         {/* Status */}
-                        <div className="flex items-center justify-between lg:block lg:w-[100px] lg:text-right">
+                        <div className="flex items-center justify-between lg:block lg:w-[60px] lg:text-right">
                             <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Status</span>
                             <div className="flex justify-end">
-                                <span className={`px-2 py-1 rounded text-[11px] uppercase tracking-wide font-bold border
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide font-bold border
                                     ${order.PaymentStatus === PaymentStatus.Paid
                                         ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800'
                                         : order.PaymentStatus === PaymentStatus.Partial
@@ -325,17 +325,17 @@ export default function OrdersPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-1.5 mt-2 lg:mt-0 justify-end w-full lg:w-[150px] border-t lg:border-t-0 border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-2 lg:pt-0">
+                        <div className="flex items-center gap-1 mt-2 lg:mt-0 justify-end w-full lg:w-[80px] border-t lg:border-t-0 border-gray-100 dark:border-[var(--color-surface-dark-border)] pt-2 lg:pt-0">
                             <button
                                 onClick={() => navigate(`/orders/${order.Id}`)}
-                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
+                                className="flex items-center justify-center size-7 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors"
                                 title="View Details">
-                                <span className="material-symbols-outlined text-[16px]">visibility</span>
+                                <span className="material-symbols-outlined text-[14px]">visibility</span>
                             </button>
                             <button
                                 onClick={() => navigate(`/orders/${order.Id}/invoice`)}
-                                className="flex items-center justify-center size-8 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
-                                <span className="material-symbols-outlined text-[16px]">print</span>
+                                className="flex items-center justify-center size-7 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
+                                <span className="material-symbols-outlined text-[14px]">print</span>
                             </button>
                         </div>
                     </div>
