@@ -1,5 +1,11 @@
 import api from './api';
 import type { InventoryTransferHistoryResponse } from '../types/inventory';
+import type { Inventory } from '../types';
+
+export const getAllInventories = async (): Promise<Inventory[]> => {
+    const res = await api.get('/Inventory');
+    return res.data;
+};
 
 export const getInventoryMovementHistory = async (params: {
     pageNumber?: number;

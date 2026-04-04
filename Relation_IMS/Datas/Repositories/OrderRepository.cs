@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
@@ -31,6 +31,12 @@ namespace Relation_IMS.Datas.Repositories
         public async Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto)
         {
             var newOrder = _mapper.Map<Order>(orderDto);
+
+            var user = await _context.Users.FindAsync(newOrder.UserId);
+            if (user != null)
+            {
+                newOrder.ShopNo = user.ShopNo;
+            }
 
             // Calculate Paid Amount from Payments if any
             if (newOrder.Payments != null && newOrder.Payments.Any())
@@ -125,10 +131,15 @@ namespace Relation_IMS.Datas.Repositories
             return order;
         }
 
-        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null, int? shopNoFilter = null)
         {
 
             var query = _context.Orders.AsQueryable();
+
+            if (shopNoFilter.HasValue)
+            {
+                query = query.Where(o => o.ShopNo == shopNoFilter.Value);
+            }
 
             if (startDate.HasValue)
             {
@@ -180,9 +191,9 @@ namespace Relation_IMS.Datas.Repositories
             return orders;
         }
 
-        public async Task<Order?> GetOrderByIdAsync(int id)
+        public async Task<Order?> GetOrderByIdAsync(int id, int? shopNoFilter = null)
         {
-            var order = await _context.Orders
+            var query = _context.Orders
                 .Include(x => x.OrderItems!)
                     .ThenInclude(oi => oi.ProductVariant!)
                         .ThenInclude(pv => pv!.Size)
@@ -191,7 +202,14 @@ namespace Relation_IMS.Datas.Repositories
                         .ThenInclude(pv => pv!.Color)
                 .Include(x => x.Customer)
                 .Include(x => x.Payments)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .AsQueryable();
+
+            if (shopNoFilter.HasValue)
+            {
+                query = query.Where(o => o.ShopNo == shopNoFilter.Value);
+            }
+
+            var order = await query.FirstOrDefaultAsync(x => x.Id == id);
 
             if (order == null) return null;
 

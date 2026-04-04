@@ -98,6 +98,19 @@ namespace Relation_IMS.Filters
             sb.Append(':');
             sb.Append(httpContext.Request.Path.ToString().ToLowerInvariant());
 
+            // Append ShopNo to isolate cache per shop
+            var shopClaim = httpContext.User?.Claims?.FirstOrDefault(c => c.Type == "ShopNo")?.Value;
+            if (!string.IsNullOrEmpty(shopClaim))
+            {
+                sb.Append(":shop_");
+                sb.Append(shopClaim);
+            }
+            else
+            {
+                // Fallback for unauthenticated or users without ShopNo claim
+                sb.Append(":shop_global");
+            }
+
             if (httpContext.Request.QueryString.HasValue)
             {
                 // Sort query params for consistent keys

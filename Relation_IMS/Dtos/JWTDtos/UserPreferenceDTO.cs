@@ -16,5 +16,6 @@ namespace Relation_IMS.Dtos.JWTDtos
         public string PreferredLanguage { get; set; } = "en";
         public string PreferredTheme { get; set; } = "light";
         public List<string> Roles { get; set; } = new();
+        public int? ShopNo { get; set; }
     }
 }

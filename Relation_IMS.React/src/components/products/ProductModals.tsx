@@ -87,6 +87,7 @@ interface ProductFormModalProps {
     editedStock: StockItem;
     setEditedStock: (stock: StockItem) => void;
     getColorHex: (name: string) => string | null;
+    onAddNew?: (type: 'category' | 'brand' | 'quarter' | 'color' | 'size') => void;
 }
 
 export function ProductFormModal({
@@ -96,7 +97,8 @@ export function ProductFormModal({
     onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
-    getColorHex
+    getColorHex,
+    onAddNew
 }: ProductFormModalProps) {
     const { t } = useLanguage();
 
@@ -112,7 +114,7 @@ export function ProductFormModal({
                     className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all text-2xl font-bold z-10"
                     aria-label="Close"
                 >
-                    Ãƒâ€”
+                    ×
                 </button>
 
                 {/* Header */}
@@ -156,6 +158,7 @@ export function ProductFormModal({
                         cancelStockEdit={cancelStockEdit}
                         startStockEdit={startStockEdit}
                         getColorHex={getColorHex}
+                        onAddNew={onAddNew}
                     />
                 </div>
 

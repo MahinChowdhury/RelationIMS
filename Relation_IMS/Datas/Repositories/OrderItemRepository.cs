@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Entities;
@@ -200,10 +200,16 @@ namespace Relation_IMS.Datas.Repositories
             return orderItem;
         }
 
-        public async Task<List<OrderItem>> GetOrderItemsByProductIdAsync(int productId, int pageNumber = 1, int pageSize = 20)
+        public async Task<List<OrderItem>> GetOrderItemsByProductIdAsync(int productId, int? shopNoFilter = null, int pageNumber = 1, int pageSize = 20)
         {
-            var items = await _context.OrderItems
-                .Where(oi => oi.ProductId == productId)
+            var query = _context.OrderItems.Where(oi => oi.ProductId == productId);
+            
+            if (shopNoFilter.HasValue)
+            {
+                query = query.Where(oi => oi.Order!.ShopNo == shopNoFilter.Value);
+            }
+
+            var items = await query
                 .Include(oi => oi.Order!)
                     .ThenInclude(o => o.Customer)
                 .Include(oi => oi.ProductVariant!)

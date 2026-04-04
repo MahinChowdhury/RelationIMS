@@ -56,7 +56,7 @@ function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* <Route path="/register" element={<Register />} /> */}
         <Route path="/products/share-catalog/:hash" element={<ShareCatalogView />} />
         <Route path="/products/share-catalog/:hash/:productId" element={<ProductDetails isGuestView={true} />} />
 

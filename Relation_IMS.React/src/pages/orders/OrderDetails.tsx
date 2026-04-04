@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus } from '../../types';
+import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus, type Inventory } from '../../types';
 import InternalOrderCycle from './InternalOrderCycle';
 import EditPaymentModal from './EditPaymentModal';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { getAllInventories } from '../../services/InventoryService';
 
 // ... (existing imports or keep them if they were already there, but careful not to duplicate)
 
@@ -80,6 +81,7 @@ export default function OrderDetailsPage() {
     const [searchParams] = useSearchParams();
     const viewMode = searchParams.get('view');
     const [order, setOrder] = useState<Order | null>(null);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -113,6 +115,7 @@ export default function OrderDetailsPage() {
             loadOrderDetails(Number(id));
             loadArrangedItems(Number(id));
         }
+        getAllInventories().then(setInventories).catch(console.error);
     }, [id]);
 
     useEffect(() => {
@@ -320,6 +323,15 @@ export default function OrderDetailsPage() {
                                     <div className="flex items-center gap-2 text-sm text-text-main dark:text-gray-200">
                                         <span className="material-symbols-outlined text-primary text-base">call</span>
                                         <a className="hover:underline" href={`tel:${order.Customer?.Phone || ''}`}>{order.Customer?.Phone || t.common.notAvailable || 'N/A'}</a>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Order Location / Shop</p>
+                                    <div className="flex items-start gap-2 text-sm text-text-main dark:text-gray-200">
+                                        <span className="material-symbols-outlined text-primary text-base mt-0.5">storefront</span>
+                                        <span className="whitespace-pre-wrap">
+                                            {order.ShopNo !== undefined ? (inventories.find(i => i.Id === order.ShopNo)?.Name || `Shop #${order.ShopNo}`) : 'Main Shop'}
+                                        </span>
                                     </div>
                                 </div>
                                 <div>

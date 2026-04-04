@@ -42,6 +42,12 @@ export default function EditPaymentModal({ isOpen, onClose, order, onPaymentUpda
     };
 
     const handleSave = async () => {
+        const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        if (totalPaid > order.NetAmount) {
+            alert((t.orders as any).paidExceedsNet || "Paid amount cannot exceed net amount.");
+            return;
+        }
+
         setLoading(true);
         try {
             // Recalculate totals for the payload (backend will also recalc, but DTO needs valid data)

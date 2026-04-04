@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
@@ -24,16 +24,30 @@ namespace Relation_IMS.Controllers
             _hubContext = hubContext;
         }
 
+        private int? GetShopNoFilter()
+        {
+            if (User.IsInRole("Owner")) return null;
+            var shopClaim = User.Claims.FirstOrDefault(c => c.Type == "ShopNo")?.Value;
+            if (int.TryParse(shopClaim, out int shopNo))
+            {
+                if (shopNo == 0) return null;
+                return shopNo;
+            }
+            return -1; // Non-owners without a shop see nothing
+        }
+
         [HttpGet]
         [RedisCache("order")]
         public async Task<ActionResult<List<Order>>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null) {
-            var orders = await _repo.GetAllOrdersAsync(search, sortBy, pageNumber = 1, pageSize = 20, startDate, endDate);
+            int? shopNoFilter = GetShopNoFilter();
+            var orders = await _repo.GetAllOrdersAsync(search, sortBy, pageNumber = 1, pageSize = 20, startDate, endDate, shopNoFilter);
             return Ok(orders);
         }
         [HttpGet("{id:int}")]
         [RedisCache("order")]
         public async Task<ActionResult<Order>> GetOrderById([FromRoute] int id) {
-            var order = await _repo.GetOrderByIdAsync(id);
+            int? shopNoFilter = GetShopNoFilter();
+            var order = await _repo.GetOrderByIdAsync(id, shopNoFilter);
             if (order == null) {
                 return NotFound(new { message = $"Orders with id : {id} not found." });
             }

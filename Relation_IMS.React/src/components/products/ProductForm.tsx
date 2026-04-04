@@ -54,6 +54,8 @@ interface ProductFormProps {
 
     getColorHex: (name: string) => string | null;
     isLotMode?: boolean;
+
+    onAddNew?: (type: 'category' | 'brand' | 'quarter' | 'color' | 'size') => void;
 }
 
 export function ProductForm({
@@ -63,7 +65,8 @@ export function ProductForm({
     onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
     editingStockIndex, editedStock, setEditedStock, saveStockEdit, cancelStockEdit, startStockEdit,
-    getColorHex, isLotMode = false
+    getColorHex, isLotMode = false,
+    onAddNew
 }: ProductFormProps) {
     const { t } = useLanguage();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -188,7 +191,14 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.category}</label>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <label className="text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.category}</label>
+                            {onAddNew && (
+                                <button type="button" onClick={() => onAddNew('category')} className="text-[#4e9767] hover:text-[#3d7a52] transition-colors flex items-center" title="Add new category">
+                                    <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                                </button>
+                            )}
+                        </div>
                         <select
                             value={product.CategoryId}
                             onChange={(e) => {
@@ -204,7 +214,14 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.brand}</label>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <label className="text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.brand}</label>
+                            {onAddNew && (
+                                <button type="button" onClick={() => onAddNew('brand')} className="text-[#4e9767] hover:text-[#3d7a52] transition-colors flex items-center" title="Add new brand">
+                                    <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                                </button>
+                            )}
+                        </div>
                         <select
                             value={product.BrandId}
                             onChange={(e) => onChange('BrandId', e.target.value)}
@@ -217,7 +234,14 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.quarter}</label>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                            <label className="text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.quarter}</label>
+                            {onAddNew && (
+                                <button type="button" onClick={() => onAddNew('quarter')} className="text-[#4e9767] hover:text-[#3d7a52] transition-colors flex items-center" title="Add new quarter">
+                                    <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                                </button>
+                            )}
+                        </div>
                         <div className="flex flex-col gap-2 max-h-32 overflow-y-auto bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-lg p-2.5">
                             {quarters.map((q: any) => (
                                 <label key={q.Id} className="flex items-center gap-2 cursor-pointer">
@@ -334,7 +358,14 @@ export function ProductForm({
                 {/* Stock Input Row */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white/40 dark:bg-[#132219]/20 p-4 rounded-xl border border-gray-200 dark:border-[var(--color-surface-dark-border)]">
                     <div>
-                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.color}</label>
+                        <div className="flex items-center gap-1.5 mb-1">
+                            <label className="text-xs font-bold block uppercase text-gray-500">{t.products.color}</label>
+                            {onAddNew && (
+                                <button type="button" onClick={() => onAddNew('color')} className="text-[#4e9767] hover:text-[#3d7a52] transition-colors flex items-center" title="Add new color">
+                                    <span className="material-symbols-outlined text-[14px]">add_circle</span>
+                                </button>
+                            )}
+                        </div>
                         <div className="flex items-center gap-2">
                             <select
                                 value={newStock.color}
@@ -354,7 +385,14 @@ export function ProductForm({
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold mb-1 block uppercase text-gray-500">{t.products.size}</label>
+                        <div className="flex items-center gap-1.5 mb-1">
+                            <label className="text-xs font-bold block uppercase text-gray-500">{t.products.size}</label>
+                            {onAddNew && (
+                                <button type="button" onClick={() => onAddNew('size')} className="text-[#4e9767] hover:text-[#3d7a52] transition-colors flex items-center" title="Add new size">
+                                    <span className="material-symbols-outlined text-[14px]">add_circle</span>
+                                </button>
+                            )}
+                        </div>
                         <select
                             value={newStock.size}
                             onChange={(e) => setNewStock({ ...newStock, size: e.target.value })}

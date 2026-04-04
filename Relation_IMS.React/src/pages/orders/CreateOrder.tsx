@@ -959,6 +959,10 @@ export default function CreateOrder() {
                                             if (e.key === 'Enter' && currentAmount) {
                                                 const amt = parseFloat(currentAmount);
                                                 if (amt > 0) {
+                                                    if (paidAmount + amt > netAmount) {
+                                                        alert((t.orders as any).paidExceedsNet || "Paid amount cannot exceed net order amount.");
+                                                        return;
+                                                    }
                                                     setPayments([...payments, { method: currentMethod, amount: amt }]);
                                                     setCurrentAmount('');
                                                 }
@@ -969,6 +973,10 @@ export default function CreateOrder() {
                                         onClick={() => {
                                             const amt = parseFloat(currentAmount);
                                             if (amt > 0) {
+                                                if (paidAmount + amt > netAmount) {
+                                                    alert((t.orders as any).paidExceedsNet || "Paid amount cannot exceed net order amount.");
+                                                    return;
+                                                }
                                                 setPayments([...payments, { method: currentMethod, amount: amt }]);
                                                 setCurrentAmount('');
                                             }

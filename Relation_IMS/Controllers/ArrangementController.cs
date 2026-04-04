@@ -12,6 +12,7 @@ namespace Relation_IMS.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class ArrangementController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -23,12 +24,25 @@ namespace Relation_IMS.Controllers
             _lockService = lockService;
         }
 
+        private int? GetShopNoFilter()
+        {
+            if (User.IsInRole("Owner")) return null;
+            var shopClaim = User.Claims.FirstOrDefault(c => c.Type == "ShopNo")?.Value;
+            if (int.TryParse(shopClaim, out int shopNo))
+            {
+                if (shopNo == 0) return null;
+                return shopNo;
+            }
+            return -1; // Non-owners without a shop see nothing
+        }
+
         [HttpGet("orders")]
         [RedisCache("arrangement")]
         public async Task<IActionResult> GetPendingArrangementOrders()
         {
-            // Show only orders where InternalStatus != Confirmed
-            var orders = await _context.Orders
+            int? shopNoFilter = GetShopNoFilter();
+
+            var query = _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
@@ -39,6 +53,14 @@ namespace Relation_IMS.Controllers
                     .ThenInclude(oi => oi.ProductVariant)
                         .ThenInclude(pv => pv.Color)
                 .Where(o => o.InternalStatus != OrderInternalStatus.Confirmed)
+                .AsQueryable();
+
+            if (shopNoFilter.HasValue)
+            {
+                query = query.Where(o => o.ShopNo == shopNoFilter.Value);
+            }
+
+            var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
 
@@ -54,6 +76,12 @@ namespace Relation_IMS.Controllers
             {
                 var order = await _context.Orders.FindAsync(request.OrderId);
             if (order == null) return NotFound("Order not found");
+
+            int? shopNoFilter = GetShopNoFilter();
+            if (shopNoFilter.HasValue && order.ShopNo != shopNoFilter.Value)
+            {
+                return Unauthorized("You are not authorized to manage this order's arrangement.");
+            }
 
             if (order.InternalStatus == OrderInternalStatus.Confirmed)
                 return BadRequest("Order is already confirmed.");
@@ -158,6 +186,12 @@ namespace Relation_IMS.Controllers
 
             if (order == null) return NotFound("Order not found");
 
+            int? shopNoFilter = GetShopNoFilter();
+            if (shopNoFilter.HasValue && order.ShopNo != shopNoFilter.Value)
+            {
+                return Unauthorized("You are not authorized to manage this order's arrangement.");
+            }
+
             // Check if all items are fully arranged
             bool allArranged = order.OrderItems.All(oi => oi.ArrangedQuantity >= oi.Quantity);
 
@@ -181,6 +215,13 @@ namespace Relation_IMS.Controllers
         [RedisCache("arrangement")]
         public async Task<IActionResult> GetArrangedItems(int orderId)
         {
+            var order = await _context.Orders.FindAsync(orderId);
+            int? shopNoFilter = GetShopNoFilter();
+            if (order != null && shopNoFilter.HasValue && order.ShopNo != shopNoFilter.Value)
+            {
+                return Unauthorized("You are not authorized to view this order's arrangement.");
+            }
+
             var items = await _context.ProductItems
                 .Include(pi => pi.ProductVariant)
                 .Where(pi => pi.OrderItemId != null && pi.OrderItem!.OrderId == orderId)
@@ -207,6 +248,12 @@ namespace Relation_IMS.Controllers
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null) return NotFound("Order not found");
+
+            int? shopNoFilter = GetShopNoFilter();
+            if (shopNoFilter.HasValue && order.ShopNo != shopNoFilter.Value)
+            {
+                return Unauthorized("You are not authorized to finalize this order.");
+            }
 
             if (order.InternalStatus != OrderInternalStatus.Arranged)
             {

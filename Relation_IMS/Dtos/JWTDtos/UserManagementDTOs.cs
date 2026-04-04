@@ -14,6 +14,7 @@ namespace Relation_IMS.Dtos.JWTDtos
         public string PreferredLanguage { get; set; } = "en";
         // Single role per user
         public string Role { get; set; } = "";
+        public int? ShopNo { get; set; }
     }
 
     // DTO for updating a user
@@ -40,6 +41,7 @@ namespace Relation_IMS.Dtos.JWTDtos
         public string Role { get; set; } = null!;
 
         public decimal? CurrentSalary { get; set; }
+        public int? ShopNo { get; set; }
     }
 
     // DTO for admin creating a user (includes role assignment)
@@ -72,6 +74,7 @@ namespace Relation_IMS.Dtos.JWTDtos
 
         [Range(0, double.MaxValue)]
         public decimal CurrentSalary { get; set; }
+        public int? ShopNo { get; set; }
     }
 
     // DTO for roles list

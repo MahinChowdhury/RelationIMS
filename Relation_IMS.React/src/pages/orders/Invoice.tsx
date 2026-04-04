@@ -254,10 +254,10 @@ export default function InvoicePage() {
                                     {[item.ColorName, item.SizeName, item.BrandName].filter(Boolean).join(' / ')}
                                 </div>
                             )}
-                            {/* qty Ã— price = total row */}
+                            {/* qty × price = total row */}
                             <div className="flex justify-between" style={{ fontSize: '10px', paddingLeft: '12px' }}>
                                 <span style={{ flex: 1, color: '#666' }}>
-                                    {item.Quantity} Ã— {money(item.UnitPrice)}
+                                    {item.Quantity} × {money(item.UnitPrice)}
                                 </span>
                                 <span style={{ fontWeight: 600, width: '55px', textAlign: 'right' }}>
                                     {money(item.Subtotal)}

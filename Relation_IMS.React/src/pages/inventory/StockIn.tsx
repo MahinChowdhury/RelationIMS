@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ProductForm } from '../../components/products/ProductForm';
 import { QuantityInput } from '../../components/QuantityInput';
 import BarcodeScanner from '../../components/BarcodeScanner';
@@ -599,7 +599,7 @@ export default function StockIn() {
                                             <div>
                                                 <h2 className="text-2xl font-bold text-text-main dark:text-white">{foundProduct.Name}</h2>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                    {foundProduct.Category?.Name} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {foundProduct.Brand?.Name}
+                                                    {foundProduct.Category?.Name} · {foundProduct.Brand?.Name}
                                                 </p>
 
                                                 {/* Quarters Editing */}
@@ -723,8 +723,8 @@ export default function StockIn() {
                                                                     <span className="ml-2 text-[10px] bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded font-black uppercase">{t.inventory.pending || 'Pending'}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-4 py-3 text-center font-mono text-gray-400">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</td>
-                                                            <td className="px-4 py-3 text-center text-gray-400">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</td>
+                                                            <td className="px-4 py-3 text-center font-mono text-gray-400">-</td>
+                                                            <td className="px-4 py-3 text-center text-gray-400">-</td>
                                                             <td className="px-4 py-3 flex items-center gap-2">
                                                                 <div className="flex-1 text-center font-black text-primary text-lg">
                                                                     +{isExistingLotMode ? existingLotQuantity : v.quantity}

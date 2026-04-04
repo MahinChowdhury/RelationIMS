@@ -59,6 +59,7 @@ export interface UserInfo {
     PhoneNumber: string;
     PreferredLanguage: string;
     Roles: string[];
+    ShopNo?: number;
 }
 
 // --- API Calls ---

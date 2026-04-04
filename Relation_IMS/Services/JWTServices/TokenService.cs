@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using Relation_IMS.Models;
 using Relation_IMS.Models.JWTModels;
 using System.IdentityModel.Tokens.Jwt;
@@ -44,6 +44,11 @@ namespace Relation_IMS.Services.JWTServices
                 // Custom claim specifying the client id (helps identify which client requested the token)
                 new Claim("client_id", client.ClientId)
             };
+
+            if (user.ShopNo.HasValue)
+            {
+                claims.Add(new Claim("ShopNo", user.ShopNo.Value.ToString()));
+            }
             // Add role claims for authorization and role-based access control
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
             // Create signing credentials with the symmetric security key and HMAC SHA256 algorithm

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models.JWTModels;
 using Relation_IMS.Models.OrderModels;
 using System.ComponentModel.DataAnnotations;
@@ -38,6 +38,7 @@ namespace Relation_IMS.Models
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
         public List<Order>? Orders { get; set; }
+        public int? ShopNo { get; set; } = 0;
 
         // User preferences
         [MaxLength(5)]

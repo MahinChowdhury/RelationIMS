@@ -52,6 +52,7 @@ namespace Relation_IMS.Controllers
 
         // POST api/v1/userprofile/{userId}/salary
         [HttpPost("{userId:int}/salary")]
+        [Authorize(Roles = "Owner")]
         public async Task<IActionResult> AddSalaryRecord(int userId, CreateSalaryRecordDTO dto)
         {
             if (!ModelState.IsValid)
@@ -66,6 +67,7 @@ namespace Relation_IMS.Controllers
 
         // DELETE api/v1/userprofile/salary/{id}
         [HttpDelete("salary/{id:int}")]
+        [Authorize(Roles = "Owner")]
         public async Task<IActionResult> DeleteSalaryRecord(int id)
         {
             var success = await _repo.DeleteSalaryRecordAsync(id);

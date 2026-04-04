@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Filters;
@@ -13,10 +13,23 @@ namespace Relation_IMS.Controllers
     {
         private readonly IOrderItemRepository _repo;
         private readonly IConcurrencyLockService _lockService;
+
         public OrderItemController(IOrderItemRepository repo, IConcurrencyLockService lockService)
         {
             _repo = repo;
             _lockService = lockService;
+        }
+
+        private int? GetShopNoFilter()
+        {
+            if (User.IsInRole("Owner")) return null;
+            var shopClaim = User.Claims.FirstOrDefault(c => c.Type == "ShopNo")?.Value;
+            if (int.TryParse(shopClaim, out int shopNo))
+            {
+                if (shopNo == 0) return null;
+                return shopNo;
+            }
+            return -1; // Non-owners without a shop see nothing
         }
 
         [HttpGet("{id:int}")]
@@ -91,7 +104,8 @@ namespace Relation_IMS.Controllers
         [RedisCache("orderitem")]
         public async Task<ActionResult<List<OrderItem>>> GetOrderItemsByProductId([FromRoute] int productId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
-            var items = await _repo.GetOrderItemsByProductIdAsync(productId, pageNumber, pageSize);
+            int? shopNoFilter = GetShopNoFilter();
+            var items = await _repo.GetOrderItemsByProductIdAsync(productId, shopNoFilter, pageNumber, pageSize);
             return Ok(items);
         }
     }

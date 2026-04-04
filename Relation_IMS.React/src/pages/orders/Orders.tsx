@@ -4,7 +4,8 @@ import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
-import { type Order, PaymentStatus } from '../../types';
+import { type Order, PaymentStatus, type Inventory } from '../../types';
+import { getAllInventories } from '../../services/InventoryService';
 
 export default function OrdersPage() {
     const { t } = useLanguage();
@@ -14,6 +15,7 @@ export default function OrdersPage() {
     // State
     const [orders, setOrders] = useState<Order[]>([]);
     const [filtered, setFiltered] = useState<Order[]>([]);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
     const [loading, setLoading] = useState(false);
@@ -33,6 +35,9 @@ export default function OrdersPage() {
     // Initial Load & Infinite Scroll
     useEffect(() => {
         loadOrders(page === 1);
+        if (page === 1) {
+            getAllInventories().then(setInventories).catch(console.error);
+        }
     }, [page]);
 
     // Apply filters locally when data or filters change
@@ -230,6 +235,7 @@ export default function OrdersPage() {
             <div className="hidden lg:flex px-2 text-xs font-bold text-text-secondary uppercase tracking-wider gap-2">
                 <div className="w-[60px]">ID</div>
                 <div className="flex-1 min-w-[120px]">Customer</div>
+                <div className="w-[100px]">Shop</div>
                 <div className="w-[70px]">Date</div>
                 <div className="w-[65px] text-right">Disc.</div>
                 <div className="w-[75px] text-right">Net</div>
@@ -264,6 +270,14 @@ export default function OrdersPage() {
                                 </div>
                                 <p className="text-[10px] text-text-secondary font-medium mt-0.5 truncate">{order.Customer?.ShopName || 'No email'}</p>
                             </div>
+                        </div>
+
+                        {/* Shop Info */}
+                        <div className="flex items-center justify-between lg:block lg:w-[100px]">
+                            <span className="text-xs text-text-secondary uppercase font-bold lg:hidden">Shop</span>
+                            <span className="text-sm font-medium text-text-main dark:text-gray-300">
+                                {order.ShopNo !== undefined ? (inventories.find(i => i.Id === order.ShopNo)?.Name || `Shop #${order.ShopNo}`) : 'Main Shop'}
+                            </span>
                         </div>
 
                         {/* Date */}

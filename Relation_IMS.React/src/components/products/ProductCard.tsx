@@ -63,15 +63,15 @@ export default function ProductCard({
                     <span className="text-[9px] sm:text-[11px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">
                         {product.Name}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
                     <span className="shrink-0 text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[30%]">
                         {getCategoryNameById(product.CategoryId)}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
                     <span className="shrink-0 text-[8px] sm:text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[20%]">
                         {getBrandName(product.BrandId)}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
                     <span className="shrink-0 text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                         {product.Sku || product.Id}
                     </span>
@@ -91,11 +91,11 @@ export default function ProductCard({
                             <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate">
                                 {getCategoryNameById(product.CategoryId)}
                             </span>
-                            <span className="text-[7px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
+                            <span className="text-[7px] text-gray-300 dark:text-gray-600">·</span>
                             <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate">
                                 {getBrandName(product.BrandId)}
                             </span>
-                            <span className="text-[7px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
+                            <span className="text-[7px] text-gray-300 dark:text-gray-600">·</span>
                             <span className="shrink-0 text-[8px] text-gray-400 dark:text-gray-500 font-mono">
                                 {product.Sku || product.Id}
                             </span>
@@ -107,15 +107,15 @@ export default function ProductCard({
                         <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100 truncate leading-tight">
                             {product.Name}
                         </span>
-                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
                         <span className="shrink-0 text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[30%]">
                             {getCategoryNameById(product.CategoryId)}
                         </span>
-                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
                         <span className="shrink-0 text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[20%]">
                             {getBrandName(product.BrandId)}
                         </span>
-                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">Ã‚Â·</span>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-600 shrink-0">·</span>
                         <span className="shrink-0 text-[10px] text-gray-400 dark:text-gray-500 font-mono">
                             {product.Sku || product.Id}
                         </span>
@@ -134,11 +134,11 @@ export default function ProductCard({
                         <span className="text-[8px] sm:text-[9px] text-gray-500 dark:text-gray-400 truncate">
                             {getCategoryNameById(product.CategoryId)}
                         </span>
-                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
+                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">·</span>
                         <span className="text-[8px] sm:text-[9px] text-gray-500 dark:text-gray-400 truncate">
                             {getBrandName(product.BrandId)}
                         </span>
-                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">Ã‚Â·</span>
+                        <span className="text-[7px] sm:text-[8px] text-gray-300 dark:text-gray-600">·</span>
                         <span className="shrink-0 text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 font-mono">
                             {product.Sku || product.Id}
                         </span>

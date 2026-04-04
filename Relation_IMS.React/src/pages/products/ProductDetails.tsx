@@ -2,13 +2,15 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import InventoryStockModal from '../../components/products/InventoryStockModal';
 import { DeleteProductModal } from '../../components/products/ProductModals';
 import { BarcodeSheet } from '../../components/products/BarcodeSheet';
 
 // ---------- Interfaces ----------
 // Imported from ../../types
-import type { Product, InventoryStock, ProductVariant } from '../../types';
+import type { Product, InventoryStock, ProductVariant, Inventory } from '../../types';
+import { getAllInventories } from '../../services/InventoryService';
 
 interface ProductOrderItem {
     Id: number;
@@ -24,6 +26,7 @@ interface ProductOrderItem {
         Customer?: { Id: number; Name: string };
         CreatedAt: string;
         PaymentStatus: number;
+        ShopNo?: number;
     };
     ProductVariant?: {
         Color?: { Id: number; Name: string };
@@ -40,6 +43,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const { id, hash, productId: urlProductId } = useParams<{ id: string, hash: string, productId: string }>();
     const activeId = productId || urlProductId || id;
     const { t } = useLanguage();
+    const { user } = useAuth();
     const taka = '\u09F3';
     const navigate = useNavigate();
 
@@ -106,6 +110,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
     // Product Orders State
     const [productOrders, setProductOrders] = useState<ProductOrderItem[]>([]);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
     const [ordersPage, setOrdersPage] = useState(1);
     const [ordersHasMore, setOrdersHasMore] = useState(true);
     const [ordersLoading, setOrdersLoading] = useState(false);
@@ -148,6 +153,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
             setOrdersHasMore(true);
             setOrdersInitialLoading(true);
             setOrdersVisible(false);
+            getAllInventories().then(setInventories).catch(console.error);
         }
     }, [activeId]);
 
@@ -635,8 +641,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                         </div>
                                     )}
 
-                                    {/* Cost Price - Hide for guests */}
-                                    {!isGuest && (
+                                    {/* Cost Price - Hide for non-owners */}
+                                    {!isGuest && (user?.Roles?.includes('Owner') || user?.ShopNo === 0) && (
                                         <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                                             <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-primary/20 shrink-0">
                                                 <span className="material-symbols-outlined text-[20px]">inventory</span>
@@ -735,6 +741,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                         <tr>
                                             <th scope="col" className="px-6 py-4 font-semibold">{t.orders.orderId}</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">{t.common.customer}</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Shop</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">{t.inventory.variant}</th>
                                             <th scope="col" className="px-6 py-4 font-semibold text-center">{t.common.quantity}</th>
                                             <th scope="col" className="px-6 py-4 font-semibold text-right">{t.products.soldPrice}</th>
@@ -766,6 +773,11 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                                             </div>
                                                             <span className="font-medium text-text-main dark:text-gray-200 truncate max-w-[140px]">{item.Order?.Customer?.Name || t.common.notAvailable}</span>
                                                         </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 align-top">
+                                                        <span className="font-medium text-sm text-text-main dark:text-gray-300 mt-1 block truncate max-w-[120px]">
+                                                            {item.Order?.ShopNo !== undefined ? (inventories.find(i => i.Id === item.Order?.ShopNo)?.Name || `Shop #${item.Order?.ShopNo}`) : 'Main Shop'}
+                                                        </span>
                                                     </td>
                                                     <td className="px-6 py-4 align-top">
                                                         <div className="flex flex-col gap-2">

@@ -99,6 +99,31 @@ public class ApplicationDbContext : MultiTenantDbContext
             }
         );
 
+        // Seed initial User (Owner)
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = 1,
+                Firstname = "Mahin Rashid",
+                PhoneNumber = "01521583700",
+                Email = "mahin@relationims.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("relation83700"),
+                IsActive = true,
+                ShopNo = 0,
+                PreferredLanguage = "en",
+                PreferredTheme = "light"
+            }
+        );
+
+        // Seed initial UserRole
+        modelBuilder.Entity<UserRole>().HasData(
+            new UserRole
+            {
+                UserId = 1,
+                RoleId = 4 // Owner role
+            }
+        );
+
         modelBuilder.Entity<Order>()
                 .Property(i => i.PaymentStatus)
                 .HasConversion<string>();

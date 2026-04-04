@@ -1,4 +1,4 @@
-﻿using Relation_IMS.Models.CustomerModels;
+using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.PaymentModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -36,5 +36,7 @@ namespace Relation_IMS.Models.OrderModels
 
         public DateTime? NextPaymentDate { get; set; }
         public OrderInternalStatus InternalStatus { get; set; } = OrderInternalStatus.Created;
+        
+        public int? ShopNo { get; set; } = 0;
     }
 }

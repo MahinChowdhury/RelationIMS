@@ -58,6 +58,11 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
     const [scannerEnabled, setScannerEnabled] = useState(false);
 
+    // Quick Config Modal State
+    const [configModalOpen, setConfigModalOpen] = useState(false);
+    const [configModalType, setConfigModalType] = useState<'category' | 'brand' | 'quarter' | 'color' | 'size'>('category');
+    const [configFormData, setConfigFormData] = useState({ name: '', hex: '', categoryIds: [] as number[] });
+
     // Editing / Creating State
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
@@ -622,6 +627,62 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         navigate(`/products/${code}`);
     };
 
+    const openConfigModal = (type: 'category' | 'brand' | 'quarter' | 'color' | 'size') => {
+        setConfigModalType(type);
+        setConfigFormData({ name: '', hex: '', categoryIds: [] });
+        setConfigModalOpen(true);
+    };
+
+    const handleConfigSave = async () => {
+        try {
+            let endpoint = '';
+            let payload: any = {};
+            switch (configModalType) {
+                case 'brand':
+                    endpoint = '/Brand';
+                    payload = { Name: configFormData.name, CategoryIds: configFormData.categoryIds };
+                    break;
+                case 'category':
+                    endpoint = '/Category';
+                    payload = { Name: configFormData.name };
+                    break;
+                case 'quarter':
+                    endpoint = '/Quarter';
+                    payload = { Name: configFormData.name };
+                    break;
+                case 'color':
+                    endpoint = '/ProductVariantColors';
+                    payload = { Name: configFormData.name, HexCode: configFormData.hex };
+                    break;
+                case 'size':
+                    endpoint = '/ProductVariantSizes';
+                    payload = { Name: configFormData.name, CategoryIds: configFormData.categoryIds };
+                    break;
+            }
+
+            await api.post(endpoint, payload);
+            setConfigModalOpen(false);
+
+            // Refresh specific section
+            switch (configModalType) {
+                case 'brand': loadBrands(); break;
+                case 'category': loadCategories(); break;
+                case 'quarter': loadQuarters(); break;
+                case 'color': loadColors(); break;
+                case 'size': 
+                    if (currentProduct.CategoryId) {
+                        onCategoryChange(Number(currentProduct.CategoryId)); 
+                    }
+                    else if (selectedCategory) { 
+                        onCategoryChange(Number(selectedCategory)); 
+                    } 
+                    break;
+            }
+        } catch (error) {
+            console.error("Save failed", error);
+            alert('Failed to save');
+        }
+    };
 
 
     return (
@@ -862,6 +923,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 editedStock={editedStock}
                 setEditedStock={setEditedStock}
                 getColorHex={getColorHex}
+                onAddNew={openConfigModal}
             />
 
             <ProductFormModal
@@ -894,7 +956,130 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 editedStock={editedStock}
                 setEditedStock={setEditedStock}
                 getColorHex={getColorHex}
+                onAddNew={openConfigModal}
             />
+
+            {/* QUICK CONFIG MODAL */}
+            {configModalOpen && (
+                <div className="fixed inset-0 z-[110] flex items-start md:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl w-full max-w-md shadow-2xl border border-white/10 p-6 animate-fadeIn">
+                        <h2 className="text-xl font-bold text-text-main dark:text-white mb-6">
+                            {t.common.add} {configModalType.charAt(0).toUpperCase() + configModalType.slice(1)}
+                        </h2>
+
+                        <form onSubmit={(e) => { e.preventDefault(); handleConfigSave(); }}>
+                            <div className="flex flex-col gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.common.name}</label>
+                                    <input
+                                        type="text"
+                                        value={configFormData.name}
+                                        onChange={e => setConfigFormData({ ...configFormData, name: e.target.value })}
+                                        className="w-full bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-text-main dark:text-white focus:ring-primary focus:border-primary"
+                                        placeholder={`Enter name`}
+                                        autoFocus
+                                        required
+                                    />
+                                </div>
+
+                                {configModalType === 'brand' && (
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">Categories <span className="text-red-400">*</span></label>
+                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
+                                            {categories.map(c => (
+                                                <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={c.id}
+                                                        checked={configFormData.categoryIds.includes(c.id)}
+                                                        onChange={(e) => {
+                                                            const id = parseInt(e.target.value);
+                                                            setConfigFormData(prev => ({
+                                                                ...prev,
+                                                                categoryIds: e.target.checked
+                                                                    ? [...prev.categoryIds, id]
+                                                                    : prev.categoryIds.filter(cid => cid !== id)
+                                                            }));
+                                                        }}
+                                                        className="w-4 h-4 text-primary rounded focus:ring-primary dark:bg-black/20 dark:border-gray-600"
+                                                    />
+                                                    <span className="text-sm font-medium text-text-main dark:text-gray-200">{c.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {configModalType === 'color' && (
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">Color Hex</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={configFormData.hex || '#000000'}
+                                                onChange={e => setConfigFormData({ ...configFormData, hex: e.target.value })}
+                                                className="h-12 w-12 rounded-lg border border-gray-200 cursor-pointer"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={configFormData.hex}
+                                                onChange={e => setConfigFormData({ ...configFormData, hex: e.target.value })}
+                                                className="flex-1 bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-medium text-text-main dark:text-white focus:ring-primary focus:border-primary"
+                                                placeholder="#000000"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {configModalType === 'size' && (
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">Categories <span className="text-red-400">*</span></label>
+                                        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
+                                            {categories.map(c => (
+                                                <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={c.id}
+                                                        checked={configFormData.categoryIds.includes(c.id)}
+                                                        onChange={(e) => {
+                                                            const id = parseInt(e.target.value);
+                                                            setConfigFormData(prev => ({
+                                                                ...prev,
+                                                                categoryIds: e.target.checked
+                                                                    ? [...prev.categoryIds, id]
+                                                                    : prev.categoryIds.filter(cid => cid !== id)
+                                                            }));
+                                                        }}
+                                                        className="w-4 h-4 text-primary rounded focus:ring-primary dark:bg-black/20 dark:border-gray-600"
+                                                    />
+                                                    <span className="text-sm font-medium text-text-main dark:text-gray-200">{c.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-3 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setConfigModalOpen(false)}
+                                    className="flex-1 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white font-bold hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                                >
+                                    {t.common.cancel}
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all"
+                                >
+                                    {t.common.saveChanges}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Floating Upload Progress Toast */}
             <UploadProgressToast toasts={uploadToasts} onDismiss={dismissToast} />

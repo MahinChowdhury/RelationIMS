@@ -5,6 +5,9 @@ import AddUserModal from './AddUserModal';
 import EditUserModal from './EditUserModal';
 import DeleteUserModal from './DeleteUserModal';
 import { getAllUsers, deleteUser, getAllRoles, type UserDTO, type RoleDTO } from '../../services/userService';
+import { getAllInventories } from '../../services/InventoryService';
+import type { Inventory } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 export default function UserManagement() {
     const { t } = useLanguage();
@@ -12,12 +15,15 @@ export default function UserManagement() {
     const [roleFilter, setRoleFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [roles, setRoles] = useState<RoleDTO[]>([]);
+    const { user: currentUser } = useAuth();
+    const isOwner = currentUser?.Roles?.includes('Owner');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState<UserDTO | null>(null);
     const [editingUser, setEditingUser] = useState<UserDTO | null>(null);
     const [users, setUsers] = useState<UserDTO[]>([]);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -48,6 +54,7 @@ export default function UserManagement() {
     useEffect(() => {
         fetchUsers();
         fetchRoles();
+        getAllInventories().then(setInventories).catch(console.error);
     }, []);
 
     useEffect(() => {
@@ -184,10 +191,12 @@ export default function UserManagement() {
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                 </select>
-                <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-primary/20">
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    {t.common.add || 'Add New User'}
-                </button>
+                {isOwner && (
+                    <button onClick={() => setIsAddModalOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all shadow-md shadow-primary/20">
+                        <span className="material-symbols-outlined text-[20px]">add</span>
+                        {t.common.add || 'Add New User'}
+                    </button>
+                )}
             </div>
 
             {/* Users Table */}
@@ -216,6 +225,7 @@ export default function UserManagement() {
                                         <tr>
                                             <th scope="col" className="px-6 py-4 font-semibold">User Profile</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">Phone</th>
+                                            <th scope="col" className="px-6 py-4 font-semibold">Shop</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">Role</th>
                                             <th scope="col" className="px-6 py-4 font-semibold">Status</th>
                                             <th scope="col" className="px-6 py-4 font-semibold text-right">Actions</th>
@@ -248,6 +258,11 @@ export default function UserManagement() {
                                                             <span className="font-medium text-text-main dark:text-gray-200">{user.PhoneNumber}</span>
                                                         </td>
                                                         <td className="px-6 py-4">
+                                                            <span className="font-medium text-text-main dark:text-gray-200">
+                                                                {user.ShopNo !== undefined ? (inventories.find(i => i.Id === user.ShopNo)?.Name || `Shop #${user.ShopNo}`) : 'Owner / All Shops'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className={`material-symbols-outlined text-[18px] ${roleInfo.color}`}>{roleInfo.icon}</span>
                                                                 <span className="font-medium text-text-main dark:text-gray-200">{user.Role || 'No Role'}</span>
@@ -264,12 +279,16 @@ export default function UserManagement() {
                                                                 <Link to={`/userprofile/${user.Id}`} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-transparent hover:border-blue-200" title="View Profile">
                                                                     <span className="material-symbols-outlined text-[18px]">visibility</span>
                                                                 </Link>
-                                                                <button onClick={() => handleEditUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20" title="Edit User">
-                                                                    <span className="material-symbols-outlined text-[18px]">edit</span>
-                                                                </button>
-                                                                <button onClick={() => handleDeleteUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200" title="Delete User">
-                                                                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                                                                </button>
+                                                                {isOwner && (
+                                                                    <>
+                                                                        <button onClick={() => handleEditUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20" title="Edit User">
+                                                                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                                        </button>
+                                                                        <button onClick={() => handleDeleteUser(user)} className="size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200" title="Delete User">
+                                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                                        </button>
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         </td>
                                                     </tr>

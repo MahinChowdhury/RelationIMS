@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Entities;
 using Relation_IMS.Dtos.JWTDtos;
 using Relation_IMS.Models;
@@ -143,7 +143,8 @@ namespace Relation_IMS.Services.JWTServices
                 PhoneNumber = user.PhoneNumber,
                 PreferredLanguage = user.PreferredLanguage,
                 PreferredTheme = user.PreferredTheme,
-                Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList()
+                Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList(),
+                ShopNo = user.ShopNo
             };
         }
 
@@ -202,7 +203,8 @@ namespace Relation_IMS.Services.JWTServices
                     PhoneNumber = u.PhoneNumber,
                     IsActive = u.IsActive,
                     PreferredLanguage = u.PreferredLanguage,
-                    Role = u.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? ""
+                    Role = u.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? "",
+                    ShopNo = u.ShopNo
                 })
                 .ToListAsync();
         }
@@ -220,7 +222,8 @@ namespace Relation_IMS.Services.JWTServices
                 Email = dto.Email ?? $"{dto.PhoneNumber}@placeholder.local",
                 PhoneNumber = dto.PhoneNumber,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                IsActive = true
+                IsActive = true,
+                ShopNo = dto.ShopNo
             };
 
             // Assign single role
@@ -258,7 +261,8 @@ namespace Relation_IMS.Services.JWTServices
                 PhoneNumber = user.PhoneNumber,
                 IsActive = user.IsActive,
                 PreferredLanguage = user.PreferredLanguage,
-                Role = user.UserRoles.Select(ur => ur.Role?.Name ?? "").FirstOrDefault() ?? ""
+                Role = user.UserRoles.Select(ur => ur.Role?.Name ?? "").FirstOrDefault() ?? "",
+                ShopNo = user.ShopNo
             };
         }
 
@@ -280,6 +284,7 @@ namespace Relation_IMS.Services.JWTServices
             user.PhoneNumber = dto.PhoneNumber;
             user.Email = dto.Email ?? user.Email;
             user.IsActive = dto.IsActive;
+            user.ShopNo = dto.ShopNo;
 
             // Update role: remove existing, assign new single role
             _dbContext.UserRoles.RemoveRange(user.UserRoles);
@@ -316,7 +321,8 @@ namespace Relation_IMS.Services.JWTServices
                 PhoneNumber = user.PhoneNumber,
                 IsActive = user.IsActive,
                 PreferredLanguage = user.PreferredLanguage,
-                Role = user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? ""
+                Role = user.UserRoles.Select(ur => ur.Role.Name).FirstOrDefault() ?? "",
+                ShopNo = user.ShopNo
             };
         }
 

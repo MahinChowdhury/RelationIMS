@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { updateUser, getAllRoles, getUserProfile, type UserDTO, type RoleDTO } from '../../services/userService';
+import { getAllInventories } from '../../services/InventoryService';
+import type { Inventory } from '../../types';
 import { QuantityInput } from '../../components/QuantityInput';
 
 interface EditUserModalProps {
@@ -17,6 +19,7 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [roles, setRoles] = useState<RoleDTO[]>([]);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
     const [currentSalary, setCurrentSalary] = useState<string>('');
 
     const isOwner = currentUser?.Roles.includes('Owner');
@@ -27,6 +30,7 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
         phoneNumber: user.PhoneNumber,
         isActive: user.IsActive,
         role: user.Role,
+        shopNo: user.ShopNo?.toString() || '',
     });
 
     useEffect(() => {
@@ -38,7 +42,10 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                 phoneNumber: user.PhoneNumber,
                 isActive: user.IsActive,
                 role: user.Role,
+                shopNo: user.ShopNo?.toString() || '',
             });
+            // Fetch inventories
+            getAllInventories().then(setInventories).catch(() => {});
             // Fetch current salary from user profile
             getUserProfile(user.Id).then(profile => {
                 setCurrentSalary(profile.CurrentSalary?.toString() || '');
@@ -67,6 +74,7 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                 IsActive: formData.isActive,
                 Role: formData.role,
                 CurrentSalary: salaryValue,
+                ShopNo: formData.shopNo ? parseInt(formData.shopNo) : undefined,
             });
             onUpdated();
         } catch (err: any) {
@@ -130,14 +138,26 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                             <span className="text-xs text-text-secondary">{formData.isActive ? 'Active' : 'Inactive'}</span>
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Role</label>
-                            <select name="role" value={formData.role} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
-                                {roles.map(role => (
-                                    <option key={role.Id} value={role.Name}>{role.Name}</option>
-                                ))}
-                            </select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Role</label>
+                                <select name="role" value={formData.role} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                    {roles.map(role => (
+                                        <option key={role.Id} value={role.Name}>{role.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Shop / Inventory</label>
+                                <select name="shopNo" value={formData.shopNo} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                    <option value="">-- No Shop Assigned --</option>
+                                    {inventories.map(inv => (
+                                        <option key={inv.Id} value={inv.Id}>{inv.Id} - {inv.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {isOwner && (

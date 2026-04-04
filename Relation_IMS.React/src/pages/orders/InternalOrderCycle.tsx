@@ -258,7 +258,7 @@ export default function InternalOrderCycle({ order }: InternalOrderCycleProps) {
                 <div className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] transform scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex flex-col items-center text-center mb-6">
-                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.orderCreated || 'Order Confirmed! Ã°Å¸Å½â€°'}</h3>
+                            <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">{t.orders.orderCreated || 'Order Confirmed! 🎉'}</h3>
                             <p className="text-text-secondary dark:text-gray-400 text-sm">
                                 {t.orders.doYouWantToPrintInvoice || 'Do you want to print the invoice now?'}
                             </p>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Dtos.JWTDtos;
 using Relation_IMS.Services.JWTServices;
+using System.Security.Claims;
 
 namespace Relation_IMS.Controllers.JWTControllers
 {
@@ -22,6 +23,20 @@ namespace Relation_IMS.Controllers.JWTControllers
         public async Task<IActionResult> GetAllUsers([FromQuery] string? role, [FromQuery] bool? isActive)
         {
             var users = await _userService.GetAllUsersAsync(role, isActive);
+
+            if (!User.IsInRole("Owner"))
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdClaim, out var currentUserId))
+                {
+                    users = users.Where(u => u.Id == currentUserId).ToList();
+                }
+                else
+                {
+                    users = new List<UserListDTO>();
+                }
+            }
+
             return Ok(users);
         }
 
@@ -38,6 +53,7 @@ namespace Relation_IMS.Controllers.JWTControllers
 
         // POST api/v1/user
         [HttpPost]
+        [Authorize(Roles = "Owner")]
         public async Task<IActionResult> CreateUser(AdminCreateUserDTO dto)
         {
             if (!ModelState.IsValid)
@@ -52,6 +68,7 @@ namespace Relation_IMS.Controllers.JWTControllers
 
         // PUT api/v1/user/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Owner")]
         public async Task<IActionResult> UpdateUser(int id, UserUpdateDTO dto)
         {
             if (!ModelState.IsValid)
@@ -66,6 +83,7 @@ namespace Relation_IMS.Controllers.JWTControllers
 
         // DELETE api/v1/user/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Owner")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var success = await _userService.DeleteUserAsync(id);

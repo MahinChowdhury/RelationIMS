@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Models.OrderModels;
 
@@ -6,8 +6,8 @@ namespace Relation_IMS.Datas.Interfaces
 {
     public interface IOrderRepository
     {
-        Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null);
-        Task<Order?> GetOrderByIdAsync(int id);
+        Task<List<Order>> GetAllOrdersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20, DateTime? startDate = null, DateTime? endDate = null, int? shopNoFilter = null);
+        Task<Order?> GetOrderByIdAsync(int id, int? shopNoFilter = null);
         Task<Order?> DeleteOrderByIdAsync(int id);
         Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto);
         Task<Order?> UpdateOrderByIdAsync(int id,UpdateOrderDTO updateDto);

@@ -9,6 +9,7 @@ export interface UserDTO {
     IsActive: boolean;
     PreferredLanguage: string;
     Role: string;
+    ShopNo?: number;
 }
 
 export interface RoleDTO {
@@ -26,6 +27,7 @@ export interface AdminCreateUserPayload {
     Role: string;
     Address?: string;
     CurrentSalary: number;
+    ShopNo?: number;
 }
 
 export interface UserUpdatePayload {
@@ -36,6 +38,7 @@ export interface UserUpdatePayload {
     IsActive: boolean;
     Role: string;
     CurrentSalary?: number;
+    ShopNo?: number;
 }
 
 export interface UserProfileDTO {
@@ -50,6 +53,7 @@ export interface UserProfileDTO {
     Address?: string;
     CurrentSalary: number;
     JoinDate: string;
+    ShopNo?: number;
 }
 
 export interface SalaryRecordDTO {

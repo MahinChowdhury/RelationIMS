@@ -4,6 +4,8 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getUserProfile, getSalaryRecords, addSalaryRecord, updateUserProfile, changePassword, type UserProfileDTO, type SalaryRecordDTO } from '../../services/userService';
+import { getAllInventories } from '../../services/InventoryService';
+import type { Inventory } from '../../types';
 import LogoutConfirmModal from '../../components/LogoutConfirmModal';
 import { QuantityInput } from '../../components/QuantityInput';
 
@@ -16,6 +18,7 @@ interface UserInfo {
     avatar: string;
     currentSalary: number;
     address: string;
+    shopName: string;
 }
 
 
@@ -37,6 +40,7 @@ export default function UserProfile() {
 
     const [profileData, setProfileData] = useState<UserProfileDTO | null>(null);
     const [salaryHistory, setSalaryHistory] = useState<SalaryRecordDTO[]>([]);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -77,18 +81,21 @@ export default function UserProfile() {
 
     const targetUserId = id ? Number(id) : currentUser?.Id;
     const isOwnProfile = targetUserId === currentUser?.Id;
+    const isOwnerRole = currentUser?.Roles?.includes('Owner');
 
     useEffect(() => {
         const fetchData = async () => {
             if (!targetUserId) return;
             setLoading(true);
             try {
-                const [profile, salaries] = await Promise.all([
+                const [profile, salaries, invs] = await Promise.all([
                     getUserProfile(targetUserId),
-                    getSalaryRecords(targetUserId)
+                    getSalaryRecords(targetUserId),
+                    getAllInventories()
                 ]);
                 setProfileData(profile);
                 setSalaryHistory(salaries);
+                setInventories(invs);
                 setSalaryForm(prev => ({ ...prev, amount: profile.CurrentSalary || 0 }));
                 setError('');
             } catch (err) {
@@ -118,7 +125,8 @@ export default function UserProfile() {
         joinDate: formatJoinDate(profileData?.JoinDate),
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData?.Firstname || 'U')}+${encodeURIComponent(profileData?.Lastname || '')}&background=17cf54&color=fff`,
         currentSalary: profileData?.CurrentSalary || 0,
-        address: profileData?.Address || 'N/A'
+        address: profileData?.Address || 'N/A',
+        shopName: profileData?.ShopNo !== undefined ? (inventories.find(i => i.Id === profileData.ShopNo)?.Name || `Shop #${profileData.ShopNo}`) : 'Owner / All Shops'
     };
 
     const taka = '\u09F3';
@@ -340,16 +348,18 @@ const stats: StatCard[] = [
                             <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-white text-[32px]">account_balance_wallet</span>
                             </div>
-                            <button
-                                onClick={() => {
-                                    setSalaryForm(prev => ({ ...prev, amount: userInfo.currentSalary }));
-                                    setPaySalaryModalOpen(true);
-                                }}
-                                className="px-5 py-3 bg-white text-[var(--color-primary)] hover:bg-gray-100 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg transition-all"
-                            >
-                                <span className="material-symbols-outlined text-[18px]">payments</span>
-                                {t.profile?.paySalaryNow || 'Pay Salary Now'}
-                            </button>
+                            {isOwnerRole && (
+                                <button
+                                    onClick={() => {
+                                        setSalaryForm(prev => ({ ...prev, amount: userInfo.currentSalary }));
+                                        setPaySalaryModalOpen(true);
+                                    }}
+                                    className="px-5 py-3 bg-white text-[var(--color-primary)] hover:bg-gray-100 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">payments</span>
+                                    {t.profile?.paySalaryNow || 'Pay Salary Now'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -435,6 +445,12 @@ const stats: StatCard[] = [
                                 <label className="text-xs font-bold uppercase text-gray-400">{t.profile?.role || 'Role'}</label>
                                 <div className="bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3">
                                     <p className="font-medium text-[#0e1b12] dark:text-white">{userInfo.role}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold uppercase text-gray-400">Shop / Assigned Location</label>
+                                <div className="bg-[#f6f8f6] dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3">
+                                    <p className="font-medium text-[#0e1b12] dark:text-white">{userInfo.shopName}</p>
                                 </div>
                             </div>
                             <div className="space-y-2 md:col-span-2">

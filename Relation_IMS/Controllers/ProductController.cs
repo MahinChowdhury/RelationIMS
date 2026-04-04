@@ -35,6 +35,21 @@ namespace Relation_IMS.Controllers
             [FromQuery] int pageSize = 20) {
             var products = await _repo.GetAllProductsAsync(search,sortBy, stockOrder, brandId, categoryId, quarterId, pageNumber, pageSize);
 
+            bool isOwner = User.IsInRole("Owner");
+            if (!isOwner)
+            {
+                var shopClaim = User.Claims.FirstOrDefault(c => c.Type == "ShopNo")?.Value;
+                if (shopClaim == "0") isOwner = true;
+            }
+
+            if (!isOwner)
+            {
+                foreach (var p in products)
+                {
+                    p.CostPrice = 0;
+                }
+            }
+
             return Ok(products);
         }
 
@@ -44,6 +59,18 @@ namespace Relation_IMS.Controllers
             var product = await _repo.GetProductByIdAsync(id);
             if (product == null) {
                 return NotFound(new {message = $"Product with ID {id} not found." });
+            }
+
+            bool isOwner = User.IsInRole("Owner");
+            if (!isOwner)
+            {
+                var shopClaim = User.Claims.FirstOrDefault(c => c.Type == "ShopNo")?.Value;
+                if (shopClaim == "0") isOwner = true;
+            }
+
+            if (!isOwner)
+            {
+                product.CostPrice = 0;
             }
 
             return Ok(product);

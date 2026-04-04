@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { createUser, getAllRoles, type RoleDTO } from '../../services/userService';
+import { getAllInventories } from '../../services/InventoryService';
+import type { Inventory } from '../../types';
 import { QuantityInput } from '../../components/QuantityInput';
 
 interface AddUserModalProps {
@@ -15,6 +17,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [roles, setRoles] = useState<RoleDTO[]>([]);
+    const [inventories, setInventories] = useState<Inventory[]>([]);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -26,6 +29,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
         role: 'Salesman',
         address: '',
         currentSalary: 0,
+        shopNo: ''
     });
 
     useEffect(() => {
@@ -33,6 +37,10 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
             getAllRoles().then(r => {
                 setRoles(r);
                 if (r.length > 0) setFormData(prev => ({ ...prev, role: r[0].Name }));
+            }).catch(() => { });
+            getAllInventories().then(r => {
+                setInventories(r);
+                if (r.length > 0) setFormData(prev => ({ ...prev, shopNo: r[0].Id.toString() }));
             }).catch(() => { });
         }
     }, [isOpen]);
@@ -62,10 +70,11 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                 Role: formData.role,
                 Address: formData.address || undefined,
                 CurrentSalary: formData.currentSalary,
+                ShopNo: formData.shopNo ? parseInt(formData.shopNo) : undefined,
             });
             onAdd();
             onClose();
-            setFormData({ firstName: '', lastName: '', email: '', phoneNumber: '', password: '', confirmPassword: '', role: roles[0]?.Name || 'Salesman', address: '', currentSalary: 0 });
+            setFormData({ firstName: '', lastName: '', email: '', phoneNumber: '', password: '', confirmPassword: '', role: roles[0]?.Name || 'Salesman', address: '', currentSalary: 0, shopNo: inventories[0]?.Id.toString() || '' });
         } catch (err: any) {
             setError(err?.response?.data?.message || 'Failed to create user.');
         } finally {
@@ -123,14 +132,26 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                                 className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="01XXXXXXXXX" />
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Role</label>
-                            <select name="role" value={formData.role} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
-                                {roles.map(role => (
-                                    <option key={role.Id} value={role.Name}>{role.Name}</option>
-                                ))}
-                            </select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Role</label>
+                                <select name="role" value={formData.role} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                    {roles.map(role => (
+                                        <option key={role.Id} value={role.Name}>{role.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Shop / Inventory</label>
+                                <select name="shopNo" value={formData.shopNo} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                    <option value="">-- No Shop Assigned --</option>
+                                    {inventories.map(inv => (
+                                        <option key={inv.Id} value={inv.Id}>{inv.Id} - {inv.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

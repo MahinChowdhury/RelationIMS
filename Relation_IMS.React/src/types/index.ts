@@ -121,6 +121,7 @@ export interface Order {
     CreatedAt: string;
     NextPaymentDate?: string; // or Date if transformed
     date?: string;
+    ShopNo?: number;
 }
 
 export const OrderInternalStatus = {
