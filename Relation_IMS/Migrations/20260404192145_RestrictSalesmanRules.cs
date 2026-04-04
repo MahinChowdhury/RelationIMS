@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Relation_IMS.Migrations
 {
     /// <inheritdoc />
-    public partial class MultiTenantInitial : Migration
+    public partial class RestrictSalesmanRules : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -357,6 +357,7 @@ namespace Relation_IMS.Migrations
                     PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ShopNo = table.Column<int>(type: "integer", nullable: true),
                     PreferredLanguage = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
                     PreferredTheme = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
                 },
@@ -506,6 +507,7 @@ namespace Relation_IMS.Migrations
                     Remarks = table.Column<string>(type: "text", nullable: true),
                     NextPaymentDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     InternalStatus = table.Column<int>(type: "integer", nullable: false),
+                    ShopNo = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<int>(type: "integer", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -1042,6 +1044,16 @@ namespace Relation_IMS.Migrations
                     { 3, "Head Manager role", "Head Manager" },
                     { 4, "Owner role", "Owner" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "Firstname", "IsActive", "Lastname", "PasswordHash", "PhoneNumber", "PreferredLanguage", "PreferredTheme", "ShopNo" },
+                values: new object[] { 1, "mahin@relationims.com", "Mahin Rashid", true, null, "$2a$11$xqUHILnofoSs7nJyuVIr9eTUVqt2pQx3foZ4qL/vMEvZZe6GC4FWa", "01521583700", "en", "light", 0 });
+
+            migrationBuilder.InsertData(
+                table: "UserRoles",
+                columns: new[] { "RoleId", "UserId", "Id" },
+                values: new object[] { 4, 1, 0 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BrandCategory_CategoriesId",

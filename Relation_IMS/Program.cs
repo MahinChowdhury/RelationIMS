@@ -26,8 +26,62 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO.Compression;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load .env file for local development
+if (File.Exists(".env"))
+{
+    Env.Load(".env");
+}
+
+// Override appsettings values from .env if not running inside Docker
+// (Docker compose injects these environment variables directly)
+if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true" && File.Exists(".env"))
+{
+    var pgDb = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "RelationIMS";
+    var pgUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
+    var pgPass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+    var pgPort = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432";
+    var pgHost = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost";
+
+    if (!string.IsNullOrEmpty(pgUser) && !string.IsNullOrEmpty(pgPass))
+    {
+        var connString = $"Host={pgHost};Port={pgPort};Database={pgDb};Username={pgUser};Password={pgPass}";
+        builder.Configuration["ConnectionStrings:DefaultConnection"] = connString;
+        builder.Configuration["ConnectionStrings:HangfireConnection"] = connString;
+        
+        builder.Configuration["Finbuckle:MultiTenant:Stores:ConfigurationStore:Tenants:0:ConnectionString"] = connString;
+        builder.Configuration["Finbuckle:MultiTenant:Stores:ConfigurationStore:Tenants:1:ConnectionString"] = $"Host={pgHost};Port={pgPort};Database=YoloIMS;Username={pgUser};Password={pgPass}";
+    }
+
+    var minioEndpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT");
+    if (!string.IsNullOrEmpty(minioEndpoint))
+    {
+        // For local runs, if MINIO_ENDPOINT is "minio:9000", convert to "localhost:9000"
+        builder.Configuration["MinIO:Endpoint"] = minioEndpoint.Contains("minio") ? minioEndpoint.Replace("minio", "localhost") : minioEndpoint;
+        builder.Configuration["MinIO:PublicBaseUrl"] = Environment.GetEnvironmentVariable("MINIO_PUBLIC_URL") ?? "";
+        builder.Configuration["MinIO:AccessKey"] = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY");
+        builder.Configuration["MinIO:SecretKey"] = Environment.GetEnvironmentVariable("MINIO_SECRET_KEY");
+        builder.Configuration["MinIO:BucketName"] = Environment.GetEnvironmentVariable("MINIO_BUCKET_NAME");
+        builder.Configuration["MinIO:UseSSL"] = Environment.GetEnvironmentVariable("MINIO_USE_SSL") ?? "false";
+    }
+
+    var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+    if (!string.IsNullOrEmpty(jwtIssuer))
+    {
+        builder.Configuration["JwtSettings:Issuer"] = jwtIssuer;
+        builder.Configuration["JwtSettings:AccessTokenExpirationMinutes"] = Environment.GetEnvironmentVariable("JWT_ACCESS_TOKEN_EXPIRATION_MINUTES") ?? "15";
+        builder.Configuration["JwtSettings:RefreshTokenExpirationDays"] = Environment.GetEnvironmentVariable("JWT_REFRESH_TOKEN_EXPIRATION_DAYS") ?? "7";
+    }
+
+    var allowedCors = Environment.GetEnvironmentVariable("ALLOWED_CORS_ORIGINS");
+    if (!string.IsNullOrEmpty(allowedCors))
+    {
+        builder.Configuration["AllowedCorsOrigins"] = allowedCors;
+    }
+}
 
 // ============================================
 // JSON Serialization

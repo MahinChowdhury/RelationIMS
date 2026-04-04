@@ -13,8 +13,8 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260323075227_MultiTenantInitial")]
-    partial class MultiTenantInitial
+    [Migration("20260404192145_RestrictSalesmanRules")]
+    partial class RestrictSalesmanRules
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -859,6 +859,14 @@ namespace Relation_IMS.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            RoleId = 4,
+                            Id = 0
+                        });
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.OrderModels.Order", b =>
@@ -899,6 +907,9 @@ namespace Relation_IMS.Migrations
 
                     b.Property<string>("Remarks")
                         .HasColumnType("text");
+
+                    b.Property<int?>("ShopNo")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -1517,6 +1528,9 @@ namespace Relation_IMS.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int?>("ShopNo")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "IX_Unique_Email")
@@ -1526,6 +1540,20 @@ namespace Relation_IMS.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "mahin@relationims.com",
+                            Firstname = "Mahin Rashid",
+                            IsActive = true,
+                            PasswordHash = "$2a$11$xqUHILnofoSs7nJyuVIr9eTUVqt2pQx3foZ4qL/vMEvZZe6GC4FWa",
+                            PhoneNumber = "01521583700",
+                            PreferredLanguage = "en",
+                            PreferredTheme = "light",
+                            ShopNo = 0
+                        });
                 });
 
             modelBuilder.Entity("Relation_IMS.Models.UserProfileModels.SalaryRecord", b =>

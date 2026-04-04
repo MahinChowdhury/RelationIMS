@@ -8,7 +8,12 @@ services:
       dockerfile: Dockerfile
     container_name: relationims-nginx
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
+    # Note: To use your own real SSL certificates, uncomment the lines below 
+    # and put them in the host's ./nginx/ssl directory.
+    # volumes:
+    #   - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       api:
         condition: service_healthy

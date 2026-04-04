@@ -1545,7 +1545,7 @@ namespace Relation_IMS.Migrations
                             Email = "mahin@relationims.com",
                             Firstname = "Mahin Rashid",
                             IsActive = true,
-                            PasswordHash = "$2a$11$lqUR/lLUd0Fj5GkJW19MuuuKBIYcB4g7Z2HubaVNvG.K4lUl2mJ5m",
+                            PasswordHash = "$2a$11$xqUHILnofoSs7nJyuVIr9eTUVqt2pQx3foZ4qL/vMEvZZe6GC4FWa",
                             PhoneNumber = "01521583700",
                             PreferredLanguage = "en",
                             PreferredTheme = "light",
