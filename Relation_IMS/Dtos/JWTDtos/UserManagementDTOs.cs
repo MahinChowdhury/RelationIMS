@@ -41,7 +41,7 @@ namespace Relation_IMS.Dtos.JWTDtos
         public string Role { get; set; } = null!;
 
         public decimal? CurrentSalary { get; set; }
-        public int? ShopNo { get; set; }
+        public int ShopNo { get; set; } = 0;
     }
 
     // DTO for admin creating a user (includes role assignment)
