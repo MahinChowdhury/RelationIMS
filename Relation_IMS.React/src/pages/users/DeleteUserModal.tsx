@@ -27,7 +27,7 @@ export default function DeleteUserModal({ show, userName, onCancel, onConfirm }:
             <div className="relative bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-fadeIn">
                 <div className="p-6 flex flex-col items-center text-center gap-4">
                     <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-red-500 text-[32px]">warning</span>
+                        <span className="material-symbols-outlined text-red-500 dark:text-red-400 text-[32px]">warning</span>
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-text-main dark:text-white mb-1">Delete User</h2>

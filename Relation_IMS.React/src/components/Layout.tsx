@@ -94,6 +94,14 @@ export default function Layout() {
                                 View Profile
                             </Link>
                             <Link
+                                to="/users"
+                                onClick={() => setIsMobileProfileMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px] text-gray-400">manage_accounts</span>
+                                {t.nav.userManagement}
+                            </Link>
+                            <Link
                                 to="/accounts"
                                 onClick={() => setIsMobileProfileMenuOpen(false)}
                                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-text-main dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"

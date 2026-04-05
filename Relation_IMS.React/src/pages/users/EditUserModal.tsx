@@ -111,45 +111,45 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
                     <form id="edit-user-form" onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">First Name</label>
+                                <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase mb-1">First Name</label>
                                 <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Last Name</label>
+                                <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase mb-1">Last Name</label>
                                 <input type="text" name="lastName" value={formData.lastName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Phone Number</label>
+                            <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase mb-1">Phone Number</label>
                             <input type="tel" name="phoneNumber" required value={formData.phoneNumber} onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                         </div>
 
                         {/* Active toggle */}
                         <div className="flex items-center gap-3">
-                            <label className="block text-xs font-bold text-text-secondary uppercase">Active</label>
+                            <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase">Active</label>
                             <button type="button" onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.isActive ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
                                 <span className={`inline-block size-4 transform rounded-full bg-white shadow-sm transition-transform ${formData.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
                             </button>
-                            <span className="text-xs text-text-secondary">{formData.isActive ? 'Active' : 'Inactive'}</span>
+                            <span className="text-xs text-text-secondary dark:text-gray-400">{formData.isActive ? 'Active' : 'Inactive'}</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Role</label>
+                                <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase mb-1">Role</label>
                                 <select name="role" value={formData.role} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                    className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
                                     {roles.map(role => (
                                         <option key={role.Id} value={role.Name}>{role.Name}</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Shop / Inventory</label>
+                                <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase mb-1">Shop / Inventory</label>
                                 <select name="shopNo" value={formData.shopNo} onChange={handleChange}
                                     className="w-full px-3 py-2 text-sm text-text-main dark:text-white bg-white dark:bg-[#132219] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
                                     <option value="">-- No Shop Assigned --</option>
@@ -162,7 +162,7 @@ export default function EditUserModal({ isOpen, onClose, onUpdated, user }: Edit
 
                         {isOwner && (
                             <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary</label>
+                                <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase mb-1">Current Salary</label>
                                 <QuantityInput
                                     value={parseInt(currentSalary) || 0}
                                     onChange={(val) => setCurrentSalary(val.toString())}
