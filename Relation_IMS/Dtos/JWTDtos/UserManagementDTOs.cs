@@ -74,7 +74,7 @@ namespace Relation_IMS.Dtos.JWTDtos
 
         [Range(0, double.MaxValue)]
         public decimal CurrentSalary { get; set; }
-        public int? ShopNo { get; set; }
+        public int ShopNo { get; set; } = 0;
     }
 
     // DTO for roles list
