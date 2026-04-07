@@ -6,11 +6,15 @@ import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import { type Order, PaymentStatus, type Inventory } from '../../types';
 import { getAllInventories } from '../../services/InventoryService';
+import { useAuth } from '../../context/AuthContext';
+import { DeleteOrderModal } from '../../components/orders/OrderModals';
 
 export default function OrdersPage() {
     const { t } = useLanguage();
     const taka = '\u09F3';
     const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
+    const isOwner = currentUser?.Roles?.includes('Owner');
 
     // State
     const [orders, setOrders] = useState<Order[]>([]);
@@ -28,6 +32,10 @@ export default function OrdersPage() {
     const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending'>('all');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+
+    // Delete Modal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [orderToDelete, setOrderToDelete] = useState<number | null>(null);
 
     // Infinite Scroll
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 1.0 });
@@ -93,6 +101,19 @@ export default function OrdersPage() {
         }
     };
 
+    const handleDeleteOrder = async () => {
+        if (!orderToDelete) return;
+        
+        try {
+            await api.delete(`/Order/${orderToDelete}`);
+            setOrders(prev => prev.filter(o => o.Id !== orderToDelete));
+            setShowDeleteModal(false);
+            setOrderToDelete(null);
+        } catch (error) {
+            console.error('Failed to delete order', error);
+            alert("Failed to delete the order. Please try again.");
+        }
+    };
 
     const applyFilters = () => {
         let list = [...orders];
@@ -351,6 +372,13 @@ export default function OrdersPage() {
                                 className="flex items-center justify-center size-7 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5 transition-colors" title="Print Invoice">
                                 <span className="material-symbols-outlined text-[14px]">print</span>
                             </button>
+                            {isOwner && (
+                                <button
+                                    onClick={() => { setOrderToDelete(order.Id); setShowDeleteModal(true); }}
+                                    className="flex items-center justify-center size-7 rounded-lg bg-white border border-gray-200 text-text-main hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors" title="Delete Order">
+                                    <span className="material-symbols-outlined text-[14px]">delete</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -374,6 +402,13 @@ export default function OrdersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Delete Modal */}
+            <DeleteOrderModal
+                show={showDeleteModal}
+                onCancel={() => { setShowDeleteModal(false); setOrderToDelete(null); }}
+                onConfirm={handleDeleteOrder}
+            />
         </div>
     );
 }

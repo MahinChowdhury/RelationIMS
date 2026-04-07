@@ -227,6 +227,7 @@ const bn: Translations = {
         paymentDetails: 'পেমেন্টের বিবরণ (স্প্লিট পেমেন্ট)',
         orderNotes: 'অর্ডার নোট',
         optional: 'ঐচ্ছিক',
+        deleteOrder: 'অর্ডার মুছুন',
         addInternalNotes: 'অভ্যন্তরীণ নোট যোগ করুন...',
         completeOrder: 'অর্ডার সম্পন্ন করুন',
         creating: 'তৈরি করা হচ্ছে...',

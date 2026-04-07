@@ -8,5 +8,6 @@ namespace Relation_IMS.Datas.Interfaces
         Task<TodaySale?> GetYesterdaySaleAsync(DateTime yesterday);
         Task UpdateTodaySaleAsync(DateTime date, decimal amount, int orderCount);
         Task IncrementTodaySaleAsync(DateTime date, decimal amount);
+        Task DecrementTodaySaleAsync(DateTime date, decimal amount, bool decrementCount = true);
     }
 }

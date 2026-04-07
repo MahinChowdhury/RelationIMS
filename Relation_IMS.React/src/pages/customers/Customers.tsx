@@ -6,10 +6,13 @@ import useDebounce from '../../hooks/useDebounce';
 import type { Customer } from '../../types';
 import { CustomerFormModal, DeleteCustomerModal } from '../../components/customers/CustomerModals';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function CustomersPage() {
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const { user: currentUser } = useAuth();
+    const isOwner = currentUser?.Roles?.includes('Owner');
     const taka = '\u09F3';
 
     // State
@@ -383,13 +386,15 @@ export default function CustomersPage() {
                                 >
                                     <span className="material-symbols-outlined text-[14px]">edit</span>
                                 </button>
-                                <button
-                                    onClick={() => { setCustomerToDelete(c.Id); setShowDeleteModal(true); }}
-                                    className="flex items-center justify-center size-7 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
-                                    title="Delete"
-                                >
-                                    <span className="material-symbols-outlined text-[14px]">delete</span>
-                                </button>
+                                {isOwner && (
+                                    <button
+                                        onClick={() => { setCustomerToDelete(c.Id); setShowDeleteModal(true); }}
+                                        className="flex items-center justify-center size-7 rounded-lg bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
+                                        title="Delete"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">delete</span>
+                                    </button>
+                                )}
                             </div>
 
                         </div>

@@ -143,6 +143,7 @@ export interface Customer {
     Orders?: Order[];
     CreatedDate?: string;
     Balance?: number;
+    IsActive?: boolean;
 }
 
 export interface InventoryStock {

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.CustomerDtos;
@@ -32,7 +32,7 @@ namespace Relation_IMS.Datas.Repositories
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return null;
 
-            _context.Customers.Remove(customer);
+            customer.IsActive = false;
             await _context.SaveChangesAsync();
 
             return customer;
@@ -40,7 +40,7 @@ namespace Relation_IMS.Datas.Repositories
 
         public async Task<List<Customer>> GetAllCustomersAsync(string? search, string? sortBy, int pageNumber = 1, int pageSize = 20)
         {
-            var query = _context.Customers.AsQueryable();
+            var query = _context.Customers.Where(c => c.IsActive).AsQueryable();
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(p => p.Name.ToLower().Contains(search.ToLower()) || p.Phone.Contains(search));

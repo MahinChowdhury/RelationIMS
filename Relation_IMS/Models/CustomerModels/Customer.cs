@@ -1,4 +1,4 @@
-﻿using Relation_IMS.Models.OrderModels;
+using Relation_IMS.Models.OrderModels;
 using System.ComponentModel.DataAnnotations;
 
 namespace Relation_IMS.Models.CustomerModels
@@ -24,5 +24,7 @@ namespace Relation_IMS.Models.CustomerModels
         
         [Range(0, double.MaxValue, ErrorMessage = "Balance cannot be negative.")]
         public decimal Balance { get; set; } = 0;
+        
+        public bool IsActive { get; set; } = true;
     }
 }

@@ -125,6 +125,15 @@ namespace Relation_IMS.Datas.Repositories
                 }
             }
 
+            if (order.PaymentStatus == PaymentStatus.Paid)
+            {
+                await _todaySaleRepository.DecrementTodaySaleAsync(order.CreatedAt, order.NetAmount, true);
+            }
+            else if (order.PaymentStatus == PaymentStatus.Partial && order.PaidAmount > 0)
+            {
+                await _todaySaleRepository.DecrementTodaySaleAsync(order.CreatedAt, order.PaidAmount, false);
+            }
+
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
 

@@ -87,5 +87,28 @@ namespace Relation_IMS.Datas.Repositories
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task DecrementTodaySaleAsync(DateTime date, decimal amount, bool decrementCount = true)
+        {
+            var dateOnly = date.Date;
+            var existing = await _context.TodaySales
+                .Where(t => t.Date.Date == dateOnly)
+                .FirstOrDefaultAsync();
+
+            if (existing != null)
+            {
+                existing.TotalSales -= amount;
+                if (existing.TotalSales < 0) existing.TotalSales = 0;
+                
+                if (decrementCount)
+                {
+                    existing.OrderCount -= 1;
+                    if (existing.OrderCount < 0) existing.OrderCount = 0;
+                }
+                
+                existing.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

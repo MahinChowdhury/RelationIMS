@@ -225,6 +225,7 @@ const en = {
         paymentDetails: 'Payment Details (Split Payment)',
         orderNotes: 'Order Notes',
         optional: 'Optional',
+        deleteOrder: 'Delete Order',
         addInternalNotes: 'Add internal notes...',
         completeOrder: 'Complete Order',
         creating: 'Creating...',

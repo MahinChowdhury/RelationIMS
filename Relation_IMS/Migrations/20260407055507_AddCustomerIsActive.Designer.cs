@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Relation_IMS.Entities;
@@ -12,9 +13,11 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407055507_AddCustomerIsActive")]
+    partial class AddCustomerIsActive
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1548,7 +1551,7 @@ namespace Relation_IMS.Migrations
                             Email = "mahin@relationims.com",
                             Firstname = "Mahin Rashid",
                             IsActive = true,
-                            PasswordHash = "$2a$11$K4TnwA8iFVSasjp/7tio/eVsIQ9tHEMNKqftukQHxl.QqBBCsCDA6",
+                            PasswordHash = "$2a$11$ka4F49ZlthfeLe0xaYsR5.FKDEo6bEkEbWsQUSYuyQagfUkOwPOkS",
                             PhoneNumber = "01521583700",
                             PreferredLanguage = "en",
                             PreferredTheme = "light",
