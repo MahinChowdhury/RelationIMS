@@ -126,6 +126,17 @@ namespace Relation_IMS.Datas.Repositories
             var orderItem = await _context.OrderItems.FindAsync(id);
             if (orderItem == null) return null;
 
+            // Unlink any specifically arranged product items to avoid foreign key constraint violations
+            var linkedProductItems = await _context.ProductItems
+                .Where(pi => pi.OrderItemId == id)
+                .ToListAsync();
+
+            foreach (var pi in linkedProductItems)
+            {
+                pi.OrderItemId = null;
+                pi.IsSold = false; // Return to available inventory
+            }
+
             if (orderItem.ProductVariantId.HasValue)
             {
                 using (await _lockService.AcquireLockAsync($"variant_stock:{orderItem.ProductVariantId.Value}", TimeSpan.FromSeconds(10)))

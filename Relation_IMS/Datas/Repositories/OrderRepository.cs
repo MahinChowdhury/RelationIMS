@@ -110,6 +110,18 @@ namespace Relation_IMS.Datas.Repositories
             // Release reserved inventory for each order item
             if (order.OrderItems != null && order.OrderItems.Any())
             {
+                // Unlink any specifically arranged product items to avoid foreign key constraint violations
+                var orderItemIds = order.OrderItems.Select(oi => oi.Id).ToList();
+                var linkedProductItems = await _context.ProductItems
+                    .Where(pi => pi.OrderItemId.HasValue && orderItemIds.Contains(pi.OrderItemId.Value))
+                    .ToListAsync();
+
+                foreach (var pi in linkedProductItems)
+                {
+                    pi.OrderItemId = null;
+                    pi.IsSold = false; // Return to available inventory
+                }
+
                 foreach (var item in order.OrderItems)
                 {
                     if (item.ProductVariantId.HasValue)
