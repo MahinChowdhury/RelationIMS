@@ -1,8 +1,12 @@
-﻿using Relation_IMS.Models.InventoryModels;
+using Relation_IMS.Models.InventoryModels;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Models.ProductModels
 {
+    [Index(nameof(Code))]
+    [Index(nameof(IsSold))]
+    [Index(nameof(IsDefected))]
     public class ProductItem : BaseAuditableEntity
     {
         public int? ProductLotId { get; set; }

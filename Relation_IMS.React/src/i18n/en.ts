@@ -85,6 +85,8 @@ const en = {
         currentPassword: 'Current Password',
         newPassword: 'New Password',
         confirmPassword: 'Confirm Password',
+        accountsConfirmation: 'Are you sure you want to go to the accounts section?',
+        goToAccounts: 'Go to Accounts',
     },
 
     // App / Brand
@@ -94,7 +96,6 @@ const en = {
         fullName: 'Relation Inventory Management System',
     },
 
-    // Navigation
     nav: {
         dashboard: 'Dashboard',
         products: 'Products',
@@ -680,7 +681,18 @@ const en = {
         cash: 'Cash',
         card: 'Card',
     },
+    auditLogs: {
+        title: 'Audit Logs',
+        subtitle: 'View a comprehensive history of structural changes across your system.',
+        allActions: 'All Actions',
+        module: 'Module',
+        details: 'Audit Details',
+        affectedColumns: 'Affected Columns',
+        oldValues: 'Old Values',
+        newValues: 'New Values'
+    }
 };
 
 export default en;
 export type Translations = typeof en;
+

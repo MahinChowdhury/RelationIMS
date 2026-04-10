@@ -9,6 +9,8 @@ namespace Relation_IMS.Models
 {
     [Index(nameof(Email), Name = "IX_Unique_Email", IsUnique = true)]
     [Index(nameof(PhoneNumber), Name = "IX_Unique_PhoneNumber", IsUnique = true)]
+    [Index(nameof(ShopNo))]
+    [Index(nameof(IsActive))]
     public class User
     {
         [Key]

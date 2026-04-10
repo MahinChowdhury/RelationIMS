@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Models.Analytics
 {
@@ -8,6 +9,7 @@ namespace Relation_IMS.Models.Analytics
         AllTime = 0
     }
 
+    [Index(nameof(PeriodType))]
     public class TopCustomer : BaseAuditableEntity
     {
         [Required]

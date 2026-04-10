@@ -2,9 +2,14 @@ using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.PaymentModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Models.OrderModels
 {
+    [Index(nameof(ShopNo))]
+    [Index(nameof(InternalStatus))]
+    [Index(nameof(PaymentStatus))]
+    [Index(nameof(NextPaymentDate))]
     public class Order : BaseAuditableEntity
     {
         [Required(ErrorMessage = "Customer Id is required.")]

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Relation_IMS.Entities;
@@ -12,9 +13,11 @@ using Relation_IMS.Entities;
 namespace Relation_IMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260410063105_AddAuditLogsTable")]
+    partial class AddAuditLogsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,8 +114,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.ToTable("CustomerInsights");
                 });
 
@@ -156,8 +157,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.ToTable("CustomerInsightsAllTime");
                 });
 
@@ -191,8 +190,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("InventoryValues");
                 });
@@ -235,10 +232,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("PeriodType");
-
                     b.ToTable("RevenueByCategories");
                 });
 
@@ -272,10 +265,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("PeriodType");
 
                     b.ToTable("SalesOverviews");
                 });
@@ -320,8 +309,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("StaffPerformanceMonthlies");
@@ -357,8 +344,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("TodaySales");
                 });
@@ -404,10 +389,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("PeriodType");
-
                     b.ToTable("TopCustomers");
                 });
 
@@ -451,10 +432,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("PeriodType");
 
                     b.ToTable("TopSellingProducts");
                 });
@@ -572,8 +549,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.ToTable("Customers");
                 });
 
@@ -604,8 +579,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("CustomerReturnRecordId");
 
@@ -651,8 +624,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderId");
@@ -688,8 +659,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("Inventories");
                 });
@@ -728,8 +697,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("DestinationInventoryId");
 
                     b.HasIndex("SourceInventoryId");
@@ -766,8 +733,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("InventoryTransferRecordId");
 
@@ -1013,17 +978,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("InternalStatus");
-
-                    b.HasIndex("NextPaymentDate");
-
-                    b.HasIndex("PaymentStatus");
-
-                    b.HasIndex("ShopNo");
 
                     b.HasIndex("UserId");
 
@@ -1079,8 +1034,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
@@ -1124,8 +1077,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("OrderId");
 
                     b.ToTable("OrderPayments");
@@ -1156,8 +1107,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("Brands");
                 });
@@ -1194,8 +1143,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("Categories");
                 });
@@ -1260,10 +1207,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("Code");
-
-                    b.HasIndex("CreatedAt");
-
                     b.ToTable("Products");
                 });
 
@@ -1296,8 +1239,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("ProductColors");
                 });
@@ -1346,8 +1287,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("ProductItemId");
 
@@ -1400,15 +1339,7 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code");
-
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("InventoryId");
-
-                    b.HasIndex("IsDefected");
-
-                    b.HasIndex("IsSold");
 
                     b.HasIndex("OrderItemId");
 
@@ -1453,8 +1384,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("ProductId")
                         .IsUnique();
 
@@ -1486,8 +1415,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("ProductSizes");
                 });
@@ -1529,8 +1456,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("ProductColorId");
 
                     b.HasIndex("ProductId");
@@ -1565,8 +1490,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.ToTable("Quarters");
                 });
@@ -1608,8 +1531,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("OwnerId");
 
@@ -1665,10 +1586,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("ShopNo");
-
                     b.HasIndex(new[] { "Email" }, "IX_Unique_Email")
                         .IsUnique();
 
@@ -1684,7 +1601,7 @@ namespace Relation_IMS.Migrations
                             Email = "mahin@relationims.com",
                             Firstname = "Mahin Rashid",
                             IsActive = true,
-                            PasswordHash = "$2a$11$zlYgHoXQ2hE5kJpid3c6wO3.jk2kIcwsm9L3aQx4LszxvW4OwBoES",
+                            PasswordHash = "$2a$11$z9ITeHTfuaYimHQXihR6gOATSIamNBxAFNKAarBEFoMDUmd0johdC",
                             PhoneNumber = "01521583700",
                             PreferredLanguage = "en",
                             PreferredTheme = "light",
@@ -1740,8 +1657,6 @@ namespace Relation_IMS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
-
                     b.HasIndex("UserId", "Month", "Year")
                         .IsUnique();
 
@@ -1782,8 +1697,6 @@ namespace Relation_IMS.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("UserId")
                         .IsUnique();

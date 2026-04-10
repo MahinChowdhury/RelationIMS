@@ -1,9 +1,11 @@
 using Relation_IMS.Models.OrderModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Models.ProductModels
 {
+    [Index(nameof(Code))]
     public class Product : BaseAuditableEntity
     {
         public string? Code { get; set; } 

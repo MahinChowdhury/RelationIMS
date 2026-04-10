@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useState, useRef, useEffect } from 'react';
@@ -14,12 +14,14 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { t } = useLanguage();
     const { user, logout } = useAuth();
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showShareCatalog, setShowShareCatalog] = useState(false);
+    const [showAccountsConfirm, setShowAccountsConfirm] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
     const tenantConfig = getTenantConfig(getTenant());
 
@@ -84,28 +86,52 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
                         {/* Navigation Links */}
                         <div className="flex flex-col gap-1">
-                            {navItems.map((item) => (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    onClick={onClose} // Close sidebar on mobile when link clicked
-                                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive(item.path)
-                                        ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
-                                        : 'text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                                        }`}
-                                >
-                                    <span
-                                        className={`material-symbols-outlined ${isActive(item.path) ? '' : 'text-gray-500 group-hover:text-primary dark:text-gray-400'
+                            {navItems.map((item) => {
+                                if (item.path === '/accounts') {
+                                    return (
+                                        <button
+                                            key={item.path}
+                                            onClick={() => setShowAccountsConfirm(true)}
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive(item.path)
+                                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                                : 'text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+                                                }`}
+                                        >
+                                            <span
+                                                className={`material-symbols-outlined ${isActive(item.path) ? '' : 'text-gray-500 group-hover:text-primary dark:text-gray-400'
+                                                    }`}
+                                            >
+                                                {item.icon}
+                                            </span>
+                                            <span className={`text-sm ${isActive(item.path) ? 'font-bold' : 'font-medium'}`}>
+                                                {item.name}
+                                            </span>
+                                        </button>
+                                    );
+                                }
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        onClick={onClose}
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive(item.path)
+                                            ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                            : 'text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
                                             }`}
-                                        style={item.filled ? { fontVariationSettings: "'FILL' 1" } : {}}
                                     >
-                                        {item.icon}
-                                    </span>
-                                    <span className={`text-sm ${isActive(item.path) ? 'font-bold' : 'font-medium'}`}>
-                                        {item.name}
-                                    </span>
-                                </Link>
-                            ))}
+                                        <span
+                                            className={`material-symbols-outlined ${isActive(item.path) ? '' : 'text-gray-500 group-hover:text-primary dark:text-gray-400'
+                                                }`}
+                                            style={item.filled ? { fontVariationSettings: "'FILL' 1" } : {}}
+                                        >
+                                            {item.icon}
+                                        </span>
+                                        <span className={`text-sm ${isActive(item.path) ? 'font-bold' : 'font-medium'}`}>
+                                            {item.name}
+                                        </span>
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -221,6 +247,42 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 show={showShareCatalog}
                 onClose={() => setShowShareCatalog(false)}
             />
+
+            {/* Accounts Confirmation Modal */}
+            {showAccountsConfirm && (
+                <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[var(--color-scrollbar)] dark:border-[var(--color-surface-dark-border)] transform transition-all">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
+                                <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 className="text-[#0e1b12] dark:text-white text-xl font-black">{t.nav.accounts}</h2>
+                                <p className="text-secondary text-sm">{t.common.areYouSure}</p>
+                            </div>
+                        </div>
+                        <p className="text-[#0e1b12] dark:text-gray-300 text-base mb-6 leading-relaxed">
+                            {t.common.accountsConfirmation}
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowAccountsConfirm(false)}
+                                className="px-4 py-2.5 text-sm font-bold text-text-main bg-white border border-gray-200 rounded-lg hover:bg-gray-50 dark:bg-[var(--color-surface-dark-card)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-200 dark:hover:bg-white/5 transition-colors"
+                            >
+                                {t.common.cancel}
+                            </button>
+                            <button
+                                onClick={() => { setShowAccountsConfirm(false); if (onClose) onClose(); navigate('/accounts'); }}
+                                className="px-4 py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary/90 shadow-md shadow-primary/20 transition-all"
+                            >
+                                {t.common.goToAccounts}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

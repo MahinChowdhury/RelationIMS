@@ -27,6 +27,7 @@ const InventoryLocations = lazy(() => import('./pages/inventory/InventoryLocatio
 const InventoryDetails = lazy(() => import('./pages/inventory/InventoryDetails'));
 const StockIn = lazy(() => import('./pages/inventory/StockIn'));
 const MovementHistory = lazy(() => import('./pages/inventory/MovementHistory'));
+const AuditLogs = lazy(() => import('./pages/inventory/AuditLogs'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Configuration = lazy(() => import('./pages/configuration/Configuration'));
 const Arrangement = lazy(() => import('./pages/arrangement/Arrangement'));
@@ -34,6 +35,7 @@ const ArrangementDetails = lazy(() => import('./pages/arrangement/ArrangementDet
 const UserProfile = lazy(() => import('./pages/userprofile/UserProfile'));
 const UserManagement = lazy(() => import('./pages/users/UserManagement'));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Accounts section (separate layout with its own sidebar/bottom-nav)
 const AccountsLayout = lazy(() => import('./pages/accounts/AccountsLayout'));
@@ -81,6 +83,7 @@ function App() {
           <Route path="inventory/locations/:id" element={<InventoryDetails />} />
           <Route path="inventory/stock-in" element={<StockIn />} />
           <Route path="inventory/history" element={<MovementHistory />} />
+          <Route path="inventory/audit-logs" element={<ProtectedRoute allowedRoles={['Owner', 'Head Manager']}><AuditLogs /></ProtectedRoute>} />
           <Route path="configuration" element={<Configuration />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="arrangement" element={<Arrangement />} />
@@ -98,6 +101,9 @@ function App() {
           <Route path="balance-sheet" element={<BalanceSheet />} />
           <Route path="profit-loss" element={<ProfitLoss />} />
         </Route>
+
+        {/* Catch-all 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );

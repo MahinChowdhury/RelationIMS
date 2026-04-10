@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Relation_IMS.Models.Analytics;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Models.Analytics
 {
+    [Index(nameof(PeriodType))]
     public class RevenueByCategory : BaseAuditableEntity
     {
         [Required]

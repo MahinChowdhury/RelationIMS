@@ -87,6 +87,8 @@ const bn: Translations = {
         currentPassword: 'বর্তমান পাসওয়ার্ড',
         newPassword: 'নতুন পাসওয়ার্ড',
         confirmPassword: 'পাসওয়ার্ড নিশ্চিত করুন',
+        accountsConfirmation: 'আপনি কি একাউন্টস সেকশনে যেতে চান?',
+        goToAccounts: 'একাউন্টসে যান',
     },
 
     // App / Brand
@@ -682,6 +684,17 @@ const bn: Translations = {
         cash: 'ক্যাশ',
         card: 'কার্ড',
     },
+    auditLogs: {
+        title: 'অডিট লংস',
+        subtitle: 'আপনার সিস্টেম জুড়ে কাঠামোগত পরিবর্তনের একটি ব্যাপক ইতিহাস দেখুন।',
+        allActions: 'সব একশন',
+        module: 'মডিউল',
+        details: 'অডিট ডিটেইলস',
+        affectedColumns: 'এফেক্টেড কলামস',
+        oldValues: 'পুরানো মান',
+        newValues: 'নতুন মান'
+    }
 };
 
 export default bn;
+

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Relation_IMS.Models.Analytics
 {
@@ -9,6 +10,7 @@ namespace Relation_IMS.Models.Analytics
         ThisMonth = 1
     }
 
+    [Index(nameof(PeriodType))]
     public class SalesOverview : BaseAuditableEntity
     {
         [Required]
