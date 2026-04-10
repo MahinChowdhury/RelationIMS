@@ -179,8 +179,14 @@ export default function Layout() {
 
             {/* Accounts Confirmation Modal */}
             {showAccountsConfirm && (
-                <div className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0">
-                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[var(--color-scrollbar)] dark:border-[var(--color-surface-dark-border)] transform transition-all">
+                <div 
+                    className="fixed inset-0 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm z-[100] animate-fadeIn p-4 md:p-0 pt-4 md:pt-0"
+                    onClick={() => setShowAccountsConfirm(false)}
+                >
+                    <div 
+                        className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-3xl shadow-2xl p-8 w-[90%] max-w-md border-2 border-[var(--color-scrollbar)] dark:border-[var(--color-surface-dark-border)] transform transition-all"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
                                 <svg className="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

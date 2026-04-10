@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getAuditLogs } from '../../services/AuditLogService';
@@ -7,8 +7,11 @@ import type { AuditLogResponse } from '../../types/auditLog';
 const AuditLogs = () => {
     const { t } = useLanguage();
     const [data, setData] = useState<AuditLogResponse | null>(null);
+    const [records, setRecords] = useState<any[]>([]);
     const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const observer = useRef<IntersectionObserver | null>(null);
     
     const [searchTerm, setSearchTerm] = useState('');
     const [dateFilter, setDateFilter] = useState('');
@@ -17,14 +20,30 @@ const AuditLogs = () => {
     // Modal state
     const [selectedLog, setSelectedLog] = useState<{old: any, new: any, affected: any} | null>(null);
 
+    const lastElementRef = (node: HTMLTableRowElement | null) => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => prevPage + 1);
+            }
+        });
+        if (node) observer.current.observe(node);
+    };
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm, dateFilter, actionFilter]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchLogs();
+            fetchLogs(page === 1);
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchTerm, dateFilter, actionFilter, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, searchTerm, dateFilter, actionFilter]);
 
-    const fetchLogs = async () => {
+    const fetchLogs = async (isReset = false) => {
         setLoading(true);
         try {
             const res = await getAuditLogs({
@@ -35,6 +54,17 @@ const AuditLogs = () => {
                 actionType: actionFilter || undefined
             });
             setData(res);
+            if (isReset || page === 1) {
+                setRecords(res.Records || []);
+            } else {
+                setRecords(prev => {
+                    const newRecords = res.Records || [];
+                    const existingIds = new Set(prev.map(r => r.Id));
+                    const uniqueNew = newRecords.filter(r => !existingIds.has(r.Id));
+                    return [...prev, ...uniqueNew];
+                });
+            }
+            setHasMore(page < res.TotalPages);
         } catch (error) {
             console.error('Failed to load audit logs', error);
         } finally {
@@ -131,22 +161,26 @@ const AuditLogs = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#d0e7d7]/50 dark:divide-white/5">
-                                {loading && !data?.Records?.length && (
+                                {loading && records.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="py-12 text-center text-gray-500">
                                             {t.common.loading || 'Loading...'}
                                         </td>
                                     </tr>
                                 )}
-                                {!loading && data?.Records?.length === 0 && (
+                                {!loading && records.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="py-12 text-center text-gray-500">
                                             {t.common.noData || 'No data found.'}
                                         </td>
                                     </tr>
                                 )}
-                                {data?.Records?.map((log) => (
-                                    <tr key={log.Id} className="group hover:bg-white/40 dark:hover:bg-white/5 transition-colors text-sm">
+                                {records.map((log, index) => (
+                                    <tr 
+                                        key={log.Id} 
+                                        ref={index === records.length - 1 ? lastElementRef : null}
+                                        className="group hover:bg-white/40 dark:hover:bg-white/5 transition-colors text-sm"
+                                    >
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-[#0e1b12] dark:text-white">
@@ -199,28 +233,19 @@ const AuditLogs = () => {
                             </tbody>
                         </table>
                     </div>
-                    {/* Pagination */}
-                    {data && data.TotalPages > 1 && (
-                        <div className="p-4 border-t border-[var(--color-scrollbar)] dark:border-white/5 flex items-center justify-between">
-                            <span className="text-sm text-gray-500">
-                                {t.common.name ? 'Page' : 'Page'} {page} of {data.TotalPages}
+                    {loading && records.length > 0 && (
+                        <div className="p-4 border-t border-[var(--color-scrollbar)] dark:border-white/5 flex items-center justify-center">
+                            <span className="text-sm text-gray-500 flex items-center gap-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                                {t.common.loading || 'Loading more...'}
                             </span>
-                            <div className="flex gap-2">
-                                <button 
-                                    disabled={page === 1}
-                                    onClick={() => setPage(p => p - 1)}
-                                    className="px-3 py-1 bg-white border border-gray-200 rounded disabled:opacity-50 dark:bg-white/5 dark:border-white/10 text-sm font-medium"
-                                >
-                                    {t.common.back || 'Prev'}
-                                </button>
-                                <button 
-                                    disabled={page >= data.TotalPages}
-                                    onClick={() => setPage(p => p + 1)}
-                                    className="px-3 py-1 bg-white border border-gray-200 rounded disabled:opacity-50 dark:bg-white/5 dark:border-white/10 text-sm font-medium"
-                                >
-                                    {t.common.next || 'Next'}
-                                </button>
-                            </div>
+                        </div>
+                    )}
+                    {!hasMore && records.length > 0 && (
+                        <div className="p-4 border-t border-[var(--color-scrollbar)] dark:border-white/5 flex items-center justify-center">
+                            <span className="text-sm text-gray-500">
+                                {t.common.noData || 'No more records.'}
+                            </span>
                         </div>
                     )}
                 </section>
