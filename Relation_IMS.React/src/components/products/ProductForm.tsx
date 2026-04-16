@@ -267,18 +267,22 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.costPrice} ($)</label>
                         <input
-                            type="text"
+                            type="number"
                             step="0.01"
+                            min="0"
                             onFocus={(e) => e.target.select()}
-                            value={product.CostPrice}
-                            onChange={(e) => onChange('CostPrice', parseFloat(e.target.value))}
+                            value={Number.isNaN(product.CostPrice) ? '' : product.CostPrice}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                onChange('CostPrice', val === '' ? '' : parseFloat(val));
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp') {
                                     e.preventDefault();
-                                    onChange('CostPrice', (product.CostPrice || 0) + 1);
+                                    onChange('CostPrice', (Number(product.CostPrice) || 0) + 1);
                                 } else if (e.key === 'ArrowDown') {
                                     e.preventDefault();
-                                    onChange('CostPrice', Math.max(0, (product.CostPrice || 0) - 1));
+                                    onChange('CostPrice', Math.max(0, (Number(product.CostPrice) || 0) - 1));
                                 }
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
@@ -288,18 +292,22 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.basePrice} ($)</label>
                         <input
-                            type="text"
+                            type="number"
                             step="0.01"
+                            min="0"
                             onFocus={(e) => e.target.select()}
-                            value={product.BasePrice}
-                            onChange={(e) => onChange('BasePrice', parseFloat(e.target.value))}
+                            value={Number.isNaN(product.BasePrice) ? '' : product.BasePrice}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                onChange('BasePrice', val === '' ? '' : parseFloat(val));
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp') {
                                     e.preventDefault();
-                                    onChange('BasePrice', (product.BasePrice || 0) + 1);
+                                    onChange('BasePrice', (Number(product.BasePrice) || 0) + 1);
                                 } else if (e.key === 'ArrowDown') {
                                     e.preventDefault();
-                                    onChange('BasePrice', Math.max(0, (product.BasePrice || 0) - 1));
+                                    onChange('BasePrice', Math.max(0, (Number(product.BasePrice) || 0) - 1));
                                 }
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"
@@ -310,18 +318,22 @@ export function ProductForm({
                     <div>
                         <label className="block mb-1.5 text-sm font-bold text-[#0e1b12] dark:text-gray-200">{t.products.msrp} ($)</label>
                         <input
-                            type="text"
+                            type="number"
                             step="0.01"
+                            min="0"
                             onFocus={(e) => e.target.select()}
-                            value={product.MSRP}
-                            onChange={(e) => onChange('MSRP', parseFloat(e.target.value))}
+                            value={Number.isNaN(product.MSRP) ? '' : product.MSRP}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                onChange('MSRP', val === '' ? '' : parseFloat(val));
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp') {
                                     e.preventDefault();
-                                    onChange('MSRP', (product.MSRP || 0) + 1);
+                                    onChange('MSRP', (Number(product.MSRP) || 0) + 1);
                                 } else if (e.key === 'ArrowDown') {
                                     e.preventDefault();
-                                    onChange('MSRP', Math.max(0, (product.MSRP || 0) - 1));
+                                    onChange('MSRP', Math.max(0, (Number(product.MSRP) || 0) - 1));
                                 }
                             }}
                             className="bg-white/50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 text-[#0e1b12] dark:text-white text-sm rounded-lg focus:ring-[#4e9767] focus:border-[#4e9767] block w-full p-2.5"

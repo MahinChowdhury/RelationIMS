@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -66,7 +66,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // Editing / Creating State
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
 
-    const initialProductState = {
+    const initialProductState: Product = {
         Id: 0,
         Name: '',
         Description: '',
@@ -77,8 +77,16 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         BrandId: 0,
         QuarterIds: [],
         ImageUrls: []
-    };
+    } as Product;
     const [currentProduct, setCurrentProduct] = useState<Product>(initialProductState);
+
+    const createDraftRef = useRef({
+        product: initialProductState,
+        stockItems: [] as StockItem[],
+        selectedImages: [] as string[],
+        imageMap: {} as Record<string, File>,
+        thumbnailMap: {} as Record<string, string>,
+    });
 
     const [stockItems, setStockItems] = useState<StockItem[]>([]);
     const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
@@ -141,6 +149,18 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Infinite Scroll Hook
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 1.0 });
+
+    useEffect(() => {
+        if (showCreateModal) {
+            createDraftRef.current = {
+                product: currentProduct,
+                stockItems,
+                selectedImages,
+                imageMap,
+                thumbnailMap,
+            };
+        }
+    }, [currentProduct, stockItems, selectedImages, imageMap, thumbnailMap, showCreateModal]);
 
     // Initial Load
     useEffect(() => {
@@ -395,10 +415,11 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // CREATE PRODUCT
     const openCreateModal = () => {
         setShowCreateModal(true);
-        setCurrentProduct(initialProductState);
-        setSelectedImages([]);
-        setImageMap({});
-        setStockItems([]);
+        setCurrentProduct(createDraftRef.current.product);
+        setSelectedImages(createDraftRef.current.selectedImages);
+        setImageMap(createDraftRef.current.imageMap);
+        setThumbnailMap(createDraftRef.current.thumbnailMap || {});
+        setStockItems(createDraftRef.current.stockItems);
         setNewStock({ color: '', size: '', quantity: 0 });
     };
 
@@ -419,6 +440,14 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setImageMap({});
         setStockItems([]);
         setNewStock({ color: '', size: '', quantity: 0 });
+
+        createDraftRef.current = {
+            product: initialProductState,
+            stockItems: [],
+            selectedImages: [],
+            imageMap: {},
+            thumbnailMap: {},
+        };
 
         const toastId = `create-${Date.now()}`;
         addToast({ id: toastId, type: 'uploading', message: 'Creating product...', current: 0, total: 1 });
@@ -603,7 +632,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         } else {
             setStockItems([...stockItems, { ...newStock }]);
         }
-        setNewStock({ color: '', size: '', quantity: 0 });
+        setNewStock(prev => ({ ...prev, size: '', quantity: 0 }));
     };
 
     const removeStock = (index: number) => {
@@ -660,15 +689,32 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                     break;
             }
 
-            await api.post(endpoint, payload);
+            const res = await api.post(endpoint, payload);
             setConfigModalOpen(false);
+
+            const newId = res.data?.id || res.data?.Id;
 
             // Refresh specific section
             switch (configModalType) {
-                case 'brand': loadBrands(); break;
-                case 'category': loadCategories(); break;
-                case 'quarter': loadQuarters(); break;
-                case 'color': loadColors(); break;
+                case 'brand': 
+                    loadBrands(); 
+                    if (newId) setCurrentProduct(p => ({ ...p, BrandId: newId }));
+                    break;
+                case 'category': 
+                    loadCategories(); 
+                    if (newId) {
+                        setCurrentProduct(p => ({ ...p, CategoryId: newId, BrandId: 0 }));
+                        onCategoryChange(newId);
+                    }
+                    break;
+                case 'quarter': 
+                    loadQuarters(); 
+                    if (newId) setCurrentProduct(p => ({...p, QuarterIds: [...(p.QuarterIds || []), newId] }));
+                    break;
+                case 'color': 
+                    loadColors(); 
+                    setNewStock(prev => ({ ...prev, color: configFormData.name }));
+                    break;
                 case 'size': 
                     if (currentProduct.CategoryId) {
                         onCategoryChange(Number(currentProduct.CategoryId)); 
@@ -676,6 +722,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                     else if (selectedCategory) { 
                         onCategoryChange(Number(selectedCategory)); 
                     } 
+                    setNewStock(prev => ({ ...prev, size: configFormData.name }));
                     break;
             }
         } catch (error) {

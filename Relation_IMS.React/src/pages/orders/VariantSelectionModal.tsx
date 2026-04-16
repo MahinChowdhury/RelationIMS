@@ -166,7 +166,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
             <div className="bg-white dark:bg-[var(--color-surface-dark-card)] w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-black/20 shrink-0">
                     <div>
                         <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                             {product.Name}
@@ -178,9 +178,9 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                     </button>
                 </div>
 
-                <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+                <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden min-h-0">
                     {/* Left Panel: Selection Controls */}
-                    <div className="flex-1 p-6 overflow-y-auto custom-scrollbar border-r border-gray-100 dark:border-gray-700">
+                    <div className="lg:flex-1 p-4 sm:p-6 lg:overflow-y-auto custom-scrollbar lg:border-r border-gray-100 dark:border-gray-700 shrink-0">
                         {/* Product Info */}
                         <div className="flex gap-4 mb-6">
                             <div className="size-16 rounded-lg bg-gray-100 dark:bg-gray-700 shrink-0 border border-gray-200 dark:border-gray-600 bg-cover bg-center"
@@ -334,8 +334,8 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
 
                     {/* Right Panel: Staging List */}
                     {stagedItems.length > 0 && (
-                        <div className="w-full lg:w-96 bg-gray-50/50 dark:bg-black/20 flex flex-col border-l border-gray-100 dark:border-gray-700">
-                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <div className="w-full lg:w-96 bg-gray-50/50 dark:bg-black/20 flex flex-col border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700 shrink-0 lg:h-full">
+                            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center shrink-0">
                                 <h4 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                     <span className="material-symbols-outlined text-primary">shopping_basket</span>
                                     {t.orders.selectedItems}
@@ -343,7 +343,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                 <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{stagedItems.length}</span>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                            <div className="flex-1 lg:overflow-y-auto overflow-visible p-4 space-y-3 custom-scrollbar">
                                 {stagedItems.map((item) => (
                                     <div key={item.tempId} className="bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-100 dark:border-gray-700 rounded-xl p-3 shadow-sm relative group animate-in slide-in-from-bottom-2 duration-300">
                                         <div className="flex justify-between items-start mb-1">
@@ -374,7 +374,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
                                 ))}
                             </div>
 
-                            <div className="p-4 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-gray-700">
+                            <div className="p-4 bg-white dark:bg-[var(--color-surface-dark-card)] border-t border-gray-100 dark:border-gray-700 shrink-0">
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-sm text-gray-500">{t.orders.totalAmount}</span>
                                     <span className="text-xl font-bold text-gray-800 dark:text-white">${totalStagedAmount.toFixed(2)}</span>
