@@ -21,12 +21,14 @@ namespace Relation_IMS.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
             [FromQuery] string? search = null,
-            [FromQuery] string? date = null,
+            [FromQuery] string? dateFrom = null,
+            [FromQuery] string? dateTo = null,
             [FromQuery] string? actionType = null,
+            [FromQuery] string? category = null,
             [FromQuery] int? userId = null)
         {
             var (logs, totalCount) = await _auditLogRepo.GetAuditLogsAsync(
-                pageNumber, pageSize, search, date, actionType, userId);
+                pageNumber, pageSize, search, dateFrom, dateTo, actionType, category, userId);
 
             return Ok(new
             {
@@ -36,6 +38,13 @@ namespace Relation_IMS.Controllers
                 PageSize = pageSize,
                 TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
             });
+        }
+
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var summary = await _auditLogRepo.GetAuditSummaryAsync();
+            return Ok(summary);
         }
     }
 }

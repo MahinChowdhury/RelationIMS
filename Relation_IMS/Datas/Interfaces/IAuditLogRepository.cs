@@ -8,9 +8,13 @@ namespace Relation_IMS.Datas.Interfaces
             int pageNumber,
             int pageSize,
             string? search,
-            string? date,
+            string? dateFrom,
+            string? dateTo,
             string? actionType,
+            string? category,
             int? userId
         );
+
+        Task<AuditSummaryDto> GetAuditSummaryAsync();
     }
 }
