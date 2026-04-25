@@ -1,4 +1,4 @@
-﻿using Relation_IMS.Models.ProductModels;
+using Relation_IMS.Models.ProductModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,9 +24,13 @@ namespace Relation_IMS.Models.OrderModels
         [Range(0, double.MaxValue)]
         public decimal UnitPrice { get; set; }
         [Column(TypeName = "decimal(18,2)")]
-        [Required(ErrorMessage = "Cost price is required.")]
+        [Required(ErrorMessage = "Cost BD is required.")]
         [Range(0, double.MaxValue)]
-        public decimal CostPrice { get; set; } = 0.0m;
+        public decimal CostBD { get; set; } = 0.0m;
+        [Column(TypeName = "decimal(18,2)")]
+        [Required(ErrorMessage = "Cost RMB is required.")]
+        [Range(0, double.MaxValue)]
+        public decimal CostRMB { get; set; } = 0.0m;
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
         public decimal Discount { get; set; } = 0.0m;

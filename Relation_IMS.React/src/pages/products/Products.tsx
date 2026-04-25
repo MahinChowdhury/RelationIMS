@@ -71,7 +71,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         Name: '',
         Description: '',
         BasePrice: 0,
-        CostPrice: 0,
+        CostBD: 0,
+        CostRMB: 0,
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
@@ -89,9 +90,9 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     });
 
     const [stockItems, setStockItems] = useState<StockItem[]>([]);
-    const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
+    const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: '' });
     const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
-    const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
+    const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: '' });
     const [deletedVariantIds, setDeletedVariantIds] = useState<number[]>([]);
 
     // Images
@@ -101,6 +102,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Upload Toast State
     const [uploadToasts, setUploadToasts] = useState<UploadToast[]>([]);
+    const [isCreating, setIsCreating] = useState(false);
 
     const addToast = useCallback((toast: UploadToast) => {
         setUploadToasts(prev => [...prev, toast]);
@@ -325,6 +327,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // SAVE EDIT
     const saveEdit = async () => {
         if (!currentProduct.Id) return;
+        setIsCreating(true);
 
         // Capture current state before closing modal
         const imagesToProcess = [...selectedImages];
@@ -379,7 +382,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                     ProductColorId: colorId,
                     ProductSizeId: sizeId,
                     VariantPrice: productSnapshot.BasePrice,
-                    CostPrice: productSnapshot.CostPrice,
+                    CostBD: productSnapshot.CostBD,
+                    CostRMB: productSnapshot.CostRMB,
                     MSRP: productSnapshot.MSRP,
                     Quantity: item.quantity
                 };
@@ -409,6 +413,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         } catch (e) {
             console.error(e);
             updateToast(toastId, { type: 'success', message: 'Failed to update product. Please try again.' });
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -420,10 +426,12 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setImageMap(createDraftRef.current.imageMap);
         setThumbnailMap(createDraftRef.current.thumbnailMap || {});
         setStockItems(createDraftRef.current.stockItems);
-        setNewStock({ color: '', size: '', quantity: 0 });
+        setNewStock({ color: '', size: '', quantity: '' });
     };
 
     const createProduct = async () => {
+        setIsCreating(true);
+
         // Capture state snapshots before closing modal
         const imagesToUpload = [...selectedImages];
         const imageMapSnapshot = { ...imageMap };
@@ -439,7 +447,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setSelectedImages([]);
         setImageMap({});
         setStockItems([]);
-        setNewStock({ color: '', size: '', quantity: 0 });
+        setNewStock({ color: '', size: '', quantity: '' });
 
         createDraftRef.current = {
             product: initialProductState,
@@ -457,7 +465,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             formData.append('Name', productSnapshot.Name);
             formData.append('Description', productSnapshot.Description || '');
             formData.append('BasePrice', productSnapshot.BasePrice?.toString() || '0');
-            formData.append('CostPrice', productSnapshot.CostPrice?.toString() || '0');
+            formData.append('CostBD', productSnapshot.CostBD?.toString() || '0');
+            formData.append('CostRMB', productSnapshot.CostRMB?.toString() || '0');
             formData.append('MSRP', productSnapshot.MSRP?.toString() || '0');
             formData.append('CategoryId', productSnapshot.CategoryId.toString());
             formData.append('BrandId', productSnapshot.BrandId.toString());
@@ -494,7 +503,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                                 ProductColorId: colorId,
                                 ProductSizeId: sizeId,
                                 VariantPrice: productSnapshot.BasePrice,
-                                CostPrice: productSnapshot.CostPrice,
+                                CostBD: productSnapshot.CostBD,
+                                CostRMB: productSnapshot.CostRMB,
                                 MSRP: productSnapshot.MSRP,
                                 Quantity: stock.quantity,
                                 DefaultInventoryId: 1
@@ -558,6 +568,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         } catch (e) {
             console.error(e);
             updateToast(toastId, { type: 'success', message: 'Failed to create product. Please try again.' });
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -625,14 +637,16 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Stock Handlers
     const addStock = () => {
-        if (!newStock.color || !newStock.size || newStock.quantity < 0) return;
+        const qty = newStock.quantity === '' ? 0 : newStock.quantity;
+        if (!newStock.color || !newStock.size || qty < 0) return;
         const exists = stockItems.find(s => s.color === newStock.color && s.size === newStock.size);
         if (exists) {
-            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: s.quantity + newStock.quantity } : s));
+            const existingQty = exists.quantity === '' ? 0 : exists.quantity;
+            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: existingQty + qty } : s));
         } else {
-            setStockItems([...stockItems, { ...newStock }]);
+            setStockItems([...stockItems, { ...newStock, quantity: qty }]);
         }
-        setNewStock(prev => ({ ...prev, size: '', quantity: 0 }));
+        setNewStock(prev => ({ ...prev, size: '', quantity: '' }));
     };
 
     const removeStock = (index: number) => {
@@ -952,6 +966,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 stockItems={stockItems}
                 selectedImages={selectedImages}
                 thumbnailMap={thumbnailMap}
+                isSaving={isCreating}
                 onClose={() => setShowCreateModal(false)}
                 onSave={createProduct}
                 onChange={handleProductChange}
@@ -985,6 +1000,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 stockItems={stockItems}
                 selectedImages={selectedImages}
                 thumbnailMap={thumbnailMap}
+                isSaving={isCreating}
                 onClose={() => setShowEditModal(false)}
                 onSave={saveEdit}
                 onChange={handleProductChange}
@@ -1031,7 +1047,22 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                                 {configModalType === 'brand' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">Categories <span className="text-red-400">*</span></label>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Categories <span className="text-red-400">*</span></label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const allSelected = categories.every(c => configFormData.categoryIds.includes(c.id));
+                                                    setConfigFormData(prev => ({
+                                                        ...prev,
+                                                        categoryIds: allSelected ? [] : categories.map(c => c.id)
+                                                    }));
+                                                }}
+                                                className="text-xs text-primary hover:text-primary/80 font-medium"
+                                            >
+                                                {categories.every(c => configFormData.categoryIds.includes(c.id)) ? t.common.deselectAll : t.common.selectAll}
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.id} className="flex items-center gap-2 cursor-pointer">
@@ -1081,7 +1112,22 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
                                 {configModalType === 'size' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">Categories <span className="text-red-400">*</span></label>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Categories <span className="text-red-400">*</span></label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const allSelected = categories.every(c => configFormData.categoryIds.includes(c.id));
+                                                    setConfigFormData(prev => ({
+                                                        ...prev,
+                                                        categoryIds: allSelected ? [] : categories.map(c => c.id)
+                                                    }));
+                                                }}
+                                                className="text-xs text-primary hover:text-primary/80 font-medium"
+                                            >
+                                                {categories.every(c => configFormData.categoryIds.includes(c.id)) ? t.common.deselectAll : t.common.selectAll}
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.id} className="flex items-center gap-2 cursor-pointer">

@@ -68,34 +68,79 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const [showPrintModal, setShowPrintModal] = useState(false);
     const [itemsToPrint, setItemsToPrint] = useState<{ code: string; itemDetails: string }[]>([]);
 
+    // Edit Product State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editForm, setEditForm] = useState({
+        Description: '',
+        BasePrice: 0,
+        CostBD: 0,
+        CostRMB: 0,
+        MSRP: 0
+    });
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+    const handleOpenEdit = () => {
+        if (!productDetail) return;
+        setEditForm({
+            Description: productDetail.Description || '',
+            BasePrice: productDetail.BasePrice || 0,
+            CostBD: productDetail.CostBD || 0,
+            CostRMB: productDetail.CostRMB || 0,
+            MSRP: productDetail.MSRP || 0
+        });
+        setShowEditModal(true);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!productDetail) return;
+        setIsSavingEdit(true);
+        try {
+            const updateDto = {
+                Name: productDetail.Name,
+                Description: editForm.Description,
+                BasePrice: Number(editForm.BasePrice),
+                CostBD: Number(editForm.CostBD),
+                CostRMB: Number(editForm.CostRMB),
+                MSRP: Number(editForm.MSRP),
+                CategoryId: productDetail.Category?.Id || productDetail.CategoryId,
+                BrandId: productDetail.Brand?.Id || productDetail.BrandId,
+                QuarterIds: productDetail.Quarters?.map((q: any) => q.Id) || [],
+                ImageUrls: productDetail.ImageUrls || [],
+                ThumbnailUrl: productDetail.ThumbnailUrl
+            };
+            
+            await api.put(`/Product/${productDetail.Id}`, updateDto);
+            
+            setProductDetail(prev => prev ? {
+                ...prev,
+                Description: editForm.Description,
+                BasePrice: Number(editForm.BasePrice),
+                CostBD: Number(editForm.CostBD),
+                CostRMB: Number(editForm.CostRMB),
+                MSRP: Number(editForm.MSRP)
+            } : null);
+            
+            setShowEditModal(false);
+        } catch (error) {
+            console.error("Failed to update product details", error);
+            alert("Failed to update product details.");
+        } finally {
+            setIsSavingEdit(false);
+        }
+    };
+
     const handlePrintBarcodes = async () => {
         try {
             if (!productDetail) return;
 
-            const res = await api.get<Product>(`/Product/${activeId}`);
-            const fullProduct = res.data as any;
+            const res = await api.get<{ code: string; itemDetails: string }[]>(`/Product/${activeId}/barcodes`);
+            const barcodes = res.data;
 
-            if (fullProduct.Variants) {
-                const barcodes: { code: string; itemDetails: string }[] = [];
-                fullProduct.Variants.forEach((variant: any) => {
-                    const colorName = variant.Color?.Name || variant.ProductColorId.toString();
-                    const sizeName = variant.Size?.Name || variant.ProductSizeId.toString();
-
-                    if (variant.ProductItems) {
-                        variant.ProductItems.forEach((item: any) => {
-                            if (!item.IsSold && !item.IsDefected) {
-                                barcodes.push({
-                                    code: item.Code,
-                                    itemDetails: `Color: ${colorName}, Size: ${sizeName}`
-                                });
-                            }
-                        });
-                    }
-                });
+            if (barcodes && barcodes.length > 0) {
                 setItemsToPrint(barcodes);
                 setShowPrintModal(true);
             } else {
-                alert(t.products.noVariantsFound);
+                alert(t.products.noVariantsFound || "No items available to print.");
             }
 
         } catch (error) {
@@ -116,6 +161,23 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [ordersInitialLoading, setOrdersInitialLoading] = useState(true);
     const [ordersVisible, setOrdersVisible] = useState(false);
+
+    const [variantsVisible, setVariantsVisible] = useState(false);
+    const variantSectionObserver = useRef<IntersectionObserver | null>(null);
+    const variantSectionRef = useCallback((node: HTMLDivElement | null) => {
+        if (variantSectionObserver.current) variantSectionObserver.current.disconnect();
+        if (!node) return;
+        variantSectionObserver.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setVariantsVisible(true);
+                    variantSectionObserver.current?.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+        variantSectionObserver.current.observe(node);
+    }, []);
 
     const sectionObserver = useRef<IntersectionObserver | null>(null);
     const ordersSectionRef = useCallback((node: HTMLDivElement | null) => {
@@ -153,6 +215,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
             setOrdersHasMore(true);
             setOrdersInitialLoading(true);
             setOrdersVisible(false);
+            setVariantsVisible(false);
             getAllInventories().then(setInventories).catch(console.error);
         }
     }, [activeId]);
@@ -430,7 +493,15 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 <div className="lg:col-span-6 flex flex-col gap-6">
 
                     {/* Stock Table or Guest Colors list */}
-                    {!isGuest ? (
+                    <div ref={variantSectionRef} className="min-h-[100px] w-full">
+                        {!variantsVisible ? (
+                            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 flex justify-center items-center">
+                                <div className="flex flex-col items-center gap-3 py-6">
+                                    <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                                    <p className="text-text-secondary text-sm">Loading variants...</p>
+                                </div>
+                            </div>
+                        ) : !isGuest ? (
                         <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6">
                             <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">inventory_2</span>
@@ -548,7 +619,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 </div>
                             </div>
                         </div>
-                    )}
+                        )}
+                    </div>
 
                     {/* Product Header Card */}
                     <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -581,6 +653,14 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                             </h2>
                             {!isGuest && (
                                 <div className="flex items-center gap-2 flex-1 justify-end">
+                                    <button
+                                        onClick={handleOpenEdit}
+                                        className="px-2 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-medium text-xs rounded-md transition-colors flex items-center gap-1.5 shadow-sm"
+                                        title={t.common.edit || "Edit Details"}
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                                        <span className="hidden sm:inline">{t.common.edit || "Edit"}</span>
+                                    </button>
                                     <button
                                         onClick={handlePrintBarcodes}
                                         className="px-2 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-xs rounded-md transition-colors flex items-center gap-1.5 shadow-sm dark:bg-transparent dark:border-gray-600 dark:text-gray-300 dark:hover:bg-white/5"
@@ -643,17 +723,30 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
                                     {/* Cost Price - Hide for non-owners */}
                                     {!isGuest && (user?.Roles?.includes('Owner') || user?.ShopNo === 0) && (
-                                        <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
-                                            <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-primary/20 shrink-0">
-                                                <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                        <>
+                                            <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
+                                                <div className="bg-green-500 text-white p-1 rounded-md shadow-sm shadow-primary/20 shrink-0">
+                                                    <span className="material-symbols-outlined text-[20px]">inventory</span>
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice || 'Cost Price'} (BD)</span>
+                                                    <span className="text-lg font-extrabold text-blue-500 dark:text-white">
+                                                        {taka}{(productDetail.CostBD || 0).toFixed(2)}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice}</span>
-                                                <span className="text-lg font-extrabold text-blue-500 dark:text-white">
-                                                    {taka}{(productDetail.CostPrice || 0).toFixed(2)}
-                                                </span>
+                                            <div className="bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] p-3 rounded-lg flex items-center gap-3 border border-gray-100 dark:border-[var(--color-surface-dark-border)]">
+                                                <div className="bg-teal-500 text-white p-1 rounded-md shadow-sm shadow-primary/20 shrink-0">
+                                                    <span className="material-symbols-outlined text-[20px]">payments</span>
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] font-bold uppercase text-text-secondary">{t.products.costPrice || 'Cost Price'} (RMB)</span>
+                                                    <span className="text-lg font-extrabold text-blue-500 dark:text-white">
+                                                        ¥{(productDetail.CostRMB || 0).toFixed(2)}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </>
                                     )}
 
                                 </div>
@@ -845,12 +938,91 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 />
             )}
 
-            {!isGuest && (
-                <DeleteProductModal
-                    show={showDeleteModal}
-                    onCancel={() => setShowDeleteModal(false)}
-                    onConfirm={deleteProduct}
-                />
+            {/* Delete Confirmation Modal */}
+            <DeleteProductModal
+                show={showDeleteModal}
+                onCancel={() => setShowDeleteModal(false)}
+                onConfirm={deleteProduct}
+            />
+
+            {/* Edit Description & Prices Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[100] p-4">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-2xl shadow-2xl p-6 w-full max-w-lg border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-fadeIn">
+                        <h2 className="text-xl font-bold text-text-main dark:text-white mb-4">Edit Product Details</h2>
+                        <div className="flex flex-col gap-4">
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-text-secondary mb-1">Description</label>
+                                <textarea
+                                    className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg p-3 text-sm dark:text-gray-300 min-h-[100px]"
+                                    value={editForm.Description}
+                                    onChange={(e) => setEditForm(prev => ({ ...prev, Description: e.target.value }))}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                {(!isGuest && ((productDetail?.CostBD ?? 0) > 0 || (productDetail?.CostRMB ?? 0) > 0)) && (
+                                    <>
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase text-text-secondary mb-1">Cost Price (RMB)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg p-3 text-sm dark:text-gray-300"
+                                                value={editForm.CostRMB}
+                                                onChange={(e) => setEditForm(prev => ({ ...prev, CostRMB: Number(e.target.value) }))}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase text-text-secondary mb-1">Cost Price (BD)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg p-3 text-sm dark:text-gray-300"
+                                                value={editForm.CostBD}
+                                                onChange={(e) => setEditForm(prev => ({ ...prev, CostBD: Number(e.target.value) }))}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-text-secondary mb-1">Base Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg p-3 text-sm dark:text-gray-300"
+                                        value={editForm.BasePrice}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, BasePrice: Number(e.target.value) }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-text-secondary mb-1">MSRP</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="w-full bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] border border-gray-200 dark:border-[var(--color-surface-dark-border)] rounded-lg p-3 text-sm dark:text-gray-300"
+                                        value={editForm.MSRP}
+                                        onChange={(e) => setEditForm(prev => ({ ...prev, MSRP: Number(e.target.value) }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                onClick={() => setShowEditModal(false)}
+                                className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveEdit}
+                                disabled={isSavingEdit}
+                                className="px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                            >
+                                {isSavingEdit ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Print Modal Overlay */}

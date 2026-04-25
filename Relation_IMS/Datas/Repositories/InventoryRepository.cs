@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos;
@@ -634,6 +634,7 @@ namespace Relation_IMS.Datas.Repositories
                 // Update item status
                 item.IsSold = false;
                 item.InventoryId = returnDto.TargetInventoryId;
+                item.OrderItemId = null;
                 
                 // Add to return record
                 returnRecord.ReturnItems.Add(new CustomerReturnItem

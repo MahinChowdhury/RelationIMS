@@ -39,7 +39,8 @@ namespace Relation_IMS.Controllers
                 return Unauthorized(new { message = "User not authenticated." });
             }
 
-            var shareCatalog = await _shareRepo.CreateAsync(_currentUser.UserId.Value, request.Password);
+            var expiresAt = request.ExpiresAt ?? DateTime.UtcNow.AddDays(30);
+            var shareCatalog = await _shareRepo.CreateAsync(_currentUser.UserId.Value, request.Password, expiresAt);
 
             return Ok(new
             {
@@ -197,6 +198,29 @@ namespace Relation_IMS.Controllers
             return Ok(new { message = "Share catalog deleted successfully." });
         }
 
+        [HttpPut("{hash}/expiresAt")]
+        public async Task<IActionResult> UpdateExpiresAt(string hash, [FromBody] UpdateShareCatalogRequest request)
+        {
+            if (_currentUser.UserId == null)
+            {
+                return Unauthorized(new { message = "User not authenticated." });
+            }
+
+            if (request.ExpiresAt <= DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Expiration date must be in the future." });
+            }
+
+            var shareCatalog = await _shareRepo.UpdateExpiresAtAsync(hash, _currentUser.UserId.Value, request.ExpiresAt);
+
+            if (shareCatalog == null)
+            {
+                return NotFound(new { message = "Share catalog not found or you are not the owner." });
+            }
+
+            return Ok(new { message = "Expiration date updated successfully.", expiresAt = shareCatalog.ExpiresAt });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetMyShareCatalogs()
         {
@@ -221,6 +245,12 @@ namespace Relation_IMS.Controllers
     public class CreateShareCatalogRequest
     {
         public string Password { get; set; } = null!;
+        public DateTime? ExpiresAt { get; set; }
+    }
+
+    public class UpdateShareCatalogRequest
+    {
+        public DateTime ExpiresAt { get; set; }
     }
 
     public class VerifyPasswordRequest

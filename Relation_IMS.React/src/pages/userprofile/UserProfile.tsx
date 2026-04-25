@@ -602,7 +602,7 @@ const stats: StatCard[] = [
                                         <div className="pl-8">
                                             <QuantityInput
                                                 value={salaryForm.amount || 0}
-                                                onChange={(val) => setSalaryForm({ ...salaryForm, amount: val })}
+                                                onChange={(val) => setSalaryForm({ ...salaryForm, amount: val as number })}
                                                 min={0}
                                                 step={100}
                                             />

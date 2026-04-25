@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import type { InventoryBasicDTO, TransferProductItemsDTO, ScannedItem } from '../../types';
 import InventoryTransferScanner from '../../components/inventory/InventoryTransferScanner';
+import MovementHistory from './MovementHistory';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -429,53 +430,8 @@ const InventoryTransfer = () => {
                 </div>
             </div>
 
-            {/* Recent Transfers Table */}
-            <div className="mt-4">
-                <h3 className="text-lg font-bold text-text-main dark:text-white mb-4">{t.inventory.recentTransfers || 'Recent Transfers'}</h3>
-                <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-[var(--color-surface-dark-border)] shadow-sm bg-white dark:bg-[var(--color-surface-dark-card)]">
-                    <table className="w-full text-sm text-left text-text-main dark:text-gray-300">
-                        <thead className="text-xs text-text-secondary uppercase bg-gray-50 dark:bg-[var(--color-surface-dark-solid)] dark:text-gray-400">
-                            <tr>
-                                <th scope="col" className="px-6 py-4 font-bold">{t.common.date || 'Date'}</th>
-                                <th scope="col" className="px-6 py-4 font-bold">{t.common.reference || 'Reference'}</th>
-                                <th scope="col" className="px-6 py-4 font-bold">{t.inventory.route || 'Route'}</th>
-                                <th scope="col" className="px-6 py-4 font-bold">{t.common.items || 'Items'}</th>
-                                <th scope="col" className="px-6 py-4 font-bold">{t.common.status || 'Status'}</th>
-                                <th scope="col" className="px-6 py-4 font-bold">{t.common.user || 'User'}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-[#2a4032]">
-                            {recentTransfers.map((transfer, idx) => (
-                                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">{transfer.date}</td>
-                                    <td className="px-6 py-4 font-medium">{transfer.reference}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col text-xs">
-                                            <span className="font-bold">{transfer.route.split(' to ')[0]}</span>
-                                            <span className="text-text-secondary dark:text-gray-500">to {transfer.route.split(' to ')[1]}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">{transfer.items}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`text-xs font-bold px-2 py-1 rounded ${transfer.status === 'Completed'
-                                            ? 'text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400'
-                                            : 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                            }`}>
-                                            {transfer.status === 'Completed' ? (t.common.completed || 'Completed') : (t.inventory.inTransit || 'In Transit')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 flex items-center gap-2">
-                                        <div className="size-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                            {transfer.user.charAt(0)}
-                                        </div>
-                                        <span>{transfer.user}</span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <MovementHistory />
+
             {/* Barcode Scanner Modal */}
             {isScannerOpen && (
                 <InventoryTransferScanner

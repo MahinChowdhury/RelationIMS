@@ -15,7 +15,8 @@ namespace Relation_IMS.Dtos.ProductDtos
         public decimal BasePrice { get; set; } = 0.0m;
 
         [Range(0, double.MaxValue)]
-        public decimal CostPrice { get; set; } = 0.0m;
+        public decimal CostBD { get; set; } = 0.0m;
+        public decimal CostRMB { get; set; } = 0.0m;
 
         [Range(0, double.MaxValue)]
         public decimal MSRP { get; set; } = 0.0m;

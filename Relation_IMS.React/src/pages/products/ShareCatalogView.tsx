@@ -89,9 +89,6 @@ export default function ShareCatalogView() {
             <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
                 <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">error</span>
                 <p className="text-gray-500 text-center">{error}</p>
-                <Link to="/products" className="mt-4 text-primary hover:underline">
-                    Go to your products
-                </Link>
             </div>
         );
     }

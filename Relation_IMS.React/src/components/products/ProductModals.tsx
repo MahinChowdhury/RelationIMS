@@ -62,6 +62,7 @@ interface ProductFormModalProps {
     stockItems: StockItem[];
     selectedImages: string[];
     thumbnailMap?: Record<string, string>;
+    isSaving?: boolean;
 
     // Handlers
     onClose: () => void;
@@ -92,7 +93,7 @@ interface ProductFormModalProps {
 
 export function ProductFormModal({
     show, mode, product, categories, brands, quarters, colors, availableSizes, stockItems, selectedImages,
-    thumbnailMap,
+    thumbnailMap, isSaving,
     onClose, onSave, onChange, onCategoryChange,
     onImagesSelected, removeImage, reorderImages,
     newStock, setNewStock, addStock, removeStock,
@@ -174,9 +175,17 @@ export function ProductFormModal({
                     <button
                         type="button"
                         onClick={onSave}
-                        className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white font-bold transition-all shadow-md hover:shadow-lg"
+                        disabled={isSaving}
+                        className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl bg-gradient-to-r from-[#4e9767] to-[#3d7a52] hover:from-[#3d7a52] hover:to-[#2d5f3e] text-white font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                        {mode === 'create' ? t.products.createProduct : t.common.saveChanges}
+                        {isSaving ? (
+                            <>
+                                <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                {mode === 'create' ? 'Creating...' : 'Saving...'}
+                            </>
+                        ) : (
+                            mode === 'create' ? t.products.createProduct : t.common.saveChanges
+                        )}
                     </button>
                 </div>
             </div>

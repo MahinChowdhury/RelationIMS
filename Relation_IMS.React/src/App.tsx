@@ -26,7 +26,6 @@ const CustomerReturn = lazy(() => import('./pages/inventory/CustomerReturn'));
 const InventoryLocations = lazy(() => import('./pages/inventory/InventoryLocations'));
 const InventoryDetails = lazy(() => import('./pages/inventory/InventoryDetails'));
 const StockIn = lazy(() => import('./pages/inventory/StockIn'));
-const MovementHistory = lazy(() => import('./pages/inventory/MovementHistory'));
 const AuditLogs = lazy(() => import('./pages/inventory/AuditLogs'));
 const Welcome = lazy(() => import('./pages/Welcome'));
 const Configuration = lazy(() => import('./pages/configuration/Configuration'));
@@ -82,7 +81,6 @@ function App() {
           <Route path="inventory/locations" element={<InventoryLocations />} />
           <Route path="inventory/locations/:id" element={<InventoryDetails />} />
           <Route path="inventory/stock-in" element={<StockIn />} />
-          <Route path="inventory/history" element={<MovementHistory />} />
           <Route path="inventory/audit-logs" element={<ProtectedRoute allowedRoles={['Owner', 'Head Manager']}><AuditLogs /></ProtectedRoute>} />
           <Route path="configuration" element={<Configuration />} />
           <Route path="users" element={<UserManagement />} />

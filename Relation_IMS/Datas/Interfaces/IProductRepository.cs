@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Dtos.ProductDtos;
 using Relation_IMS.Models.ProductModels;
 
@@ -12,5 +12,6 @@ namespace Relation_IMS.Datas.Interfaces
         Task<Product?> DeleteProductByIdAsync(int id);
         Task<Product?> CreateProductAsync(CreateNewProductDTO productDto);
         Task<Product?> UpdateProductByIdAsync(int id,UpdateProductDTO updateDto);
+        Task<object> GetItemsForBarcodeAsync(int productId);
     }
 }

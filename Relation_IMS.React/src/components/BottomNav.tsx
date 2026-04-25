@@ -3,12 +3,14 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { useState } from 'react';
 import api from '../services/api';
 import BarcodeScanner from './BarcodeScanner';
+import { useNotifications } from '../context/NotificationContext';
 
 export default function BottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
     const { t } = useLanguage();
     const [isScanning, setIsScanning] = useState(false);
+    const { newOrderCount, newArrangementCount } = useNotifications();
 
     const isActive = (path: string) => {
         return location.pathname.startsWith(path);
@@ -58,8 +60,13 @@ export default function BottomNav() {
 
             <NavLink
                 to="/orders"
-                className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
+                className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 relative ${isActive ? '' : 'opacity-60'}`}
             >
+                {newOrderCount > 0 && (
+                    <span className="absolute top-0 right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm z-10 border-[1.5px] border-white dark:border-[var(--color-surface-dark-card)]">
+                        {newOrderCount > 99 ? '99+' : newOrderCount}
+                    </span>
+                )}
                 <span className={`material-symbols-outlined text-[24px] ${isActive('/orders') ? 'active-icon text-primary' : 'text-text-secondary'}`}>
                     receipt_long
                 </span>
@@ -79,8 +86,13 @@ export default function BottomNav() {
 
             <NavLink
                 to="/arrangement"
-                className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 ${isActive ? '' : 'opacity-60'}`}
+                className={({ isActive }) => `flex flex-col items-center gap-1 flex-1 min-w-0 relative ${isActive ? '' : 'opacity-60'}`}
             >
+                {newArrangementCount > 0 && (
+                    <span className="absolute top-0 right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm z-10 border-[1.5px] border-white dark:border-[var(--color-surface-dark-card)]">
+                        {newArrangementCount > 99 ? '99+' : newArrangementCount}
+                    </span>
+                )}
                 <span className={`material-symbols-outlined text-[24px] ${isActive('/arrangement') ? 'active-icon text-primary' : 'text-text-secondary'}`}>
                     conveyor_belt
                 </span>

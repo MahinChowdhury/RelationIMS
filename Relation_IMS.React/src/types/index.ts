@@ -2,7 +2,7 @@ export interface StockItem {
     id?: number;
     color: string;
     size: string;
-    quantity: number;
+    quantity: number | '';
 }
 
 export interface ProductColor {
@@ -30,7 +30,8 @@ export interface ProductVariant {
     ProductSizeId: number;
     Size?: ProductSize;
     VariantPrice: number;
-    CostPrice: number;
+    CostBD: number;
+    CostRMB: number;
     MSRP: number;
     Quantity: number;
     ReservedQuantity?: number;
@@ -43,7 +44,8 @@ export interface Product {
     Name: string;
     Description: string;
     BasePrice: number;
-    CostPrice: number;
+    CostBD: number;
+    CostRMB: number;
     MSRP: number;
     CategoryId: number; // API refs suggest numbers but safe to handle strings
     BrandId: number;
@@ -95,7 +97,8 @@ export interface OrderItem {
     Product?: Product;
     Quantity: number;
     UnitPrice: number;
-    CostPrice?: number;
+    CostBD?: number;
+    CostRMB?: number;
     Discount?: number;
     Subtotal: number;
     ProductVariantId?: number;

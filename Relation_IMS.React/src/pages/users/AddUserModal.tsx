@@ -177,7 +177,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalPro
                             <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Current Salary ({taka})</label>
                             <QuantityInput
                                 value={formData.currentSalary || 0}
-                                onChange={(val) => setFormData(prev => ({ ...prev, currentSalary: val }))}
+                                onChange={(val) => setFormData(prev => ({ ...prev, currentSalary: val as number }))}
                                 min={0}
                                 step={100}
                             />

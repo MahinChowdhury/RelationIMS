@@ -1,6 +1,6 @@
 interface QuantityInputProps {
-    value: number;
-    onChange: (value: number) => void;
+    value: number | '';
+    onChange: (value: number | '') => void;
     min?: number;
     max?: number;
     className?: string;
@@ -22,7 +22,7 @@ export function QuantityInput({
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         if (val === '') {
-            onChange(min);
+            onChange('');
             return;
         }
         const num = parseInt(val, 10);
@@ -35,14 +35,15 @@ export function QuantityInput({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const currentValue = value === '' ? 0 : value;
         if (e.key === 'ArrowUp') {
             e.preventDefault();
-            const newValue = value + step;
+            const newValue = currentValue + step;
             if (max !== undefined && newValue > max) return;
             onChange(newValue);
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            const newValue = value - step;
+            const newValue = currentValue - step;
             if (newValue < min) return;
             onChange(newValue);
         }

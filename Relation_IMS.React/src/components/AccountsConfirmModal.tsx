@@ -14,45 +14,59 @@ export default function AccountsConfirmModal({ show, onCancel, onConfirm }: Acco
 
     return createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            {/* Backdrop with strong blur */}
+            {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity animate-fadeIn" 
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity animate-fadeIn" 
                 onClick={onCancel}
             ></div>
             
-            {/* Modal Body */}
-            <div className="relative bg-white/90 dark:bg-[var(--color-surface-dark-card)] backdrop-blur-xl rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden border border-gray-100 dark:border-[var(--color-surface-dark-border)] animate-[fadeIn_0.3s_ease-out]">
+            {/* Modal Body: Windows Classic Style (Rectangle, Title Bar, Content, Bottom Actions) but Modern */}
+            <div className="relative bg-white dark:bg-[var(--color-surface-dark-card)] rounded-md shadow-2xl w-full max-w-[400px] overflow-hidden border border-gray-200 dark:border-[var(--color-surface-dark-border)] animate-[fadeIn_0.2s_ease-out]">
                 
-                {/* Decorative blob */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-primary to-primary-dark rounded-full blur-3xl opacity-[0.15] dark:opacity-20 pointer-events-none"></div>
-
-                <div className="p-8 flex flex-col items-center text-center gap-5 relative z-10">
-                    <div className="size-16 rounded-3xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/30 transform transition-transform hover:scale-105">
-                        <span className="material-symbols-outlined text-white text-[32px]">bar_chart</span>
-                    </div>
-                    
-                    <div>
-                        <h2 className="text-2xl font-extrabold text-text-main dark:text-white mb-2 leading-tight">
+                {/* Title Bar */}
+                <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-primary to-primary-dark select-none">
+                    <div className="flex items-center gap-2 text-white">
+                        <span className="material-symbols-outlined text-[16px]">bar_chart</span>
+                        <h2 className="text-xs font-bold tracking-wide uppercase">
                             {t.nav.accounts}
                         </h2>
-                        <p className="text-sm font-medium text-text-secondary dark:text-gray-400 leading-relaxed max-w-xs mx-auto">
+                    </div>
+                    <button 
+                        onClick={onCancel}
+                        className="text-white/80 hover:text-white hover:bg-white/20 rounded-sm p-0.5 transition-colors flex items-center justify-center"
+                    >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 flex items-start gap-4">
+                    <div className="shrink-0 pt-0.5">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                            <span className="material-symbols-outlined text-primary text-[24px]">help</span>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1">
+                        <p className="text-sm font-medium text-text-main dark:text-gray-300 leading-relaxed mt-1">
                             {t.common.accountsConfirmation}
                         </p>
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 px-8 pb-8 relative z-10">
-                    <button
-                        onClick={onCancel}
-                        className="px-4 py-3 text-sm font-bold text-text-main bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all dark:bg-[var(--color-surface-dark-solid)] dark:border-[var(--color-surface-dark-border)] dark:text-gray-300 dark:hover:bg-white/5"
-                    >
-                        {t.common.cancel}
-                    </button>
+                {/* Footer Buttons */}
+                <div className="flex items-center justify-end gap-2 px-6 py-3 bg-gray-50 dark:bg-black/20 border-t border-gray-100 dark:border-[var(--color-surface-dark-border)]">
                     <button
                         onClick={onConfirm}
-                        className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary to-primary-dark rounded-xl hover:opacity-90 shadow-lg shadow-primary/25 transition-all transform hover:-translate-y-0.5"
+                        className="min-w-[80px] px-4 py-1.5 text-sm font-bold text-white bg-primary border border-primary hover:bg-primary-dark rounded shadow-sm transition-all active:scale-95"
                     >
-                        {t.common.goToAccounts}
+                        {t.common.goToAccounts || 'Confirm'}
+                    </button>
+                    <button
+                        onClick={onCancel}
+                        className="min-w-[80px] px-4 py-1.5 text-sm font-bold text-text-main bg-white hover:bg-gray-50 border border-gray-300 rounded shadow-sm transition-all dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 active:scale-95"
+                    >
+                        {t.common.cancel}
                     </button>
                 </div>
             </div>

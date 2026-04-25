@@ -29,7 +29,6 @@ export default function BarcodeScanner({ enabled, onScanned, onError, onClose }:
                         const barcode = result.getText();
                         console.log('✅ Barcode detected:', barcode);
                         onScanned(barcode);
-                        stopScanning();
                     }
                     if (error && !(error instanceof NotFoundException)) {
                         // ignore

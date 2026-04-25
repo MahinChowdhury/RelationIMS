@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos;
 using Relation_IMS.Dtos.InventoryDtos;
@@ -196,7 +196,7 @@ namespace Relation_IMS.Controllers
 
         // POST: api/Inventory/customer-return
         [HttpPost("customer-return")]
-        [InvalidateCache("inventory", "productitem", "product", "productvariant")]
+        [InvalidateCache("inventory", "productitem", "product", "productvariant", "customer")]
         public async Task<IActionResult> ProcessCustomerReturn([FromBody] CustomerReturnRequestDTO returnDto)
         {
             if (!ModelState.IsValid)
