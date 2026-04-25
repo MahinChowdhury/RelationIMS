@@ -47,13 +47,6 @@ const InventoryOptions = () => {
                     <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">{t.inventory.transfer}</h3>
                 </Link>
 
-                <Link to="/inventory/history" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] hover:shadow-md hover:border-orange-600/50 transition-all">
-                    <div className="p-3 rounded-full bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
-                        <span className="material-symbols-outlined text-3xl">history</span>
-                    </div>
-                    <h3 className="text-sm md:text-lg font-bold text-text-main dark:text-white text-center">{t.inventory.movementHistory}</h3>
-                </Link>
-
                 <Link to="/inventory/defects" className="group flex flex-col items-center justify-center gap-3 p-4 bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-[var(--color-surface-dark-border)] hover:shadow-md hover:border-gray-600/50 transition-all">
                     <div className="p-3 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 group-hover:scale-110 transition-transform duration-300">
                         <span className="material-symbols-outlined text-3xl">production_quantity_limits</span>

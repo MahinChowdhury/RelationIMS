@@ -117,6 +117,23 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
     const [ordersInitialLoading, setOrdersInitialLoading] = useState(true);
     const [ordersVisible, setOrdersVisible] = useState(false);
 
+    const [variantsVisible, setVariantsVisible] = useState(false);
+    const variantSectionObserver = useRef<IntersectionObserver | null>(null);
+    const variantSectionRef = useCallback((node: HTMLDivElement | null) => {
+        if (variantSectionObserver.current) variantSectionObserver.current.disconnect();
+        if (!node) return;
+        variantSectionObserver.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setVariantsVisible(true);
+                    variantSectionObserver.current?.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+        variantSectionObserver.current.observe(node);
+    }, []);
+
     const sectionObserver = useRef<IntersectionObserver | null>(null);
     const ordersSectionRef = useCallback((node: HTMLDivElement | null) => {
         if (sectionObserver.current) sectionObserver.current.disconnect();
@@ -153,6 +170,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
             setOrdersHasMore(true);
             setOrdersInitialLoading(true);
             setOrdersVisible(false);
+            setVariantsVisible(false);
             getAllInventories().then(setInventories).catch(console.error);
         }
     }, [activeId]);
@@ -430,7 +448,15 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 <div className="lg:col-span-6 flex flex-col gap-6">
 
                     {/* Stock Table or Guest Colors list */}
-                    {!isGuest ? (
+                    <div ref={variantSectionRef} className="min-h-[100px] w-full">
+                        {!variantsVisible ? (
+                            <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 flex justify-center items-center">
+                                <div className="flex flex-col items-center gap-3 py-6">
+                                    <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                                    <p className="text-text-secondary text-sm">Loading variants...</p>
+                                </div>
+                            </div>
+                        ) : !isGuest ? (
                         <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6">
                             <h2 className="text-lg font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">inventory_2</span>
@@ -548,7 +574,8 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                                 </div>
                             </div>
                         </div>
-                    )}
+                        )}
+                    </div>
 
                     {/* Product Header Card */}
                     <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

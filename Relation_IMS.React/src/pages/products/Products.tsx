@@ -89,9 +89,9 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     });
 
     const [stockItems, setStockItems] = useState<StockItem[]>([]);
-    const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
+    const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: '' });
     const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
-    const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
+    const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: '' });
     const [deletedVariantIds, setDeletedVariantIds] = useState<number[]>([]);
 
     // Images
@@ -101,6 +101,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Upload Toast State
     const [uploadToasts, setUploadToasts] = useState<UploadToast[]>([]);
+    const [isCreating, setIsCreating] = useState(false);
 
     const addToast = useCallback((toast: UploadToast) => {
         setUploadToasts(prev => [...prev, toast]);
@@ -325,6 +326,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
     // SAVE EDIT
     const saveEdit = async () => {
         if (!currentProduct.Id) return;
+        setIsCreating(true);
 
         // Capture current state before closing modal
         const imagesToProcess = [...selectedImages];
@@ -409,6 +411,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         } catch (e) {
             console.error(e);
             updateToast(toastId, { type: 'success', message: 'Failed to update product. Please try again.' });
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -420,10 +424,12 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setImageMap(createDraftRef.current.imageMap);
         setThumbnailMap(createDraftRef.current.thumbnailMap || {});
         setStockItems(createDraftRef.current.stockItems);
-        setNewStock({ color: '', size: '', quantity: 0 });
+        setNewStock({ color: '', size: '', quantity: '' });
     };
 
     const createProduct = async () => {
+        setIsCreating(true);
+
         // Capture state snapshots before closing modal
         const imagesToUpload = [...selectedImages];
         const imageMapSnapshot = { ...imageMap };
@@ -439,7 +445,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         setSelectedImages([]);
         setImageMap({});
         setStockItems([]);
-        setNewStock({ color: '', size: '', quantity: 0 });
+        setNewStock({ color: '', size: '', quantity: '' });
 
         createDraftRef.current = {
             product: initialProductState,
@@ -558,6 +564,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         } catch (e) {
             console.error(e);
             updateToast(toastId, { type: 'success', message: 'Failed to create product. Please try again.' });
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -625,14 +633,16 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Stock Handlers
     const addStock = () => {
-        if (!newStock.color || !newStock.size || newStock.quantity < 0) return;
+        const qty = newStock.quantity === '' ? 0 : newStock.quantity;
+        if (!newStock.color || !newStock.size || qty < 0) return;
         const exists = stockItems.find(s => s.color === newStock.color && s.size === newStock.size);
         if (exists) {
-            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: s.quantity + newStock.quantity } : s));
+            const existingQty = exists.quantity === '' ? 0 : exists.quantity;
+            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: existingQty + qty } : s));
         } else {
-            setStockItems([...stockItems, { ...newStock }]);
+            setStockItems([...stockItems, { ...newStock, quantity: qty }]);
         }
-        setNewStock(prev => ({ ...prev, size: '', quantity: 0 }));
+        setNewStock(prev => ({ ...prev, size: '', quantity: '' }));
     };
 
     const removeStock = (index: number) => {
@@ -952,6 +962,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 stockItems={stockItems}
                 selectedImages={selectedImages}
                 thumbnailMap={thumbnailMap}
+                isSaving={isCreating}
                 onClose={() => setShowCreateModal(false)}
                 onSave={createProduct}
                 onChange={handleProductChange}
@@ -985,6 +996,7 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                 stockItems={stockItems}
                 selectedImages={selectedImages}
                 thumbnailMap={thumbnailMap}
+                isSaving={isCreating}
                 onClose={() => setShowEditModal(false)}
                 onSave={saveEdit}
                 onChange={handleProductChange}

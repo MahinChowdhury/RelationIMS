@@ -35,9 +35,9 @@ export default function StockIn() {
     const [availableSizes, setAvailableSizes] = useState<any[]>([]);
 
     const [stockItems, setStockItems] = useState<StockItem[]>([]);
-    const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
+    const [newStock, setNewStock] = useState<StockItem>({ color: '', size: '', quantity: '' });
     const [editingStockIndex, setEditingStockIndex] = useState<number | null>(null);
-    const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: 0 });
+    const [editedStock, setEditedStock] = useState<StockItem>({ color: '', size: '', quantity: '' });
 
     // Existing Product State
     const [foundProduct, setFoundProduct] = useState<Product | null>(null);
@@ -317,14 +317,16 @@ export default function StockIn() {
     };
 
     const addStock = () => {
-        if (!newStock.color || !newStock.size || newStock.quantity < 0) return;
+        const qty = newStock.quantity === '' ? 0 : newStock.quantity;
+        if (!newStock.color || !newStock.size || qty < 0) return;
         const exists = stockItems.find(s => s.color === newStock.color && s.size === newStock.size);
         if (exists) {
-            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: s.quantity + newStock.quantity } : s));
+            const existingQty = exists.quantity === '' ? 0 : exists.quantity;
+            setStockItems(stockItems.map(s => s === exists ? { ...s, quantity: existingQty + qty } : s));
         } else {
-            setStockItems([...stockItems, { ...newStock }]);
+            setStockItems([...stockItems, { ...newStock, quantity: qty }]);
         }
-        setNewStock({ ...newStock, quantity: 0 }); // Keep color/size selected for easy bulk add, just reset quantity? Or reset all? User pref. Let's reset quantity.
+        setNewStock({ ...newStock, quantity: '' }); // Keep color/size selected for easy bulk add, just reset quantity? Or reset all? User pref. Let's reset quantity.
     };
 
     const removeStock = (index: number) => {
@@ -439,9 +441,9 @@ export default function StockIn() {
         }
     };
 
-    const [newVariant, setNewVariant] = useState({ colorId: 0, sizeId: 0, quantity: 1 });
+    const [newVariant, setNewVariant] = useState<{ colorId: number; sizeId: number; quantity: number | '' }>({ colorId: 0, sizeId: 0, quantity: '' });
 
-    const addVariantToCreate = () => {
+const addVariantToCreate = () => {
         if (!foundProduct || !newVariant.colorId || !newVariant.sizeId) {
             alert(t.inventory.selectColorAndSize);
             return;
@@ -449,30 +451,31 @@ export default function StockIn() {
 
         const color = colors.find(c => c.id === newVariant.colorId);
         const size = availableSizes.find(s => s.id === newVariant.sizeId);
+        const qty = newVariant.quantity === '' ? 0 : newVariant.quantity;
 
-        // Check if already in foundProduct or in buffer
         const existsInProduct = foundProduct.Variants?.find((v: any) => v.ProductColorId === newVariant.colorId && v.ProductSizeId === newVariant.sizeId);
-        const existsInBuffer = newVariantsToCreate.find(v => v.colorId === newVariant.colorId && v.sizeId === newVariant.sizeId);
-
-        if (existsInBuffer) {
+        const exists = newVariantsToCreate.find(v => v.colorId === newVariant.colorId && v.sizeId === newVariant.sizeId);
+        if (exists) {
+            const existingQty = exists.quantity === '' ? 0 : exists.quantity;
             setNewVariantsToCreate(prev => prev.map(v => 
                 v.colorId === newVariant.colorId && v.sizeId === newVariant.sizeId 
-                    ? { ...v, quantity: v.quantity + newVariant.quantity } 
+                    ? { ...v, quantity: existingQty + qty } 
                     : v
             ));
         } else if (existsInProduct) {
             setAddStockQuantities(prev => ({
                 ...prev,
-                [existsInProduct.Id]: (prev[existsInProduct.Id] || 0) + newVariant.quantity
+                [existsInProduct.Id]: (prev[existsInProduct.Id] || 0) + qty
             }));
         } else {
             setNewVariantsToCreate(prev => [...prev, {
                 ...newVariant,
+                quantity: qty,
                 colorName: color?.name,
                 sizeName: size?.name
             }]);
         }
-        setNewVariant({ colorId: 0, sizeId: 0, quantity: 1 });
+        setNewVariant({ colorId: 0, sizeId: 0, quantity: '' });
     };
 
     const removeNewVariant = (index: number) => {
@@ -656,7 +659,7 @@ export default function StockIn() {
                                                     <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
                                                     <QuantityInput
                                                         value={existingLotQuantity}
-                                                        onChange={setExistingLotQuantity}
+                                                        onChange={(val) => setExistingLotQuantity(val === '' ? 0 : val)}
                                                         min={0}
                                                     />
                                                 </div>
@@ -745,10 +748,20 @@ export default function StockIn() {
                                         <div className="mt-6 flex justify-end">
                                             <button
                                                 onClick={submitAddStock}
-                                                className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
+                                                disabled={isSaving}
+                                                className="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                             >
-                                                <span className="material-symbols-outlined">add_box</span>
-                                                {t.inventory.updateStock || 'Update Stock'}
+                                                {isSaving ? (
+                                                    <>
+                                                        <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                                        Saving...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="material-symbols-outlined">add_box</span>
+                                                        {t.inventory.updateStock || 'Update Stock'}
+                                                    </>
+                                                )}
                                             </button>
                                         </div>
 
@@ -923,7 +936,7 @@ export default function StockIn() {
                                                 <label className="text-xs font-bold mb-1 block uppercase text-gray-500 dark:text-gray-400">{t.inventory.lotQuantity || 'Lot Quantity'}</label>
                                                 <QuantityInput
                                                     value={lotQuantity}
-                                                    onChange={setLotQuantity}
+                                                    onChange={(val) => setLotQuantity(val === '' ? 0 : val)}
                                                     min={0}
                                                     className="text-lg"
                                                 />

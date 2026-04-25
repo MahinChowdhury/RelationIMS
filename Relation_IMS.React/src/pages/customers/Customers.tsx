@@ -32,6 +32,7 @@ export default function CustomersPage() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Editing / Creating State
     const [customerToDelete, setCustomerToDelete] = useState<number | null>(null);
@@ -152,6 +153,7 @@ export default function CustomersPage() {
 
     // CRUD
     const handleCreate = async () => {
+        setIsSaving(true);
         try {
             await api.post('/Customer', editingCustomer);
             setShowCreateModal(false);
@@ -159,11 +161,14 @@ export default function CustomersPage() {
         } catch (e: any) {
             console.error(e);
             alert(t.customers.failedToCreate);
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleUpdate = async () => {
         if (!editingCustomer.Id) return;
+        setIsSaving(true);
         try {
             await api.put(`/Customer/${editingCustomer.Id}`, editingCustomer);
             setShowEditModal(false);
@@ -171,6 +176,8 @@ export default function CustomersPage() {
         } catch (e: any) {
             console.error(e);
             alert(t.customers.failedToUpdate);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -425,6 +432,7 @@ export default function CustomersPage() {
                 show={showCreateModal}
                 mode="create"
                 customer={editingCustomer}
+                isSaving={isSaving}
                 onChange={(f, v) => setEditingCustomer(p => ({ ...p, [f]: v }))}
                 onClose={() => setShowCreateModal(false)}
                 onSave={handleCreate}
@@ -434,6 +442,7 @@ export default function CustomersPage() {
                 show={showEditModal}
                 mode="edit"
                 customer={editingCustomer}
+                isSaving={isSaving}
                 onChange={(f, v) => setEditingCustomer(p => ({ ...p, [f]: v }))}
                 onClose={() => setShowEditModal(false)}
                 onSave={handleUpdate}

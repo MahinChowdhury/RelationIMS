@@ -9,6 +9,7 @@ interface CustomerFormModalProps {
     show: boolean;
     mode: 'create' | 'edit';
     customer: Customer;
+    isSaving?: boolean;
     onClose: () => void;
     onSave: () => void;
     onChange: (field: string, value: any) => void;
@@ -25,6 +26,7 @@ export function CustomerFormModal({
     show,
     mode,
     customer,
+    isSaving,
     onClose,
     onSave,
     onChange
@@ -162,10 +164,20 @@ export function CustomerFormModal({
                     <button
                         type="button"
                         onClick={onSave}
-                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-md shadow-primary/20 transition-all flex items-center gap-2"
+                        disabled={isSaving}
+                        className="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-md shadow-primary/20 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        <span className="material-symbols-outlined text-[18px]">check</span>
-                        {mode === 'create' ? t.customers.addCustomer : t.common.saveChanges}
+                        {isSaving ? (
+                            <>
+                                <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined text-[18px]">check</span>
+                                {mode === 'create' ? t.customers.addCustomer : t.common.saveChanges}
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

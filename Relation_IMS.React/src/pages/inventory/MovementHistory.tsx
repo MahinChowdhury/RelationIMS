@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { InventoryTransferHistoryResponse } from '../../types/inventory';
@@ -88,31 +87,6 @@ const MovementHistory = () => {
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-            {/* Decorative Background Elements */}
-            <div className="fixed inset-0 bg-pattern -z-20 pointer-events-none"></div>
-            <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl"></div>
-                <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary/10 blur-3xl"></div>
-            </div>
-
-            {/* Header */}
-            <header className="w-full px-6 py-5 md:px-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 z-10">
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                        <span className="material-symbols-outlined text-[20px]">inventory_2</span>
-                        <Link to="/inventory">{t.inventory.title || 'Inventory'}</Link>
-                        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                        <span>{t.inventory.movementHistory || 'History'}</span>
-                    </div>
-                    <h1 className="text-3xl md:text-4xl font-black text-[#0e1b12] dark:text-white tracking-tight">{t.inventory.movementHistory || 'Movement History'}</h1>
-                    <p className="text-secondary text-base font-medium max-w-2xl">{t.inventory.movementHistorySubtitle || 'Track the flow of inventory between warehouses and storefronts with real-time logs.'}</p>
-                </div>
-                <button className="flex items-center justify-center gap-2 bg-white dark:bg-[var(--color-surface-dark-card)] hover:bg-primary/10 dark:hover:bg-[#2a3f31] border border-[var(--color-scrollbar)] dark:border-white/10 text-[#0e1b12] dark:text-white h-10 px-4 rounded-lg shadow-sm transition-all text-sm font-bold">
-                    <span className="material-symbols-outlined text-[20px]">download</span>
-                    <span>{t.common.exportCSV || 'Export CSV'}</span>
-                </button>
-            </header>
-
             {/* Content Scroll Area */}
             <div className="flex-1 overflow-y-auto px-6 md:px-10 pb-10 z-10">
                 {/* Filter Section */}

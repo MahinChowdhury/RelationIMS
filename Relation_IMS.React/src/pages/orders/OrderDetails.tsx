@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus, type Inventory } from '../../types';
 import InternalOrderCycle from './InternalOrderCycle';
 import EditPaymentModal from './EditPaymentModal';
+import ProductDetails from '../products/ProductDetails';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { getAllInventories } from '../../services/InventoryService';
 
@@ -99,6 +100,7 @@ export default function OrderDetailsPage() {
 
     const [arrangedItems, setArrangedItems] = useState<any[]>([]);
     const [expandedVariants, setExpandedVariants] = useState<Set<number>>(new Set());
+    const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
     const toggleVariantExpand = (itemId: number) => {
         const newSet = new Set(expandedVariants);
@@ -467,9 +469,14 @@ export default function OrderDetailsPage() {
                                             <tr key={`group-${groupIdx}`} className="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100 dark:border-gray-700">
                                                 <td colSpan={5} className="px-6 py-3">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="size-10 rounded-lg bg-white dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                                                        <div className="size-10 rounded-lg bg-white dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-600 flex items-center justify-center overflow-hidden relative group/image cursor-pointer" onClick={() => setSelectedProductId(group.items[0].ProductId)} title="Click to view product details">
                                                             {group.product?.ImageUrls?.[0] ? (
-                                                                <img src={group.product.ImageUrls[0]} alt={group.product.Name} className="w-full h-full object-cover" />
+                                                                <>
+                                                                    <img src={group.product.ImageUrls[0]} alt={group.product.Name} className="w-full h-full object-cover transition-all duration-300 group-hover/image:blur-sm transform group-hover/image:scale-110" />
+                                                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 bg-black/20">
+                                                                        <span className="material-symbols-outlined text-white drop-shadow-md text-lg">visibility</span>
+                                                                    </div>
+                                                                </>
                                                             ) : (
                                                                 <span className="material-symbols-outlined text-gray-400">image</span>
                                                             )}
@@ -640,6 +647,24 @@ export default function OrderDetailsPage() {
                     loadOrderDetails(order.Id);
                 }}
             />
+            {/* Product Details Modal (80% Screen) */}
+            {selectedProductId && (
+                <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] w-[90%] h-[90%] md:w-[80%] md:h-[80%] rounded-2xl shadow-2xl overflow-hidden relative border border-[#e7f3eb] dark:border-[var(--color-surface-dark-border)] flex flex-col">
+                        <div className="absolute top-4 right-4 z-10">
+                            <button
+                                onClick={() => setSelectedProductId(null)}
+                                className="p-2 bg-white/80 dark:bg-black/50 backdrop-blur rounded-full text-gray-500 hover:text-white hover:bg-red-500 transition-all shadow-lg border border-gray-100 dark:border-gray-700"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="overflow-y-auto h-full custom-scrollbar">
+                            <ProductDetails productId={selectedProductId.toString()} />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

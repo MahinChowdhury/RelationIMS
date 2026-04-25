@@ -87,6 +87,7 @@ export default function CreateOrder() {
 
     // New Customer State
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [customerSaving, setCustomerSaving] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<any>({
         Id: 0,
         Name: '',
@@ -209,6 +210,7 @@ export default function CreateOrder() {
 
     // --- Create Customer ---
     const handleCreateCustomer = async () => {
+        setCustomerSaving(true);
         try {
             const res = await api.post<Customer>('/Customer', editingCustomer);
             setShowCreateModal(false);
@@ -218,6 +220,8 @@ export default function CreateOrder() {
         } catch (e: any) {
             console.error(e);
             alert(t.orders.failedToCreateCustomer);
+        } finally {
+            setCustomerSaving(false);
         }
     };
 
@@ -1102,6 +1106,7 @@ export default function CreateOrder() {
                 show={showCreateModal}
                 mode="create"
                 customer={editingCustomer}
+                isSaving={customerSaving}
                 onChange={(f, v) => setEditingCustomer((p: any) => ({ ...p, [f]: v }))}
                 onClose={() => setShowCreateModal(false)}
                 onSave={handleCreateCustomer}

@@ -2,7 +2,7 @@ export interface StockItem {
     id?: number;
     color: string;
     size: string;
-    quantity: number;
+    quantity: number | '';
 }
 
 export interface ProductColor {
