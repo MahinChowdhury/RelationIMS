@@ -440,7 +440,22 @@ export default function Configuration() {
 
                                 {modalType === 'brand' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400">{t.config.categories} <span className="text-red-400">*</span></label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const allSelected = categories.every(c => formData.categoryIds.includes(c.Id));
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        categoryIds: allSelected ? [] : categories.map(c => c.Id)
+                                                    }));
+                                                }}
+                                                className="text-xs text-primary hover:text-primary/80 font-medium"
+                                            >
+                                                {categories.every(c => formData.categoryIds.includes(c.Id)) ? t.common.deselectAll : t.common.selectAll}
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.Id} className="flex items-center gap-2 cursor-pointer">
@@ -490,7 +505,22 @@ export default function Configuration() {
                                 {/* For Size, we might want Category selection */}
                                 {modalType === 'size' && (
                                     <div>
-                                        <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-1">{t.config.categories} <span className="text-red-400">*</span></label>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-xs font-bold uppercase text-gray-500 dark:text-gray-400">{t.config.categories} <span className="text-red-400">*</span></label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const allSelected = categories.every(c => formData.categoryIds.includes(c.Id));
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        categoryIds: allSelected ? [] : categories.map(c => c.Id)
+                                                    }));
+                                                }}
+                                                className="text-xs text-primary hover:text-primary/80 font-medium"
+                                            >
+                                                {categories.every(c => formData.categoryIds.includes(c.Id)) ? t.common.deselectAll : t.common.selectAll}
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto bg-background-light dark:bg-black/20 border border-gray-200 dark:border-gray-600 rounded-xl p-3">
                                             {categories.map(c => (
                                                 <label key={c.Id} className="flex items-center gap-2 cursor-pointer">

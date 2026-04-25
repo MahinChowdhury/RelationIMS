@@ -38,6 +38,8 @@ const en = {
         in: 'in',
         first: 'First',
         clearAll: 'Clear All',
+        selectAll: 'Select All',
+        deselectAll: 'Deselect All',
         date: 'Date',
         items: 'Items',
         user: 'User',

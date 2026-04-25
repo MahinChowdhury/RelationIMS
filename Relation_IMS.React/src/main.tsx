@@ -9,6 +9,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { LanguageProvider } from './i18n/LanguageContext'
 import { setupGlobalAlerts } from './services/DialogService'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
+import { NotificationProvider } from './context/NotificationContext'
 
 setupGlobalAlerts()
 
@@ -29,9 +30,11 @@ createRoot(document.getElementById('root')!).render(
           <ThemeProvider>
             <LanguageProvider>
               <AlertProvider>
-                <Suspense fallback={<PageLoader />}>
-                  <App />
-                </Suspense>
+                <NotificationProvider>
+                  <Suspense fallback={<PageLoader />}>
+                    <App />
+                  </Suspense>
+                </NotificationProvider>
               </AlertProvider>
             </LanguageProvider>
           </ThemeProvider>

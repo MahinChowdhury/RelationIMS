@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { useState, useRef, useEffect } from 'react';
 import LogoutConfirmModal from './LogoutConfirmModal';
 import ShareCatalogModal from './ShareCatalogModal';
@@ -18,6 +19,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { user, logout } = useAuth();
+    const { newOrderCount, newArrangementCount } = useNotifications();
 
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -130,6 +132,16 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                         <span className={`text-sm ${isActive(item.path) ? 'font-bold' : 'font-medium'}`}>
                                             {item.name}
                                         </span>
+                                        {item.path === '/orders' && newOrderCount > 0 && (
+                                            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                {newOrderCount}
+                                            </span>
+                                        )}
+                                        {item.path === '/arrangement' && newArrangementCount > 0 && (
+                                            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                {newArrangementCount}
+                                            </span>
+                                        )}
                                     </Link>
                                 );
                             })}

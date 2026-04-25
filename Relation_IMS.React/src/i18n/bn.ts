@@ -40,6 +40,8 @@ const bn: Translations = {
         in: 'মধ্যে',
         first: 'প্রথম',
         clearAll: 'সব মুছে ফেলুন',
+        selectAll: 'সব নির্বাচন করুন',
+        deselectAll: 'সব অনির্বাচন করুন',
         date: 'তারিখ',
         items: 'আইটেম',
         user: 'ব্যবহারকারী',
