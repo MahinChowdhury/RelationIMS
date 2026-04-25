@@ -62,6 +62,8 @@ public class ApplicationDbContext : MultiTenantDbContext
     }
 
     public bool IgnoreProductVariantAndItemAudits { get; set; }
+    private int _batchAddedProductItemsCount = 0;
+    private string? _batchAddedProductVariantIds = null;
 
     private List<AuditEntry> OnBeforeSaveChanges(int? userId)
     {
@@ -73,14 +75,24 @@ public class ApplicationDbContext : MultiTenantDbContext
             IgnoreProductVariantAndItemAudits = true;
         }
 
+        var addedProductItems = ChangeTracker.Entries<ProductItem>().Where(e => e.State == EntityState.Added).ToList();
+        if (addedProductItems.Any())
+        {
+            _batchAddedProductItemsCount = addedProductItems.Count;
+            var variantIds = addedProductItems.Select(e => e.Entity.ProductVariantId).Distinct();
+            _batchAddedProductVariantIds = string.Join(",", variantIds);
+        }
+
         foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
         {
             if (entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
                 continue;
 
-            // Skip auditing for ProductItem and ProductVariant creation to avoid log flooding
-            // ONLY if a new Product is being added in the same request scope
-            if (IgnoreProductVariantAndItemAudits && entry.State == EntityState.Added && (entry.Entity is ProductItem || entry.Entity is ProductVariant))
+            // Always group ProductItem creation into a single audit log
+            if (entry.State == EntityState.Added && entry.Entity is ProductItem)
+                continue;
+
+            if (IgnoreProductVariantAndItemAudits && entry.State == EntityState.Added && entry.Entity is ProductVariant)
                 continue;
 
             var auditEntry = new AuditEntry(entry)
@@ -134,30 +146,51 @@ public class ApplicationDbContext : MultiTenantDbContext
 
     private async Task OnAfterSaveChanges(List<AuditEntry> auditEntries, CancellationToken cancellationToken)
     {
-        if (auditEntries == null || auditEntries.Count == 0)
+        bool hasBatchLogs = _batchAddedProductItemsCount > 0;
+
+        if ((auditEntries == null || auditEntries.Count == 0) && !hasBatchLogs)
             return;
 
-        foreach (var auditEntry in auditEntries)
+        if (auditEntries != null)
         {
-            foreach (var prop in auditEntry.Entry.Properties)
+            foreach (var auditEntry in auditEntries)
             {
-                if (prop.IsTemporary)
+                foreach (var prop in auditEntry.Entry.Properties)
                 {
-                    if (prop.Metadata.IsPrimaryKey())
+                    if (prop.IsTemporary)
                     {
-                        auditEntry.KeyValues[prop.Metadata.Name] = prop.CurrentValue;
-                    }
-                    else
-                    {
-                        auditEntry.NewValues[prop.Metadata.Name] = prop.CurrentValue;
+                        if (prop.Metadata.IsPrimaryKey())
+                        {
+                            auditEntry.KeyValues[prop.Metadata.Name] = prop.CurrentValue;
+                        }
+                        else
+                        {
+                            auditEntry.NewValues[prop.Metadata.Name] = prop.CurrentValue;
+                        }
                     }
                 }
-            }
-            
-            // Only add log if not empty
-            if (auditEntry.AuditType == AuditType.Update && auditEntry.ChangedColumns.Count == 0) continue;
+                
+                // Only add log if not empty
+                if (auditEntry.AuditType == AuditType.Update && auditEntry.ChangedColumns.Count == 0) continue;
 
-            AuditLogs.Add(auditEntry.ToAudit());
+                AuditLogs.Add(auditEntry.ToAudit());
+            }
+        }
+
+        if (hasBatchLogs)
+        {
+            var batchLog = new AuditLog
+            {
+                UserId = _currentUserService?.UserId,
+                Type = AuditType.Create.ToString(),
+                TableName = "ProductItems",
+                DateTime = DateTime.UtcNow,
+                PrimaryKey = "{\"Batch\":\"true\"}",
+                NewValues = $"{{\"Message\":\"{_batchAddedProductItemsCount} product items were generated.\", \"Count\":{_batchAddedProductItemsCount}, \"VariantIds\":\"{_batchAddedProductVariantIds}\"}}"
+            };
+            AuditLogs.Add(batchLog);
+            _batchAddedProductItemsCount = 0; // Reset
+            _batchAddedProductVariantIds = null;
         }
 
         await base.SaveChangesAsync(cancellationToken);

@@ -27,6 +27,16 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
     const [copiedHash, setCopiedHash] = useState<string | null>(null);
     const [copiedPasswordHash, setCopiedPasswordHash] = useState<string | null>(null);
     const [deletingHash, setDeletingHash] = useState<string | null>(null);
+    const [expiresAt, setExpiresAt] = useState('');
+    const [editingHash, setEditingHash] = useState<string | null>(null);
+    const [editExpiresAt, setEditExpiresAt] = useState('');
+    const [updating, setUpdating] = useState(false);
+
+    const getDefaultExpiresAt = () => {
+        const date = new Date();
+        date.setDate(date.getDate() + 30);
+        return date.toISOString().split('T')[0];
+    };
 
     useEffect(() => {
         if (show) {
@@ -34,7 +44,9 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
             setShowCreateForm(false);
             setPassword('');
             setConfirmPassword('');
+            setExpiresAt(getDefaultExpiresAt());
             setError('');
+            setEditingHash(null);
         }
     }, [show]);
 
@@ -65,15 +77,40 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
 
         setCreating(true);
         try {
-            await api.post('/ShareCatalog', { password });
+            await api.post('/ShareCatalog', { 
+                password,
+                expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null
+            });
             setPassword('');
             setConfirmPassword('');
+            setExpiresAt(getDefaultExpiresAt());
             setShowCreateForm(false);
             fetchShareCatalogs();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to create share catalog.');
         } finally {
             setCreating(false);
+        }
+    };
+
+    const handleEditExpiresAt = (catalog: ShareCatalog) => {
+        setEditingHash(catalog.shareHash);
+        setEditExpiresAt(catalog.expiresAt.split('T')[0]);
+    };
+
+    const handleSaveExpiresAt = async (hash: string) => {
+        if (!editExpiresAt) return;
+        setUpdating(true);
+        try {
+            await api.put(`/ShareCatalog/${hash}/expiresAt`, {
+                expiresAt: new Date(editExpiresAt).toISOString()
+            });
+            setEditingHash(null);
+            fetchShareCatalogs();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to update expiration date.');
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -114,8 +151,10 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
     const handleClose = () => {
         setPassword('');
         setConfirmPassword('');
+        setExpiresAt(getDefaultExpiresAt());
         setError('');
         setShowCreateForm(false);
+        setEditingHash(null);
         onClose();
     };
 
@@ -204,11 +243,45 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2">
                                     <span>Created: {formatDate(catalog.createdAt)}</span>
-                                    <span>Expires: {formatDate(catalog.expiresAt)}</span>
-                                    {catalog.isExpired && (
-                                        <span className="text-red-500 font-medium">Expired</span>
+                                    {editingHash === catalog.shareHash ? (
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span>Expires:</span>
+                                            <input 
+                                                type="date"
+                                                value={editExpiresAt}
+                                                onChange={(e) => setEditExpiresAt(e.target.value)}
+                                                className="px-2 py-1 border border-gray-200 dark:border-[#3d5a47] rounded bg-white dark:bg-[#2a4032] text-text-main dark:text-white"
+                                            />
+                                            <button 
+                                                onClick={() => handleSaveExpiresAt(catalog.shareHash)}
+                                                disabled={updating}
+                                                className="text-primary hover:text-primary/80 font-medium disabled:opacity-50 bg-primary/10 px-2 py-1 rounded"
+                                            >
+                                                Save
+                                            </button>
+                                            <button 
+                                                onClick={() => setEditingHash(null)}
+                                                className="text-gray-500 hover:text-gray-700 bg-gray-100 dark:bg-white/5 px-2 py-1 rounded"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <span>Expires: {formatDate(catalog.expiresAt)}</span>
+                                            <button
+                                                onClick={() => handleEditExpiresAt(catalog)}
+                                                className="text-primary hover:text-primary/80 bg-primary/10 p-1 rounded inline-flex items-center justify-center"
+                                                title="Edit Expiration Date"
+                                            >
+                                                <span className="material-symbols-outlined text-[14px]">edit</span>
+                                            </button>
+                                            {catalog.isExpired && (
+                                                <span className="text-red-500 font-medium">Expired</span>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -244,6 +317,17 @@ export default function ShareCatalogModal({ show, onClose }: ShareCatalogModalPr
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-200 dark:border-[#3d5a47] rounded-lg bg-white dark:bg-[#2a4032] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                                     placeholder="Confirm password"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Expiration Date
+                                </label>
+                                <input
+                                    type="date"
+                                    value={expiresAt}
+                                    onChange={(e) => setExpiresAt(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 dark:border-[#3d5a47] rounded-lg bg-white dark:bg-[#2a4032] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         </div>

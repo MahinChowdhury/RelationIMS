@@ -71,7 +71,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
         Name: '',
         Description: '',
         BasePrice: 0,
-        CostPrice: 0,
+        CostBD: 0,
+        CostRMB: 0,
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
@@ -381,7 +382,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                     ProductColorId: colorId,
                     ProductSizeId: sizeId,
                     VariantPrice: productSnapshot.BasePrice,
-                    CostPrice: productSnapshot.CostPrice,
+                    CostBD: productSnapshot.CostBD,
+                    CostRMB: productSnapshot.CostRMB,
                     MSRP: productSnapshot.MSRP,
                     Quantity: item.quantity
                 };
@@ -463,7 +465,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             formData.append('Name', productSnapshot.Name);
             formData.append('Description', productSnapshot.Description || '');
             formData.append('BasePrice', productSnapshot.BasePrice?.toString() || '0');
-            formData.append('CostPrice', productSnapshot.CostPrice?.toString() || '0');
+            formData.append('CostBD', productSnapshot.CostBD?.toString() || '0');
+            formData.append('CostRMB', productSnapshot.CostRMB?.toString() || '0');
             formData.append('MSRP', productSnapshot.MSRP?.toString() || '0');
             formData.append('CategoryId', productSnapshot.CategoryId.toString());
             formData.append('BrandId', productSnapshot.BrandId.toString());
@@ -500,7 +503,8 @@ export default function ProductsPage({ isGuestView = false, password }: Products
                                 ProductColorId: colorId,
                                 ProductSizeId: sizeId,
                                 VariantPrice: productSnapshot.BasePrice,
-                                CostPrice: productSnapshot.CostPrice,
+                                CostBD: productSnapshot.CostBD,
+                                CostRMB: productSnapshot.CostRMB,
                                 MSRP: productSnapshot.MSRP,
                                 Quantity: stock.quantity,
                                 DefaultInventoryId: 1

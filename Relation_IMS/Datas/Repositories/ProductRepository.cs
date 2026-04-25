@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Relation_IMS.Datas.Interfaces;
@@ -136,14 +136,33 @@ namespace Relation_IMS.Datas.Repositories
                     .ThenInclude(v => v.Color)
                 .Include(p => p.Variants!)
                     .ThenInclude(v => v.Size)
-                .Include(p => p.Variants!)
-                    .ThenInclude(v => v.ProductItems!)
-                        .ThenInclude(pi => pi.Inventory)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
             {
                 return null;
+            }
+
+            // Manually compute Quantity and Defects using a fast aggregate query
+            var variantStats = await _context.ProductItems
+                .Where(pi => pi.ProductVariant!.ProductId == id)
+                .GroupBy(pi => pi.ProductVariantId)
+                .Select(g => new
+                {
+                    VariantId = g.Key,
+                    Quantity = g.Count(pi => !pi.IsDefected && !pi.IsSold && pi.OrderItemId == null),
+                    Defects = g.Count(pi => pi.IsDefected)
+                })
+                .ToListAsync();
+
+            if (product.Variants != null)
+            {
+                foreach (var variant in product.Variants)
+                {
+                    var stat = variantStats.FirstOrDefault(s => s.VariantId == variant.Id);
+                    variant.Quantity = stat?.Quantity ?? 0;
+                    variant.Defects = stat?.Defects ?? 0;
+                }
             }
 
             return product;
@@ -162,6 +181,15 @@ namespace Relation_IMS.Datas.Repositories
             product.Name = updateDto.Name;
             product.Description = updateDto.Description;
             product.BasePrice = updateDto.BasePrice;
+            if (updateDto.CostBD > 0)
+            {
+                product.CostBD = updateDto.CostBD;
+            }
+            if (updateDto.CostRMB > 0)
+            {
+                product.CostRMB = updateDto.CostRMB;
+            }
+            product.MSRP = updateDto.MSRP;
             product.BrandId = updateDto.BrandId;
             product.CategoryId = updateDto.CategoryId;
             
@@ -285,6 +313,24 @@ namespace Relation_IMS.Datas.Repositories
                 .ToListAsync();
 
             return products;
+        }
+
+        public async Task<object> GetItemsForBarcodeAsync(int productId)
+        {
+            var barcodes = await _context.ProductItems
+                .Include(pi => pi.ProductVariant)
+                    .ThenInclude(pv => pv!.Color)
+                .Include(pi => pi.ProductVariant)
+                    .ThenInclude(pv => pv!.Size)
+                .Where(pi => pi.ProductVariant!.ProductId == productId && !pi.IsSold && !pi.IsDefected)
+                .Select(pi => new 
+                {
+                    code = pi.Code,
+                    itemDetails = $"Color: {pi.ProductVariant!.Color!.Name ?? pi.ProductVariant.ProductColorId.ToString()}, Size: {pi.ProductVariant.Size!.Name ?? pi.ProductVariant.ProductSizeId.ToString()}"
+                })
+                .ToListAsync();
+
+            return barcodes;
         }
     }
 }

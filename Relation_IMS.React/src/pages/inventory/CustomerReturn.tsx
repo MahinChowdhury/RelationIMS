@@ -214,7 +214,6 @@ export default function CustomerReturn() {
 
             setScannedItems(prev => [...prev, newItem]);
             setProductCodeInput('');
-            if (isScannerOpen) setIsScannerOpen(false); // Close scanner if successful
 
         } catch (err: any) {
             console.error("Failed to fetch item", err);
@@ -233,7 +232,6 @@ export default function CustomerReturn() {
                         isValidOrderReturn: false
                     }]);
                     setProductCodeInput('');
-                    if (isScannerOpen) setIsScannerOpen(false);
                 }
             }
         } finally {

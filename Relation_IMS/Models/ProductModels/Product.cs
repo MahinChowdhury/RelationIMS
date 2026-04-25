@@ -20,7 +20,10 @@ namespace Relation_IMS.Models.ProductModels
         public decimal BasePrice { get; set; } = 0.0m;
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
-        public decimal CostPrice { get; set; } = 0.0m;
+        public decimal CostBD { get; set; } = 0.0m;
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal CostRMB { get; set; } = 0.0m;
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
         public decimal MSRP { get; set; } = 0.0m;

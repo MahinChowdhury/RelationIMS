@@ -52,7 +52,7 @@ namespace Relation_IMS.Services
                 .Select(g => new
                 {
                     TotalItems = g.Count(),
-                    TotalValue = g.Sum(pi => pi.ProductVariant!.Product!.CostPrice)
+                    TotalValue = g.Sum(pi => pi.ProductVariant!.Product!.CostBD)
                 })
                 .FirstOrDefaultAsync();
 
@@ -82,7 +82,7 @@ namespace Relation_IMS.Services
                 .Select(g => new
                 {
                     TotalItems = g.Count(),
-                    TotalValue = g.Sum(pi => pi.ProductVariant!.Product!.CostPrice)
+                    TotalValue = g.Sum(pi => pi.ProductVariant!.Product!.CostBD)
                 })
                 .FirstOrDefaultAsync();
 

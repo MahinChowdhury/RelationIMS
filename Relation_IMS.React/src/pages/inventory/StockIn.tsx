@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductForm } from '../../components/products/ProductForm';
 import { QuantityInput } from '../../components/QuantityInput';
 import BarcodeScanner from '../../components/BarcodeScanner';
@@ -20,7 +20,8 @@ export default function StockIn() {
         Name: '',
         Description: '',
         BasePrice: 0,
-        CostPrice: 0,
+        CostBD: 0,
+        CostRMB: 0,
         MSRP: 0,
         CategoryId: 0,
         BrandId: 0,
@@ -152,7 +153,8 @@ export default function StockIn() {
                     Name: foundProduct.Name,
                     Description: foundProduct.Description,
                     BasePrice: foundProduct.BasePrice,
-                    CostPrice: foundProduct.CostPrice,
+                    CostBD: foundProduct.CostBD,
+                    CostRMB: foundProduct.CostRMB,
                     MSRP: foundProduct.MSRP,
                     CategoryId: foundProduct.CategoryId,
                     BrandId: foundProduct.BrandId,
@@ -406,7 +408,8 @@ export default function StockIn() {
             formData.append('Name', currentProduct.Name);
             formData.append('Description', currentProduct.Description || '');
             formData.append('BasePrice', currentProduct.BasePrice?.toString() || '0');
-            formData.append('CostPrice', currentProduct.CostPrice?.toString() || '0');
+            formData.append('CostBD', currentProduct.CostBD?.toString() || '0');
+            formData.append('CostRMB', currentProduct.CostRMB?.toString() || '0');
             formData.append('MSRP', currentProduct.MSRP?.toString() || '0');
             formData.append('CategoryId', currentProduct.CategoryId.toString());
             formData.append('BrandId', currentProduct.BrandId.toString());

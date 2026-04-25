@@ -30,7 +30,8 @@ namespace Relation_IMS.Datas.Repositories
             var product = await _context.Products.FindAsync(orderItemDto.ProductId);
             if (product != null)
             {
-                orderItem.CostPrice = product.CostPrice;
+                orderItem.CostBD = product.CostBD;
+                orderItem.CostRMB = product.CostRMB;
                 
             // If Discount was not provided (0) but UnitPrice is less than BasePrice, calculate it
                 if (orderItem.Discount == 0 && orderItem.UnitPrice < product.BasePrice)
@@ -176,7 +177,8 @@ namespace Relation_IMS.Datas.Repositories
                  var product = await _context.Products.FindAsync(updateDto.ProductId);
                  if (product != null)
                  {
-                     orderItem.CostPrice = product.CostPrice;
+                     orderItem.CostBD = product.CostBD;
+                     orderItem.CostRMB = product.CostRMB;
                  }
             }
 

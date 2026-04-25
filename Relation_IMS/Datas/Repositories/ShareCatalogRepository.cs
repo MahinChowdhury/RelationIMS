@@ -14,14 +14,14 @@ namespace Relation_IMS.Datas.Repositories
             _context = context;
         }
 
-        public async Task<ShareCatalog> CreateAsync(int ownerId, string password)
+        public async Task<ShareCatalog> CreateAsync(int ownerId, string password, DateTime expiresAt)
         {
             var shareCatalog = new ShareCatalog
             {
                 ShareHash = Guid.NewGuid().ToString("N"),
                 OwnerId = ownerId,
                 Password = password,
-                ExpiresAt = DateTime.UtcNow.AddDays(30)
+                ExpiresAt = expiresAt
             };
 
             _context.ShareCatalogs.Add(shareCatalog);
@@ -86,6 +86,20 @@ namespace Relation_IMS.Datas.Repositories
                 .Where(sc => sc.OwnerId == ownerId)
                 .OrderByDescending(sc => sc.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<ShareCatalog?> UpdateExpiresAtAsync(string hash, int ownerId, DateTime newExpiresAt)
+        {
+            var shareCatalog = await _context.ShareCatalogs
+                .FirstOrDefaultAsync(sc => sc.ShareHash == hash && sc.OwnerId == ownerId);
+
+            if (shareCatalog == null)
+                return null;
+
+            shareCatalog.ExpiresAt = newExpiresAt;
+            await _context.SaveChangesAsync();
+
+            return shareCatalog;
         }
     }
 }

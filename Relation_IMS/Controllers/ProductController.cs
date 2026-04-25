@@ -46,7 +46,8 @@ namespace Relation_IMS.Controllers
             {
                 foreach (var p in products)
                 {
-                    p.CostPrice = 0;
+                    p.CostBD = 0;
+                    p.CostRMB = 0;
                 }
             }
 
@@ -70,10 +71,19 @@ namespace Relation_IMS.Controllers
 
             if (!isOwner)
             {
-                product.CostPrice = 0;
+                product.CostBD = 0;
+                product.CostRMB = 0;
             }
 
             return Ok(product);
+        }
+
+        [HttpGet("{id:int}/barcodes")]
+        [RedisCache("product")]
+        public async Task<IActionResult> GetItemsForBarcode([FromRoute] int id)
+        {
+            var barcodes = await _repo.GetItemsForBarcodeAsync(id);
+            return Ok(barcodes);
         }
 
         [HttpDelete("{id:int}")]
@@ -105,7 +115,8 @@ namespace Relation_IMS.Controllers
                     Name = productFormDto.Name,
                     Description = productFormDto.Description,
                     BasePrice = productFormDto.BasePrice,
-                    CostPrice = productFormDto.CostPrice,
+                    CostBD = productFormDto.CostBD,
+                    CostRMB = productFormDto.CostRMB,
                     MSRP = productFormDto.MSRP,
                     BrandId = productFormDto.BrandId,
                     QuarterIds = productFormDto.QuarterIds ?? new List<int>(),

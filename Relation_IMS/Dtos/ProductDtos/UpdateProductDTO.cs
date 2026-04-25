@@ -15,7 +15,10 @@ namespace Relation_IMS.Dtos.ProductDtos
         public decimal BasePrice { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
-        public decimal CostPrice { get; set; }
+        public decimal CostBD { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue)]
+        public decimal CostRMB { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, double.MaxValue)]
         public decimal MSRP { get; set; }

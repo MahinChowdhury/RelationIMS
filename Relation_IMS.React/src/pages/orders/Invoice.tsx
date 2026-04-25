@@ -14,7 +14,8 @@ interface InvoiceItem {
     SizeName?: string;
     Quantity: number;
     UnitPrice: number;
-    CostPrice: number;
+    CostBD: number;
+    CostRMB: number;
     Discount: number;
     Subtotal: number;
 }

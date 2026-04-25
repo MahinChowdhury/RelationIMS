@@ -10,7 +10,8 @@ namespace Relation_IMS.Dtos.ProductModels
         public string? Description { get; set; }
         [Required]
         public decimal BasePrice { get; set; }
-        public decimal CostPrice { get; set; }
+        public decimal CostBD { get; set; }
+        public decimal CostRMB { get; set; }
         public decimal MSRP { get; set; }
         [Required]
         public int BrandId { get; set; }
