@@ -1,4 +1,5 @@
 import api from './api';
+import type { AxiosRequestConfig } from 'axios';
 
 export interface UserDTO {
     Id: number;
@@ -91,14 +92,14 @@ export interface ChangePasswordPayload {
 }
 
 // Fetch all users with optional filters
-export const getAllUsers = async (role?: string, isActive?: boolean): Promise<UserDTO[]> => {
+export const getAllUsers = async (role?: string, isActive?: boolean, options?: AxiosRequestConfig): Promise<UserDTO[]> => {
     const params = new URLSearchParams();
     if (role) params.append('role', role);
     if (isActive !== undefined) params.append('isActive', isActive.toString());
     
     const queryString = params.toString();
     const url = queryString ? `/user?${queryString}` : '/user';
-    const res = await api.get(url);
+    const res = await api.get(url, options);
     return res.data;
 };
 
@@ -120,22 +121,22 @@ export const deleteUser = async (id: number): Promise<void> => {
 };
 
 // Fetch a single user by ID (basic info from /user endpoint)
-export const getUser = async (id: number): Promise<UserDTO> => {
-    const res = await api.get(`/user/${id}`);
+export const getUser = async (id: number, options?: AxiosRequestConfig): Promise<UserDTO> => {
+    const res = await api.get(`/user/${id}`, options);
     return res.data;
 };
 
 // List all roles
-export const getAllRoles = async (): Promise<RoleDTO[]> => {
-    const res = await api.get('/user/roles');
+export const getAllRoles = async (options?: AxiosRequestConfig): Promise<RoleDTO[]> => {
+    const res = await api.get('/user/roles', options);
     return res.data;
 };
 
 // ===== User Profile APIs =====
 
 // Get user profile (includes address, salary, joinDate)
-export const getUserProfile = async (userId: number): Promise<UserProfileDTO> => {
-    const res = await api.get(`/userprofile/${userId}`);
+export const getUserProfile = async (userId: number, options?: AxiosRequestConfig): Promise<UserProfileDTO> => {
+    const res = await api.get(`/userprofile/${userId}`, options);
     return res.data;
 };
 
@@ -148,8 +149,8 @@ export const updateUserProfile = async (userId: number, data: UpdateUserProfileP
 // ===== Salary APIs =====
 
 // Get salary records for a user
-export const getSalaryRecords = async (userId: number): Promise<SalaryRecordDTO[]> => {
-    const res = await api.get(`/userprofile/${userId}/salary`);
+export const getSalaryRecords = async (userId: number, options?: AxiosRequestConfig): Promise<SalaryRecordDTO[]> => {
+    const res = await api.get(`/userprofile/${userId}/salary`, options);
     return res.data;
 };
 

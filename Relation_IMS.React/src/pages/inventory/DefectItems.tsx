@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
@@ -33,7 +34,9 @@ export default function DefectItems() {
 
     // Initial Load & Search Trigger
     useEffect(() => {
-        loadDefects(true);
+        const controller = new AbortController();
+        loadDefects(true, controller.signal);
+        return () => controller.abort();
     }, [debouncedSearch]);
 
     // Infinite Scroll Trigger
@@ -45,12 +48,14 @@ export default function DefectItems() {
 
     useEffect(() => {
         if (page > 1) {
-            loadDefects(false);
+            const controller = new AbortController();
+            loadDefects(false, controller.signal);
+            return () => controller.abort();
         }
     }, [page]);
 
     // --- Logic ---
-    const loadDefects = async (reset: boolean) => {
+    const loadDefects = async (reset: boolean, signal?: AbortSignal) => {
         if (reset) {
             setDefects([]);
             setPage(1);
@@ -65,7 +70,7 @@ export default function DefectItems() {
                 pageSize: '20'
             });
 
-            const res = await api.get(`/ProductItem/defects?${params.toString()}`);
+            const res = await api.get(`/ProductItem/defects?${params.toString()}`, { signal });
             const data = res.data;
 
             // Handle both array and object responses for robustness
@@ -82,6 +87,7 @@ export default function DefectItems() {
             if (newDefects.length < 20) setHasMore(false);
 
         } catch (error) {
+            if (axios.isCancel(error)) return;
             console.error('Failed to load defects:', error);
         } finally {
             setLoading(false);

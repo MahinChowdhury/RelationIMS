@@ -55,7 +55,7 @@ namespace Relation_IMS.Controllers
             return Ok(order);
         }
         [HttpDelete("{id:int}")]
-        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant")]
+        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant", "customer")]
         public async Task<ActionResult<Order>> DeleteOrderByIdAsync([FromRoute] int id)
         {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
@@ -73,6 +73,7 @@ namespace Relation_IMS.Controllers
                 await cacheService.InvalidateCacheByPrefixAsync("arrangement");
                 await cacheService.InvalidateCacheByPrefixAsync("product");
                 await cacheService.InvalidateCacheByPrefixAsync("productvariant");
+                await cacheService.InvalidateCacheByPrefixAsync("customer");
 
                 await _hubContext.Clients.Group("arrangement").SendAsync(ArrangementHubEvents.OrderListUpdated);
 
@@ -81,7 +82,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPost]
-        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant")]
+        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant", "customer")]
         public async Task<ActionResult<Order>> CreateNewOrderAsync(CreateOrderDTO orderDto) {
             // Lock the customer to prevent concurrent order creation issues
             using (await _lockService.AcquireLockAsync($"customer:{orderDto.CustomerId}"))
@@ -95,6 +96,7 @@ namespace Relation_IMS.Controllers
                 await cacheService.InvalidateCacheByPrefixAsync("arrangement");
                 await cacheService.InvalidateCacheByPrefixAsync("product");
                 await cacheService.InvalidateCacheByPrefixAsync("productvariant");
+                await cacheService.InvalidateCacheByPrefixAsync("customer");
 
                 Console.WriteLine($"[SignalR] Broadcasting OrderListUpdated after creating order {created?.Id}");
                 await _hubContext.Clients.Group("arrangement").SendAsync(ArrangementHubEvents.OrderListUpdated);
@@ -104,7 +106,7 @@ namespace Relation_IMS.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant")]
+        [InvalidateCache("order", "orderitem", "arrangement", "product", "productvariant", "customer")]
         public async Task<ActionResult<Order>> UpdateOrderByIdAsync([FromRoute] int id, UpdateOrderDTO updateDto) {
             using (await _lockService.AcquireLockAsync($"order:{id}"))
             {

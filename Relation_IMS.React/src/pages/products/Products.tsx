@@ -166,15 +166,19 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     // Initial Load
     useEffect(() => {
-        loadCategories();
-        loadBrands();
-        loadQuarters();
-        loadColors();
+        const controller = new AbortController();
+        loadCategories(controller.signal);
+        loadBrands(controller.signal);
+        loadQuarters(controller.signal);
+        loadColors(controller.signal);
+        return () => controller.abort();
     }, []);
 
     // ONE Unified Filter Trigger
     useEffect(() => {
-        loadProducts(true);
+        const controller = new AbortController();
+        loadProducts(true, controller.signal);
+        return () => controller.abort();
     }, [selectedCategory, selectedBrand, selectedQuarter, stockOrder, sortBy, debouncedSearch]);
 
     // Infinite Scroll Trigger
@@ -186,12 +190,14 @@ export default function ProductsPage({ isGuestView = false, password }: Products
 
     useEffect(() => {
         if (page > 1) {
-            loadProducts(false);
+            const controller = new AbortController();
+            loadProducts(false, controller.signal);
+            return () => controller.abort();
         }
     }, [page]);
 
     // --- Data Loading ---
-    const loadProducts = async (reset: boolean) => {
+    const loadProducts = async (reset: boolean, signal?: AbortSignal) => {
         if (reset) {
             setProducts([]);
             setPage(1);
@@ -214,14 +220,14 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             let res;
             if (isGuestView && password) {
                 params.append('password', password);
-                res = await axios.get(`${API_BASE_URL}/ShareCatalog/${hash}?${params.toString()}`);
+                res = await axios.get(`${API_BASE_URL}/ShareCatalog/${hash}?${params.toString()}`, { signal });
                 if (res.data.products) {
                     res = { data: res.data.products };
                 } else {
                     res = { data: [] };
                 }
             } else {
-                res = await api.get(`/Product?${params.toString()}`);
+                res = await api.get(`/Product?${params.toString()}`, { signal });
             }
 
             if (reset) {
@@ -236,38 +242,51 @@ export default function ProductsPage({ isGuestView = false, password }: Products
             if (res.data.length < 20) setHasMore(false);
 
         } catch (error) {
+            if (axios.isCancel(error)) return;
             console.error('Failed to load products:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const loadCategories = async () => {
+    const loadCategories = async (signal?: AbortSignal) => {
         try {
-            const res = await api.get('/Category');
+            const res = await api.get('/Category', { signal });
             setCategories(res.data.map((cat: any) => ({ id: cat.Id, name: cat.Name })));
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            if (axios.isCancel(err)) return;
+            console.error(err); 
+        }
     };
 
-    const loadBrands = async () => {
+    const loadBrands = async (signal?: AbortSignal) => {
         try {
-            const res = await api.get('/Brand');
+            const res = await api.get('/Brand', { signal });
             setBrands(res.data.map((b: any) => ({ Id: b.Id, Name: b.Name, Categories: b.Categories })));
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            if (axios.isCancel(err)) return;
+            console.error(err); 
+        }
     };
 
-    const loadQuarters = async () => {
+    const loadQuarters = async (signal?: AbortSignal) => {
         try {
-            const res = await api.get('/Quarter');
+            const res = await api.get('/Quarter', { signal });
             setQuarters(res.data.map((q: any) => ({ Id: q.Id, Name: q.Name })));
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            if (axios.isCancel(err)) return;
+            console.error(err); 
+        }
     };
 
-    const loadColors = async () => {
+    const loadColors = async (signal?: AbortSignal) => {
         try {
-            const res = await api.get('/ProductVariantColors');
+            const res = await api.get('/ProductVariantColors', { signal });
             setColors(res.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            if (axios.isCancel(err)) return;
+            console.error(err); 
+        }
     };
 
     const onCategoryChange = async (categoryId: number) => {

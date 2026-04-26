@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { type Order, type OrderPayment, PaymentStatus, type Product, OrderInternalStatus, type Inventory } from '../../types';
@@ -113,11 +114,16 @@ export default function OrderDetailsPage() {
     };
 
     useEffect(() => {
+        const controller = new AbortController();
         if (id) {
-            loadOrderDetails(Number(id));
-            loadArrangedItems(Number(id));
+            loadOrderDetails(Number(id), controller.signal);
+            loadArrangedItems(Number(id), controller.signal);
         }
-        getAllInventories().then(setInventories).catch(console.error);
+        getAllInventories({ signal: controller.signal }).then(setInventories).catch(err => {
+            if (axios.isCancel(err)) return;
+            console.error(err);
+        });
+        return () => controller.abort();
     }, [id]);
 
     useEffect(() => {
@@ -128,16 +134,17 @@ export default function OrderDetailsPage() {
         }
     }, [order, loading, searchParams]);
 
-    const loadArrangedItems = async (orderId: number) => {
+    const loadArrangedItems = async (orderId: number, signal?: AbortSignal) => {
         try {
-            const res = await api.get(`/Arrangement/items/${orderId}`);
+            const res = await api.get(`/Arrangement/items/${orderId}`, { signal });
             setArrangedItems(res.data);
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error("Failed to load arranged items", err);
         }
     }
 
-    const loadOrderDetails = async (orderId: number) => {
+    const loadOrderDetails = async (orderId: number, signal?: AbortSignal) => {
         if (isNaN(orderId)) {
             setError(t.orders.orderNotFound || 'Invalid order ID.');
             setLoading(false);
@@ -148,16 +155,17 @@ export default function OrderDetailsPage() {
         setError('');
 
         try {
-            const res = await api.get<Order>(`/Order/${orderId}`);
+            const res = await api.get<Order>(`/Order/${orderId}`, { signal });
             let orderData = res.data;
 
             // Fetch product details for items
             if (orderData.OrderItems && orderData.OrderItems.length > 0) {
                 const itemsWithProducts = await Promise.all(orderData.OrderItems.map(async (item) => {
                     try {
-                        const prodRes = await api.get<Product>(`/Product/${item.ProductId}`);
+                        const prodRes = await api.get<Product>(`/Product/${item.ProductId}`, { signal });
                         return { ...item, Product: prodRes.data };
                     } catch (err) {
+                        if (axios.isCancel(err)) throw err; // Let it propagate to the outer catch
                         console.error(`Failed to load product ${item.ProductId}:`, err);
                         return item;
                     }
@@ -167,6 +175,7 @@ export default function OrderDetailsPage() {
 
             setOrder(orderData);
         } catch (err: any) {
+            if (axios.isCancel(err)) return;
             console.error('Failed to load order:', err);
             if (err.response?.status === 404) {
                 setError(t.orders.orderNotFound || 'Order not found.');

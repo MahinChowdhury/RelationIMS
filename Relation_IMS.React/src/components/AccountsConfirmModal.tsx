@@ -56,17 +56,18 @@ export default function AccountsConfirmModal({ show, onCancel, onConfirm }: Acco
                 
                 {/* Footer Buttons */}
                 <div className="flex items-center justify-end gap-2 px-6 py-3 bg-gray-50 dark:bg-black/20 border-t border-gray-100 dark:border-[var(--color-surface-dark-border)]">
-                    <button
-                        onClick={onConfirm}
-                        className="min-w-[80px] px-4 py-1.5 text-sm font-bold text-white bg-primary border border-primary hover:bg-primary-dark rounded shadow-sm transition-all active:scale-95"
-                    >
-                        {t.common.goToAccounts || 'Confirm'}
-                    </button>
+                    
                     <button
                         onClick={onCancel}
                         className="min-w-[80px] px-4 py-1.5 text-sm font-bold text-text-main bg-white hover:bg-gray-50 border border-gray-300 rounded shadow-sm transition-all dark:bg-[var(--color-surface-dark-solid)] dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 active:scale-95"
                     >
                         {t.common.cancel}
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="min-w-[80px] px-4 py-1.5 text-sm font-bold text-white bg-primary border border-primary hover:bg-primary-dark rounded shadow-sm transition-all active:scale-95"
+                    >
+                        {t.common.goToAccounts || 'Confirm'}
                     </button>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { ProductForm } from '../../components/products/ProductForm';
 import { QuantityInput } from '../../components/QuantityInput';
 import BarcodeScanner from '../../components/BarcodeScanner';
@@ -63,7 +64,7 @@ export default function StockIn() {
 
     const [newVariantsToCreate, setNewVariantsToCreate] = useState<any[]>([]);
 
-    const handleSearch = async (term: string, isUpdate: boolean = false) => {
+    const handleSearch = async (term: string, isUpdate: boolean = false, signal?: AbortSignal) => {
         if (!term) return;
 
         if (!isUpdate) {
@@ -80,11 +81,12 @@ export default function StockIn() {
             if (!productId) {
                 // Try to find by Item Code first
                 try {
-                    const itemRes = await api.get<any>(`/ProductItem/code/${term}`);
+                    const itemRes = await api.get<any>(`/ProductItem/code/${term}`, { signal });
                     if (itemRes.data && itemRes.data.ProductId) {
                         productId = itemRes.data.ProductId;
                     }
                 } catch (e) {
+                    if (axios.isCancel(e)) throw e;
                     console.log("Not found by item code");
                 }
 
@@ -101,16 +103,17 @@ export default function StockIn() {
             }
 
             // 2. Load Full Product Details
-            const productRes = await api.get<Product>(`/Product/${productId}`);
+            const productRes = await api.get<Product>(`/Product/${productId}`, { signal });
             setFoundProduct(productRes.data);
             setEditingQuarterIds(productRes.data.Quarters?.map(q => q.Id) || []);
 
             // 3. Load Available Sizes for this Product's Category
             if (productRes.data.CategoryId) {
-                onCategoryChange(productRes.data.CategoryId);
+                onCategoryChange(productRes.data.CategoryId, signal);
             }
 
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error(err);
             if (!isUpdate) alert(t.inventory.failedToLoadDetails);
         } finally {
@@ -252,43 +255,49 @@ export default function StockIn() {
 
 
     useEffect(() => {
-        loadMetadata();
+        const controller = new AbortController();
+        loadMetadata(controller.signal);
 
         // Auto-fill from query param
         const params = new URLSearchParams(location.search);
         const pid = params.get('productId');
         if (pid) {
-            handleSearch(pid);
+            handleSearch(pid, false, controller.signal);
             // Optionally clear the query param so refresh doesn't stick? 
             // Better to keep it for shared links.
             setSearchQuery(pid); // Update UI search box too
         }
+        return () => controller.abort();
     }, [location.search]);
 
-    const loadMetadata = async () => {
+    const loadMetadata = async (signal?: AbortSignal) => {
         try {
             const [catRes, brandRes, quarterRes, colorRes] = await Promise.all([
-                api.get('/Category'),
-                api.get('/Brand'),
-                api.get('/Quarter'),
-                api.get('/ProductVariantColors')
+                api.get('/Category', { signal }),
+                api.get('/Brand', { signal }),
+                api.get('/Quarter', { signal }),
+                api.get('/ProductVariantColors', { signal })
             ]);
             setCategories(catRes.data.map((c: any) => ({ id: c.Id, name: c.Name })));
             setBrands(brandRes.data.map((b: any) => ({ Id: b.Id, Name: b.Name, Categories: b.Categories })));
             setQuarters(quarterRes.data.map((q: any) => ({ Id: q.Id, Name: q.Name })));
             setColors(colorRes.data.map((c: any) => ({ id: c.Id, name: c.Name, hex: c.HexCode })));
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            if (axios.isCancel(err)) return;
+            console.error(err);
+        }
     };
 
     const handleProductChange = (field: string, value: any) => {
         setCurrentProduct(prev => ({ ...prev, [field]: value }));
     };
 
-    const onCategoryChange = async (categoryId: number) => {
+    const onCategoryChange = async (categoryId: number, signal?: AbortSignal) => {
         try {
-            const res = await api.get(`/ProductVariantSizes/category/${categoryId}`);
+            const res = await api.get(`/ProductVariantSizes/category/${categoryId}`, { signal });
             setAvailableSizes(res.data.map((s: any) => ({ id: s.Id, name: s.Name })));
         } catch (err) {
+            if (axios.isCancel(err)) return;
             setAvailableSizes([]);
         }
     };

@@ -22,7 +22,6 @@ namespace Relation_IMS.Models.CustomerModels
         public string ReferenceName { get; set; } = string.Empty;
         public string ReferencePhoneNumber { get; set; } = string.Empty;
         
-        [Range(0, double.MaxValue, ErrorMessage = "Balance cannot be negative.")]
         public decimal Balance { get; set; } = 0;
         
         public bool IsActive { get; set; } = true;

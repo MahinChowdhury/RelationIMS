@@ -553,7 +553,7 @@ export default function CreateOrder() {
                 <div className="flex-1 flex flex-col gap-5">
 
                     {/* Customer Selection */}
-                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-sm border border-[#e7f3eb] dark:border-gray-800 p-5 z-20 relative">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl shadow-sm border border-emerald-200/80 dark:border-emerald-700/30 p-5 z-20 relative">
                         <div className="flex justify-between items-center mb-2">
                             <label className="block text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">{t.orders.customerSelection || 'Customer Selection'}</label>
                             <button
@@ -817,7 +817,7 @@ export default function CreateOrder() {
 
                 {/* Sidebar Summary */}
                 <div className="w-full xl:w-96 flex flex-col gap-6 shrink-0 relative pb-10 xl:pb-0">
-                    <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl shadow-lg border border-[#e7f3eb] dark:border-gray-800 p-6 xl:sticky xl:top-24">
+                    <div className="bg-emerald-50/70 dark:bg-emerald-900/10 rounded-xl shadow-lg border border-emerald-100 dark:border-emerald-800/30 p-6 xl:sticky xl:top-24">
                         <h3 className="text-lg font-bold text-text-main dark:text-white mb-6 border-b border-[#f0f7f2] dark:border-gray-700 pb-3 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">receipt</span>
                             {t.orders.orderSummary}

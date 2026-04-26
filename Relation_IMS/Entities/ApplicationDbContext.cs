@@ -3,6 +3,7 @@ using Finbuckle.MultiTenant.Abstractions;
 using Finbuckle.MultiTenant.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Relation_IMS.Models;
+using Relation_IMS.Models.AccountModels;
 using Relation_IMS.Models.Analytics;
 using Relation_IMS.Models.CustomerModels;
 using Relation_IMS.Models.InventoryModels;
@@ -295,6 +296,16 @@ public class ApplicationDbContext : MultiTenantDbContext
         modelBuilder.Entity<Relation_IMS.Models.UserProfileModels.SalaryRecord>()
             .HasIndex(s => new { s.UserId, s.Month, s.Year })
             .IsUnique();
+
+        // CashBookEntry: store EntryType as string
+        modelBuilder.Entity<CashBookEntry>()
+            .Property(e => e.EntryType)
+            .HasConversion<string>();
+
+        // CashTransfer: store Status as string
+        modelBuilder.Entity<CashTransfer>()
+            .Property(t => t.Status)
+            .HasConversion<string>();
     }
 
     //For JWT
@@ -337,4 +348,8 @@ public class ApplicationDbContext : MultiTenantDbContext
     public DbSet<CustomerInsight> CustomerInsights { get; set; }
     public DbSet<CustomerInsightAllTime> CustomerInsightsAllTime { get; set; }
     public DbSet<TodaySale> TodaySales { get; set; }
+
+    // For Accounts / CashBook
+    public DbSet<CashBookEntry> CashBookEntries { get; set; }
+    public DbSet<CashTransfer> CashTransfers { get; set; }
 }

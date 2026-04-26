@@ -100,12 +100,19 @@ api.interceptors.response.use(
 
                 originalRequest.headers.Authorization = `Bearer ${AccessToken}`;
                 return api(originalRequest);
-            } catch (refreshError) {
+            } catch (refreshError: any) {
                 processQueue(refreshError, null);
-                clearTokens();
-                if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/products/share-catalog')) {
-                    window.location.href = '/login';
+                
+                // CRITICAL FIX: Only log out if the server explicitly rejected the refresh token (400 or 401).
+                // Do NOT log out on generic network errors, timeouts, or 5xx server overload errors.
+                const status = refreshError.response?.status;
+                if (status === 401 || status === 400) {
+                    clearTokens();
+                    if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/products/share-catalog')) {
+                        window.location.href = '/login';
+                    }
                 }
+                
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;

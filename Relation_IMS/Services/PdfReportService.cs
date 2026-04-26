@@ -19,6 +19,7 @@ namespace Relation_IMS.Services
         private readonly IStaffPerformanceRepository _staffPerformanceRepository;
         private readonly ICustomerInsightRepository _customerInsightRepository;
         private readonly IRevenueByCategoryRepository _revenueByCategoryRepository;
+        private readonly ICashBookRepository _cashBookRepository;
 
         public PdfReportService(
             ITodaySaleRepository todaySaleRepository,
@@ -28,7 +29,8 @@ namespace Relation_IMS.Services
             ITopCustomerRepository topCustomerRepository,
             IStaffPerformanceRepository staffPerformanceRepository,
             ICustomerInsightRepository customerInsightRepository,
-            IRevenueByCategoryRepository revenueByCategoryRepository)
+            IRevenueByCategoryRepository revenueByCategoryRepository,
+            ICashBookRepository cashBookRepository)
         {
             _todaySaleRepository = todaySaleRepository;
             _salesOverviewRepository = salesOverviewRepository;
@@ -38,6 +40,7 @@ namespace Relation_IMS.Services
             _staffPerformanceRepository = staffPerformanceRepository;
             _customerInsightRepository = customerInsightRepository;
             _revenueByCategoryRepository = revenueByCategoryRepository;
+            _cashBookRepository = cashBookRepository;
         }
 
         public async Task<byte[]> GenerateDashboardReportAsync(DateTime date)
@@ -66,6 +69,31 @@ namespace Relation_IMS.Services
 
                     page.Header().Element(x => ComposeHeader(x, date));
                     page.Content().Element(x => ComposeContent(x, todaySale, yesterdaySale, thisWeekSale, thisMonthSale, topSellingProducts, inventoryValue, topCustomers, staffPerformance, customerInsight, revenueByCategory));
+                    page.Footer().Element(ComposeFooter);
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+
+        public async Task<byte[]> GenerateCashBookReportAsync(DateTime date, int shopNo, string shopName)
+        {
+            var summary = await _cashBookRepository.GetCashBookSummaryAsync(shopNo, date, date);
+            var entries = await _cashBookRepository.GetCashBookEntriesAsync(shopNo, date, date, 1, 1000, null, null);
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(1.5f, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(9).FontFamily(Fonts.TimesNewRoman).FontColor(Colors.Black));
+
+                    page.Header().Element(x => ComposeCashBookHeader(x, date, shopName));
+                    page.Content().Element(x => ComposeCashBookContent(x, summary, entries));
                     page.Footer().Element(ComposeFooter);
                 });
             });
@@ -351,6 +379,122 @@ namespace Relation_IMS.Services
                     x.Span(" of ");
                     x.TotalPages();
                 });
+            });
+        }
+
+        private void ComposeCashBookHeader(IContainer container, DateTime date, string shopName)
+        {
+            container.PaddingBottom(0.5f, Unit.Centimetre).Column(column =>
+            {
+                column.Item().BorderBottom(1).PaddingBottom(3).Row(row =>
+                {
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text("RELATION IMS").FontSize(18).Bold().FontFamily(Fonts.TimesNewRoman);
+                        col.Item().Text($"CASHBOOK REPORT - {shopName.ToUpper()}").FontSize(10).FontFamily(Fonts.TimesNewRoman).FontColor(Colors.Grey.Darken2);
+                    });
+                    
+                    row.ConstantItem(150).AlignRight().Column(col =>
+                    {
+                        col.Item().Text($"Date: {date:dd MMM yyyy}").FontSize(8);
+                        col.Item().Text($"Time: {DateTime.Now:HH:mm}").FontSize(8);
+                        col.Item().Text("Status: OFFICIAL").FontSize(8).Bold();
+                    });
+                });
+            });
+        }
+
+        private void ComposeCashBookContent(IContainer container, Relation_IMS.Dtos.CashBookDtos.CashBookSummaryDTO summary, System.Collections.Generic.IEnumerable<Relation_IMS.Dtos.CashBookDtos.CashBookEntryResponseDTO> entries)
+        {
+            container.Column(column => 
+            {
+                column.Spacing(8);
+
+                // Summary Section
+                column.Item().Text("I. SUMMARY").FontSize(10).Bold().Underline();
+                
+                column.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn();
+                        columns.RelativeColumn();
+                        columns.RelativeColumn();
+                        columns.RelativeColumn();
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().BorderBottom(1).PaddingBottom(2).Text("Opening Balance").Bold();
+                        header.Cell().BorderBottom(1).PaddingBottom(2).AlignRight().Text("Total Cash In").Bold();
+                        header.Cell().BorderBottom(1).PaddingBottom(2).AlignRight().Text("Total Cash Out").Bold();
+                        header.Cell().BorderBottom(1).PaddingBottom(2).AlignRight().Text("Closing Balance").Bold();
+                    });
+
+                    table.Cell().PaddingVertical(2).Text($"BDT {summary.OpeningBalance:N2}");
+                    table.Cell().PaddingVertical(2).AlignRight().Text($"BDT {summary.TotalCashIn:N2}");
+                    table.Cell().PaddingVertical(2).AlignRight().Text($"BDT {summary.TotalCashOut:N2}");
+                    table.Cell().PaddingVertical(2).AlignRight().Text($"BDT {summary.ClosingBalance:N2}").Bold();
+                });
+
+                // Transactions
+                column.Item().PaddingTop(10).Text("II. TRANSACTIONS").FontSize(10).Bold().Underline();
+                if (entries != null && entries.Any())
+                {
+                    column.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.ConstantColumn(40); // Date
+                            columns.ConstantColumn(55); // Ref
+                            columns.RelativeColumn(3);  // Type/Desc
+                            columns.RelativeColumn(1);  // In
+                            columns.RelativeColumn(1);  // Out
+                            columns.RelativeColumn(1);  // Bal
+                        });
+
+                        table.Header(header =>
+                        {
+                            header.Cell().BorderBottom(1).PaddingBottom(2).Text("Date").Bold();
+                            header.Cell().BorderBottom(1).PaddingBottom(2).Text("Reference").Bold();
+                            header.Cell().BorderBottom(1).PaddingBottom(2).Text("Description").Bold();
+                            header.Cell().BorderBottom(1).PaddingBottom(2).AlignRight().Text("Cash In").Bold();
+                            header.Cell().BorderBottom(1).PaddingBottom(2).AlignRight().Text("Cash Out").Bold();
+                            header.Cell().BorderBottom(1).PaddingBottom(2).AlignRight().Text("Balance").Bold();
+                        });
+
+                        foreach (var entry in entries)
+                        {
+                            table.Cell().PaddingVertical(1).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).Text(entry.TransactionDate.ToLocalTime().ToString("HH:mm"));
+                            table.Cell().PaddingVertical(1).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).Text(entry.ReferenceNo);
+                            table.Cell().PaddingVertical(1).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).Text(entry.Description ?? entry.TransactionType);
+                            table.Cell().PaddingVertical(1).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).AlignRight().Text(entry.CashIn?.ToString("N2") ?? "-");
+                            table.Cell().PaddingVertical(1).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).AlignRight().Text(entry.CashOut?.ToString("N2") ?? "-");
+                            table.Cell().PaddingVertical(1).BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).AlignRight().Text(entry.RunningBalance.ToString("N2"));
+                        }
+                    });
+                }
+                else
+                {
+                    column.Item().Text("No transactions found for this date.").Italic();
+                }
+
+                column.Item().PaddingTop(20).Row(row =>
+                {
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("___________________________");
+                        c.Item().Text("Prepared By").FontSize(8);
+                    });
+                    
+                    row.RelativeItem().AlignRight().Column(c =>
+                    {
+                        c.Item().Text("___________________________").AlignRight();
+                        c.Item().Text("Authorized Signature").FontSize(8).AlignRight();
+                    });
+                });
+
+                column.Item().PaddingTop(10).AlignCenter().Text("*** END OF REPORT ***").FontSize(8).Bold();
             });
         }
     }
