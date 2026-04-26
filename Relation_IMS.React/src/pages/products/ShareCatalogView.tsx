@@ -13,10 +13,12 @@ export default function ShareCatalogView() {
     const [verified, setVerified] = useState(false);
 
     useEffect(() => {
-        checkCatalog();
+        const controller = new AbortController();
+        checkCatalog(controller.signal);
+        return () => controller.abort();
     }, []);
 
-    const checkCatalog = async () => {
+    const checkCatalog = async (signal?: AbortSignal) => {
         setLoading(true);
         try {
             const savedPassword = sessionStorage.getItem(`catalog_pwd_${hash}`);
@@ -25,7 +27,7 @@ export default function ShareCatalogView() {
                 try {
                     const res = await axios.post(`${API_BASE_URL}/ShareCatalog/${hash}/verify`, {
                         password: savedPassword
-                    });
+                    }, { signal });
                     if (res.data.valid) {
                         setPassword(savedPassword);
                         setRequiresPassword(false);
@@ -34,11 +36,12 @@ export default function ShareCatalogView() {
                         return;
                     }
                 } catch (e) {
+                    if (axios.isCancel(e)) return;
                     sessionStorage.removeItem(`catalog_pwd_${hash}`);
                 }
             }
 
-            const res = await axios.get(`${API_BASE_URL}/ShareCatalog/${hash}`);
+            const res = await axios.get(`${API_BASE_URL}/ShareCatalog/${hash}`, { signal });
             if (res.data.requiresPassword) {
                 setRequiresPassword(true);
             } else {
@@ -46,6 +49,7 @@ export default function ShareCatalogView() {
                 setVerified(true);
             }
         } catch (err: any) {
+            if (axios.isCancel(err)) return;
             setError(err.response?.data?.message || 'Unable to access share catalog.');
         } finally {
             setLoading(false);

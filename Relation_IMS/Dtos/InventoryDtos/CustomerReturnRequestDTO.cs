@@ -8,5 +8,6 @@ namespace Relation_IMS.Dtos.InventoryDtos
         public decimal RefundAmount { get; set; }
         public int? UserId { get; set; }
         public int? OrderId { get; set; }
+        public bool ReturnCash { get; set; } = false;
     }
 }

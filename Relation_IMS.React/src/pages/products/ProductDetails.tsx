@@ -11,6 +11,7 @@ import { BarcodeSheet } from '../../components/products/BarcodeSheet';
 // Imported from ../../types
 import type { Product, InventoryStock, ProductVariant, Inventory } from '../../types';
 import { getAllInventories } from '../../services/InventoryService';
+import axios from 'axios';
 
 interface ProductOrderItem {
     Id: number;
@@ -209,20 +210,26 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
 
     useEffect(() => {
         if (activeId) {
-            loadProductDetail(activeId);
+            const controller = new AbortController();
+            loadProductDetail(activeId, controller.signal);
             setProductOrders([]);
             setOrdersPage(1);
             setOrdersHasMore(true);
             setOrdersInitialLoading(true);
             setOrdersVisible(false);
             setVariantsVisible(false);
-            getAllInventories().then(setInventories).catch(console.error);
+            getAllInventories({ signal: controller.signal }).then(setInventories).catch(e => {
+                if (!axios.isCancel(e)) console.error(e);
+            });
+            return () => controller.abort();
         }
     }, [activeId]);
 
     useEffect(() => {
         if (activeId && !isGuest && ordersVisible) {
-            loadProductOrders(ordersPage === 1);
+            const controller = new AbortController();
+            loadProductOrders(ordersPage === 1, controller.signal);
+            return () => controller.abort();
         }
     }, [activeId, ordersPage, ordersVisible]);
 
@@ -274,9 +281,9 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
         touchStartX.current = null;
     };
 
-    const loadProductDetail = async (productId: string) => {
+    const loadProductDetail = async (productId: string, signal?: AbortSignal) => {
         try {
-            const res = await api.get<Product>(`/Product/${productId}`);
+            const res = await api.get<Product>(`/Product/${productId}`, { signal });
             setProductDetail(res.data);
 
             if (res.data.ImageUrls && res.data.ImageUrls.length > 0) {
@@ -284,11 +291,12 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 setCurrentImageIndex(0);
             }
         } catch (err) {
-            console.error(`¢Å’ Failed to load product details of id ${productId}:`, err);
+            if (axios.isCancel(err)) return;
+            console.error(`Failed to load product details of id ${productId}:`, err);
         }
     };
 
-    const fetchInventoryStock = async (variantId: number, colorName: string, sizeName: string, mode: 'available' | 'defect') => {
+    const fetchInventoryStock = async (variantId: number, colorName: string, sizeName: string, mode: 'available' | 'defect', signal?: AbortSignal) => {
         setInventoryLoading(true);
         setStockData([]);
         setSelectedVariantName(`${colorName} - ${sizeName}`);
@@ -300,20 +308,21 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
             const res = await api.get<InventoryStock[]>(`/Inventory/variant/${variantId}/stock`);
             setStockData(res.data);
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error('Failed to load inventory stock:', err);
         } finally {
             setInventoryLoading(false);
         }
     };
 
-    const loadProductOrders = async (isFirstPage: boolean) => {
+    const loadProductOrders = async (isFirstPage: boolean, signal?: AbortSignal) => {
         try {
             if (isFirstPage) {
                 setOrdersInitialLoading(true);
             } else {
                 setOrdersLoading(true);
             }
-            const res = await api.get(`/OrderItem/product/${activeId}?pageNumber=${ordersPage}&pageSize=15`);
+            const res = await api.get(`/OrderItem/product/${activeId}?pageNumber=${ordersPage}&pageSize=15`, { signal });
             const newItems: ProductOrderItem[] = res.data || [];
             setOrdersHasMore(newItems.length === 15);
             if (isFirstPage) {
@@ -322,6 +331,7 @@ export default function ProductDetails({ productId, isGuestView: propGuestView }
                 setProductOrders(prev => [...prev, ...newItems]);
             }
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error('Failed to load product orders:', err);
         } finally {
             setOrdersInitialLoading(false);

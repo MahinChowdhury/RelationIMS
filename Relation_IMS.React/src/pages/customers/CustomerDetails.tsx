@@ -316,23 +316,14 @@ export default function CustomerDetailsPage() {
                             </div>
                         </div>
                         <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between relative overflow-hidden">
-                            <div className={`absolute right-0 top-0 w-1 h-full ${totalDue > 0 ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                            <div>
-                                <p className="text-xs font-medium text-text-secondary mb-1">Total Due</p>
-                                <p className={`text-2xl font-black ${totalDue > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                    {taka}{totalDue.toFixed(2)}
-                                </p>
-                            </div>
-                            <div className={`size-10 rounded-full flex items-center justify-center ${totalDue > 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
-                                <span className="material-symbols-outlined">account_balance_wallet</span>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-[var(--color-surface-dark-card)] rounded-xl p-5 shadow-sm border border-gray-100 dark:border-[var(--color-surface-dark-border)] flex items-center justify-between">
+                            <div className={`absolute right-0 top-0 w-1 h-full ${(customer.Balance || 0) < 0 ? 'bg-red-500' : 'bg-green-500'}`}></div>
                             <div>
                                 <p className="text-xs font-medium text-text-secondary mb-1">Current Balance</p>
-                                <p className="text-2xl font-black text-text-main dark:text-white">{taka}{customer.Balance?.toFixed(2) || '0.00'}</p>
+                                <p className={`text-2xl font-black ${(customer.Balance || 0) < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                    {(customer.Balance || 0) > 0 ? '+' : ''}{(customer.Balance || 0) < 0 ? '-' : ''}{taka}{Math.abs(customer.Balance || 0).toFixed(2)}
+                                </p>
                             </div>
-                            <div className="size-10 rounded-full bg-green-50 flex items-center justify-center text-green-500 dark:bg-green-900/20">
+                            <div className={`size-10 rounded-full flex items-center justify-center ${(customer.Balance || 0) < 0 ? 'bg-red-50 text-red-500 dark:bg-red-900/20' : 'bg-green-50 text-green-500 dark:bg-green-900/20'}`}>
                                 <span className="material-symbols-outlined">account_balance_wallet</span>
                             </div>
                         </div>

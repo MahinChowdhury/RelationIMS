@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import axios from 'axios';
 import type { InventoryBasicDTO, TransferProductItemsDTO, ScannedItem } from '../../types';
 import InventoryTransferScanner from '../../components/inventory/InventoryTransferScanner';
 import MovementHistory from './MovementHistory';
@@ -34,14 +35,16 @@ const InventoryTransfer = () => {
     ];
 
     useEffect(() => {
-        const fetchInventories = async () => {
+        const controller = new AbortController();
+        const fetchInventories = async (signal?: AbortSignal) => {
             setLoading(true);
             try {
                 console.log('Fetching inventories from API...');
-                const response = await api.get('/Inventory');
+                const response = await api.get('/Inventory', { signal });
                 console.log('Inventories fetched successfully:', response.data);
                 setInventories(response.data);
             } catch (error) {
+                if (axios.isCancel(error)) return;
                 console.error("Failed to fetch inventories:", error);
                 // @ts-ignore
                 if (error.code === "ERR_NETWORK") {
@@ -51,7 +54,8 @@ const InventoryTransfer = () => {
                 setLoading(false);
             }
         };
-        fetchInventories();
+        fetchInventories(controller.signal);
+        return () => controller.abort();
     }, []);
 
     // Validation: Fetch source items when sourceId changes
@@ -60,19 +64,22 @@ const InventoryTransfer = () => {
             setSourceItems([]);
             return;
         }
-        const fetchSourceItems = async () => {
+        const controller = new AbortController();
+        const fetchSourceItems = async (signal?: AbortSignal) => {
             setIsSourceLoading(true);
             try {
-                const res = await api.get(`/Inventory/${sourceId}/items`);
+                const res = await api.get(`/Inventory/${sourceId}/items`, { signal });
                 setSourceItems(res.data || []);
             } catch (err) {
+                if (axios.isCancel(err)) return;
                 console.error("Failed to load source items for validation", err);
                 // Fallback: we might allow scanning but warn? For now let's strict validate against what we can fetch.
             } finally {
                 setIsSourceLoading(false);
             }
         };
-        fetchSourceItems();
+        fetchSourceItems(controller.signal);
+        return () => controller.abort();
     }, [sourceId]);
 
     const validateBarcode = (code: string): boolean => {

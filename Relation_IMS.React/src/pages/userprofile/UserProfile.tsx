@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -84,14 +85,15 @@ export default function UserProfile() {
     const isOwnerRole = currentUser?.Roles?.includes('Owner');
 
     useEffect(() => {
+        const controller = new AbortController();
         const fetchData = async () => {
             if (!targetUserId) return;
             setLoading(true);
             try {
                 const [profile, salaries, invs] = await Promise.all([
-                    getUserProfile(targetUserId),
-                    getSalaryRecords(targetUserId),
-                    getAllInventories()
+                    getUserProfile(targetUserId, { signal: controller.signal }),
+                    getSalaryRecords(targetUserId, { signal: controller.signal }),
+                    getAllInventories({ signal: controller.signal })
                 ]);
                 setProfileData(profile);
                 setSalaryHistory(salaries);
@@ -99,6 +101,7 @@ export default function UserProfile() {
                 setSalaryForm(prev => ({ ...prev, amount: profile.CurrentSalary || 0 }));
                 setError('');
             } catch (err) {
+                if (axios.isCancel(err)) return;
                 console.error('Failed to load user profile:', err);
                 setError('Failed to load user profile.');
             } finally {
@@ -107,6 +110,7 @@ export default function UserProfile() {
         };
 
         fetchData();
+        return () => controller.abort();
     }, [targetUserId]);
 
     // Format join date

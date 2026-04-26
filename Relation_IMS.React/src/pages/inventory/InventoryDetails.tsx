@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import axios from 'axios';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 
 import { type Inventory } from '../../types';
@@ -44,7 +45,9 @@ export default function InventoryDetails() {
 
     useEffect(() => {
         if (!inventoryId) return;
-        loadInventoryData();
+        const controller = new AbortController();
+        loadInventoryData(controller.signal);
+        return () => controller.abort();
     }, [inventoryId]);
 
     // Apply Search & Aggregation
@@ -129,18 +132,19 @@ export default function InventoryDetails() {
         }
     }, [isVisible]);
 
-    const loadInventoryData = async () => {
+    const loadInventoryData = async (signal?: AbortSignal) => {
         setLoading(true);
         try {
             // Parallel fetch
             const [invRes, itemsRes] = await Promise.all([
-                api.get<Inventory>(`/Inventory/${inventoryId}`),
-                api.get(`/Inventory/${inventoryId}/items`)
+                api.get<Inventory>(`/Inventory/${inventoryId}`, { signal }),
+                api.get(`/Inventory/${inventoryId}/items`, { signal })
             ]);
 
             setInventory(invRes.data);
             setAllItems(itemsRes.data || []);
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error("Failed to load inventory details", err);
         } finally {
             setLoading(false);

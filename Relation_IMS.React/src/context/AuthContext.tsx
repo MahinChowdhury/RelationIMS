@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
     loginApi,
@@ -30,19 +31,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // On mount, check if we have a stored token and hydrate user
     useEffect(() => {
+        const controller = new AbortController();
         const initAuth = async () => {
             const token = getAccessToken();
             if (token) {
                 try {
-                    const userInfo = await getUserInfoApi();
+                    const userInfo = await getUserInfoApi({ signal: controller.signal });
                     setUser(userInfo);
-                } catch {
+                } catch (err) {
+                    if (axios.isCancel(err)) return; // Do not clear tokens on cancel
                     clearTokens();
                 }
             }
             setIsLoading(false);
         };
         initAuth();
+        return () => controller.abort();
     }, []);
 
     const login = useCallback(async (phoneNumber: string, password: string, tenantId: string) => {

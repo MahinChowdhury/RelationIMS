@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getTenantConfig } from '../../services/tenantTheme';
@@ -87,14 +88,17 @@ export default function InvoicePage() {
 
     useEffect(() => {
         if (!id) return;
+        const controller = new AbortController();
         setLoading(true);
-        api.get(`/Invoice/${id}`)
+        api.get(`/Invoice/${id}`, { signal: controller.signal })
             .then(res => setInvoice(res.data))
             .catch(err => {
+                if (axios.isCancel(err)) return;
                 console.error(err);
                 setError(err.response?.status === 404 ? 'Order not found.' : 'Failed to load invoice.');
             })
             .finally(() => setLoading(false));
+        return () => controller.abort();
     }, [id]);
 
     const handlePrint = () => window.print();

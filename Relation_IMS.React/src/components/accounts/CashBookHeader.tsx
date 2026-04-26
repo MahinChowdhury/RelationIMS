@@ -1,9 +1,10 @@
 interface CashBookHeaderProps {
     onExportPDF?: () => void;
     onNewEntry?: () => void;
+    onTransferToHQ?: () => void;
 }
 
-const CashBookHeader = ({ onExportPDF, onNewEntry }: CashBookHeaderProps) => {
+const CashBookHeader = ({ onExportPDF, onNewEntry, onTransferToHQ }: CashBookHeaderProps) => {
     return (
         <header className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
             <div>
@@ -12,6 +13,16 @@ const CashBookHeader = ({ onExportPDF, onNewEntry }: CashBookHeaderProps) => {
             </div>
             
             <div className="flex gap-2 sm:gap-3 shrink-0">
+                {onTransferToHQ && (
+                    <button 
+                        onClick={onTransferToHQ}
+                        className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-900 dark:bg-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-white/20 transition-all text-xs sm:text-sm border border-gray-700"
+                    >
+                        <span className="material-symbols-outlined text-sm">account_balance</span>
+                        <span className="hidden sm:inline">Transfer to HQ</span>
+                        <span className="sm:hidden">HQ</span>
+                    </button>
+                )}
                 <button 
                     onClick={onExportPDF}
                     className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-900 dark:bg-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-white/20 transition-all text-xs sm:text-sm"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
 import AddUserModal from './AddUserModal';
@@ -27,38 +28,47 @@ export default function UserManagement() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (signal?: AbortSignal) => {
         setLoading(true);
         try {
             const role = roleFilter || undefined;
             const isActive = statusFilter === '' ? undefined : statusFilter === 'active';
-            const data = await getAllUsers(role, isActive);
+            const data = await getAllUsers(role, isActive, { signal });
             setUsers(data);
             setError('');
-        } catch {
+        } catch (err) {
+            if (axios.isCancel(err)) return;
             setError('Failed to load users.');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchRoles = async () => {
+    const fetchRoles = async (signal?: AbortSignal) => {
         try {
-            const data = await getAllRoles();
+            const data = await getAllRoles({ signal });
             setRoles(data);
-        } catch {
+        } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error('Failed to load roles.');
         }
     };
 
     useEffect(() => {
-        fetchUsers();
-        fetchRoles();
-        getAllInventories().then(setInventories).catch(console.error);
+        const controller = new AbortController();
+        fetchUsers(controller.signal);
+        fetchRoles(controller.signal);
+        getAllInventories({ signal: controller.signal }).then(setInventories).catch(err => {
+            if (axios.isCancel(err)) return;
+            console.error(err);
+        });
+        return () => controller.abort();
     }, []);
 
     useEffect(() => {
-        fetchUsers();
+        const controller = new AbortController();
+        fetchUsers(controller.signal);
+        return () => controller.abort();
     }, [roleFilter, statusFilter]);
 
     const handleDeleteUser = (user: UserDTO) => {
@@ -214,7 +224,7 @@ export default function UserManagement() {
                             <div className="text-center">
                                 <span className="material-symbols-outlined text-red-400 text-4xl mb-2">error</span>
                                 <p className="text-red-500 text-sm">{error}</p>
-                                <button onClick={fetchUsers} className="mt-3 text-sm text-primary hover:underline">Retry</button>
+                                <button onClick={() => fetchUsers()} className="mt-3 text-sm text-primary hover:underline">Retry</button>
                             </div>
                         </div>
                     ) : (

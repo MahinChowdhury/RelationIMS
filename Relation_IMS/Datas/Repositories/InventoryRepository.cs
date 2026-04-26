@@ -15,11 +15,13 @@ namespace Relation_IMS.Datas.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly ICashBookRepository _cashBookRepo;
 
-        public InventoryRepository(ApplicationDbContext context, IMapper mapper)
+        public InventoryRepository(ApplicationDbContext context, IMapper mapper, ICashBookRepository cashBookRepo)
         {
             _context = context;
             _mapper = mapper;
+            _cashBookRepo = cashBookRepo;
         }
 
         // Create new inventory
@@ -643,16 +645,28 @@ namespace Relation_IMS.Datas.Repositories
                 });
             }
 
-            // 6. Update Customer Balance
-            customer.Balance += returnDto.RefundAmount;
+            // 6. Update Customer Balance or Record Cash Return
+            if (!returnDto.ReturnCash)
+            {
+                customer.Balance += returnDto.RefundAmount;
+            }
             
             // 7. Save changes
             await _context.CustomerReturnRecords.AddAsync(returnRecord);
             await _context.SaveChangesAsync();
 
             result.Success = true;
-            result.Message = $"Successfully returned {validItems.Count} items. Customer balance increased by {returnDto.RefundAmount:C}.";
+            result.Message = $"Successfully returned {validItems.Count} items. " + (returnDto.ReturnCash ? $"Cash refunded: {returnDto.RefundAmount:C}." : $"Customer balance increased by {returnDto.RefundAmount:C}.");
             result.TransferredCount = validItems.Count;
+
+            // Auto-record cashbook entry for refund if cash was returned
+            if (returnDto.ReturnCash && returnDto.RefundAmount > 0)
+            {
+                // Determine shop from the order or default to 0
+                var shopNo = linkedOrder?.ShopNo ?? 0;
+                var userId = returnDto.UserId ?? 0;
+                await _cashBookRepo.RecordRefundEntryAsync(shopNo, userId, returnDto.OrderId, returnDto.RefundAmount);
+            }
 
             return result;
         }

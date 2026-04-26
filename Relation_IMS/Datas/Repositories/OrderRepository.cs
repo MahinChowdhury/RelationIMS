@@ -6,6 +6,7 @@ using Relation_IMS.Dtos.OrderDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.OrderModels;
 using Relation_IMS.Models.PaymentModels;
+using Relation_IMS.Services;
 
 namespace Relation_IMS.Datas.Repositories
 {
@@ -15,17 +16,20 @@ namespace Relation_IMS.Datas.Repositories
         private readonly IMapper _mapper;
         private readonly Relation_IMS.Services.IConcurrencyLockService _lockService;
         private readonly ITodaySaleRepository _todaySaleRepository;
+        private readonly ICashBookRepository _cashBookRepo;
 
         public OrderRepository(
             ApplicationDbContext context, 
             IMapper mapper, 
             Relation_IMS.Services.IConcurrencyLockService lockService,
-            ITodaySaleRepository todaySaleRepository)
+            ITodaySaleRepository todaySaleRepository,
+            ICashBookRepository cashBookRepo)
         {
             _context = context;
             _mapper = mapper;
             _lockService = lockService;
             _todaySaleRepository = todaySaleRepository;
+            _cashBookRepo = cashBookRepo;
         }
 
         public async Task<Order?> CreateNewOrderAsync(CreateOrderDTO orderDto)
@@ -96,6 +100,26 @@ namespace Relation_IMS.Datas.Repositories
                 }
             }
 
+            // Auto-record cashbook entries for initial payments
+            if (newOrder.Payments != null && newOrder.Payments.Any())
+            {
+                var shopNo = newOrder.ShopNo ?? 0;
+                foreach (var payment in newOrder.Payments)
+                {
+                    await _cashBookRepo.RecordOrderPaymentEntryAsync(
+                        shopNo, newOrder.UserId, newOrder.Id, payment.Id, payment.Amount, isDuePayment: false);
+                }
+            }
+
+            // Update Customer Balance
+            var customer = await _context.Customers.FindAsync(newOrder.CustomerId);
+            if (customer != null)
+            {
+                customer.Balance += (newOrder.PaidAmount - newOrder.NetAmount);
+            }
+
+            await _context.SaveChangesAsync();
+
             return newOrder;
         }
 
@@ -144,6 +168,13 @@ namespace Relation_IMS.Datas.Repositories
             else if (order.PaymentStatus == PaymentStatus.Partial && order.PaidAmount > 0)
             {
                 await _todaySaleRepository.DecrementTodaySaleAsync(order.CreatedAt, order.PaidAmount, false);
+            }
+
+            // Revert Customer Balance
+            var customer = await _context.Customers.FindAsync(order.CustomerId);
+            if (customer != null)
+            {
+                customer.Balance -= (order.PaidAmount - order.NetAmount);
             }
 
             _context.Orders.Remove(order);
@@ -246,6 +277,10 @@ namespace Relation_IMS.Datas.Repositories
             
             if (order == null) return null;
 
+            var oldCustomerId = order.CustomerId;
+            var oldNetAmount = order.NetAmount;
+            var oldPaidAmount = order.PaidAmount;
+
             // Update Basic Info
             order.CustomerId = updateDto.CustomerId;
             order.TotalAmount = updateDto.TotalAmount;
@@ -301,16 +336,15 @@ namespace Relation_IMS.Datas.Repositories
             }
 
             // Update Payments if Provided
-            if (updateDto.Payments != null)
+            if (updateDto.Payments != null && updateDto.Payments.Any())
             {
-                // Store old payment status
+                // Store old payment status for due payment detection
                 var oldPaymentStatus = order.PaymentStatus;
 
-                // Remove existing payments
-                _context.OrderPayments.RemoveRange(order.Payments!);
-
-                // Add new payments
+                // Add new payments (do not remove existing)
                 var newPayments = _mapper.Map<List<OrderPayment>>(updateDto.Payments);
+                var newPaymentsTotal = newPayments.Sum(p => p.Amount);
+
                 foreach(var payment in newPayments)
                 {
                     payment.OrderId = order.Id;
@@ -318,8 +352,8 @@ namespace Relation_IMS.Datas.Repositories
                 }
                 await _context.OrderPayments.AddRangeAsync(newPayments);
 
-                // Recalculate Payment Status
-                order.PaidAmount = newPayments.Sum(p => p.Amount);
+                // Explicitly compute total: old paid + new payments
+                order.PaidAmount = oldPaidAmount + newPaymentsTotal;
                 if (order.PaidAmount >= order.NetAmount)
                 {
                     order.PaymentStatus = PaymentStatus.Paid;
@@ -337,6 +371,56 @@ namespace Relation_IMS.Datas.Repositories
                 if (oldPaymentStatus != PaymentStatus.Paid && order.PaymentStatus == PaymentStatus.Paid)
                 {
                     await _todaySaleRepository.IncrementTodaySaleAsync(DateTime.UtcNow, order.NetAmount);
+                }
+
+                // Save first so new payment IDs are generated
+                await _context.SaveChangesAsync();
+
+                // Record cashbook entry for the new payment amount only
+                if (newPaymentsTotal > 0)
+                {
+                    var shopNo = order.ShopNo ?? 0;
+                    var latestPayment = newPayments.OrderByDescending(p => p.Id).FirstOrDefault();
+                    var isDue = oldPaidAmount > 0; // If there was already a payment, this is a due collection
+                    await _cashBookRepo.RecordOrderPaymentEntryAsync(
+                        shopNo, order.UserId, order.Id,
+                        latestPayment?.Id ?? 0, newPaymentsTotal, isDuePayment: isDue);
+                }
+
+                // Update Customer Balance: increase by the new payment amount only
+                var customer = await _context.Customers.FindAsync(order.CustomerId);
+                if (customer != null)
+                {
+                    customer.Balance += newPaymentsTotal;
+                }
+
+                await _context.SaveChangesAsync();
+                return order;
+            }
+
+            // Update Customer Balance
+            if (oldCustomerId == order.CustomerId)
+            {
+                var customer = await _context.Customers.FindAsync(order.CustomerId);
+                if (customer != null)
+                {
+                    // Reverse old impact and apply new
+                    customer.Balance -= (oldPaidAmount - oldNetAmount);
+                    customer.Balance += (order.PaidAmount - order.NetAmount);
+                }
+            }
+            else
+            {
+                var oldCustomer = await _context.Customers.FindAsync(oldCustomerId);
+                if (oldCustomer != null)
+                {
+                    oldCustomer.Balance -= (oldPaidAmount - oldNetAmount);
+                }
+                
+                var newCustomer = await _context.Customers.FindAsync(order.CustomerId);
+                if (newCustomer != null)
+                {
+                    newCustomer.Balance += (order.PaidAmount - order.NetAmount);
                 }
             }
 

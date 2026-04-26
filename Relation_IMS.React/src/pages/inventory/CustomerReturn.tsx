@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 import api from '../../services/api';
 import BarcodeScanner from '../../components/BarcodeScanner';
@@ -46,6 +47,7 @@ export default function CustomerReturn() {
     const [scannedItems, setScannedItems] = useState<ScannedItem[]>([]);
     const [productCodeInput, setProductCodeInput] = useState('');
     const [refundAmount, setRefundAmount] = useState<string>('0');
+    const [returnCash, setReturnCash] = useState<boolean>(false);
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
 
@@ -64,36 +66,42 @@ export default function CustomerReturn() {
 
     // Fetch Inventories & Customers (Initial)
     useEffect(() => {
-        const fetchInitialData = async () => {
+        const controller = new AbortController();
+        const fetchInitialData = async (signal?: AbortSignal) => {
             try {
-                const res = await api.get('/Inventory');
+                const res = await api.get('/Inventory', { signal });
                 setInventories(res.data);
                 if (res.data.length > 0) setSelectedInventoryId(res.data[0].Id);
-            } catch (err) { console.error(err); }
+            } catch (err) {
+                if (axios.isCancel(err)) return;
+                console.error(err);
+            }
 
-            fetchHistory();
+            fetchHistory(signal);
         };
-        fetchInitialData();
+        fetchInitialData(controller.signal);
+        return () => controller.abort();
     }, []);
 
-    const fetchHistory = async () => {
+    const fetchHistory = async (signal?: AbortSignal) => {
         try {
-            const res = await api.get('/Inventory/customer-return/history');
+            const res = await api.get('/Inventory/customer-return/history', { signal });
             setHistory(res.data);
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error('Failed to load history:', err);
         }
     };
 
     // Load Order Handler
-    const handleLoadOrder = async () => {
+    const handleLoadOrder = async (signal?: AbortSignal) => {
         if (!orderId) return;
         setLoadingOrder(true);
         setOrderData(null);
         setErrorMsg('');
 
         try {
-            const res = await api.get(`/Order/${orderId}`);
+            const res = await api.get(`/Order/${orderId}`, { signal });
             setOrderData(res.data);
 
             // Auto-select customer if not selected
@@ -105,6 +113,7 @@ export default function CustomerReturn() {
             }
 
         } catch (err) {
+            if (axios.isCancel(err)) return;
             console.error(err);
             setErrorMsg(t.orders.orderNotFound || 'Order not found.');
         } finally {
@@ -115,7 +124,9 @@ export default function CustomerReturn() {
     // Auto-load order when Order ID changes
     useEffect(() => {
         if (orderId && orderId.trim() !== '') {
-            handleLoadOrder();
+            const controller = new AbortController();
+            handleLoadOrder(controller.signal);
+            return () => controller.abort();
         } else {
             setOrderData(null);
         }
@@ -123,13 +134,15 @@ export default function CustomerReturn() {
 
     // Search Customers
     useEffect(() => {
+        const controller = new AbortController();
         const timer = setTimeout(async () => {
             if (customerSearch.trim().length > 1 && !selectedCustomer) {
                 try {
-                    const res = await api.get(`/Customer?search=${customerSearch}`); // Assuming API supports search
+                    const res = await api.get(`/Customer?search=${customerSearch}`, { signal: controller.signal }); // Assuming API supports search
                     setCustomers(res.data.items || res.data); // Handle potential paginated response
                     setShowCustomerDropdown(true);
                 } catch (err) {
+                    if (axios.isCancel(err)) return;
                     console.error(err);
                 }
             } else {
@@ -137,7 +150,10 @@ export default function CustomerReturn() {
                 setShowCustomerDropdown(false);
             }
         }, 500);
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
     }, [customerSearch, selectedCustomer]);
 
 
@@ -258,12 +274,14 @@ export default function CustomerReturn() {
                 TargetInventoryId: selectedInventoryId,
                 CustomerId: selectedCustomer.Id,
                 RefundAmount: parseFloat(refundAmount) || 0,
-                OrderId: orderData ? orderData.Id : undefined
+                OrderId: orderData ? orderData.Id : undefined,
+                ReturnCash: returnCash
             });
 
-            setSuccessMsg(t.inventory.returnProcessedSuccess || 'Return processed successfully! Customer balance updated.');
+            setSuccessMsg(t.inventory.returnProcessedSuccess || 'Return processed successfully!');
             setScannedItems([]);
             setRefundAmount('0');
+            setReturnCash(false);
             // Keep customer selected or clear? Maybe clear for next customer
             // setSelectedCustomer(null);
             // setCustomerSearch('');
@@ -307,7 +325,7 @@ export default function CustomerReturn() {
                                 onKeyDown={(e) => e.key === 'Enter' && handleLoadOrder()}
                             />
                             <button
-                                onClick={handleLoadOrder}
+                                onClick={() => handleLoadOrder()}
                                 disabled={loadingOrder || !orderId}
                                 className="p-2.5 bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-lg transition disabled:opacity-50"
                             >
@@ -450,7 +468,7 @@ export default function CustomerReturn() {
 
                     <div className="p-4 border-t border-gray-100 dark:border-[var(--color-surface-dark-border)] bg-gray-50/50 dark:bg-white/5 space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-text-main dark:text-white mb-1">{t.inventory.refundAmount || 'Refund Amount'} ({t.inventory.balanceIncrease || 'Balance Increase'})</label>
+                            <label className="block text-sm font-bold text-text-main dark:text-white mb-1">{t.inventory.refundAmount || 'Refund Amount'}</label>
                             <div className="relative">
 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">{taka}</span>
                                 <input
@@ -476,6 +494,30 @@ export default function CustomerReturn() {
                                     className={`w-full pl-8 p-3 bg-white dark:bg-[var(--color-surface-dark-card)] border border-gray-300 dark:border-[var(--color-surface-dark-border)] rounded-lg font-bold text-lg text-green-600 focus:ring-primary focus:border-primary ${scannedItems.length > 0 ? 'bg-gray-50 cursor-not-allowed opacity-80' : ''}`}
                                 />
                             </div>
+                        </div>
+
+                        {/* Return Cash or Add to Balance Options */}
+                        <div className="flex gap-4 mb-2">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="returnOption"
+                                    checked={!returnCash}
+                                    onChange={() => setReturnCash(false)}
+                                    className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <span className="text-sm font-medium text-text-main dark:text-gray-300">Add to Balance</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="returnOption"
+                                    checked={returnCash}
+                                    onChange={() => setReturnCash(true)}
+                                    className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <span className="text-sm font-medium text-text-main dark:text-gray-300">Return Cash</span>
+                            </label>
                         </div>
 
                         {errorMsg && (

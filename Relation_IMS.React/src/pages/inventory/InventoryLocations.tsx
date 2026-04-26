@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import axios from 'axios';
 import { type Inventory } from '../../types';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -17,14 +18,17 @@ export default function InventoryLocations() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        loadInventories();
+        const controller = new AbortController();
+        loadInventories(controller.signal);
+        return () => controller.abort();
     }, []);
 
-    const loadInventories = async () => {
+    const loadInventories = async (signal?: AbortSignal) => {
         try {
-            const res = await api.get<Inventory[]>('/Inventory');
+            const res = await api.get<Inventory[]>('/Inventory', { signal });
             setInventories(res.data);
         } catch (error) {
+            if (axios.isCancel(error)) return;
             console.error('Failed to load inventories', error);
         } finally {
             setLoading(false);

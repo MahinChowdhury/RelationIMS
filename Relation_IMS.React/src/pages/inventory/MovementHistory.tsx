@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 import useDebounce from '../../hooks/useDebounce';
 import type { InventoryTransferHistoryResponse } from '../../types/inventory';
@@ -22,7 +23,9 @@ const MovementHistory = () => {
 
     // Effect to trigger search reload
     useEffect(() => {
-        loadLogs(true);
+        const controller = new AbortController();
+        loadLogs(true, controller.signal);
+        return () => controller.abort();
     }, [debouncedSearch, dateFilter, sourceFilter, destinationFilter, userFilter]);
 
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 0.1 });
@@ -35,11 +38,13 @@ const MovementHistory = () => {
 
     useEffect(() => {
         if (page > 1) {
-            loadLogs(false);
+            const controller = new AbortController();
+            loadLogs(false, controller.signal);
+            return () => controller.abort();
         }
     }, [page]);
 
-    const loadLogs = async (reset: boolean) => {
+    const loadLogs = async (reset: boolean, signal?: AbortSignal) => {
         if (reset) {
             setLogs([]);
             setPage(1);
@@ -59,7 +64,7 @@ const MovementHistory = () => {
                 // sourceId: sourceFilter ? parseInt(sourceFilter) : undefined,
                 // destinationId: destinationFilter ? parseInt(destinationFilter) : undefined,
                 // userId: userFilter ? parseInt(userFilter) : undefined,
-            });
+            }, { signal });
 
             if (!records || records.length === 0) {
                 if (reset) setLogs([]);
@@ -79,6 +84,7 @@ const MovementHistory = () => {
             }
 
         } catch (error) {
+            if (axios.isCancel(error)) return;
             console.error('Failed to load logs:', error);
         } finally {
             setLoading(false);

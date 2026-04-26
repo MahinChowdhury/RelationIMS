@@ -253,6 +253,7 @@ builder.Services.AddScoped<ITodaySaleRepository, TodaySaleRepository>();
 builder.Services.AddScoped<IInventoryValueRepository, InventoryValueRepository>();
 builder.Services.AddScoped<ProductCodeGenerator>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<ICashBookRepository, CashBookRepository>();
 
 // ============================================
 // Concurrency & Background Services

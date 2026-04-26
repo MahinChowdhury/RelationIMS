@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -42,10 +43,15 @@ export default function OrdersPage() {
 
     // Initial Load & Infinite Scroll
     useEffect(() => {
-        loadOrders(page === 1);
+        const controller = new AbortController();
+        loadOrders(page === 1, controller.signal);
         if (page === 1) {
-            getAllInventories().then(setInventories).catch(console.error);
+            getAllInventories({ signal: controller.signal }).then(setInventories).catch(err => {
+                if (axios.isCancel(err)) return;
+                console.error(err);
+            });
         }
+        return () => controller.abort();
     }, [page]);
 
     // Apply filters locally when data or filters change
@@ -56,7 +62,9 @@ export default function OrdersPage() {
     // Trigger reload on filters
     useEffect(() => {
         // Reset and load
-        loadOrders(true);
+        const controller = new AbortController();
+        loadOrders(true, controller.signal);
+        return () => controller.abort();
     }, [debouncedSearch, filterStatus, sortBy, startDate, endDate]);
 
     // Infinite Scroll trigger
@@ -66,7 +74,7 @@ export default function OrdersPage() {
         }
     }, [isVisible]);
 
-    const loadOrders = async (reset: boolean) => {
+    const loadOrders = async (reset: boolean, signal?: AbortSignal) => {
         setLoading(true);
         try {
             const p = reset ? 1 : page;
@@ -76,7 +84,7 @@ export default function OrdersPage() {
             if (startDate) url += `&startDate=${startDate}`;
             if (endDate) url += `&endDate=${endDate}`;
 
-            const res = await api.get<{ data: Order[] } | Order[]>(url);
+            const res = await api.get<{ data: Order[] } | Order[]>(url, { signal });
             // Handle different API response structures if needed (Products used res.data directly or array)
             const data = Array.isArray(res.data) ? res.data : (res.data as any)?.data || [];
 
@@ -95,6 +103,7 @@ export default function OrdersPage() {
             }
 
         } catch (error) {
+            if (axios.isCancel(error)) return;
             console.error('Failed to load orders', error);
         } finally {
             setLoading(false);

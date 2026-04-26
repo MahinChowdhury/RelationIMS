@@ -1,5 +1,6 @@
 import api from './api';
 import { applyTenantTheme } from './tenantTheme';
+import type { AxiosRequestConfig } from 'axios';
 
 const CLIENT_ID = 'client-app-one';
 
@@ -107,8 +108,8 @@ export async function refreshTokenApi(): Promise<AuthResponse | null> {
     }
 }
 
-export async function getUserInfoApi(): Promise<UserInfo> {
-    const res = await api.get<UserInfo>('/auth/me');
+export async function getUserInfoApi(options?: AxiosRequestConfig): Promise<UserInfo> {
+    const res = await api.get<UserInfo>('/auth/me', options);
     return res.data;
 }
 
