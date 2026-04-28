@@ -3,6 +3,7 @@ using Relation_IMS.Datas.Interfaces;
 using Relation_IMS.Dtos.CashBookDtos;
 using Relation_IMS.Entities;
 using Relation_IMS.Models.AccountModels;
+using Relation_IMS.Models.PaymentModels;
 using Relation_IMS.Services;
 
 namespace Relation_IMS.Datas.Repositories
