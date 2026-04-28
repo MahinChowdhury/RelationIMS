@@ -33,7 +33,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
     useEffect(() => {
         if (isOpen && product) {
             setQuantity(1);
-            setPrice(product.BasePrice);
+            setPrice(product.MSRP);
             setSelectedColorId(null);
             setSelectedSizeIds([]);
             setStagedItems([]); // Clear staging on new open
@@ -65,7 +65,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
         if (selectedColorId && selectedSizeIds.length === 1) {
             const v = variants.find(v => v.ProductColorId === selectedColorId && v.ProductSizeId === selectedSizeIds[0]);
             if (v) {
-                setPrice(v.VariantPrice || product?.BasePrice || 0);
+                setPrice(v.VariantPrice || product?.MSRP || 0);
             }
         }
     }, [selectedColorId, selectedSizeIds, product, variants]);

@@ -252,11 +252,7 @@ export default function InvoicePage() {
                             background: '#f0f3f0',
                             minWidth: '130px',
                         }}>
-                            <p style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: '#727971', margin: '0 0 3px', fontWeight: 700 }}>
-                                Order ID
-                            </p>
-                            <p style={{ fontWeight: 800, fontSize: '13px', margin: '0 0 8px', color: '#0e1b12' }}>{orderId}</p>
-                            <div style={{ borderTop: '1px solid #c2c9bf', paddingTop: '8px', color: '#0e1b12' }}>
+                            <div style={{ color: '#0e1b12' }}>
                                 <Barcode value={orderId} height={36} width={1.5} fontSize={10} />
                             </div>
                         </div>
@@ -295,7 +291,7 @@ export default function InvoicePage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                             <thead>
                                 <tr style={{ borderBottom: '2px solid #dee5de', background: '#eaf0ea' }}>
-                                    {['#', 'Product', 'Barcode', 'Qty', 'Unit Price', 'Total'].map((h, i) => (
+                                    {['#', 'Product', 'Barcode', 'Unit Price', 'Qty', 'Total'].map((h, i) => (
                                         <th
                                             key={h}
                                             style={{
@@ -334,11 +330,11 @@ export default function InvoicePage() {
                                             <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: '#727971', whiteSpace: 'nowrap' }}>
                                                 {item.ProductCode || '—'}
                                             </td>
-                                            <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                                {item.Quantity}
-                                            </td>
                                             <td style={{ padding: '12px', textAlign: 'right', color: '#3c4a3b', whiteSpace: 'nowrap' }}>
                                                 {money(item.UnitPrice)}
+                                            </td>
+                                            <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                                {item.Quantity}
                                             </td>
                                             <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#0e1b12', whiteSpace: 'nowrap' }}>
                                                 {money(item.Subtotal)}
