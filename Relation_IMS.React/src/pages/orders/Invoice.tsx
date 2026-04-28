@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { getTenantConfig } from '../../services/tenantTheme';
 import { getTenant } from '../../services/authService';
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ types (local, mirrors the backend anonymous DTO) â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─────────── types ─────────── */
 interface InvoiceItem {
     Id: number;
     ProductName: string;
+    ProductCode?: string;
     CategoryName?: string;
     BrandName?: string;
     ColorName?: string;
@@ -31,6 +32,8 @@ interface InvoicePayment {
 interface InvoiceData {
     Id: number;
     OrderDate: string;
+    ShopNo?: number;
+    ShopName?: string;
     TotalAmount: number;
     Discount: number;
     NetAmount: number;
@@ -54,17 +57,14 @@ interface InvoiceData {
     Payments?: InvoicePayment[];
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-const SHOP_TAGLINE = 'Shirts â€¢ Pants â€¢ Fashion';
-const SHOP_ADDRESS = 'Dhaka, Bangladesh';
-const SHOP_PHONE = '+880 1XXX-XXXXXX';
-const RECEIPT_WIDTH = 302; // ~80mm thermal paper
-
-const divider = 'â”€'.repeat(38);
-const doubleDivider = 'â•'.repeat(38);
-const dotDivider = 'â”ˆ'.repeat(38);
-
+/* ─────────── helpers ─────────── */
 function formatDate(dateString: string) {
+    if (!dateString || dateString.startsWith('0001-01-01')) return 'N/A';
+    const d = new Date(dateString);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatDateTime(dateString: string) {
     if (!dateString || dateString.startsWith('0001-01-01')) return 'N/A';
     const d = new Date(dateString);
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -72,19 +72,60 @@ function formatDate(dateString: string) {
 }
 
 function money(n: number) {
-    const taka = '\u09F3';
-    return taka + n.toFixed(2);
+    return '৳' + n.toFixed(2);
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/** Renders a minimal but clean barcode-like SVG — column pattern derived from the string */
+function BarcodeSVG({ value, height = 40, className = '' }: { value: string; height?: number; className?: string }) {
+    // Generate a deterministic bar pattern from the string
+    const bars: { x: number; w: number }[] = [];
+    let x = 0;
+    const totalWidth = 120;
+    const charCodes = Array.from(value).map(c => c.charCodeAt(0));
+    // Start/stop quiet zones
+    const pattern: number[] = [2, 1]; // start guard
+    charCodes.forEach((code, i) => {
+        const w1 = 1 + (code % 3);
+        const w2 = 1 + ((code * 3 + i) % 2);
+        pattern.push(w1, w2);
+    });
+    pattern.push(1, 2); // end guard
+
+    // Scale pattern to totalWidth
+    const sum = pattern.reduce((a, b) => a + b, 0);
+    const scale = totalWidth / sum;
+    let isBar = true;
+    for (const w of pattern) {
+        const scaledW = Math.max(0.8, w * scale);
+        if (isBar) bars.push({ x, w: scaledW });
+        x += scaledW;
+        isBar = !isBar;
+    }
+
+    return (
+        <svg
+            width={totalWidth}
+            height={height}
+            viewBox={`0 0 ${totalWidth} ${height}`}
+            preserveAspectRatio="none"
+            className={className}
+            style={{ display: 'block' }}
+        >
+            {bars.map((b, i) => (
+                <rect key={i} x={b.x} y={0} width={b.w} height={height} fill="currentColor" />
+            ))}
+        </svg>
+    );
+}
+
+/* ─────────── component ─────────── */
 export default function InvoicePage() {
     const { id } = useParams<{ id: string }>();
     const [invoice, setInvoice] = useState<InvoiceData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const receiptRef = useRef<HTMLDivElement>(null);
     const tenantConfig = getTenantConfig(getTenant());
-    const SHOP_NAME = tenantConfig.displayName.toUpperCase();
+    const SHOP_NAME = tenantConfig.displayName;
 
     useEffect(() => {
         if (!id) return;
@@ -103,28 +144,29 @@ export default function InvoicePage() {
 
     const handlePrint = () => window.print();
 
-    /* â”€â”€â”€â”€â”€ loading / error states â”€â”€â”€â”€â”€ */
+    /* ── loading ── */
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-background-light dark:bg-background-dark">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
                 <div className="relative">
                     <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-primary"></div>
                     <span className="material-symbols-outlined absolute inset-0 flex items-center justify-center text-primary text-xl">receipt_long</span>
                 </div>
-                <p className="mt-4 text-text-secondary font-medium">Generating invoiceâ€¦</p>
+                <p className="mt-4 text-gray-500 font-medium">Generating invoice…</p>
             </div>
         );
     }
 
+    /* ── error ── */
     if (error || !invoice) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-background-light dark:bg-background-dark px-4">
-                <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-8 text-center max-w-md w-full mb-6">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
+                <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center max-w-md w-full mb-6">
                     <span className="material-symbols-outlined text-4xl text-red-500 mb-2">error</span>
-                    <h2 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Oops!</h2>
-                    <p className="text-red-600 dark:text-red-400">{error || 'Invoice not found'}</p>
+                    <h2 className="text-xl font-bold text-red-800 mb-2">Oops!</h2>
+                    <p className="text-red-600">{error || 'Invoice not found'}</p>
                 </div>
-                <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20">
+                <Link to="/orders" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:opacity-90 transition shadow-lg shadow-primary/20">
                     <span className="material-symbols-outlined">arrow_back</span>
                     Back to Orders
                 </Link>
@@ -132,254 +174,297 @@ export default function InvoicePage() {
         );
     }
 
-    const totalQty = invoice.Items?.reduce((s, i) => s + i.Quantity, 0) ?? 0;
+    const orderId = `ORD-${String(invoice.Id).padStart(6, '0')}`;
+    const shopLabel = invoice.ShopName
+        ? `${SHOP_NAME} — ${invoice.ShopName}`
+        : invoice.ShopNo === 0 || !invoice.ShopNo
+            ? `${SHOP_NAME} — HQ`
+            : SHOP_NAME;
 
-    /* â”€â”€â”€â”€â”€ receipt render â”€â”€â”€â”€â”€ */
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-background-dark py-8 px-4 print:bg-white print:p-0 print:m-0">
+        <>
+            {/* ── Global print styles ── */}
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+                @media print {
+                    body { margin: 0; padding: 0; background: #fff; }
+                    .no-print { display: none !important; }
+                    .a4-page {
+                        margin: 0 !important;
+                        box-shadow: none !important;
+                        border-radius: 0 !important;
+                        padding: 15mm !important;
+                        min-height: 100vh !important;
+                    }
+                    .invoice-shell { background: #fff !important; padding: 0 !important; }
+                }
+            `}</style>
 
-            {/* â”€â”€ action bar (hidden on print) â”€â”€ */}
-            <div className="print:hidden max-w-md mx-auto mb-6 flex items-center justify-between gap-3">
-                <Link to={`/orders/${invoice.Id}`} className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors font-semibold text-sm">
-                    <span className="material-symbols-outlined text-lg">arrow_back</span>
-                    Back to Order #{invoice.Id}
-                </Link>
-                <button
-                    onClick={handlePrint}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition-all shadow-lg shadow-primary/30 active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-lg">print</span>
-                    Print Receipt
-                </button>
-            </div>
-
-            {/* â”€â”€ receipt paper â”€â”€ */}
+            {/* ── Screen: outer shell ── */}
             <div
-                ref={receiptRef}
-                className="mx-auto bg-white text-gray-900 shadow-2xl print:shadow-none print:mx-0 print:w-full"
-                style={{
-                    width: RECEIPT_WIDTH,
-                    fontFamily: "'Courier New', 'Consolas', 'Liberation Mono', monospace",
-                    fontSize: '11px',
-                    lineHeight: '1.45',
-                    padding: '20px 14px 30px',
-                }}
+                className="invoice-shell min-h-screen py-8 px-4"
+                style={{ background: '#dee5de', fontFamily: "'Manrope', sans-serif" }}
             >
-                {/* â”€â”€ shop header â”€â”€ */}
-                <div className="text-center mb-1">
-                    <div style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '4px', marginBottom: '2px' }}>
-                        {SHOP_NAME}
-                    </div>
-                    <div style={{ fontSize: '9px', letterSpacing: '1px', color: '#666', marginBottom: '4px' }}>
-                        {SHOP_TAGLINE}
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#888' }}>
-                        {SHOP_ADDRESS}
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#888' }}>
-                        Tel: {SHOP_PHONE}
-                    </div>
+                {/* ── Action bar (screen only) ── */}
+                <div className="no-print max-w-[210mm] mx-auto mb-5 flex items-center justify-between gap-3">
+                    <Link
+                        to={`/orders/${invoice.Id}`}
+                        className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors font-semibold text-sm"
+                    >
+                        <span className="material-symbols-outlined text-lg">arrow_back</span>
+                        Back to Order #{invoice.Id}
+                    </Link>
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 transition shadow-lg shadow-primary/30 active:scale-95"
+                    >
+                        <span className="material-symbols-outlined text-lg">print</span>
+                        Print Invoice
+                    </button>
                 </div>
 
-                <div className="text-center my-2" style={{ fontSize: '9px', color: '#aaa' }}>{doubleDivider}</div>
-
-                {/* â”€â”€ invoice title â”€â”€ */}
-                <div className="text-center mb-1" style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '2px' }}>
-                    SALES INVOICE
-                </div>
-                <div className="text-center mb-1" style={{ fontSize: '9px', color: '#888' }}>
-                    Invoice # INV-{String(invoice.Id).padStart(5, '0')}
-                </div>
-
-                <div className="text-center" style={{ fontSize: '9px', color: '#aaa' }}>{divider}</div>
-
-                {/* â”€â”€ order meta â”€â”€ */}
-                <div className="my-2" style={{ fontSize: '10px' }}>
-                    <div className="flex justify-between">
-                        <span style={{ color: '#888' }}>Date:</span>
-                        <span style={{ fontWeight: 600 }}>{formatDate(invoice.OrderDate)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span style={{ color: '#888' }}>Order #:</span>
-                        <span style={{ fontWeight: 600 }}>{invoice.Id}</span>
-                    </div>
-                    {invoice.SoldBy && (
-                        <div className="flex justify-between">
-                            <span style={{ color: '#888' }}>Cashier:</span>
-                            <span style={{ fontWeight: 600 }}>{invoice.SoldBy.Name}</span>
+                {/* ── A4 Page ── */}
+                <div
+                    className="a4-page mx-auto bg-white rounded-xl"
+                    style={{
+                        width: '210mm',
+                        minHeight: '297mm',
+                        padding: '20mm',
+                        boxSizing: 'border-box',
+                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                        color: '#0e1b12',
+                    }}
+                >
+                    {/* ════════════ HEADER ════════════ */}
+                    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                        {/* Left: Brand */}
+                        <div>
+                            <h1 style={{ fontWeight: 800, fontSize: '32px', letterSpacing: '-0.5px', margin: 0, lineHeight: 1.1, color: '#0e1b12' }}>
+                                {SHOP_NAME}
+                            </h1>
+                            <p style={{ color: '#3c4a3b', fontWeight: 600, fontSize: '15px', margin: '4px 0 4px' }}>{shopLabel}</p>
+                            <p style={{ color: '#727971', fontSize: '12px', margin: 0 }}>
+                                {formatDate(invoice.OrderDate)}
+                                {invoice.SoldBy && <span> &nbsp;·&nbsp; Sold by: {invoice.SoldBy.Name}</span>}
+                            </p>
                         </div>
-                    )}
-                </div>
 
-                <div style={{ fontSize: '9px', color: '#aaa' }}>{divider}</div>
-
-                {/* â”€â”€ customer info â”€â”€ */}
-                {invoice.Customer && (
-                    <div className="my-2" style={{ fontSize: '10px' }}>
-                        <div style={{ fontWeight: 700, marginBottom: '2px', fontSize: '10px', letterSpacing: '1px' }}>
-                            BILL TO
-                        </div>
-                        <div style={{ fontWeight: 600 }}>{invoice.Customer.Name}</div>
-                        <div style={{ color: '#666' }}>{invoice.Customer.Phone}</div>
-                        {invoice.Customer.ShopName && (
-                            <div style={{ color: '#666' }}>{invoice.Customer.ShopName}</div>
-                        )}
-                        {invoice.Customer.ShopAddress && (
-                            <div style={{ color: '#666', fontSize: '9px' }}>{invoice.Customer.ShopAddress}</div>
-                        )}
-                        {invoice.Customer.Address && (
-                            <div style={{ color: '#888', fontSize: '9px' }}>{invoice.Customer.Address}</div>
-                        )}
-                    </div>
-                )}
-
-                <div style={{ fontSize: '9px', color: '#aaa' }}>{doubleDivider}</div>
-
-                {/* â”€â”€ items header â”€â”€ */}
-                <div className="flex justify-between my-1" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.5px' }}>
-                    <span style={{ flex: 1 }}>ITEM</span>
-                    <span style={{ width: '32px', textAlign: 'right' }}>QTY</span>
-                    <span style={{ width: '50px', textAlign: 'right' }}>PRICE</span>
-                    <span style={{ width: '55px', textAlign: 'right' }}>TOTAL</span>
-                </div>
-
-                <div style={{ fontSize: '9px', color: '#ccc' }}>{divider}</div>
-
-                {/* â”€â”€ line items â”€â”€ */}
-                {invoice.Items && invoice.Items.length > 0 ? (
-                    invoice.Items.map((item, idx) => (
-                        <div key={item.Id} className="mb-2">
-                            {/* product name row */}
-                            <div style={{ fontWeight: 600, fontSize: '10px', marginBottom: '1px' }}>
-                                {idx + 1}. {item.ProductName}
-                            </div>
-                            {/* variant details */}
-                            {(item.ColorName || item.SizeName || item.BrandName) && (
-                                <div style={{ fontSize: '9px', color: '#888', paddingLeft: '12px', marginBottom: '1px' }}>
-                                    {[item.ColorName, item.SizeName, item.BrandName].filter(Boolean).join(' / ')}
-                                </div>
-                            )}
-                            {/* qty × price = total row */}
-                            <div className="flex justify-between" style={{ fontSize: '10px', paddingLeft: '12px' }}>
-                                <span style={{ flex: 1, color: '#666' }}>
-                                    {item.Quantity} × {money(item.UnitPrice)}
-                                </span>
-                                <span style={{ fontWeight: 600, width: '55px', textAlign: 'right' }}>
-                                    {money(item.Subtotal)}
-                                </span>
-                            </div>
-                            {/* item-level discount */}
-                            {item.Discount > 0 && (
-                                <div style={{ fontSize: '9px', color: '#c00', paddingLeft: '12px' }}>
-                                    Disc: -{money(item.Discount)}
-                                </div>
-                            )}
-                        </div>
-                    ))
-                ) : (
-                    <div className="text-center py-2" style={{ color: '#999', fontSize: '10px' }}>No items</div>
-                )}
-
-                <div style={{ fontSize: '9px', color: '#aaa' }}>{divider}</div>
-
-                {/* â”€â”€ totals â”€â”€ */}
-                <div className="my-2" style={{ fontSize: '10px' }}>
-                    <div className="flex justify-between mb-0.5">
-                        <span style={{ color: '#666' }}>Items: {totalQty}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Subtotal</span>
-                        <span style={{ fontWeight: 600 }}>{money(invoice.TotalAmount)}</span>
-                    </div>
-                    {invoice.Discount > 0 && (
-                        <div className="flex justify-between" style={{ color: '#c00' }}>
-                            <span>Discount</span>
-                            <span style={{ fontWeight: 600 }}>-{money(invoice.Discount)}</span>
-                        </div>
-                    )}
-                </div>
-
-                <div style={{ fontSize: '9px', color: '#000', fontWeight: 700 }}>{doubleDivider}</div>
-
-                {/* â”€â”€ grand total â”€â”€ */}
-                <div className="flex justify-between my-1" style={{ fontSize: '14px', fontWeight: 900 }}>
-                    <span>TOTAL</span>
-                    <span>{money(invoice.NetAmount)}</span>
-                </div>
-
-                <div style={{ fontSize: '9px', color: '#000', fontWeight: 700 }}>{doubleDivider}</div>
-
-                {/* â”€â”€ payment breakdown â”€â”€ */}
-                <div className="my-2" style={{ fontSize: '10px' }}>
-                    <div style={{ fontWeight: 700, marginBottom: '3px', letterSpacing: '0.5px', fontSize: '9px' }}>
-                        PAYMENT DETAILS
-                    </div>
-                    {invoice.Payments && invoice.Payments.length > 0 ? (
-                        invoice.Payments.map(p => (
-                            <div key={p.Id} className="flex justify-between">
-                                <span style={{ color: '#666' }}>
-                                    {p.Method === 'Cash' ? 'ðŸ’µ' : p.Method === 'Bank' ? 'ðŸ¦' : 'ðŸ“±'} {p.Method}
-                                </span>
-                                <span style={{ fontWeight: 600 }}>{money(p.Amount)}</span>
-                            </div>
-                        ))
-                    ) : (
-                        <div style={{ color: '#999' }}>No payment recorded</div>
-                    )}
-                    <div style={{ fontSize: '9px', color: '#ccc', margin: '3px 0' }}>{dotDivider}</div>
-                    <div className="flex justify-between" style={{ fontWeight: 700 }}>
-                        <span>Paid</span>
-                        <span>{money(invoice.PaidAmount)}</span>
-                    </div>
-                    {invoice.DueAmount > 0 && (
-                        <div className="flex justify-between" style={{ fontWeight: 700, color: '#c00' }}>
-                            <span>Due</span>
-                            <span>{money(invoice.DueAmount)}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between mt-0.5" style={{ fontSize: '9px' }}>
-                        <span style={{ color: '#888' }}>Status</span>
-                        <span style={{
-                            fontWeight: 700,
-                            color: invoice.PaymentStatus === 'Paid' ? '#059669' :
-                                invoice.PaymentStatus === 'Partial' ? '#d97706' : '#dc2626'
+                        {/* Right: Order barcode box */}
+                        <div style={{
+                            border: '1px solid #c2c9bf',
+                            borderRadius: '8px',
+                            padding: '10px 14px',
+                            textAlign: 'center',
+                            background: '#f0f3f0',
+                            minWidth: '130px',
                         }}>
-                            {invoice.PaymentStatus.toUpperCase()}
-                        </span>
-                    </div>
-                </div>
-
-                {/* â”€â”€ remarks â”€â”€ */}
-                {invoice.Remarks && (
-                    <>
-                        <div style={{ fontSize: '9px', color: '#ccc' }}>{dotDivider}</div>
-                        <div className="my-2" style={{ fontSize: '9px', color: '#666' }}>
-                            <span style={{ fontWeight: 700 }}>Note: </span>
-                            {invoice.Remarks}
+                            <p style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '1px', color: '#727971', margin: '0 0 3px', fontWeight: 700 }}>
+                                Order ID
+                            </p>
+                            <p style={{ fontWeight: 800, fontSize: '13px', margin: '0 0 8px', color: '#0e1b12' }}>{orderId}</p>
+                            <div style={{ borderTop: '1px solid #c2c9bf', paddingTop: '8px', color: '#0e1b12' }}>
+                                <BarcodeSVG value={orderId} height={36} />
+                            </div>
                         </div>
-                    </>
-                )}
+                    </header>
 
-                <div style={{ fontSize: '9px', color: '#aaa', margin: '8px 0' }}>{doubleDivider}</div>
+                    {/* ── Divider ── */}
+                    <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, #c2c9bf, transparent)', margin: '0 0 28px' }} />
 
-                {/* â”€â”€ footer â”€â”€ */}
-                <div className="text-center" style={{ fontSize: '9px', color: '#999' }}>
-                    <div style={{ marginBottom: '3px' }}>Thank you for shopping with us!</div>
-                    <div style={{ marginBottom: '3px' }}>Goods once sold are not returnable</div>
-                    <div style={{ marginBottom: '3px' }}>without a valid receipt.</div>
-                    <div style={{ fontSize: '8px', color: '#bbb', marginTop: '6px' }}>
-                        â˜… â˜… â˜… {SHOP_NAME} â˜… â˜… â˜…
-                    </div>
-                    <div style={{ fontSize: '8px', color: '#ccc', marginTop: '2px' }}>
-                        Generated: {new Date().toLocaleString('en-GB')}
-                    </div>
-                </div>
+                    {/* ════════════ CUSTOMER INFO ════════════ */}
+                    {invoice.Customer && (
+                        <section style={{
+                            border: '1px solid #c2c9bf',
+                            borderRadius: '12px',
+                            padding: '20px 24px',
+                            marginBottom: '28px',
+                            background: '#f6f8f6',
+                            position: 'relative',
+                            overflow: 'hidden',
+                        }}>
+                            <h2 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', color: '#17cf54', margin: '0 0 14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '14px' }} className="material-symbols-outlined">person</span>
+                                Customer Details
+                            </h2>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
+                                <Field label="Customer Name" value={invoice.Customer.Name} bold />
+                                {invoice.Customer.Phone && <Field label="Mobile Number" value={invoice.Customer.Phone} />}
+                                {invoice.Customer.ShopName && <Field label="Customer Shop" value={invoice.Customer.ShopName} />}
+                                {invoice.Customer.ShopAddress && <Field label="Shop Address" value={invoice.Customer.ShopAddress} />}
+                                {invoice.Customer.Address && <Field label="Customer Address" value={invoice.Customer.Address} />}
+                            </div>
+                        </section>
+                    )}
 
-                {/* â”€â”€ tear line â”€â”€ */}
-                <div className="text-center mt-4" style={{ fontSize: '9px', color: '#ddd', letterSpacing: '2px' }}>
-                    âœ‚ â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„â”„ âœ‚
+                    {/* ════════════ ITEMS TABLE ════════════ */}
+                    <section style={{ marginBottom: '28px' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '2px solid #dee5de', background: '#eaf0ea' }}>
+                                    {['#', 'Product', 'Barcode', 'Qty', 'Unit Price', 'Total'].map((h, i) => (
+                                        <th
+                                            key={h}
+                                            style={{
+                                                padding: '10px 12px',
+                                                fontWeight: 700,
+                                                fontSize: '10px',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.8px',
+                                                color: '#3c4a3b',
+                                                textAlign: i >= 3 ? 'right' : i === 0 ? 'center' : 'left',
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            {h}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {invoice.Items && invoice.Items.length > 0 ? (
+                                    invoice.Items.map((item, idx) => (
+                                        <tr
+                                            key={item.Id}
+                                            style={{
+                                                borderBottom: '1px solid #eaf0ea',
+                                                background: idx % 2 === 1 ? '#f6f8f6' : '#fff',
+                                            }}
+                                        >
+                                            <td style={{ padding: '12px', textAlign: 'center', color: '#727971', fontWeight: 600, fontSize: '11px', whiteSpace: 'nowrap' }}>
+                                                {idx + 1}
+                                            </td>
+                                            <td style={{ padding: '12px', fontWeight: 700, color: '#0e1b12', maxWidth: '160px' }}>
+                                                {item.ProductName}
+                                            </td>
+                                            <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: '#727971', whiteSpace: 'nowrap' }}>
+                                                {item.ProductCode || '—'}
+                                            </td>
+                                            <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                                {item.Quantity}
+                                            </td>
+                                            <td style={{ padding: '12px', textAlign: 'right', color: '#3c4a3b', whiteSpace: 'nowrap' }}>
+                                                {money(item.UnitPrice)}
+                                            </td>
+                                            <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#0e1b12', whiteSpace: 'nowrap' }}>
+                                                {money(item.Subtotal)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: '#727971', fontSize: '12px' }}>
+                                            No items found
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </section>
+
+                    {/* ════════════ PAYMENT SUMMARY ════════════ */}
+                    <section style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '48px' }}>
+                        <div style={{
+                            minWidth: '280px',
+                            border: '1px solid #c2c9bf',
+                            borderRadius: '12px',
+                            padding: '20px 24px',
+                            background: '#f0f3f0',
+                        }}>
+                            <PayRow label="Subtotal" value={money(invoice.TotalAmount)} />
+                            {invoice.Discount > 0 && (
+                                <PayRow
+                                    label="Discount"
+                                    value={`-${money(invoice.Discount)}`}
+                                    valueColor="#236c31"
+                                    icon="sell"
+                                />
+                            )}
+
+                            {/* Net amount separator */}
+                            <div style={{ borderTop: '2px solid #c2c9bf', margin: '8px 0' }} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0 12px' }}>
+                                <span style={{ fontWeight: 800, fontSize: '15px', color: '#0e1b12' }}>Net Amount</span>
+                                <span style={{ fontWeight: 800, fontSize: '17px', color: '#17cf54' }}>{money(invoice.NetAmount)}</span>
+                            </div>
+
+                            {/* Payment methods */}
+                            {invoice.Payments && invoice.Payments.length > 0 && (
+                                <div style={{ borderTop: '1px solid #c2c9bf', paddingTop: '10px', marginTop: '4px' }}>
+                                    {invoice.Payments.map(p => (
+                                        <PayRow
+                                            key={p.Id}
+                                            label={`${p.Method === 'Cash' ? '💵' : p.Method === 'Bank' ? '🏦' : '📱'} ${p.Method}`}
+                                            value={money(p.Amount)}
+                                            small
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            <PayRow label="Paid Amount" value={money(invoice.PaidAmount)} />
+
+                            {invoice.DueAmount > 0 && (
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginTop: '8px',
+                                    padding: '10px 12px',
+                                    background: '#ffdad6',
+                                    borderRadius: '8px',
+                                }}>
+                                    <span style={{ fontWeight: 800, color: '#ba1a1a', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span style={{ fontSize: '14px' }} className="material-symbols-outlined">warning</span>
+                                        Due Amount
+                                    </span>
+                                    <span style={{ fontWeight: 800, color: '#ba1a1a', fontSize: '14px' }}>{money(invoice.DueAmount)}</span>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* ── Remarks ── */}
+                    {invoice.Remarks && (
+                        <div style={{ marginBottom: '24px', padding: '12px 16px', background: '#eaf0ea', borderRadius: '8px', fontSize: '12px', color: '#3c4a3b', borderLeft: '3px solid #17cf54' }}>
+                            <strong>Note:</strong> {invoice.Remarks}
+                        </div>
+                    )}
+
+                    {/* ════════════ FOOTER ════════════ */}
+                    <footer style={{ borderTop: '1px solid #c2c9bf', paddingTop: '20px', textAlign: 'center' }}>
+                        <p style={{ fontWeight: 800, color: '#17cf54', fontSize: '13px', margin: '0 0 4px' }}>
+                            Thank you for shopping with {SHOP_NAME}!
+                        </p>
+                        <p style={{ fontSize: '11px', color: '#727971', margin: 0 }}>
+                            Items can be returned within 14 days with original receipt and tags attached.
+                        </p>
+                    </footer>
                 </div>
             </div>
+        </>
+    );
+}
+
+/* ─────────── small layout helpers ─────────── */
+function Field({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+    return (
+        <div>
+            <p style={{ fontSize: '10px', color: '#727971', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>{label}</p>
+            <p style={{ fontSize: '13px', fontWeight: bold ? 700 : 500, color: '#0e1b12', margin: 0 }}>{value}</p>
+        </div>
+    );
+}
+
+function PayRow({ label, value, valueColor, icon, small }: {
+    label: string; value: string; valueColor?: string; icon?: string; small?: boolean
+}) {
+    return (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: small ? '3px 0' : '6px 0', borderBottom: '1px solid #eaf0ea' }}>
+            <span style={{ color: '#3c4a3b', fontSize: small ? '11px' : '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                {icon && <span style={{ fontSize: '13px' }} className="material-symbols-outlined">{icon}</span>}
+                {label}
+            </span>
+            <span style={{ fontWeight: 700, fontSize: small ? '11px' : '12px', color: valueColor ?? '#0e1b12' }}>{value}</span>
         </div>
     );
 }

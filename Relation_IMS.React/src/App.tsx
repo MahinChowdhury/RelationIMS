@@ -91,7 +91,7 @@ function App() {
         </Route>
 
         {/* Accounts Section (separate layout with its own sidebar/bottom-nav) */}
-        <Route path="/accounts" element={<ProtectedRoute><AccountsLayout /></ProtectedRoute>}>
+        <Route path="/accounts" element={<ProtectedRoute allowedRoles={['Owner', 'Head Manager', 'Shop Manager']}><AccountsLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/accounts/cashbook" replace />} />
           <Route path="sales" element={<SalesSummary />} />
           <Route path="cashbook" element={<CashBook />} />

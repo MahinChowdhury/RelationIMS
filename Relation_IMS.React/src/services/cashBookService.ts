@@ -92,8 +92,8 @@ export const createManualEntry = async (dto: CreateManualEntryDTO, shopNo?: numb
     return res.data;
 };
 
-export const transferToMotherShop = async (dto: CreateCashTransferDTO, shopNo?: number) => {
-    const res = await api.post('/cashbook/transfer', dto, { params: { shopNo } });
+export const transferToMotherShop = async (dto: CreateCashTransferDTO, shopNo?: number, toShopNo?: number) => {
+    const res = await api.post('/cashbook/transfer', dto, { params: { shopNo, toShopNo } });
     return res.data;
 };
 

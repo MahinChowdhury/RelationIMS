@@ -56,8 +56,8 @@ interface CashBookTableProps {
     // Shop selector (owner only)
     isOwner?: boolean;
     inventories?: Inventory[];
-    selectedShopNo?: number | undefined;
-    onShopChange?: (shopNo: number | undefined) => void;
+    selectedShopNo?: number;
+    onShopChange?: (shopNo: number) => void;
     // Date
     selectedDate?: string;
     onDateChange?: (d: string) => void;
@@ -122,14 +122,10 @@ const CashBookTable = ({
                             <div className="flex items-center gap-2 min-w-[190px]">
                                 <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[18px] shrink-0">store</span>
                                 <select
-                                    value={selectedShopNo === undefined ? '' : String(selectedShopNo)}
-                                    onChange={e => {
-                                        const v = e.target.value;
-                                        onShopChange(v === '' ? undefined : Number(v));
-                                    }}
+                                    value={selectedShopNo !== undefined ? String(selectedShopNo) : '0'}
+                                    onChange={e => onShopChange(Number(e.target.value))}
                                     className="flex-1 py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs sm:text-sm font-semibold text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 cursor-pointer"
                                 >
-                                    <option value="" className="dark:bg-gray-800">All Shops</option>
                                     <option value="0" className="dark:bg-gray-800">HQ / Mother Shop</option>
                                     {inventories.map(inv => (
                                         <option key={inv.Id} value={String(inv.Id)} className="dark:bg-gray-800">{inv.Name}</option>
@@ -192,9 +188,6 @@ const CashBookTable = ({
                                 <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">
                                     {selectedShopNo === 0 ? 'HQ' : (inventories.find(i => i.Id === selectedShopNo)?.Name ?? `Shop #${selectedShopNo}`)}
                                 </span>
-                            )}
-                            {isOwner && selectedShopNo === undefined && (
-                                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">All Shops</span>
                             )}
                             {(selectedDate) && (
                                 <span className="bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-md font-bold">

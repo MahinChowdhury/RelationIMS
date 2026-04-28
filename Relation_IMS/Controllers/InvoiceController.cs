@@ -17,7 +17,7 @@ namespace Relation_IMS.Controllers
 
         /// <summary>
         /// Get full invoice data for a given order — includes customer, order items,
-        /// product details (name, category, brand), variant info (color, size), and payments.
+        /// product details (name, code/barcode), and payments.
         /// </summary>
         [HttpGet("{orderId:int}")]
         public async Task<IActionResult> GetInvoiceByOrderId([FromRoute] int orderId)
@@ -46,11 +46,23 @@ namespace Relation_IMS.Controllers
                 return NotFound(new { message = $"Order with id: {orderId} not found." });
             }
 
+            // Resolve shop name from ShopNo
+            string? shopName = null;
+            int shopNo = order.ShopNo ?? 0;
+            if (shopNo > 0)
+            {
+                var inventory = await _context.Set<Models.InventoryModels.Inventory>()
+                    .FirstOrDefaultAsync(i => i.Id == shopNo);
+                shopName = inventory?.Name;
+            }
+
             // Build a flat DTO so the frontend doesn't need to chase navigation properties
             var invoice = new
             {
                 order.Id,
                 OrderDate = order.CreatedAt,
+                ShopNo = shopNo,
+                ShopName = shopName,
                 order.TotalAmount,
                 order.Discount,
                 order.NetAmount,
@@ -76,6 +88,7 @@ namespace Relation_IMS.Controllers
                 {
                     oi.Id,
                     ProductName = oi.Product?.Name ?? "Unknown",
+                    ProductCode = oi.Product?.Code,
                     CategoryName = oi.Product?.Category?.Name,
                     BrandName = oi.Product?.Brand?.Name,
                     ColorName = oi.ProductVariant?.Color?.Name,

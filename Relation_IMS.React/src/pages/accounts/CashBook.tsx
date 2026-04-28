@@ -70,12 +70,12 @@ const CashBook = () => {
     const isOwner = user?.Roles?.includes('Owner') ?? false;
     const userShopNo = user?.ShopNo;
 
-    // Inventories (shops) list — only fetched for owner
+    // Inventories (shops) list — fetched for owner
     const [inventories, setInventories] = useState<Inventory[]>([]);
 
-    // Shop filter: undefined = all shops (owner only), number = specific shop
-    const [selectedShopNo, setSelectedShopNo] = useState<number | undefined>(
-        isOwner ? undefined : userShopNo
+    // Shop filter: owner defaults to shop0 (HQ), non-owner defaults to their shop
+    const [selectedShopNo, setSelectedShopNo] = useState<number>(
+        isOwner ? 0 : (userShopNo ?? 0)
     );
 
     // Date — default to today
@@ -112,20 +112,20 @@ const CashBook = () => {
     const loadData = async (signal?: AbortSignal) => {
         setIsLoading(true);
         try {
-            const summaryShopNo = selectedShopNo ?? (isOwner ? 0 : userShopNo ?? 0);
-            
+            const shopNo = isOwner ? selectedShopNo : (userShopNo ?? 0);
+
             // Format date for PostgreSQL timestamp with time zone (requires UTC kind)
             const dateQueryParam = selectedDate ? `${selectedDate}T00:00:00Z` : undefined;
 
             const [entriesData, summaryData] = await Promise.all([
                 getCashBookEntries({
-                    shopNo: selectedShopNo,
+                    shopNo,
                     startDate: dateQueryParam,
                     endDate: dateQueryParam,
                     search: searchQuery,
                 }, { signal }),
                 getCashBookSummary({
-                    shopNo: isOwner && selectedShopNo === undefined ? undefined : summaryShopNo,
+                    shopNo,
                     startDate: dateQueryParam,
                     endDate: dateQueryParam,
                 }, { signal })
@@ -181,17 +181,24 @@ const CashBook = () => {
         return t;
     }, [entries, summary.ClosingBalance]);
 
-    // Transfer is allowed if:
-    // 1. Not an owner (standard staff with shopNo > 0)
-    // 2. Owner, AND they have explicitly selected a specific shop (> 0) from the dropdown
-    const canTransfer = (!isOwner && (userShopNo ?? 0) > 0) || (isOwner && selectedShopNo !== undefined && selectedShopNo > 0);
-    const transferShopNo = isOwner ? selectedShopNo ?? 0 : userShopNo ?? 0;
+    // Transfer rules:
+    // - Non-owner staff (shopNo > 0): can transfer to HQ
+    // - Owner on a specific branch shop (selectedShopNo > 0): can transfer to HQ
+    // - Owner on shop0 (HQ): can transfer TO other shops (if inventories exist)
+    const isOwnerOnHQ = isOwner && selectedShopNo === 0;
+    const canTransfer =
+        (!isOwner && (userShopNo ?? 0) > 0) ||
+        (isOwner && selectedShopNo > 0) ||
+        (isOwnerOnHQ && inventories.length > 0);
+
+    const transferShopNo = isOwner ? selectedShopNo : (userShopNo ?? 0);
 
     return (
         <div className="p-4 sm:p-6 lg:p-10 pb-8 sm:pb-10 lg:pb-12 bg-white dark:bg-transparent min-h-screen">
             <CashBookHeader
                 onNewEntry={() => setIsNewEntryModalOpen(true)}
                 onTransferToHQ={canTransfer ? () => setIsTransferModalOpen(true) : undefined}
+                transferLabel={isOwnerOnHQ ? 'Transfer to Shop' : 'Transfer to HQ'}
                 onExportPDF={handleExportPDF}
             />
 
@@ -235,6 +242,9 @@ const CashBook = () => {
                     setEditingEntry(null);
                 }}
                 onSubmit={handleSaveEntry}
+                isOwner={isOwner}
+                inventories={inventories}
+                defaultShopNo={isOwner ? selectedShopNo : (userShopNo ?? 0)}
                 initialData={editingEntry ? {
                     TransactionType: editingEntry.TransactionType,
                     Description: editingEntry.Description || '',
@@ -250,12 +260,14 @@ const CashBook = () => {
                     onClose={() => setIsTransferModalOpen(false)}
                     onSubmit={handleTransfer}
                     shopNo={transferShopNo}
+                    isOwnerOnHQ={isOwnerOnHQ}
+                    inventories={isOwnerOnHQ ? inventories : []}
                 />
             )}
         </div>
     );
 
-    async function handleSaveEntry(data: CreateManualEntryDTO) {
+    async function handleSaveEntry(data: CreateManualEntryDTO, shopNo: number) {
         // Use the selected filter date, but append current local time
         const nowLocal = new Date();
         const timePart = [
@@ -263,18 +275,21 @@ const CashBook = () => {
             String(nowLocal.getMinutes()).padStart(2, '0'),
             String(nowLocal.getSeconds()).padStart(2, '0')
         ].join(':');
-        
+
         data.TransactionDate = `${selectedDate}T${timePart}Z`;
-        
+
         if (editingEntry) {
             await editCashBookEntry(editingEntry.Id, data);
         } else {
-            await createManualEntry(data, selectedShopNo ?? userShopNo ?? 0);
+            // For owner: use the shopNo chosen in the modal
+            // For non-owner: use their own shopNo
+            const targetShop = isOwner ? shopNo : (userShopNo ?? 0);
+            await createManualEntry(data, targetShop);
         }
         await loadData();
     }
 
-    async function handleTransfer(data: CreateCashTransferDTO) {
+    async function handleTransfer(data: CreateCashTransferDTO, toShopNo?: number) {
         // Use the selected filter date, but append current local time
         const nowLocal = new Date();
         const timePart = [
@@ -282,10 +297,12 @@ const CashBook = () => {
             String(nowLocal.getMinutes()).padStart(2, '0'),
             String(nowLocal.getSeconds()).padStart(2, '0')
         ].join(':');
-        
+
         data.TransactionDate = `${selectedDate}T${timePart}Z`;
 
-        await transferToMotherShop(data, transferShopNo);
+        // isOwnerOnHQ: transfer FROM shop0 TO toShopNo
+        // otherwise: transfer FROM transferShopNo TO HQ (toShopNo = undefined)
+        await transferToMotherShop(data, transferShopNo, toShopNo);
         await loadData();
     }
 
@@ -293,12 +310,12 @@ const CashBook = () => {
         if (!selectedDate) return;
         try {
             const dateQueryParam = `${selectedDate}T00:00:00Z`;
-            let shopName = 'All Shops';
+            let shopName = 'HQ / Mother Shop';
             if (selectedShopNo === 0) shopName = 'HQ / Mother Shop';
-            else if (selectedShopNo && selectedShopNo > 0) {
+            else if (selectedShopNo > 0) {
                 shopName = inventories.find(i => i.Id === selectedShopNo)?.Name ?? `Shop #${selectedShopNo}`;
             } else if (!isOwner && userShopNo) {
-                shopName = `Shop #${userShopNo}`; // Or get it from context if available
+                shopName = `Shop #${userShopNo}`;
             }
 
             await exportCashBookPdf(dateQueryParam, selectedShopNo, shopName);
