@@ -36,6 +36,7 @@ interface ProductItem {
     ProductId: number;
     ProductName: string;
     BasePrice: number;
+    MSRP: number;
     ImageUrls?: string[];
 }
 
@@ -348,6 +349,7 @@ export default function CreateOrder() {
                 Name: foundItem.ProductName,
                 Description: "Select variant for this product",
                 BasePrice: foundItem.BasePrice,
+                MSRP: foundItem.MSRP,
                 ImageUrls: foundItem.ImageUrls || []
             };
 

@@ -9,6 +9,7 @@ import { getTenant } from '../../services/authService';
 /* ─────────── types ─────────── */
 interface InvoiceItem {
     Id: number;
+    ProductId: number;
     ProductName: string;
     ProductCode?: string;
     CategoryName?: string;
@@ -24,9 +25,9 @@ interface InvoiceItem {
 }
 
 interface AggregatedItem {
+    ProductId: number;
     ProductName: string;
     ProductCode?: string;
-    ColorName?: string;
     Quantity: number;
     UnitPrice: number;
     Subtotal: number;
@@ -68,10 +69,10 @@ interface InvoiceData {
 }
 
 function aggregateItems(items: InvoiceItem[]): AggregatedItem[] {
-    const grouped = new Map<string, AggregatedItem>();
+    const grouped = new Map<number, AggregatedItem>();
     
     for (const item of items) {
-        const key = `${item.ProductName}|${item.ColorName || ''}|${item.ProductCode || ''}`;
+        const key = item.ProductId;
         
         if (grouped.has(key)) {
             const existing = grouped.get(key)!;
@@ -79,9 +80,9 @@ function aggregateItems(items: InvoiceItem[]): AggregatedItem[] {
             existing.Subtotal += item.Subtotal;
         } else {
             grouped.set(key, {
+                ProductId: item.ProductId,
                 ProductName: item.ProductName,
                 ProductCode: item.ProductCode,
-                ColorName: item.ColorName || undefined,
                 Quantity: item.Quantity,
                 UnitPrice: item.UnitPrice,
                 Subtotal: item.Subtotal,
@@ -314,7 +315,7 @@ export default function InvoicePage() {
                                 {aggregatedItems.length > 0 ? (
                                     aggregatedItems.map((item, idx) => (
                                         <tr
-                                            key={`${item.ProductName}-${item.ColorName || 'no-color'}-${idx}`}
+                                            key={`${item.ProductId}-${idx}`}
                                             style={{
                                                 borderBottom: '1px solid #eaf0ea',
                                                 background: idx % 2 === 1 ? '#f6f8f6' : '#fff',
@@ -325,7 +326,6 @@ export default function InvoicePage() {
                                             </td>
                                             <td style={{ padding: '12px', fontWeight: 700, color: '#0e1b12', maxWidth: '160px' }}>
                                                 {item.ProductName}
-                                                {item.ColorName && <span style={{ fontWeight: 500, color: '#727971' }}> ({item.ColorName})</span>}
                                             </td>
                                             <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: '#727971', whiteSpace: 'nowrap' }}>
                                                 {item.ProductCode || '—'}

@@ -87,6 +87,7 @@ namespace Relation_IMS.Controllers
                 Items = order.OrderItems?.Select(oi => new
                 {
                     oi.Id,
+                    oi.ProductId,
                     ProductName = oi.Product?.Name ?? "Unknown",
                     ProductCode = oi.Product?.Code,
                     CategoryName = oi.Product?.Category?.Name,

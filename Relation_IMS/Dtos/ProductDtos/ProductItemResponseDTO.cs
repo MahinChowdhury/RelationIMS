@@ -17,6 +17,7 @@ namespace Relation_IMS.Dtos.ProductDtos
         public int ProductId { get; set; }
         public string ProductName { get; set; } = null!;
         public decimal BasePrice { get; set; }
+        public decimal MSRP { get; set; }
         public List<string>? ImageUrls { get; set; }
         public string? ThumbnailUrl { get; set; }
     }

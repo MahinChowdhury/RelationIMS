@@ -65,7 +65,7 @@ export default function VariantSelectionModal({ isOpen, onClose, product, varian
         if (selectedColorId && selectedSizeIds.length === 1) {
             const v = variants.find(v => v.ProductColorId === selectedColorId && v.ProductSizeId === selectedSizeIds[0]);
             if (v) {
-                setPrice(v.VariantPrice || product?.MSRP || 0);
+                setPrice(product?.MSRP || v.VariantPrice || 0);
             }
         }
     }, [selectedColorId, selectedSizeIds, product, variants]);
