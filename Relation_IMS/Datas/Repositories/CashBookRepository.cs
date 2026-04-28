@@ -183,7 +183,7 @@ namespace Relation_IMS.Datas.Repositories
 
         // ──────────────────────────── Auto: Order Payment ────────────────────────────
 
-        public async Task RecordOrderPaymentEntryAsync(int shopNo, int userId, int orderId, int orderPaymentId, decimal amount, bool isDuePayment)
+        public async Task RecordOrderPaymentEntryAsync(int shopNo, int userId, int orderId, int orderPaymentId, decimal amount, bool isDuePayment, PaymentMethod paymentMethod)
         {
             using (await _lockService.AcquireLockAsync($"cashbook:{shopNo}"))
             {
@@ -198,7 +198,7 @@ namespace Relation_IMS.Datas.Repositories
                     TransactionType = isDuePayment ? "Due Collection" : "Order Payment",
                     Description = isDuePayment
                         ? $"Due payment received for Order #{orderId}"
-                        : $"Payment received for Order #{orderId}",
+                        : $"{paymentMethod} payment received for Order #{orderId}",
                     CashIn = amount,
                     CashOut = null,
                     RunningBalance = newBalance,

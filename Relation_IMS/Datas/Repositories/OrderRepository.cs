@@ -107,7 +107,7 @@ namespace Relation_IMS.Datas.Repositories
                 foreach (var payment in newOrder.Payments)
                 {
                     await _cashBookRepo.RecordOrderPaymentEntryAsync(
-                        shopNo, newOrder.UserId, newOrder.Id, payment.Id, payment.Amount, isDuePayment: false);
+                        shopNo, newOrder.UserId, newOrder.Id, payment.Id, payment.Amount, isDuePayment: false, payment.PaymentMethod);
                 }
             }
 
@@ -384,7 +384,7 @@ namespace Relation_IMS.Datas.Repositories
                     var isDue = oldPaidAmount > 0; // If there was already a payment, this is a due collection
                     await _cashBookRepo.RecordOrderPaymentEntryAsync(
                         shopNo, order.UserId, order.Id,
-                        latestPayment?.Id ?? 0, newPaymentsTotal, isDuePayment: isDue);
+                        latestPayment?.Id ?? 0, newPaymentsTotal, isDuePayment: isDue, latestPayment?.PaymentMethod ?? PaymentMethod.Cash);
                 }
 
                 // Update Customer Balance: increase by the new payment amount only

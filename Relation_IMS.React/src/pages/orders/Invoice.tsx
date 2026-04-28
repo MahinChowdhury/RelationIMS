@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
+import Barcode from 'react-barcode';
 import api from '../../services/api';
 import { getTenantConfig } from '../../services/tenantTheme';
 import { getTenant } from '../../services/authService';
@@ -107,49 +108,6 @@ function formatDateTime(dateString: string) {
 
 function money(n: number) {
     return '৳' + n.toFixed(2);
-}
-
-/** Renders a minimal but clean barcode-like SVG — column pattern derived from the string */
-function BarcodeSVG({ value, height = 40, className = '' }: { value: string; height?: number; className?: string }) {
-    // Generate a deterministic bar pattern from the string
-    const bars: { x: number; w: number }[] = [];
-    let x = 0;
-    const totalWidth = 120;
-    const charCodes = Array.from(value).map(c => c.charCodeAt(0));
-    // Start/stop quiet zones
-    const pattern: number[] = [2, 1]; // start guard
-    charCodes.forEach((code, i) => {
-        const w1 = 1 + (code % 3);
-        const w2 = 1 + ((code * 3 + i) % 2);
-        pattern.push(w1, w2);
-    });
-    pattern.push(1, 2); // end guard
-
-    // Scale pattern to totalWidth
-    const sum = pattern.reduce((a, b) => a + b, 0);
-    const scale = totalWidth / sum;
-    let isBar = true;
-    for (const w of pattern) {
-        const scaledW = Math.max(0.8, w * scale);
-        if (isBar) bars.push({ x, w: scaledW });
-        x += scaledW;
-        isBar = !isBar;
-    }
-
-    return (
-        <svg
-            width={totalWidth}
-            height={height}
-            viewBox={`0 0 ${totalWidth} ${height}`}
-            preserveAspectRatio="none"
-            className={className}
-            style={{ display: 'block' }}
-        >
-            {bars.map((b, i) => (
-                <rect key={i} x={b.x} y={0} width={b.w} height={height} fill="currentColor" />
-            ))}
-        </svg>
-    );
 }
 
 /* ─────────── component ─────────── */
@@ -299,7 +257,7 @@ export default function InvoicePage() {
                             </p>
                             <p style={{ fontWeight: 800, fontSize: '13px', margin: '0 0 8px', color: '#0e1b12' }}>{orderId}</p>
                             <div style={{ borderTop: '1px solid #c2c9bf', paddingTop: '8px', color: '#0e1b12' }}>
-                                <BarcodeSVG value={orderId} height={36} />
+                                <Barcode value={orderId} height={36} width={1.5} fontSize={10} />
                             </div>
                         </div>
                     </header>

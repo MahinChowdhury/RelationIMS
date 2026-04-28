@@ -26,7 +26,7 @@ namespace Relation_IMS.Datas.Interfaces
         /// <summary>
         /// Auto-record a cashbook entry when an order payment is made (initial or due payment).
         /// </summary>
-        Task RecordOrderPaymentEntryAsync(int shopNo, int userId, int orderId, int orderPaymentId, decimal amount, bool isDuePayment);
+        Task RecordOrderPaymentEntryAsync(int shopNo, int userId, int orderId, int orderPaymentId, decimal amount, bool isDuePayment, PaymentMethod paymentMethod);
 
         /// <summary>
         /// Auto-record a cashbook entry when a customer refund is processed.

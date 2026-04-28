@@ -247,7 +247,11 @@ const CashBookTable = ({
                                     {/* Description */}
                                     <td className="px-3 sm:px-4 py-4 sm:py-5 min-w-[140px]">
                                         <div className="flex flex-col">
-                                            <span className="text-xs sm:text-sm font-bold text-text-main dark:text-white">{entry.Description || '—'}</span>
+                                            <span className="text-xs sm:text-sm font-bold text-text-main dark:text-white">
+                                                {entry.PaymentMethod && !entry.Description?.includes(entry.PaymentMethod) 
+                                                    ? `${entry.Description} (${entry.PaymentMethod})` 
+                                                    : entry.Description || '—'}
+                                            </span>
                                             {entry.Note && (
                                                 <span className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{entry.Note}</span>
                                             )}
