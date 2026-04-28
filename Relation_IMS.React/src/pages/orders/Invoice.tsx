@@ -22,6 +22,15 @@ interface InvoiceItem {
     Subtotal: number;
 }
 
+interface AggregatedItem {
+    ProductName: string;
+    ProductCode?: string;
+    ColorName?: string;
+    Quantity: number;
+    UnitPrice: number;
+    Subtotal: number;
+}
+
 interface InvoicePayment {
     Id: number;
     Method: string;
@@ -55,6 +64,31 @@ interface InvoiceData {
     };
     Items?: InvoiceItem[];
     Payments?: InvoicePayment[];
+}
+
+function aggregateItems(items: InvoiceItem[]): AggregatedItem[] {
+    const grouped = new Map<string, AggregatedItem>();
+    
+    for (const item of items) {
+        const key = `${item.ProductName}|${item.ColorName || ''}|${item.ProductCode || ''}`;
+        
+        if (grouped.has(key)) {
+            const existing = grouped.get(key)!;
+            existing.Quantity += item.Quantity;
+            existing.Subtotal += item.Subtotal;
+        } else {
+            grouped.set(key, {
+                ProductName: item.ProductName,
+                ProductCode: item.ProductCode,
+                ColorName: item.ColorName || undefined,
+                Quantity: item.Quantity,
+                UnitPrice: item.UnitPrice,
+                Subtotal: item.Subtotal,
+            });
+        }
+    }
+    
+    return Array.from(grouped.values());
 }
 
 /* ─────────── helpers ─────────── */
@@ -181,6 +215,8 @@ export default function InvoicePage() {
             ? `${SHOP_NAME} — HQ`
             : SHOP_NAME;
 
+    const aggregatedItems = invoice.Items ? aggregateItems(invoice.Items) : [];
+
     return (
         <>
             {/* ── Global print styles ── */}
@@ -288,10 +324,10 @@ export default function InvoicePage() {
                             </h2>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
                                 <Field label="Customer Name" value={invoice.Customer.Name} bold />
-                                {invoice.Customer.Phone && <Field label="Mobile Number" value={invoice.Customer.Phone} />}
-                                {invoice.Customer.ShopName && <Field label="Customer Shop" value={invoice.Customer.ShopName} />}
-                                {invoice.Customer.ShopAddress && <Field label="Shop Address" value={invoice.Customer.ShopAddress} />}
+                                {invoice.Customer.ShopName && <Field label="Shop Name" value={invoice.Customer.ShopName} bold />}
                                 {invoice.Customer.Address && <Field label="Customer Address" value={invoice.Customer.Address} />}
+                                {invoice.Customer.ShopAddress && <Field label="Shop Address" value={invoice.Customer.ShopAddress} />}
+                                {invoice.Customer.Phone && <Field label="Mobile Number" value={invoice.Customer.Phone} />}
                             </div>
                         </section>
                     )}
@@ -321,10 +357,10 @@ export default function InvoicePage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {invoice.Items && invoice.Items.length > 0 ? (
-                                    invoice.Items.map((item, idx) => (
+                                {aggregatedItems.length > 0 ? (
+                                    aggregatedItems.map((item, idx) => (
                                         <tr
-                                            key={item.Id}
+                                            key={`${item.ProductName}-${item.ColorName || 'no-color'}-${idx}`}
                                             style={{
                                                 borderBottom: '1px solid #eaf0ea',
                                                 background: idx % 2 === 1 ? '#f6f8f6' : '#fff',
@@ -335,6 +371,7 @@ export default function InvoicePage() {
                                             </td>
                                             <td style={{ padding: '12px', fontWeight: 700, color: '#0e1b12', maxWidth: '160px' }}>
                                                 {item.ProductName}
+                                                {item.ColorName && <span style={{ fontWeight: 500, color: '#727971' }}> ({item.ColorName})</span>}
                                             </td>
                                             <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '11px', color: '#727971', whiteSpace: 'nowrap' }}>
                                                 {item.ProductCode || '—'}

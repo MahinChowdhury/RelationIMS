@@ -27,6 +27,7 @@ namespace Relation_IMS.Datas.Repositories
         {
             var query = _context.CashBookEntries
                 .Include(e => e.User)
+                .Include(e => e.OrderPayment)
                 .AsQueryable();
 
             if (shopNo.HasValue)
@@ -75,6 +76,8 @@ namespace Relation_IMS.Datas.Repositories
                     CashOut = e.CashOut,
                     RunningBalance = e.RunningBalance,
                     OrderId = e.OrderId,
+                    OrderPaymentId = e.OrderPaymentId,
+                    PaymentMethod = e.OrderPayment != null ? e.OrderPayment.PaymentMethod.ToString() : null,
                     CashTransferId = e.CashTransferId,
                     Note = e.Note,
                     TransactionDate = e.TransactionDate,

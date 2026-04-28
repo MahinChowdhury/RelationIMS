@@ -9,6 +9,7 @@ import { type Order, PaymentStatus, type Inventory } from '../../types';
 import { getAllInventories } from '../../services/InventoryService';
 import { useAuth } from '../../context/AuthContext';
 import { DeleteOrderModal } from '../../components/orders/OrderModals';
+import BarcodeScanner from '../../components/BarcodeScanner';
 
 export default function OrdersPage() {
     const { t } = useLanguage();
@@ -37,6 +38,21 @@ export default function OrdersPage() {
     // Delete Modal
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [orderToDelete, setOrderToDelete] = useState<number | null>(null);
+
+    // Barcode Scanner
+    const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+    const [scannerEnabled, setScannerEnabled] = useState(false);
+
+    const onBarcodeScanned = (code: string) => {
+        setShowBarcodeScanner(false);
+        setScannerEnabled(false);
+        // Handle ORD-OrderId format or just numeric order ID
+        const orderId = code.startsWith('ORD-') ? code.replace('ORD-', '') : code;
+        const numericId = parseInt(orderId, 10);
+        if (!isNaN(numericId) && numericId > 0) {
+            navigate(`/orders/${numericId}`);
+        }
+    };
 
     // Infinite Scroll
     const { containerRef, isVisible } = useIntersectionObserver({ threshold: 1.0 });
@@ -189,6 +205,12 @@ export default function OrdersPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => { setShowBarcodeScanner(true); setScannerEnabled(true); }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-gray-900 rounded-lg hover:bg-gray-800 dark:bg-black dark:border dark:border-gray-700 dark:hover:bg-gray-900 transition-all shadow-sm">
+                        <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                        <span className="hidden sm:inline">Scan</span>
+                    </button>
                     <button
                         onClick={() => navigate('/orders/create')}
                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all">
@@ -418,6 +440,15 @@ export default function OrdersPage() {
                 onCancel={() => { setShowDeleteModal(false); setOrderToDelete(null); }}
                 onConfirm={handleDeleteOrder}
             />
+
+            {/* Barcode Scanner */}
+            {showBarcodeScanner && (
+                <BarcodeScanner
+                    enabled={scannerEnabled}
+                    onScanned={onBarcodeScanned}
+                    onClose={() => { setShowBarcodeScanner(false); setScannerEnabled(false); }}
+                />
+            )}
         </div>
     );
 }

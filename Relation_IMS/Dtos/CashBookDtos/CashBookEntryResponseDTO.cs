@@ -11,6 +11,8 @@ namespace Relation_IMS.Dtos.CashBookDtos
         public decimal? CashOut { get; set; }
         public decimal RunningBalance { get; set; }
         public int? OrderId { get; set; }
+        public int? OrderPaymentId { get; set; }
+        public string? PaymentMethod { get; set; }
         public int? CashTransferId { get; set; }
         public string? Note { get; set; }
         public DateTime TransactionDate { get; set; }

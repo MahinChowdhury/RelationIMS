@@ -17,8 +17,22 @@ export default function BottomNav() {
     };
 
     const handleScan = async (barcode: string) => {
+        const trimmed = barcode.trim();
+        
+        // Check if it's an order barcode (starts with ORD-)
+        if (trimmed.startsWith('ORD-')) {
+            const orderId = trimmed.replace('ORD-', '');
+            const numericId = parseInt(orderId, 10);
+            if (!isNaN(numericId) && numericId > 0) {
+                navigate(`/orders/${numericId}`);
+                setIsScanning(false);
+                return;
+            }
+        }
+        
+        // Otherwise, treat as product barcode
         try {
-            const res = await api.get(`/ProductItem/code/${barcode.trim()}`);
+            const res = await api.get(`/ProductItem/code/${trimmed}`);
             if (res.data && res.data.ProductId) {
                 navigate(`/products/${res.data.ProductId}`);
             } else {
