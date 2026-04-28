@@ -20,6 +20,7 @@ export interface CashBookEntryResponse {
     ShopNo: number;
     UserId: number;
     UserName: string | null;
+    PaymentMethod: string | null;
 }
 
 export interface CashBookSummary {
